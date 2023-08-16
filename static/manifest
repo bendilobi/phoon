@@ -1,0 +1,16 @@
+{
+  "short_name": "Zoff",
+  "name": "Zoff - WHM the Zen Way",
+  "icons": [
+    {
+      "src": "./img/logo/favicon.png",
+      "sizes": "256x256, 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./",
+  "theme_color":"#32312e",
+  "background_color":"#32312e",
+  "display": "standalone"
+}
