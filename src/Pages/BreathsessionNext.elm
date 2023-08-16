@@ -5,6 +5,7 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
+import Element.Input exposing (button)
 import Html
 import Html.Attributes as HtmlA
 import Page exposing (Page)
@@ -69,7 +70,7 @@ update msg model =
             in
             ( { model | x = newX }
             , if newX > 300 then
-                Effect.pushRoute { path = Route.Path.Home_, query = Dict.empty, hash = Nothing }
+                Effect.replaceRoute { path = Route.Path.PauseSession, query = Dict.empty, hash = Nothing }
 
               else
                 Effect.none
@@ -100,20 +101,10 @@ view model =
             , Background.color <| rgb255 38 86 86
             , Font.color <| rgb255 255 255 255
             , inFront <|
-                -- el
-                --     [ width fill
-                --     , height fill
-                --     , htmlAttribute <| Etouch.onEnd TouchEnd
-                --     ]
-                -- <|
-                --     none
-                html
-                <|
+                html <|
                     Touch.element
                         [ HtmlA.style "height" "100%"
                         , HtmlA.style "width" "100%"
-
-                        -- , Etouch.onEnd TouchEnd
                         ]
                         TouchMsg
             ]

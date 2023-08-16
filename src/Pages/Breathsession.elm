@@ -7,11 +7,15 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
+import Element.Input exposing (button)
+import Element.Keyed as Keyed
+import Html
 import Html.Attributes as HtmlA
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
 import Shared
+import Time
 import Touch
 import View exposing (View)
 
@@ -33,11 +37,18 @@ page shared route =
 --     | Touched
 
 
+type Breathing
+    = ReadyToStart
+    | AtBreath Int
+    | BreathingFinished
+
+
 type alias Model =
     { touchModel : Touch.Model Msg
     , x : Float
     , y : Float
     , touched : Bool
+    , breathing : Breathing
     }
 
 
@@ -51,8 +62,9 @@ init () =
       , x = 0
       , y = 0
       , touched = False
+      , breathing = AtBreath 0
       }
-    , Effect.none
+    , Effect.setWakeLock
     )
 
 
@@ -64,6 +76,8 @@ type Msg
     = TouchMsg Touch.Msg
     | MovedOneFinger Float Float
     | MovedTwoFingers Float Float
+    | Tick Time.Posix
+    | StartBreathing
 
 
 
@@ -73,6 +87,28 @@ type Msg
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
+        Tick _ ->
+            let
+                ( newBreathingState, effect ) =
+                    case model.breathing of
+                        ReadyToStart ->
+                            ( ReadyToStart, Effect.none )
+
+                        AtBreath n ->
+                            if n < 15 then
+                                ( AtBreath <| n + 1, Effect.none )
+
+                            else
+                                ( BreathingFinished, Effect.playSound )
+
+                        BreathingFinished ->
+                            ( BreathingFinished, Effect.none )
+            in
+            ( { model | breathing = newBreathingState }, effect )
+
+        StartBreathing ->
+            ( { model | breathing = AtBreath 0 }, Effect.none )
+
         TouchMsg touchMsg ->
             -- let
             --     m =
@@ -89,7 +125,7 @@ update msg model =
 
         MovedTwoFingers x y ->
             ( { model | touched = not model.touched }
-            , Effect.pushRoute { path = Route.Path.BreathsessionNext, query = Dict.empty, hash = Nothing }
+            , Effect.replaceRoute { path = Route.Path.BreathsessionNext, query = Dict.empty, hash = Nothing }
             )
 
         MovedOneFinger x y ->
@@ -101,12 +137,8 @@ update msg model =
                     model.y + y
             in
             ( { model | x = newX, y = newY }
-            , if newX > 300 then
-                Effect.pushRoute { path = Route.Path.Home_, query = Dict.empty, hash = Nothing }
-
-              else if newY > 200 then
-                -- auch hier spielt unter iOS kein Sound... Warum?
-                Effect.playSound
+            , if model.x > 300 then
+                Effect.replaceRoute { path = Route.Path.PauseSession, query = Dict.empty, hash = Nothing }
 
               else
                 Effect.none
@@ -130,7 +162,12 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    case model.breathing of
+        AtBreath _ ->
+            Time.every 1000 Tick
+
+        _ ->
+            Sub.none
 
 
 
@@ -152,35 +189,77 @@ view model =
                 Background.color <| rgb255 0 0 0
             , Font.color <| rgb255 255 255 255
             , inFront <|
-                -- el
-                --     [ width fill
-                --     , height fill
-                --     , htmlAttribute <| Etouch.onEnd TouchEnd
-                --     ]
-                -- <|
-                --     none
-                html
-                <|
-                    Touch.element
-                        [ HtmlA.style "height" "100%"
-                        , HtmlA.style "width" "100%"
+                case model.breathing of
+                    ReadyToStart ->
+                        none
 
-                        -- , Etouch.onEnd TouchEnd
-                        ]
-                        TouchMsg
+                    _ ->
+                        -- el
+                        --     [ width fill
+                        --     , height fill
+                        --     , htmlAttribute <| Etouch.onEnd TouchEnd
+                        --     ]
+                        -- <|
+                        --     none
+                        html <|
+                            Touch.element
+                                [ HtmlA.style "height" "100%"
+                                , HtmlA.style "width" "100%"
+
+                                -- , Etouch.onEnd TouchEnd
+                                ]
+                                TouchMsg
             ]
             [ column [ centerX, centerY ]
-                [ el [] <| text <| "x: " ++ String.fromFloat model.x
-                , el [] <| text <| "y: " ++ String.fromFloat model.y
+                [ el
+                    [ paddingXY 0 10
+                    , Font.size 40
+                    , Font.bold
+                    , centerX
+                    ]
+                  <|
+                    case model.breathing of
+                        ReadyToStart ->
+                            button []
+                                { onPress = Just StartBreathing
+                                , label = text "Start"
+                                }
+
+                        AtBreath n ->
+                            text <| String.fromInt n
+
+                        BreathingFinished ->
+                            text <| "Done!"
+
+                -- String.fromInt model.breathsDone
+                , el [ centerX ] <| text <| "x: " ++ String.fromFloat model.x
+                , el [ centerX ] <| text <| "y: " ++ String.fromFloat model.y
+
+                -- ### Das hier funktioniert wunderbar im Chrome, aber iOS Safari spielt nur den ersten Sound, nicht bei BreathingFinished...
+                -- , Keyed.el [] <|
+                --     ( case model.breathing of
+                --         ReadyToStart ->
+                --             "ready"
+                --         AtBreath _ ->
+                --             "breathing"
+                --         BreathingFinished ->
+                --             "done"
+                --     , html <|
+                --         Html.audio
+                --             [ HtmlA.src "/audio/bell.mp3"
+                --             , HtmlA.id "audioplayer"
+                --             , HtmlA.controls False
+                --             , HtmlA.autoplay <|
+                --                 case model.breathing of
+                --                     ReadyToStart ->
+                --                         False
+                --                     AtBreath _ ->
+                --                         True
+                --                     BreathingFinished ->
+                --                         True
+                --             ]
+                --             []
+                --     )
                 ]
             ]
-
-    -- [ link
-    --     [ centerX
-    --     , centerY
-    --     ]
-    --     { url = "/"
-    --     , label = text "Zurück zu Home"
-    --     }
-    -- ]
     }

@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , playSound
+    , playSound, setNavigated, setWakeLock
     )
 
 {-|
@@ -41,7 +41,7 @@ type Effect msg
       -- SHARED
     | SendSharedMsg Shared.Msg.Msg
       -- PORTS
-    | PlaySound
+    | SendMessageToJavaScript
         { tag : String
         , data : Json.Encode.Value
         }
@@ -126,10 +126,27 @@ port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
 
 playSound : Effect msg
 playSound =
-    PlaySound
+    SendMessageToJavaScript
         { tag = "PLAY_SOUND"
         , data = Json.Encode.string ""
         }
+
+
+setWakeLock : Effect msg
+setWakeLock =
+    SendMessageToJavaScript
+        { tag = "SET_WAKE_LOCK"
+        , data = Json.Encode.string ""
+        }
+
+
+
+-- SHARED
+
+
+setNavigated : Effect msg
+setNavigated =
+    SendSharedMsg Shared.Msg.SetNavigated
 
 
 
@@ -163,8 +180,8 @@ map fn effect =
         SendSharedMsg sharedMsg ->
             SendSharedMsg sharedMsg
 
-        PlaySound sound ->
-            PlaySound sound
+        SendMessageToJavaScript msg ->
+            SendMessageToJavaScript msg
 
 
 {-| Elm Land depends on this function to perform your effects.
@@ -203,5 +220,5 @@ toCmd options effect =
             Task.succeed sharedMsg
                 |> Task.perform options.fromSharedMsg
 
-        PlaySound sound ->
-            outgoing sound
+        SendMessageToJavaScript msg ->
+            outgoing msg
