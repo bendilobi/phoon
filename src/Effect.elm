@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , playSound, setNavigated, setWakeLock
+    , playSound, setWakeLock
     )
 
 {-|
@@ -142,14 +142,9 @@ setWakeLock =
 
 
 -- SHARED
-
-
-setNavigated : Effect msg
-setNavigated =
-    SendSharedMsg Shared.Msg.SetNavigated
-
-
-
+-- setNavigated : Effect msg
+-- setNavigated =
+--     SendSharedMsg Shared.Msg.SetNavigated
 -- INTERNALS
 
 

@@ -59,22 +59,11 @@ update shared msg model =
               -- , Effect.playSound
             , Effect.batch
                 [ Effect.playSound
-                , Effect.setNavigated
-
-                -- Sehr seltsamer Bug: in Breathsession oder BreathsessionNext wird über Touch zu PauseSession navigiert
-                -- Das führt allerdings dazu, dass automatisch weiter zu Home_ navigiert wird, obwohl auf der Seite die
-                -- jeweilige Message gar nicht getriggert wird. Und hier werden dann ohne weiteres Zutun die Effekte
-                -- getriggert, d.h. playSound und replaceRoute. Letzteres schalte ich hier über den shared.navigated aus...
-                , if shared.navigated then
-                    -- TODO: die ganze Sache mit navigated wieder entfernen
-                    Effect.none
-
-                  else
-                    Effect.replaceRoute
-                        { path = Route.Path.Breathsession
-                        , query = Dict.empty
-                        , hash = Nothing
-                        }
+                , Effect.replaceRoute
+                    { path = Route.Path.Breathsession
+                    , query = Dict.empty
+                    , hash = Nothing
+                    }
                 ]
             )
 

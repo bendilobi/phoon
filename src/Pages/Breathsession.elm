@@ -37,10 +37,13 @@ page shared route =
 --     | Touched
 
 
-type Breathing
+type
+    Breathing
+    -- TODO: ReadyToStart rausnehmen, wenn ichs eh nicht verwende
     = ReadyToStart
     | AtBreath Int
     | BreathingFinished
+    | Paused
 
 
 type alias Model =
@@ -78,6 +81,7 @@ type Msg
     | MovedTwoFingers Float Float
     | Tick Time.Posix
     | StartBreathing
+    | Cancelled
 
 
 
@@ -95,7 +99,7 @@ update msg model =
                             ( ReadyToStart, Effect.none )
 
                         AtBreath n ->
-                            if n < 15 then
+                            if n < 5 then
                                 ( AtBreath <| n + 1, Effect.none )
 
                             else
@@ -103,6 +107,9 @@ update msg model =
 
                         BreathingFinished ->
                             ( BreathingFinished, Effect.none )
+
+                        Paused ->
+                            ( Paused, Effect.none )
             in
             ( { model | breathing = newBreathingState }, effect )
 
@@ -136,13 +143,21 @@ update msg model =
                 newY =
                     model.y + y
             in
-            ( { model | x = newX, y = newY }
-            , if model.x > 300 then
-                Effect.replaceRoute { path = Route.Path.PauseSession, query = Dict.empty, hash = Nothing }
+            ( { model
+                | x = newX
+                , y = newY
+                , breathing =
+                    if model.x > 300 then
+                        Paused
 
-              else
-                Effect.none
+                    else
+                        model.breathing
+              }
+            , Effect.none
             )
+
+        Cancelled ->
+            ( model, Effect.replaceRoute { path = Route.Path.Home_, query = Dict.empty, hash = Nothing } )
 
 
 
@@ -193,6 +208,9 @@ view model =
                     ReadyToStart ->
                         none
 
+                    Paused ->
+                        none
+
                     _ ->
                         -- el
                         --     [ width fill
@@ -230,6 +248,12 @@ view model =
 
                         BreathingFinished ->
                             text <| "Done!"
+
+                        Paused ->
+                            button []
+                                { onPress = Just Cancelled
+                                , label = text "Pause..."
+                                }
 
                 -- String.fromInt model.breathsDone
                 , el [ centerX ] <| text <| "x: " ++ String.fromFloat model.x

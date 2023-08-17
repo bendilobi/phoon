@@ -43,7 +43,7 @@ type alias Model =
 
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
-    ( { navigated = False }
+    ( {}
     , Effect.none
     )
 
@@ -60,7 +60,7 @@ update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
         Shared.Msg.SetNavigated ->
-            ( { model | navigated = True }
+            ( model
             , Effect.none
             )
 

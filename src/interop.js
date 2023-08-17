@@ -1,4 +1,4 @@
-var audio = new Audio('/audio/bell.mp3')
+var audio = new Audio('/audio/ding.mp3')
 
 export const onReady = ({app, env}) => {
     if (app.ports && app.ports.outgoing) {
