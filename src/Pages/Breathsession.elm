@@ -1,6 +1,10 @@
 module Pages.Breathsession exposing (Model, Msg, page)
 
 -- import Html.Events.Extra.Touch as Etouch
+-- import Touch
+-- import Element.Keyed as Keyed
+-- import Html
+-- import Html.Attributes as HtmlA
 
 import Dict
 import Effect exposing (Effect)
@@ -8,15 +12,12 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input exposing (button)
-import Element.Keyed as Keyed
-import Html
-import Html.Attributes as HtmlA
+import Lib.Swipe as Swipe
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
 import Shared
 import Time
-import Touch
 import View exposing (View)
 
 
@@ -47,9 +48,11 @@ type
 
 
 type alias Model =
-    { touchModel : Touch.Model Msg
-    , x : Float
-    , y : Float
+    { gesture : Swipe.Gesture
+
+    -- , touchModel : Touch.Model Msg
+    -- , x : Float
+    -- , y : Float
     , touched : Bool
     , breathing : Breathing
     }
@@ -57,13 +60,15 @@ type alias Model =
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { touchModel =
-            Touch.initModel
-                [ Touch.onMove { fingers = 1 } MovedOneFinger
-                , Touch.onMove { fingers = 2 } MovedTwoFingers
-                ]
-      , x = 0
-      , y = 0
+    ( { gesture = Swipe.blanco
+
+      --   , touchModel =
+      --         Touch.initModel
+      --             [ Touch.onMove { fingers = 1 } MovedOneFinger
+      --             , Touch.onMove { fingers = 2 } MovedTwoFingers
+      --             ]
+      --   , x = 0
+      --   , y = 0
       , touched = False
       , breathing = AtBreath 0
       }
@@ -76,9 +81,11 @@ init () =
 
 
 type Msg
-    = TouchMsg Touch.Msg
-    | MovedOneFinger Float Float
-    | MovedTwoFingers Float Float
+    = Swipe Swipe.Event
+    | SwipeEnd Swipe.Event
+      -- | TouchMsg Touch.Msg
+      -- | MovedOneFinger Float Float
+      -- | MovedTwoFingers Float Float
     | Tick Time.Posix
     | StartBreathing
     | Cancelled
@@ -116,46 +123,68 @@ update msg model =
         StartBreathing ->
             ( { model | breathing = AtBreath 0 }, Effect.none )
 
-        TouchMsg touchMsg ->
-            -- let
-            --     m =
-            --         { model
-            --             | touched =
-            --                 if List.length touchMsg.touches >= 1 then
-            --                     not model.touched
-            --                 else
-            --                     model.touched
-            --         }
-            -- in
-            Touch.update touchMsg model.touchModel (\newTouchModel -> { model | touchModel = newTouchModel })
-                |> (\( mdl, cmdMsg ) -> ( mdl, Effect.sendCmd cmdMsg ))
-
-        MovedTwoFingers x y ->
-            ( { model | touched = not model.touched }
-            , Effect.replaceRoute { path = Route.Path.BreathsessionNext, query = Dict.empty, hash = Nothing }
+        Swipe touch ->
+            ( { model | gesture = Swipe.record touch model.gesture }
+            , Effect.none
             )
 
-        MovedOneFinger x y ->
+        SwipeEnd touch ->
             let
-                newX =
-                    model.x + x
-
-                newY =
-                    model.y + y
+                gesture : Swipe.Gesture
+                gesture =
+                    Swipe.record touch model.gesture
             in
             ( { model
-                | x = newX
-                , y = newY
+                | gesture = Swipe.blanco
                 , breathing =
-                    if model.x > 300 then
+                    if Swipe.isRightSwipe 300 gesture then
                         Paused
 
                     else
                         model.breathing
               }
-            , Effect.none
+            , if Swipe.isTap gesture then
+                Effect.replaceRoute { path = Route.Path.BreathsessionNext, query = Dict.empty, hash = Nothing }
+
+              else
+                Effect.none
             )
 
+        -- TouchMsg touchMsg ->
+        --     -- let
+        --     --     m =
+        --     --         { model
+        --     --             | touched =
+        --     --                 if List.length touchMsg.touches >= 1 then
+        --     --                     not model.touched
+        --     --                 else
+        --     --                     model.touched
+        --     --         }
+        --     -- in
+        --     Touch.update touchMsg model.touchModel (\newTouchModel -> { model | touchModel = newTouchModel })
+        --         |> (\( mdl, cmdMsg ) -> ( mdl, Effect.sendCmd cmdMsg ))
+        -- MovedTwoFingers x y ->
+        --     ( { model | touched = not model.touched }
+        --     , Effect.replaceRoute { path = Route.Path.BreathsessionNext, query = Dict.empty, hash = Nothing }
+        --     )
+        -- MovedOneFinger x y ->
+        --     let
+        --         newX =
+        --             model.x + x
+        --         newY =
+        --             model.y + y
+        --     in
+        --     ( { model
+        --         | x = newX
+        --         , y = newY
+        --         , breathing =
+        --             if model.x > 300 then
+        --                 Paused
+        --             else
+        --                 model.breathing
+        --       }
+        --     , Effect.none
+        --     )
         Cancelled ->
             ( model, Effect.replaceRoute { path = Route.Path.Home_, query = Dict.empty, hash = Nothing } )
 
@@ -197,36 +226,39 @@ view model =
         column
             [ width fill
             , height fill
+            , htmlAttribute <| Swipe.onStart Swipe
+            , htmlAttribute <| Swipe.onMove Swipe
+
+            -- TODO: Das scheint nicht zu funktionieren mit den Options. Der Button (s.u.) reagiert nicht
+            , htmlAttribute <| Swipe.onEndWithOptions { stopPropagation = True, preventDefault = True } SwipeEnd
             , if not model.touched then
                 Background.color <| rgb255 50 49 46
 
               else
                 Background.color <| rgb255 0 0 0
             , Font.color <| rgb255 255 255 255
-            , inFront <|
-                case model.breathing of
-                    ReadyToStart ->
-                        none
 
-                    Paused ->
-                        none
-
-                    _ ->
-                        -- el
-                        --     [ width fill
-                        --     , height fill
-                        --     , htmlAttribute <| Etouch.onEnd TouchEnd
-                        --     ]
-                        -- <|
-                        --     none
-                        html <|
-                            Touch.element
-                                [ HtmlA.style "height" "100%"
-                                , HtmlA.style "width" "100%"
-
-                                -- , Etouch.onEnd TouchEnd
-                                ]
-                                TouchMsg
+            -- , inFront <|
+            --     case model.breathing of
+            --         ReadyToStart ->
+            --             none
+            --         Paused ->
+            --             none
+            --         _ ->
+            --             -- el
+            --             --     [ width fill
+            --             --     , height fill
+            --             --     , htmlAttribute <| Etouch.onEnd TouchEnd
+            --             --     ]
+            --             -- <|
+            --             --     none
+            --             html <|
+            --                 Touch.element
+            --                     [ HtmlA.style "height" "100%"
+            --                     , HtmlA.style "width" "100%"
+            --                     -- , Etouch.onEnd TouchEnd
+            --                     ]
+            --                     TouchMsg
             ]
             [ column [ centerX, centerY ]
                 [ el
@@ -256,9 +288,8 @@ view model =
                                 }
 
                 -- String.fromInt model.breathsDone
-                , el [ centerX ] <| text <| "x: " ++ String.fromFloat model.x
-                , el [ centerX ] <| text <| "y: " ++ String.fromFloat model.y
-
+                -- , el [ centerX ] <| text <| "x: " ++ String.fromFloat model.x
+                -- , el [ centerX ] <| text <| "y: " ++ String.fromFloat model.y
                 -- ### Das hier funktioniert wunderbar im Chrome, aber iOS Safari spielt nur den ersten Sound, nicht bei BreathingFinished...
                 -- , Keyed.el [] <|
                 --     ( case model.breathing of
