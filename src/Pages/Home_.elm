@@ -60,7 +60,7 @@ update shared msg model =
             , Effect.batch
                 [ Effect.playSound
                 , Effect.replaceRoute
-                    { path = Route.Path.Breathsession
+                    { path = Route.Path.PhaseBreathing
                     , query = Dict.empty
                     , hash = Nothing
                     }

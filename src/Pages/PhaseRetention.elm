@@ -1,4 +1,4 @@
-module Pages.BreathsessionNext exposing (Model, Msg, page)
+module Pages.PhaseRetention exposing (Model, Msg, page)
 
 -- import Html
 -- import Html.Attributes as HtmlA
@@ -92,7 +92,7 @@ update msg model =
             in
             ( { model | gesture = Swipe.blanco, paused = Swipe.isRightSwipe 300 gesture }
             , if Swipe.isTap gesture then
-                Effect.replaceRoute { path = Route.Path.Home_, query = Dict.empty, hash = Nothing }
+                Effect.replaceRoute { path = Route.Path.PhaseRelaxRetention, query = Dict.empty, hash = Nothing }
 
               else
                 Effect.none
@@ -146,7 +146,7 @@ view model =
             --     TouchMsg
             ]
             [ column [ centerX, centerY ]
-                [ el [] <| text "2. Phase..."
+                [ el [] <| text "Retention..."
                 , if model.paused then
                     el [] <| text "Pausiert"
 

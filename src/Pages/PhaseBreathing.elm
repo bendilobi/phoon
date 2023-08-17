@@ -1,4 +1,4 @@
-module Pages.Breathsession exposing (Model, Msg, page)
+module Pages.PhaseBreathing exposing (Model, Msg, page)
 
 -- import Html.Events.Extra.Touch as Etouch
 -- import Touch
@@ -106,7 +106,7 @@ update msg model =
                             ( ReadyToStart, Effect.none )
 
                         AtBreath n ->
-                            if n < 5 then
+                            if n < 15 then
                                 ( AtBreath <| n + 1, Effect.none )
 
                             else
@@ -144,7 +144,7 @@ update msg model =
                         model.breathing
               }
             , if Swipe.isTap gesture then
-                Effect.replaceRoute { path = Route.Path.BreathsessionNext, query = Dict.empty, hash = Nothing }
+                Effect.replaceRoute { path = Route.Path.PhaseRetention, query = Dict.empty, hash = Nothing }
 
               else
                 Effect.none
