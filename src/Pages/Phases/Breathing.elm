@@ -43,7 +43,7 @@ type alias Model =
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { breathing = AtBreath 0 }
+    ( { breathing = AtBreath 1 }
     , Effect.none
     )
 

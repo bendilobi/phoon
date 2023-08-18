@@ -6,10 +6,12 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input exposing (button)
 import Layouts
+import Lib.Tools as Tools
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
 import Shared
+import Time
 import View exposing (View)
 
 
@@ -35,12 +37,12 @@ toLayout model =
 
 
 type alias Model =
-    {}
+    { seconds : Int }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( {}
+    ( { seconds = 0 }
     , Effect.playSound
     )
 
@@ -50,14 +52,14 @@ init () =
 
 
 type Msg
-    = NoOp
+    = Tick Time.Posix
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Effect.none )
+        Tick _ ->
+            ( { model | seconds = model.seconds + 1 }, Effect.none )
 
 
 
@@ -66,7 +68,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every 1000 Tick
 
 
 
@@ -86,7 +88,7 @@ view model =
             , height fill
             ]
             [ column [ centerX, centerY ]
-                [ el [] <| text "Retention..."
+                [ el [] <| text <| Tools.formatSeconds model.seconds
                 ]
             ]
     }

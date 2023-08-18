@@ -41,7 +41,7 @@ type alias Model =
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { seconds = 1 }
+    ( { seconds = 0 }
     , Effect.none
     )
 
@@ -101,7 +101,11 @@ view model =
                     ]
                   <|
                     text <|
-                        String.fromInt model.seconds
+                        if model.seconds == 0 then
+                            ""
+
+                        else
+                            String.fromInt model.seconds
                 ]
             ]
     }
