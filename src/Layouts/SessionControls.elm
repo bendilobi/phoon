@@ -58,6 +58,9 @@ type Msg
     = Swipe Swipe.Event
     | SwipeEnd Swipe.Event
     | Cancelled
+      -- To simulate gestures via buttons for debugging in desktop browser
+    | MouseNavTap
+    | MouseNavSwipe
 
 
 update : Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
@@ -72,33 +75,32 @@ update shared route msg model =
             let
                 gesture =
                     Swipe.record touch model.gesture
-
-                session =
-                    if Swipe.isTap gesture then
-                        BS.goNext shared.session
-
-                    else
-                        shared.session
-
-                currentPath =
-                    BS.currentPath session
             in
             ( { model
                 | gesture = Swipe.blanco
                 , controlsShown = Swipe.isRightSwipe 300 gesture
               }
-            , Effect.batch
-                [ Effect.sessionUpdated session
-                , if route.path == currentPath then
-                    Effect.none
+            , if not model.controlsShown && Swipe.isTap gesture then
+                Tools.navigateNext shared.session
 
-                  else
-                    Tools.navigate <| currentPath
-                ]
+              else
+                Effect.none
             )
 
         Cancelled ->
-            ( model, Tools.navigate Route.Path.Home_ )
+            ( model, Tools.navigate Route.Path.SessionEnd )
+
+        MouseNavSwipe ->
+            ( { model | controlsShown = True }, Effect.none )
+
+        MouseNavTap ->
+            ( { model | controlsShown = False }
+            , if not model.controlsShown then
+                Tools.navigateNext shared.session
+
+              else
+                Effect.none
+            )
 
 
 subscriptions : Model -> Sub Msg
@@ -147,7 +149,26 @@ viewTouchOverlay =
         , htmlAttribute <| Swipe.onMove Swipe
         , htmlAttribute <| Swipe.onEnd SwipeEnd
         ]
-        none
+    <|
+        column
+            [ spacing 10 ]
+            [ viewDebugButton MouseNavSwipe "Swipe"
+            , viewDebugButton MouseNavTap "Tap"
+            ]
+
+
+viewDebugButton : Msg -> String -> Element Msg
+viewDebugButton msg label =
+    button
+        [ BG.color <| rgb255 33 33 33
+        , padding 10
+        , width fill
+        , Font.center
+        , Font.size 10
+        ]
+        { onPress = Just msg
+        , label = text label
+        }
 
 
 viewSessionControls : Model -> Element Msg
