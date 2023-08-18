@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , playSound, setWakeLock
+    , playSound, sessionUpdated, setWakeLock
     )
 
 {-|
@@ -21,6 +21,7 @@ port module Effect exposing
 import Browser.Navigation
 import Dict exposing (Dict)
 import Json.Encode
+import Lib.BreathingSession exposing (BreathingSession)
 import Route exposing (Route)
 import Route.Path
 import Shared.Model
@@ -141,7 +142,15 @@ setWakeLock =
 
 
 
--- SHARED
+-- SHARED.
+
+
+sessionUpdated : BreathingSession -> Effect msg
+sessionUpdated session =
+    SendSharedMsg <| Shared.Msg.SessionUpdated session
+
+
+
 -- setNavigated : Effect msg
 -- setNavigated =
 --     SendSharedMsg Shared.Msg.SetNavigated

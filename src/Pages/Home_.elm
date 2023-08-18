@@ -6,6 +6,8 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Input exposing (button)
 import Html
+import Lib.BreathingSession as BS
+import Lib.Tools as Tools
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
@@ -50,6 +52,10 @@ update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
         SessionStartPressed ->
+            let
+                newSession =
+                    BS.createSession
+            in
             ( model
               -- , Effect.pushRoute
               --     { path = Route.Path.Breathsession
@@ -59,11 +65,8 @@ update shared msg model =
               -- , Effect.playSound
             , Effect.batch
                 [ Effect.playSound
-                , Effect.replaceRoute
-                    { path = Route.Path.PhaseBreathing
-                    , query = Dict.empty
-                    , hash = Nothing
-                    }
+                , Effect.sessionUpdated newSession
+                , Tools.navigate <| BS.currentPath newSession
                 ]
             )
 

@@ -14,6 +14,7 @@ module Shared exposing
 
 import Effect exposing (Effect)
 import Json.Decode
+import Lib.BreathingSession as BS
 import Route exposing (Route)
 import Route.Path
 import Shared.Model
@@ -43,7 +44,7 @@ type alias Model =
 
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
-    ( {}
+    ( { session = BS.createSession }
     , Effect.none
     )
 
@@ -59,8 +60,8 @@ type alias Msg =
 update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
-        Shared.Msg.SetNavigated ->
-            ( model
+        Shared.Msg.SessionUpdated session ->
+            ( { model | session = session }
             , Effect.none
             )
 

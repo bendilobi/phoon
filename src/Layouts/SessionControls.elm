@@ -1,6 +1,5 @@
 module Layouts.SessionControls exposing (Model, Msg, Props, layout)
 
-import Dict
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -9,7 +8,9 @@ import Element.Input exposing (button)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Layout exposing (Layout)
+import Lib.BreathingSession as BS
 import Lib.Swipe as Swipe
+import Lib.Tools as Tools
 import Route exposing (Route)
 import Route.Path
 import Shared
@@ -24,7 +25,7 @@ layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
         { init = init
-        , update = update
+        , update = update shared route
         , view = view
         , subscriptions = subscriptions
         }
@@ -59,8 +60,8 @@ type Msg
     | Cancelled
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
+update shared route msg model =
     case msg of
         Swipe touch ->
             ( { model | gesture = Swipe.record touch model.gesture }
@@ -69,20 +70,35 @@ update msg model =
 
         SwipeEnd touch ->
             let
-                gesture : Swipe.Gesture
                 gesture =
                     Swipe.record touch model.gesture
-            in
-            ( { model | gesture = Swipe.blanco, controlsShown = Swipe.isRightSwipe 300 gesture }
-            , if Swipe.isTap gesture then
-                Effect.replaceRoute { path = Route.Path.SessionEnd, query = Dict.empty, hash = Nothing }
 
-              else
-                Effect.none
+                session =
+                    if Swipe.isTap gesture then
+                        BS.goNext shared.session
+
+                    else
+                        shared.session
+
+                currentPath =
+                    BS.currentPath session
+            in
+            ( { model
+                | gesture = Swipe.blanco
+                , controlsShown = Swipe.isRightSwipe 300 gesture
+              }
+            , Effect.batch
+                [ Effect.sessionUpdated session
+                , if route.path == currentPath then
+                    Effect.none
+
+                  else
+                    Tools.navigate <| currentPath
+                ]
             )
 
         Cancelled ->
-            ( model, Effect.replaceRoute { path = Route.Path.Home_, query = Dict.empty, hash = Nothing } )
+            ( model, Tools.navigate Route.Path.Home_ )
 
 
 subscriptions : Model -> Sub Msg

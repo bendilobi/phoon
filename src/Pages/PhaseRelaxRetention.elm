@@ -4,7 +4,6 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-import Html
 import Layouts
 import Page exposing (Page)
 import Route exposing (Route)
