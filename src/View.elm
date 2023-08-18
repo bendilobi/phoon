@@ -36,8 +36,18 @@ toBrowserDocument :
     -> Browser.Document msg
 toBrowserDocument { view } =
     { title = view.title
-    , body = [ Element.layout view.attributes view.element ]
+    , body = [ Element.layoutWith { options = options } view.attributes view.element ]
     }
+
+
+options : List Element.Option
+options =
+    [ Element.focusStyle
+        { borderColor = Nothing
+        , backgroundColor = Nothing
+        , shadow = Nothing
+        }
+    ]
 
 
 {-| Used internally by Elm Land to connect your pages together.
