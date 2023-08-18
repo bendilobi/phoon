@@ -1,4 +1,4 @@
-module Pages.PhaseRelaxRetention exposing (Model, Msg, page)
+module Pages.Phases.RelaxRetention exposing (Model, Msg, page)
 
 import Effect exposing (Effect)
 import Element exposing (..)

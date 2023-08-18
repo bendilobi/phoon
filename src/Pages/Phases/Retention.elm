@@ -1,6 +1,5 @@
-module Pages.PhaseRetention exposing (Model, Msg, page)
+module Pages.Phases.Retention exposing (Model, Msg, page)
 
-import Dict
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background
@@ -36,14 +35,12 @@ toLayout model =
 
 
 type alias Model =
-    { paused : Bool
-    }
+    {}
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { paused = False
-      }
+    ( {}
     , Effect.playSound
     )
 
@@ -79,21 +76,17 @@ subscriptions model =
 view : Model -> View Msg
 view model =
     { title = "Zoff - Session"
-    , attributes = []
+    , attributes =
+        [ Background.color <| rgb255 38 86 86
+        , Font.color <| rgb255 255 255 255
+        ]
     , element =
         column
             [ width fill
             , height fill
-            , Background.color <| rgb255 38 86 86
-            , Font.color <| rgb255 255 255 255
             ]
             [ column [ centerX, centerY ]
                 [ el [] <| text "Retention..."
-                , if model.paused then
-                    el [] <| text "Pausiert"
-
-                  else
-                    none
                 ]
             ]
     }

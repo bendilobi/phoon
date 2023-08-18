@@ -46,7 +46,7 @@ init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
       }
-    , Effect.none
+    , Effect.setWakeLock
     )
 
 
@@ -116,11 +116,11 @@ view { toContentMsg, model, content } =
     , attributes = []
     , element =
         column
-            [ width fill
-            , height fill
-            , BG.color <| rgb255 38 86 86
-            , Font.color <| rgb255 255 255 255
-            ]
+            ([ width fill
+             , height fill
+             ]
+                ++ content.attributes
+            )
             [ el
                 [ width fill
                 , height fill

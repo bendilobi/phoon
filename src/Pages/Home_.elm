@@ -1,11 +1,9 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
-import Dict
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Input exposing (button)
-import Html
 import Lib.BreathingSession as BS
 import Lib.Tools as Tools
 import Page exposing (Page)
@@ -57,12 +55,6 @@ update shared msg model =
                     BS.createSession
             in
             ( model
-              -- , Effect.pushRoute
-              --     { path = Route.Path.Breathsession
-              --     , query = Dict.empty
-              --     , hash = Nothing
-              --     }
-              -- , Effect.playSound
             , Effect.batch
                 [ Effect.playSound
                 , Effect.sessionUpdated newSession
@@ -100,13 +92,4 @@ view model =
                 , label = text "Los geht's!"
                 }
             ]
-
-    -- [ link
-    --     [ centerX
-    --     , centerY
-    --     ]
-    --     { url = "/breathsession"
-    --     , label = text "Hallöchen bei Zoff!"
-    --     }
-    -- ]
     }

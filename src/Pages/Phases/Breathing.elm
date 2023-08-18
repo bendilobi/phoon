@@ -1,9 +1,8 @@
-module Pages.PhaseBreathing exposing (Model, Msg, page)
+module Pages.Phases.Breathing exposing (Model, Msg, page)
 
-import Dict
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Background as Background
+import Element.Background as BG
 import Element.Font as Font
 import Element.Input exposing (button)
 import Layouts
@@ -32,27 +31,20 @@ toLayout model =
         {}
 
 
-type
-    Breathing
-    -- TODO: ReadyToStart rausnehmen, wenn ichs eh nicht verwende
-    = ReadyToStart
-    | AtBreath Int
+type Breathing
+    = AtBreath Int
     | BreathingFinished
-    | Paused
 
 
 type alias Model =
-    { touched : Bool
-    , breathing : Breathing
+    { breathing : Breathing
     }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { touched = False
-      , breathing = AtBreath 0
-      }
-    , Effect.setWakeLock
+    ( { breathing = AtBreath 0 }
+    , Effect.none
     )
 
 
@@ -62,8 +54,6 @@ init () =
 
 type Msg
     = Tick Time.Posix
-    | StartBreathing
-    | Cancelled
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -73,9 +63,6 @@ update msg model =
             let
                 ( newBreathingState, effect ) =
                     case model.breathing of
-                        ReadyToStart ->
-                            ( ReadyToStart, Effect.none )
-
                         AtBreath n ->
                             if n < 15 then
                                 ( AtBreath <| n + 1, Effect.none )
@@ -85,17 +72,8 @@ update msg model =
 
                         BreathingFinished ->
                             ( BreathingFinished, Effect.none )
-
-                        Paused ->
-                            ( Paused, Effect.none )
             in
             ( { model | breathing = newBreathingState }, effect )
-
-        StartBreathing ->
-            ( { model | breathing = AtBreath 0 }, Effect.none )
-
-        Cancelled ->
-            ( model, Effect.replaceRoute { path = Route.Path.Home_, query = Dict.empty, hash = Nothing } )
 
 
 
@@ -119,17 +97,14 @@ subscriptions model =
 view : Model -> View Msg
 view model =
     { title = "Breathing Phase"
-    , attributes = []
+    , attributes =
+        [ BG.color <| rgb255 50 49 46
+        , Font.color <| rgb255 255 255 255
+        ]
     , element =
         column
             [ width fill
             , height fill
-            , if not model.touched then
-                Background.color <| rgb255 50 49 46
-
-              else
-                Background.color <| rgb255 0 0 0
-            , Font.color <| rgb255 255 255 255
             ]
             [ column [ centerX, centerY ]
                 [ el
@@ -140,23 +115,11 @@ view model =
                     ]
                   <|
                     case model.breathing of
-                        ReadyToStart ->
-                            button []
-                                { onPress = Just StartBreathing
-                                , label = text "Start"
-                                }
-
                         AtBreath n ->
                             text <| String.fromInt n
 
                         BreathingFinished ->
                             text <| "Done!"
-
-                        Paused ->
-                            button []
-                                { onPress = Just Cancelled
-                                , label = text "Pause..."
-                                }
                 ]
             ]
     }

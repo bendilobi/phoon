@@ -15,12 +15,12 @@ type alias BreathingSession =
 
 createSession : BreathingSession
 createSession =
-    [ Route.Path.PhaseBreathing
-    , Route.Path.PhaseRetention
-    , Route.Path.PhaseRelaxRetention
-    , Route.Path.PhaseBreathing
-    , Route.Path.PhaseRetention
-    , Route.Path.PhaseRelaxRetention
+    [ Route.Path.Phases_Breathing
+    , Route.Path.Phases_Retention
+    , Route.Path.Phases_RelaxRetention
+    , Route.Path.Phases_Breathing
+    , Route.Path.Phases_Retention
+    , Route.Path.Phases_RelaxRetention
     ]
 
 
