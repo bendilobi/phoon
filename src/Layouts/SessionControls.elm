@@ -5,9 +5,8 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Element.Input exposing (button)
-import Html exposing (Html)
-import Html.Attributes exposing (class)
 import Layout exposing (Layout)
+import Lib.BreathingSession as BreathingSession
 import Lib.Swipe as Swipe
 import Lib.Tools as Tools
 import Route exposing (Route)
@@ -25,7 +24,7 @@ layout props shared route =
     Layout.new
         { init = init
         , update = update shared route
-        , view = view
+        , view = view shared
         , subscriptions = subscriptions
         }
 
@@ -111,8 +110,8 @@ subscriptions model =
 -- VIEW
 
 
-view : { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
-view { toContentMsg, model, content } =
+view : Shared.Model -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view shared { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = []
     , element =
@@ -146,7 +145,9 @@ view { toContentMsg, model, content } =
                     , padding 10
                     ]
                   <|
-                    text "Durchlauf "
+                    text <|
+                        "Runde "
+                            ++ (String.fromInt <| BreathingSession.currentCycle shared.session)
                 , el [ centerX, centerY ] content.element
                 ]
     }

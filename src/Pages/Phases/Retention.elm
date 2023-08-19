@@ -5,7 +5,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Layouts
-import Lib.SessionResults as SessionResults exposing (SessionResults)
+import Lib.SessionResults as SessionResults
 import Lib.Tools as Tools
 import Page exposing (Page)
 import Route exposing (Route)

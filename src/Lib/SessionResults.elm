@@ -1,4 +1,6 @@
-module Lib.SessionResults exposing (..)
+module Lib.SessionResults exposing (SessionResults, addRetention, currentRetentionTime, empty, getRetentionTimes, incrementCurrentRetention)
+
+-- TODO: Sollte ich das umbauen, sodass es besser mit currentCycle im BreathingSession harmoniert?
 
 
 type SessionResults

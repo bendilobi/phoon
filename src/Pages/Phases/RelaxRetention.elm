@@ -5,7 +5,6 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
-import Lib.BreathingSession as BS
 import Lib.Tools as Tools
 import Page exposing (Page)
 import Route exposing (Route)

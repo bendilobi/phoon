@@ -15,7 +15,7 @@ module Shared exposing
 import Effect exposing (Effect)
 import Json.Decode
 import Lib.BreathingSession as BS
-import Lib.SessionResults as SR exposing (SessionResults)
+import Lib.SessionResults as SR
 import Route exposing (Route)
 import Shared.Model
 import Shared.Msg
