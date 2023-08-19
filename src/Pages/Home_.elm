@@ -3,6 +3,7 @@ module Pages.Home_ exposing (Model, Msg, page)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
+import Element.Font as Font
 import Element.Input exposing (button)
 import Lib.BreathingSession as BS
 import Lib.SessionResults as SessionResults
@@ -86,14 +87,23 @@ view model =
             , height fill
             , BG.color <| rgb255 200 196 183
             ]
-            [ button
-                [ centerX
-                , centerY
-                , padding 20
-                , BG.color <| rgb255 161 158 147
+            [ el
+                [ width fill
+                , Font.alignRight
+                , Font.size 11
+                , padding 3
                 ]
-                { onPress = Just SessionStartPressed
-                , label = text "Los geht's!"
-                }
+              <|
+                text "Version 0.1 \"MVP\""
+            , el [ height fill, width fill ] <|
+                button
+                    [ centerX
+                    , centerY
+                    , padding 20
+                    , BG.color <| rgb255 161 158 147
+                    ]
+                    { onPress = Just SessionStartPressed
+                    , label = text "Los geht's!"
+                    }
             ]
     }

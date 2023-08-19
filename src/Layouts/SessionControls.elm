@@ -36,6 +36,7 @@ layout props shared route =
 type alias Model =
     { gesture : Swipe.Gesture
     , controlsShown : Bool
+    , debugButtonsShown : Bool
     }
 
 
@@ -43,6 +44,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
+      , debugButtonsShown = False
       }
     , Effect.setWakeLock
     )
@@ -124,7 +126,7 @@ view shared { toContentMsg, model, content } =
                             [ width fill
                             , height fill
                             ]
-                            [ viewTouchOverlay
+                            [ viewTouchOverlay model.debugButtonsShown
                                 |> map toContentMsg
                             , if model.controlsShown then
                                 viewSessionControls
@@ -153,8 +155,8 @@ view shared { toContentMsg, model, content } =
     }
 
 
-viewTouchOverlay : Element Msg
-viewTouchOverlay =
+viewTouchOverlay : Bool -> Element Msg
+viewTouchOverlay debug =
     el
         [ width fill
         , height fill
@@ -163,11 +165,15 @@ viewTouchOverlay =
         , htmlAttribute <| Swipe.onEnd SwipeEnd
         ]
     <|
-        column
-            [ spacing 10 ]
-            [ viewDebugButton MouseNavSwipe "Swipe"
-            , viewDebugButton MouseNavTap "Tap"
-            ]
+        if debug then
+            column
+                [ spacing 10 ]
+                [ viewDebugButton MouseNavSwipe "Swipe"
+                , viewDebugButton MouseNavTap "Tap"
+                ]
+
+        else
+            none
 
 
 viewDebugButton : Msg -> String -> Element Msg
