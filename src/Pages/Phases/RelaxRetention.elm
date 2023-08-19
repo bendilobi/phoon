@@ -34,14 +34,28 @@ toLayout model =
 -- INIT
 
 
-type alias Model =
-    { seconds : Int }
+{-| If the Time.every subscription starts right at page load, it
+doesn't seem to (re-)start properly, the Tick timespan continues
+from the previous page (Retention phase). Because of that,
+the timer here wouldn't start with a full second but with what
+remains from the Tick.every of the previous page (this issue
+might be Elm Land related...).
+We solve it here by having a Starting step, sending the first
+Tick in the init function and starting the subscription to
+Time.every only if the model is Counting.
+-}
+type Model
+    = Starting
+    | Counting Int
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { seconds = 15 }
-    , Effect.playSound
+    ( Starting
+    , Effect.batch
+        [ Effect.playSound
+        , Effect.sendMsg <| Tick <| Time.millisToPosix 0
+        ]
     )
 
 
@@ -59,10 +73,15 @@ update shared msg model =
         Tick _ ->
             let
                 seconds =
-                    model.seconds - 1
+                    case model of
+                        Starting ->
+                            15
+
+                        Counting sec ->
+                            sec - 1
             in
-            ( { model | seconds = seconds }
-            , if model.seconds == 0 then
+            ( Counting seconds
+            , if seconds == 0 then
                 Tools.navigateNext shared.session
 
               else
@@ -76,7 +95,12 @@ update shared msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 1000 Tick
+    case model of
+        Starting ->
+            Sub.none
+
+        Counting _ ->
+            Time.every 1000 Tick
 
 
 
@@ -97,9 +121,10 @@ view model =
             ]
         <|
             text <|
-                if model.seconds == 0 then
-                    ""
+                case model of
+                    Starting ->
+                        ""
 
-                else
-                    String.fromInt model.seconds
+                    Counting sec ->
+                        String.fromInt sec
     }

@@ -36,20 +36,19 @@ type Breath
     | Out
 
 
-type Breathing
-    = AtBreath Int Breath
+type Model
+    = Starting
+    | AtBreath Int Breath
     | BreathingFinished
-
-
-type alias Model =
-    { breathing : Breathing
-    }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { breathing = AtBreath 1 In }
-    , Effect.playSound
+    ( Starting
+    , Effect.batch
+        [ Effect.playSound
+        , Effect.sendMsg <| Tick <| Time.millisToPosix 0
+        ]
     )
 
 
@@ -59,7 +58,6 @@ init () =
 
 type Msg
     = Tick Time.Posix
-    | StartPressed
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -68,7 +66,10 @@ update msg model =
         Tick _ ->
             let
                 ( newBreathingState, effect ) =
-                    case model.breathing of
+                    case model of
+                        Starting ->
+                            ( AtBreath 1 In, Effect.none )
+
                         AtBreath n In ->
                             ( AtBreath n Out, Effect.none )
 
@@ -82,10 +83,7 @@ update msg model =
                         BreathingFinished ->
                             ( BreathingFinished, Effect.none )
             in
-            ( { model | breathing = newBreathingState }, effect )
-
-        StartPressed ->
-            ( { model | breathing = AtBreath 1 In }, Effect.playSound )
+            ( newBreathingState, effect )
 
 
 
@@ -94,16 +92,16 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.breathing of
-        BreathingFinished ->
-            Sub.none
-
-        _ ->
+    case model of
+        AtBreath _ _ ->
             -- WHM App speeds:
             -- Normal 1750
             -- Slow 2500
             -- Quick 1375
             Time.every 1750 Tick
+
+        _ ->
+            Sub.none
 
 
 
@@ -124,7 +122,7 @@ view model =
              , height <| px 300
              , Border.rounded 150
              ]
-                ++ (case model.breathing of
+                ++ (case model of
                         AtBreath _ In ->
                             [ BG.color <| rgb255 200 196 183
                             , Font.color <| rgb255 50 49 46
@@ -135,7 +133,10 @@ view model =
                    )
             )
         <|
-            case model.breathing of
+            case model of
+                Starting ->
+                    none
+
                 AtBreath n _ ->
                     el
                         [ centerX
