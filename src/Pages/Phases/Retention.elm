@@ -4,12 +4,11 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-import Element.Input exposing (button)
 import Layouts
+import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Lib.Tools as Tools
 import Page exposing (Page)
 import Route exposing (Route)
-import Route.Path
 import Shared
 import Time
 import View exposing (View)
@@ -18,10 +17,10 @@ import View exposing (View)
 page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
-        , update = update
+        { init = init shared
+        , update = update shared
         , subscriptions = subscriptions
-        , view = view
+        , view = view shared
         }
         |> Page.withLayout toLayout
 
@@ -37,13 +36,16 @@ toLayout model =
 
 
 type alias Model =
-    { seconds : Int }
+    {}
 
 
-init : () -> ( Model, Effect Msg )
-init () =
-    ( { seconds = 0 }
-    , Effect.playSound
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared () =
+    ( {}
+    , Effect.batch
+        [ Effect.playSound
+        , Effect.resultsUpdated <| SessionResults.addRetention shared.results
+        ]
     )
 
 
@@ -55,11 +57,11 @@ type Msg
     = Tick Time.Posix
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update shared msg model =
     case msg of
         Tick _ ->
-            ( { model | seconds = model.seconds + 1 }, Effect.none )
+            ( model, Effect.resultsUpdated <| SessionResults.incrementCurrentRetention shared.results )
 
 
 
@@ -75,8 +77,8 @@ subscriptions model =
 -- VIEW
 
 
-view : Model -> View Msg
-view model =
+view : Shared.Model -> Model -> View Msg
+view shared model =
     { title = "Zoff - Session"
     , attributes =
         [ Background.color <| rgb255 38 86 86
@@ -88,7 +90,7 @@ view model =
             , height fill
             ]
             [ column [ centerX, centerY ]
-                [ el [] <| text <| Tools.formatSeconds model.seconds
+                [ el [] <| text <| Tools.formatSeconds <| SessionResults.currentRetentionTime shared.results
                 ]
             ]
     }

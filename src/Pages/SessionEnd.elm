@@ -5,6 +5,7 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Element.Input exposing (button)
+import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Lib.Tools as Tools
 import Page exposing (Page)
 import Route exposing (Route)
@@ -19,7 +20,7 @@ page shared route =
         { init = init
         , update = update
         , subscriptions = subscriptions
-        , view = view
+        , view = view shared
         }
 
 
@@ -68,8 +69,8 @@ subscriptions model =
 -- VIEW
 
 
-view : Model -> View Msg
-view model =
+view : Shared.Model -> Model -> View Msg
+view shared model =
     { title = "Session End"
     , attributes =
         [ BG.color <| rgb255 50 49 46
@@ -89,6 +90,7 @@ view model =
                 ]
               <|
                 text "Sitzung beendet!"
+            , viewRetentionTimes <| SessionResults.getRetentionTimes shared.results
             , button
                 [ centerX
                 , centerY
@@ -100,3 +102,22 @@ view model =
                 }
             ]
     }
+
+
+viewRetentionTimes : List Int -> Element msg
+viewRetentionTimes times =
+    column [ spacing 10, centerX, centerY ] <|
+        List.map2
+            (\i t ->
+                el [] <| text <| "Runde " ++ String.fromInt i ++ ": " ++ formatRetentiontime t
+            )
+            (List.range 1 (List.length times))
+            times
+
+
+formatRetentiontime : Int -> String
+formatRetentiontime seconds =
+    String.join ":"
+        [ String.padLeft 1 '0' <| String.fromInt <| remainderBy 60 (seconds // 60)
+        , String.padLeft 2 '0' <| String.fromInt <| remainderBy 60 seconds
+        ]

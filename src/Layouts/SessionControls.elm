@@ -8,7 +8,6 @@ import Element.Input exposing (button)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Layout exposing (Layout)
-import Lib.BreathingSession as BS
 import Lib.Swipe as Swipe
 import Lib.Tools as Tools
 import Route exposing (Route)
@@ -183,11 +182,3 @@ viewSessionControls model =
             , label = text "Sitzung abbrechen"
             }
         ]
-
-
-
--- , body =
---     [ Html.text "SessionControls"
---     , Html.div [ class "page" ] content.body
---     ]
--- }

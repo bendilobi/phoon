@@ -2,13 +2,13 @@ module Pages.Home_ exposing (Model, Msg, page)
 
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Background as Background
+import Element.Background as BG
 import Element.Input exposing (button)
 import Lib.BreathingSession as BS
+import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Lib.Tools as Tools
 import Page exposing (Page)
 import Route exposing (Route)
-import Route.Path
 import Shared
 import View exposing (View)
 
@@ -17,7 +17,7 @@ page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
         { init = init
-        , update = update shared
+        , update = update
         , subscriptions = subscriptions
         , view = view
         }
@@ -46,8 +46,8 @@ type Msg
     = SessionStartPressed
 
 
-update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
-update shared msg model =
+update : Msg -> Model -> ( Model, Effect Msg )
+update msg model =
     case msg of
         SessionStartPressed ->
             let
@@ -58,6 +58,7 @@ update shared msg model =
             , Effect.batch
                 [ Effect.playSound
                 , Effect.sessionUpdated newSession
+                , Effect.resultsUpdated <| SessionResults.empty
                 , Tools.navigate <| BS.currentPath newSession
                 ]
             )
@@ -84,10 +85,14 @@ view model =
         column
             [ width fill
             , height fill
-            , Background.color <| rgb255 200 196 183
+            , BG.color <| rgb255 200 196 183
             ]
             [ button
-                [ centerX, centerY ]
+                [ centerX
+                , centerY
+                , padding 20
+                , BG.color <| rgb255 161 158 147
+                ]
                 { onPress = Just SessionStartPressed
                 , label = text "Los geht's!"
                 }

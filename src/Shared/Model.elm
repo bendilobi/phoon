@@ -1,6 +1,7 @@
 module Shared.Model exposing (Model)
 
 import Lib.BreathingSession exposing (BreathingSession)
+import Lib.SessionResults exposing (SessionResults)
 
 
 {-| Normally, this value would live in "Shared.elm"
@@ -11,4 +12,6 @@ own file, so they can be imported by `Effect.elm`
 
 -}
 type alias Model =
-    { session : BreathingSession }
+    { session : BreathingSession
+    , results : SessionResults
+    }
