@@ -44,7 +44,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = False
+      , debugButtonsShown = True
       }
     , Effect.setWakeLock
     )
@@ -146,6 +146,7 @@ view props shared { toContentMsg, model, content } =
                     el
                         [ centerX
                         , padding 10
+                        , Font.size 30
                         ]
                     <|
                         text <|

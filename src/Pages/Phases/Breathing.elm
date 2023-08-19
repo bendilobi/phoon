@@ -112,7 +112,7 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    { title = "Breathing Phase"
+    { title = "Atem-Phase"
     , attributes =
         [ BG.color <| rgb255 50 49 46
         , Font.color <| rgb255 200 196 183
@@ -120,10 +120,9 @@ view model =
     , element =
         el
             ([ Font.bold
-             , Font.size 40
-             , width <| px 200
-             , height <| px 200
-             , Border.rounded 100
+             , width <| px 300
+             , height <| px 300
+             , Border.rounded 150
              ]
                 ++ (case model.breathing of
                         AtBreath _ In ->
@@ -138,8 +137,21 @@ view model =
         <|
             case model.breathing of
                 AtBreath n _ ->
-                    el [ centerX, centerY ] <| text <| String.fromInt n
+                    el
+                        [ centerX
+                        , centerY
+                        , Font.size 120
+                        ]
+                    <|
+                        text <|
+                            String.fromInt n
 
                 BreathingFinished ->
-                    el [ centerX, centerY ] <| text "Start Retention"
+                    el
+                        [ centerX
+                        , centerY
+                        , Font.size 40
+                        ]
+                    <|
+                        text "Retention vorbereiten"
     }

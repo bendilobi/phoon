@@ -79,11 +79,11 @@ subscriptions model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Zoff - Session"
+    { title = "Retentions-Phase"
     , attributes =
         [ Background.color <| rgb255 38 86 86
         , Font.color <| rgb255 255 255 255
         ]
     , element =
-        el [] <| text <| Tools.formatSeconds <| SessionResults.currentRetentionTime shared.results
+        el [ Font.size 30 ] <| text <| Tools.formatSeconds <| SessionResults.currentRetentionTime shared.results
     }

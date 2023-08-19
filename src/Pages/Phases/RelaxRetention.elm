@@ -88,7 +88,7 @@ view model =
         ]
     , element =
         el
-            [ Font.size 40
+            [ Font.size 120
             , Font.bold
             ]
         <|
