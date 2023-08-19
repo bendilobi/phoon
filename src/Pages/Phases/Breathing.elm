@@ -151,7 +151,8 @@ view model =
                         [ centerX
                         , centerY
                         , Font.size 40
+                        , Font.center
                         ]
                     <|
-                        text "Retention vorbereiten"
+                        text "Retention \nvorbereiten"
     }
