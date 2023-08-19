@@ -85,12 +85,5 @@ view shared model =
         , Font.color <| rgb255 255 255 255
         ]
     , element =
-        column
-            [ width fill
-            , height fill
-            ]
-            [ column [ centerX, centerY ]
-                [ el [] <| text <| Tools.formatSeconds <| SessionResults.currentRetentionTime shared.results
-                ]
-            ]
+        el [] <| text <| Tools.formatSeconds <| SessionResults.currentRetentionTime shared.results
     }

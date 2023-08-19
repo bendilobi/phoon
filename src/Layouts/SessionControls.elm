@@ -87,7 +87,7 @@ update shared route msg model =
             )
 
         Cancelled ->
-            ( model, Tools.navigate Route.Path.SessionEnd )
+            ( model, Tools.navigate Route.Path.Phases_SessionEnd )
 
         MouseNavSwipe ->
             ( { model | controlsShown = True }, Effect.none )
@@ -116,26 +116,39 @@ view { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = []
     , element =
-        column
-            ([ width fill
-             , height fill
-             ]
-                ++ content.attributes
+        el
+            (content.attributes
+                ++ [ width fill
+                   , height fill
+                   , inFront <|
+                        column
+                            [ width fill
+                            , height fill
+                            ]
+                            [ viewTouchOverlay
+                                |> map toContentMsg
+                            , if model.controlsShown then
+                                viewSessionControls
+                                    |> map toContentMsg
+
+                              else
+                                none
+                            ]
+                   ]
             )
-            [ el
+        <|
+            column
                 [ width fill
                 , height fill
-                , inFront (viewTouchOverlay |> map toContentMsg)
                 ]
-              <|
-                el [ centerX, centerY ] <|
-                    content.element
-            , if model.controlsShown then
-                viewSessionControls model |> map toContentMsg
-
-              else
-                none
-            ]
+                [ el
+                    [ centerX
+                    , padding 10
+                    ]
+                  <|
+                    text "Durchlauf "
+                , el [ centerX, centerY ] content.element
+                ]
     }
 
 
@@ -170,15 +183,15 @@ viewDebugButton msg label =
         }
 
 
-viewSessionControls : Model -> Element Msg
-viewSessionControls model =
+viewSessionControls : Element Msg
+viewSessionControls =
     column [ centerX, centerY ]
         [ button
-            [ height <| px 100
-            , paddingXY 10 200
-            , BG.color <| rgb255 50 49 46
+            [ padding 20
+            , BG.color <| rgb255 33 33 33
             ]
             { onPress = Just Cancelled
             , label = text "Sitzung abbrechen"
             }
+        , el [ height <| px 100 ] none
         ]

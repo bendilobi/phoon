@@ -88,24 +88,15 @@ view model =
         , Font.color <| rgb255 255 255 255
         ]
     , element =
-        column
-            [ width fill
-            , height fill
+        el
+            [ Font.size 40
+            , Font.bold
             ]
-            [ column [ centerX, centerY ]
-                [ el
-                    [ paddingXY 0 10
-                    , Font.size 40
-                    , Font.bold
-                    , centerX
-                    ]
-                  <|
-                    text <|
-                        if model.seconds == 0 then
-                            ""
+        <|
+            text <|
+                if model.seconds == 0 then
+                    ""
 
-                        else
-                            String.fromInt model.seconds
-                ]
-            ]
+                else
+                    String.fromInt model.seconds
     }

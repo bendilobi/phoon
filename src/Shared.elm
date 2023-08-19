@@ -44,7 +44,7 @@ type alias Model =
 
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
-    ( { session = BS.createSession
+    ( { session = BS.empty
       , results = SR.empty
       }
     , Effect.none

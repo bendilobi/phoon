@@ -4,11 +4,9 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
-import Element.Input exposing (button)
 import Layouts
 import Page exposing (Page)
 import Route exposing (Route)
-import Route.Path
 import Shared
 import Time
 import View exposing (View)
@@ -102,24 +100,15 @@ view model =
         , Font.color <| rgb255 255 255 255
         ]
     , element =
-        column
-            [ width fill
-            , height fill
+        el
+            [ Font.bold
+            , Font.size 40
             ]
-            [ column [ centerX, centerY ]
-                [ el
-                    [ paddingXY 0 10
-                    , Font.size 40
-                    , Font.bold
-                    , centerX
-                    ]
-                  <|
-                    case model.breathing of
-                        AtBreath n ->
-                            text <| String.fromInt n
+        <|
+            case model.breathing of
+                AtBreath n ->
+                    text <| String.fromInt n
 
-                        BreathingFinished ->
-                            text <| "Done!"
-                ]
-            ]
+                BreathingFinished ->
+                    text <| "Done!"
     }

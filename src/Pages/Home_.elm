@@ -52,7 +52,7 @@ update msg model =
         SessionStartPressed ->
             let
                 newSession =
-                    BS.createSession
+                    BS.createSession 4
             in
             ( model
             , Effect.batch

@@ -1,4 +1,4 @@
-module Pages.SessionEnd exposing (Model, Msg, page)
+module Pages.Phases.SessionEnd exposing (Model, Msg, page)
 
 import Effect exposing (Effect)
 import Element exposing (..)
