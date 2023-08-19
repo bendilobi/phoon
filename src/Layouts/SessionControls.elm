@@ -16,7 +16,7 @@ import View exposing (View)
 
 
 type alias Props =
-    {}
+    { showSessionProgress : Bool }
 
 
 layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
@@ -24,7 +24,7 @@ layout props shared route =
     Layout.new
         { init = init
         , update = update shared route
-        , view = view shared
+        , view = view props shared
         , subscriptions = subscriptions
         }
 
@@ -112,8 +112,8 @@ subscriptions model =
 -- VIEW
 
 
-view : Shared.Model -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
-view shared { toContentMsg, model, content } =
+view : Props -> Shared.Model -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view props shared { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = []
     , element =
@@ -142,14 +142,18 @@ view shared { toContentMsg, model, content } =
                 [ width fill
                 , height fill
                 ]
-                [ el
-                    [ centerX
-                    , padding 10
-                    ]
-                  <|
-                    text <|
-                        "Runde "
-                            ++ (String.fromInt <| BreathingSession.currentCycle shared.session)
+                [ if props.showSessionProgress then
+                    el
+                        [ centerX
+                        , padding 10
+                        ]
+                    <|
+                        text <|
+                            "Runde "
+                                ++ (String.fromInt <| BreathingSession.currentCycle shared.session)
+
+                  else
+                    none
                 , el [ centerX, centerY ] content.element
                 ]
     }
