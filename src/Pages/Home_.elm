@@ -56,8 +56,7 @@ update msg model =
             in
             ( model
             , Effect.batch
-                [ Effect.playSound
-                , Effect.sessionUpdated newSession
+                [ Effect.sessionUpdated newSession
                 , Effect.resultsUpdated <| SessionResults.empty
                 , Tools.navigate <| BS.currentPath newSession
                 ]

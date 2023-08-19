@@ -28,6 +28,7 @@ empty =
 createSession : Int -> BreathingSession
 createSession numberOfCycles =
     let
+        -- TODO: Auch Start und Ende - Phasen in phases aufnehmen
         cycle =
             [ Route.Path.Phases_Breathing
             , Route.Path.Phases_Retention
@@ -36,9 +37,11 @@ createSession numberOfCycles =
     in
     BreathingSession
         { phases =
-            List.repeat numberOfCycles cycle
-                |> List.concat
-        , currentCycle = 1
+            Route.Path.Phases_SessionStart
+                :: (List.repeat numberOfCycles cycle
+                        |> List.concat
+                   )
+        , currentCycle = 0
         }
 
 

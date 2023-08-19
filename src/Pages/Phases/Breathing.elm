@@ -3,7 +3,9 @@ module Pages.Phases.Breathing exposing (Model, Msg, page)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
+import Element.Border as Border
 import Element.Font as Font
+import Element.Input exposing (button)
 import Layouts
 import Page exposing (Page)
 import Route exposing (Route)
@@ -29,8 +31,13 @@ toLayout model =
         {}
 
 
+type Breath
+    = In
+    | Out
+
+
 type Breathing
-    = AtBreath Int
+    = AtBreath Int Breath
     | BreathingFinished
 
 
@@ -41,8 +48,8 @@ type alias Model =
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { breathing = AtBreath 1 }
-    , Effect.none
+    ( { breathing = AtBreath 1 In }
+    , Effect.playSound
     )
 
 
@@ -52,6 +59,7 @@ init () =
 
 type Msg
     = Tick Time.Posix
+    | StartPressed
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -61,9 +69,12 @@ update msg model =
             let
                 ( newBreathingState, effect ) =
                     case model.breathing of
-                        AtBreath n ->
-                            if n < 15 then
-                                ( AtBreath <| n + 1, Effect.none )
+                        AtBreath n In ->
+                            ( AtBreath n Out, Effect.none )
+
+                        AtBreath n Out ->
+                            if n < 40 then
+                                ( AtBreath (n + 1) In, Effect.none )
 
                             else
                                 ( BreathingFinished, Effect.playSound )
@@ -73,6 +84,9 @@ update msg model =
             in
             ( { model | breathing = newBreathingState }, effect )
 
+        StartPressed ->
+            ( { model | breathing = AtBreath 1 In }, Effect.playSound )
+
 
 
 -- SUBSCRIPTIONS
@@ -81,11 +95,15 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.breathing of
-        AtBreath _ ->
-            Time.every 1000 Tick
+        BreathingFinished ->
+            Sub.none
 
         _ ->
-            Sub.none
+            -- WHM App speeds:
+            -- Normal 1750
+            -- Slow 2500
+            -- Quick 1375
+            Time.every 1750 Tick
 
 
 
@@ -97,18 +115,31 @@ view model =
     { title = "Breathing Phase"
     , attributes =
         [ BG.color <| rgb255 50 49 46
-        , Font.color <| rgb255 255 255 255
+        , Font.color <| rgb255 200 196 183
         ]
     , element =
         el
-            [ Font.bold
-            , Font.size 40
-            ]
+            ([ Font.bold
+             , Font.size 40
+             , width <| px 200
+             , height <| px 200
+             , Border.rounded 100
+             ]
+                ++ (case model.breathing of
+                        AtBreath _ In ->
+                            [ BG.color <| rgb255 200 196 183
+                            , Font.color <| rgb255 50 49 46
+                            ]
+
+                        _ ->
+                            []
+                   )
+            )
         <|
             case model.breathing of
-                AtBreath n ->
-                    text <| String.fromInt n
+                AtBreath n _ ->
+                    el [ centerX, centerY ] <| text <| String.fromInt n
 
                 BreathingFinished ->
-                    text <| "Done!"
+                    el [ centerX, centerY ] <| text "Start Retention"
     }

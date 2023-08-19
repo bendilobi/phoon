@@ -41,7 +41,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { seconds = 0 }
-    , Effect.none
+    , Effect.playSound
     )
 
 
