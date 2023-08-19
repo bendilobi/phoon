@@ -44,7 +44,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = True
+      , debugButtonsShown = False
       }
     , Effect.setWakeLock
     )

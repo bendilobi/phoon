@@ -40,7 +40,7 @@ type alias Model =
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { seconds = 0 }
+    ( { seconds = 15 }
     , Effect.playSound
     )
 
@@ -57,8 +57,12 @@ update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
         Tick _ ->
-            ( { model | seconds = model.seconds + 1 }
-            , if model.seconds == 15 then
+            let
+                seconds =
+                    model.seconds - 1
+            in
+            ( { model | seconds = seconds }
+            , if model.seconds == 0 then
                 Tools.navigateNext shared.session
 
               else
