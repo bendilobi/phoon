@@ -7,7 +7,6 @@ import Element.Font as Font
 import Element.Input exposing (button)
 import Lib.BreathingSession as BS
 import Lib.SessionResults as SessionResults
-import Lib.Tools as Tools
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -59,7 +58,7 @@ update msg model =
             , Effect.batch
                 [ Effect.sessionUpdated newSession
                 , Effect.resultsUpdated <| SessionResults.empty
-                , Tools.navigate <| BS.currentPath newSession
+                , Effect.navigate <| BS.currentPath newSession
                 ]
             )
 
@@ -94,7 +93,7 @@ view model =
                 , padding 3
                 ]
               <|
-                text "Version 0.2.5"
+                text "Version 0.2.6"
             , el [ height fill, width fill ] <|
                 button
                     [ centerX

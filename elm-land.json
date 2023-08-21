@@ -20,7 +20,7 @@
         {"rel": "manifest", "href": "./manifest"},
         {"rel": "stylesheet", "href": "/scroll.css"}
       ],
-      "script": [{"src": "./registerServiceWorker.js"}]
+      "script": [{"src": "./registerServiceWorker.js"}, {"src": "./howler.core.min.js"}]
     },
     "router": {
       "useHashRouting": false

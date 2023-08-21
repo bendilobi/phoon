@@ -7,6 +7,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Layouts
+import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -46,7 +47,7 @@ init : () -> ( Model, Effect Msg )
 init () =
     ( Starting
     , Effect.batch
-        [ Effect.playSound
+        [ Effect.playSound Utils.Breathing
         , Effect.sendMsg <| Tick <| Time.millisToPosix 0
         ]
     )
@@ -78,7 +79,7 @@ update msg model =
                                 ( AtBreath (n + 1) In, Effect.none )
 
                             else
-                                ( BreathingFinished, Effect.playSound )
+                                ( BreathingFinished, Effect.playSound Utils.Breathing )
 
                         BreathingFinished ->
                             ( BreathingFinished, Effect.none )

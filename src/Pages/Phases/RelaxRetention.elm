@@ -5,7 +5,7 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
-import Lib.Tools as Tools
+import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -53,7 +53,7 @@ init : () -> ( Model, Effect Msg )
 init () =
     ( Starting
     , Effect.batch
-        [ Effect.playSound
+        [ Effect.playSound Utils.RelaxRetention
         , Effect.sendMsg <| Tick <| Time.millisToPosix 0
         ]
     )
@@ -82,7 +82,7 @@ update shared msg model =
             in
             ( Counting seconds
             , if seconds == 0 then
-                Tools.navigateNext shared.session
+                Effect.navigateNext shared.session
 
               else
                 Effect.none

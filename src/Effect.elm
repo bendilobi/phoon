@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , playSound, resultsUpdated, sessionUpdated, setWakeLock
+    , navigate, navigateNext, playSound, resultsUpdated, sessionUpdated, setWakeLock, soundEncoder
     )
 
 {-|
@@ -21,8 +21,9 @@ port module Effect exposing
 import Browser.Navigation
 import Dict exposing (Dict)
 import Json.Encode
-import Lib.BreathingSession exposing (BreathingSession)
+import Lib.BreathingSession as BS exposing (BreathingSession)
 import Lib.SessionResults exposing (SessionResults)
+import Lib.Utils as Utils
 import Route exposing (Route)
 import Route.Path
 import Shared.Model
@@ -112,6 +113,27 @@ replaceRoute route =
     ReplaceUrl (Route.toString route)
 
 
+navigate : Route.Path.Path -> Effect msg
+navigate path =
+    replaceRoute
+        { path = path
+        , query = Dict.empty
+        , hash = Nothing
+        }
+
+
+navigateNext : BreathingSession -> Effect msg
+navigateNext session =
+    let
+        newSession =
+            BS.goNext session
+    in
+    batch
+        [ sessionUpdated newSession
+        , navigate <| BS.currentPath newSession
+        ]
+
+
 {-| Redirect users to a new URL, somewhere external your web application.
 -}
 loadExternalUrl : String -> Effect msg
@@ -126,12 +148,32 @@ loadExternalUrl =
 port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
 
 
-playSound : Effect msg
-playSound =
+playSound : Utils.SessionSound -> Effect msg
+playSound sound =
     SendMessageToJavaScript
         { tag = "PLAY_SOUND"
-        , data = Json.Encode.string ""
+        , data = soundEncoder sound
         }
+
+
+soundEncoder : Utils.SessionSound -> Json.Encode.Value
+soundEncoder sound =
+    let
+        audioPath =
+            "/audio/"
+    in
+    case sound of
+        Utils.Breathing ->
+            Json.Encode.string <| audioPath ++ "breathing.mp3"
+
+        Utils.Retention ->
+            Json.Encode.string <| audioPath ++ "retention.mp3"
+
+        Utils.RelaxRetention ->
+            Json.Encode.string <| audioPath ++ "relaxRetention.mp3"
+
+        Utils.SessionEnd ->
+            Json.Encode.string <| audioPath ++ "sessionEnd.mp3"
 
 
 setWakeLock : Effect msg

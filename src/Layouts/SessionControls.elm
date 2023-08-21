@@ -8,7 +8,6 @@ import Element.Input exposing (button)
 import Layout exposing (Layout)
 import Lib.BreathingSession as BreathingSession
 import Lib.Swipe as Swipe
-import Lib.Tools as Tools
 import Route exposing (Route)
 import Route.Path
 import Shared
@@ -81,14 +80,14 @@ update shared route msg model =
                 , controlsShown = Swipe.isRightSwipe 300 gesture
               }
             , if not model.controlsShown && Swipe.maxFingers gesture > 1 then
-                Tools.navigateNext shared.session
+                Effect.navigateNext shared.session
 
               else
                 Effect.none
             )
 
         Cancelled ->
-            ( model, Tools.navigate Route.Path.Phases_SessionEnd )
+            ( model, Effect.navigate Route.Path.Phases_SessionEnd )
 
         MouseNavSwipe ->
             ( { model | controlsShown = True }, Effect.none )
@@ -96,7 +95,7 @@ update shared route msg model =
         MouseNavTap ->
             ( { model | controlsShown = False }
             , if not model.controlsShown then
-                Tools.navigateNext shared.session
+                Effect.navigateNext shared.session
 
               else
                 Effect.none

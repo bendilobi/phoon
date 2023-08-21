@@ -1,14 +1,13 @@
-var audio = new Audio('/audio/ding.mp3')
 
 export const onReady = ({app, env}) => {
     if (app.ports && app.ports.outgoing) {
         app.ports.outgoing.subscribe(({tag, data}) => {
             switch (tag) {
                 case 'PLAY_SOUND':
-                    console.log('PLaying sound...')
-                    
-                    audio.pause()
-                    audio.currentTime = 0
+                    console.log('Playing sound ' + data)
+
+                   
+                    var audio = new Howl({src: [data]})
                     audio.play()
                     return
                 case 'SET_WAKE_LOCK':

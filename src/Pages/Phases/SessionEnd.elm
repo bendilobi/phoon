@@ -6,7 +6,7 @@ import Element.Background as BG
 import Element.Font as Font
 import Element.Input exposing (button)
 import Lib.SessionResults as SessionResults
-import Lib.Tools as Tools
+import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
@@ -35,7 +35,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( {}
-    , Effect.playSound
+    , Effect.playSound Utils.SessionEnd
     )
 
 
@@ -52,7 +52,7 @@ update msg model =
     case msg of
         NavigateHome ->
             ( model
-            , Tools.navigate Route.Path.Home_
+            , Effect.navigate Route.Path.Home_
             )
 
 

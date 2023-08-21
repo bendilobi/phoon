@@ -6,7 +6,7 @@ import Element.Background as Background
 import Element.Font as Font
 import Layouts
 import Lib.SessionResults as SessionResults
-import Lib.Tools as Tools
+import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -43,7 +43,7 @@ init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( {}
     , Effect.batch
-        [ Effect.playSound
+        [ Effect.playSound Utils.Retention
         , Effect.resultsUpdated <| SessionResults.addRetention shared.results
         ]
     )
@@ -85,5 +85,5 @@ view shared model =
         , Font.color <| rgb255 255 255 255
         ]
     , element =
-        el [ Font.size 30 ] <| text <| Tools.formatSeconds <| SessionResults.currentRetentionTime shared.results
+        el [ Font.size 30 ] <| text <| Utils.formatSeconds <| SessionResults.currentRetentionTime shared.results
     }
