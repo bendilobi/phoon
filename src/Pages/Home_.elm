@@ -94,7 +94,7 @@ view model =
                 , padding 3
                 ]
               <|
-                text "Version 0.2.4 \"MVP\""
+                text "Version 0.2.5"
             , el [ height fill, width fill ] <|
                 button
                     [ centerX

@@ -80,7 +80,7 @@ update shared route msg model =
                 | gesture = Swipe.blanco
                 , controlsShown = Swipe.isRightSwipe 300 gesture
               }
-            , if not model.controlsShown && Swipe.isTap gesture then
+            , if not model.controlsShown && Swipe.maxFingers gesture > 1 then
                 Tools.navigateNext shared.session
 
               else

@@ -2,6 +2,7 @@ module Lib.Swipe exposing
     ( onMove, onEnd, onStart, onEndWithOptions
     , Gesture, Event, blanco, record
     , Position, locate, deltaX, deltaY, isTap, isUpSwipe, isDownSwipe, isLeftSwipe, isRightSwipe
+    , maxFingers
     )
 
 {-| Early stages of gesture recognition for touch-events.
@@ -76,7 +77,7 @@ import Json.Decode as Json exposing (Decoder)
 isTap : Gesture -> Bool
 isTap gesture =
     case gesture of
-        EndTap _ ->
+        EndTap _ _ ->
             True
 
         _ ->
@@ -89,7 +90,7 @@ finish.
 deltaX : Gesture -> Maybe Float
 deltaX gesture =
     case gesture of
-        EndGesture { from, to } ->
+        EndGesture _ { from, to } ->
             Just (to.x - from.x)
 
         _ ->
@@ -102,7 +103,7 @@ finish.
 deltaY : Gesture -> Maybe Float
 deltaY gesture =
     case gesture of
-        EndGesture { from, to } ->
+        EndGesture _ { from, to } ->
             Just (to.y - from.y)
 
         _ ->
@@ -146,6 +147,25 @@ isSwipeType delta predicate =
     delta >> Maybe.map predicate >> Maybe.withDefault False
 
 
+maxFingers : Gesture -> Int
+maxFingers gesture =
+    case gesture of
+        None ->
+            0
+
+        Started fingers _ ->
+            fingers
+
+        Moved fingers _ ->
+            fingers
+
+        EndGesture fingers _ ->
+            fingers
+
+        EndTap fingers _ ->
+            fingers
+
+
 {-| A position, similar to the one in the `elm-lang/mouse` package.
 -}
 type alias Position =
@@ -161,22 +181,22 @@ update it whenever applicable.
 -}
 type Gesture
     = None
-    | Started Position
-    | Moved Trail
-    | EndGesture Trail
-    | EndTap Position
+    | Started Int Position
+    | Moved Int Trail
+    | EndGesture Int Trail
+    | EndTap Int Position
 
 
 {-| A single `Swipe.Event`. Gestures are made up of these, internally.
 -}
 type Event
-    = Touch EventType Position
+    = Touch EventType Int Position
 
 
 {-| Useful if you want to know the current position during a stream of events.
 -}
 locate : Event -> Position
-locate (Touch _ position) =
+locate (Touch _ _ position) =
     position
 
 
@@ -204,25 +224,28 @@ addToTrail coordinate { from, to, through } =
 {-| Our cute little `update`-like function!
 -}
 record : Event -> Gesture -> Gesture
-record (Touch eventType coordinate) gesture =
+record (Touch eventType fingers coordinate) gesture =
     case ( eventType, gesture ) of
         ( Start, _ ) ->
-            Started coordinate
+            Started fingers coordinate
 
-        ( Move, Started prev ) ->
-            Moved { from = prev, through = [], to = coordinate }
+        ( Move, Started fingrs prev ) ->
+            Moved (max fingers fingrs) { from = prev, through = [], to = coordinate }
 
-        ( Move, Moved trail ) ->
-            addToTrail coordinate trail |> Moved
+        ( Move, Moved fingrs trail ) ->
+            addToTrail coordinate trail |> Moved (max fingers fingrs)
 
         ( Move, _ ) ->
-            Started coordinate
+            Started fingers coordinate
 
-        ( End, Moved trail ) ->
-            addToTrail coordinate trail |> EndGesture
+        ( End, Moved fingrs trail ) ->
+            addToTrail coordinate trail |> EndGesture (max fingers fingrs)
+
+        ( End, Started fingrs _ ) ->
+            EndTap (max fingers fingrs) coordinate
 
         ( End, _ ) ->
-            EndTap coordinate
+            EndTap fingers coordinate
 
 
 decodeTouch : String -> (Position -> msg) -> Decoder msg
@@ -243,18 +266,28 @@ decodeTouchWithOptions fieldName options tagger =
         |> Json.map (\p -> { message = tagger p, preventDefault = options.preventDefault, stopPropagation = options.stopPropagation })
 
 
+decodeTouchListLength : String -> Decoder Int
+decodeTouchListLength fieldName =
+    Json.field "length" Json.int
+        |> Json.at [ fieldName ]
+
+
 {-| Record the start of a touch gesture.
 -}
 onStart : (Event -> msg) -> Html.Attribute msg
 onStart tagger =
-    on "touchstart" <| decodeTouch "touches" (Touch Start >> tagger)
+    decodeTouchListLength "touches"
+        |> Json.andThen (\length -> decodeTouch "touches" (Touch Start length >> tagger))
+        |> on "touchstart"
 
 
 {-| Record an ongoing touch gesture.
 -}
 onMove : (Event -> msg) -> Html.Attribute msg
 onMove tagger =
-    on "touchmove" <| decodeTouch "changedTouches" (Touch Move >> tagger)
+    decodeTouchListLength "changedTouches"
+        |> Json.andThen (\length -> decodeTouch "changedTouches" (Touch Move length >> tagger))
+        |> on "touchmove"
 
 
 {-| Record the end of a touch gesture.
@@ -277,5 +310,6 @@ onEnd =
 -}
 onEndWithOptions : { stopPropagation : Bool, preventDefault : Bool } -> (Event -> msg) -> Html.Attribute msg
 onEndWithOptions options tagger =
-    custom "touchend" <|
-        decodeTouchWithOptions "changedTouches" options (Touch End >> tagger)
+    decodeTouchListLength "changedTouches"
+        |> Json.andThen (\length -> decodeTouchWithOptions "changedTouches" options (Touch End length >> tagger))
+        |> custom "touchend"
