@@ -79,7 +79,11 @@ update shared route msg model =
                 | gesture = Swipe.blanco
                 , controlsShown = Swipe.isRightSwipe 300 gesture
               }
-            , if not model.controlsShown && Swipe.maxFingers gesture > 1 then
+              -- TODO: Herausfinden, ob ich doch irgendwie ein sauberes "Mehr als 1 Finger beteiligt" hinkriege...
+              --       Was aktuell zu passieren scheint: Beim Lupfen eines Finigers wird ein End Event
+              --       ausgelöst. Wenn sich dann die zwei liegengebliebenen Finger kurz bewegen, gibts
+              --       ein zweites End Event...
+            , if not model.controlsShown && Swipe.maxFingers gesture == 2 then
                 Effect.navigateNext shared.session
 
               else
