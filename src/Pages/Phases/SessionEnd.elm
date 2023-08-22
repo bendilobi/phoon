@@ -91,7 +91,7 @@ view shared model =
                 ]
               <|
                 text "Sitzung beendet!"
-            , viewRetentionTimes <| SessionResults.getRetentionTimes shared.results
+            , Utils.viewRetentionTimes <| SessionResults.getRetentionTimes shared.results
             , button
                 [ centerX
                 , centerY
@@ -103,49 +103,3 @@ view shared model =
                 }
             ]
     }
-
-
-viewRetentionTimes : List Int -> Element msg
-viewRetentionTimes times =
-    let
-        meanTime =
-            List.sum times // List.length times
-    in
-    column
-        [ spacing 10
-        , centerX
-        , centerY
-        , Font.alignRight
-        ]
-    <|
-        List.map2
-            (\i t ->
-                row [ width fill ]
-                    [ el [ width fill ] <| text <| "Runde " ++ String.fromInt i ++ ": "
-                    , el [ Font.bold ] <| text <| formatRetentionTime t
-                    ]
-            )
-            (List.range 1 (List.length times))
-            times
-            ++ [ row
-                    [ width fill
-                    , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
-                    , paddingXY 0 7
-                    ]
-                    [ el [] <| text "Durchschnitt: "
-                    , el
-                        [ Font.bold
-                        ]
-                      <|
-                        text <|
-                            formatRetentionTime meanTime
-                    ]
-               ]
-
-
-formatRetentionTime : Int -> String
-formatRetentionTime seconds =
-    String.join ":"
-        [ String.padLeft 1 '0' <| String.fromInt <| remainderBy 60 (seconds // 60)
-        , String.padLeft 2 '0' <| String.fromInt <| remainderBy 60 seconds
-        ]

@@ -1,12 +1,10 @@
-module Pages.Home_ exposing (Model, Msg, page)
+module Pages.Information exposing (Model, Msg, page)
 
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
-import Lib.SessionResults as SessionResults
-import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -19,7 +17,7 @@ page shared route =
         { init = init
         , update = update
         , subscriptions = subscriptions
-        , view = view shared
+        , view = view
         }
         |> Page.withLayout toLayout
 
@@ -74,23 +72,15 @@ subscriptions model =
 -- VIEW
 
 
-view : Shared.Model -> Model -> View Msg
-view shared model =
-    { title = "Motivation"
-    , attributes =
-        [ BG.color <| rgb255 47 72 126
-        , Font.color <| rgb255 255 253 233
-        ]
+view : Model -> View Msg
+view model =
+    { title = "Information"
+    , attributes = [ BG.color <| rgb255 255 253 233 ]
     , element =
         el
             [ width fill
             , padding 30
             ]
         <|
-            if List.length (SessionResults.getRetentionTimes shared.results) > 0 then
-                Utils.viewRetentionTimes <|
-                    SessionResults.getRetentionTimes shared.results
-
-            else
-                text "Aktuell keine Ergebnisse gespeichert"
+            text "Zoff Version 0.2.8 \"Blind Man\""
     }
