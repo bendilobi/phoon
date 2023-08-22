@@ -1,5 +1,6 @@
 module Layouts.SessionControls exposing (Model, Msg, Props, layout)
 
+import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -36,6 +37,7 @@ type alias Model =
     { gesture : Swipe.Gesture
     , controlsShown : Bool
     , debugButtonsShown : Bool
+    , debounceBlock : Bool
     }
 
 
@@ -44,6 +46,7 @@ init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
       , debugButtonsShown = False
+      , debounceBlock = False
       }
     , Effect.setWakeLock
     )
@@ -57,7 +60,8 @@ type Msg
     = Swipe Swipe.Event
     | SwipeEnd Swipe.Event
     | Cancelled
-      -- To simulate gestures via buttons for debugging in desktop browser
+    | ReleaseDebounceBlock
+      -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
     | MouseNavSwipe
 
@@ -74,17 +78,26 @@ update shared route msg model =
             let
                 gesture =
                     Swipe.record touch model.gesture
+
+                multitouchRegistered =
+                    not model.controlsShown
+                        && not model.debounceBlock
+                        && (Swipe.maxFingers gesture == 2)
             in
             ( { model
                 | gesture = Swipe.blanco
                 , controlsShown = Swipe.isRightSwipe 300 gesture
+                , debounceBlock = model.debounceBlock || multitouchRegistered
               }
               -- TODO: Herausfinden, ob ich doch irgendwie ein sauberes "Mehr als 1 Finger beteiligt" hinkriege...
-              --       Was aktuell zu passieren scheint: Beim Lupfen eines Finigers wird ein End Event
+              --       Was aktuell zu passieren scheint: Beim Lupfen eines Fingers wird ein End Event
               --       ausgelöst. Wenn sich dann die zwei liegengebliebenen Finger kurz bewegen, gibts
               --       ein zweites End Event...
-            , if not model.controlsShown && Swipe.maxFingers gesture == 2 then
-                Effect.navigateNext shared.session
+            , if multitouchRegistered then
+                Effect.batch
+                    [ Effect.sendCmd <| Delay.after 1000 ReleaseDebounceBlock
+                    , Effect.navigateNext shared.session
+                    ]
 
               else
                 Effect.none
@@ -92,6 +105,9 @@ update shared route msg model =
 
         Cancelled ->
             ( model, Effect.navigate Route.Path.Phases_SessionEnd )
+
+        ReleaseDebounceBlock ->
+            ( { model | debounceBlock = False }, Effect.none )
 
         MouseNavSwipe ->
             ( { model | controlsShown = True }, Effect.none )
@@ -137,6 +153,11 @@ view props shared { toContentMsg, model, content } =
 
                               else
                                 none
+
+                            -- , if model.debounceBlock then
+                            --     el [] <| text "Blocked"
+                            --   else
+                            --     el [] <| text "Not blocked"
                             ]
                    ]
             )
