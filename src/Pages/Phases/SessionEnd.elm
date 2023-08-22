@@ -3,6 +3,7 @@ module Pages.Phases.SessionEnd exposing (Model, Msg, page)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Lib.SessionResults as SessionResults
@@ -106,17 +107,44 @@ view shared model =
 
 viewRetentionTimes : List Int -> Element msg
 viewRetentionTimes times =
-    column [ spacing 10, centerX, centerY ] <|
+    let
+        meanTime =
+            List.sum times // List.length times
+    in
+    column
+        [ spacing 10
+        , centerX
+        , centerY
+        , Font.alignRight
+        ]
+    <|
         List.map2
             (\i t ->
-                el [] <| text <| "Runde " ++ String.fromInt i ++ ": " ++ formatRetentiontime t
+                row [ width fill ]
+                    [ el [ width fill ] <| text <| "Runde " ++ String.fromInt i ++ ": "
+                    , el [ Font.bold ] <| text <| formatRetentionTime t
+                    ]
             )
             (List.range 1 (List.length times))
             times
+            ++ [ row
+                    [ width fill
+                    , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
+                    , paddingXY 0 7
+                    ]
+                    [ el [] <| text "Durchschnitt: "
+                    , el
+                        [ Font.bold
+                        ]
+                      <|
+                        text <|
+                            formatRetentionTime meanTime
+                    ]
+               ]
 
 
-formatRetentiontime : Int -> String
-formatRetentiontime seconds =
+formatRetentionTime : Int -> String
+formatRetentionTime seconds =
     String.join ":"
         [ String.padLeft 1 '0' <| String.fromInt <| remainderBy 60 (seconds // 60)
         , String.padLeft 2 '0' <| String.fromInt <| remainderBy 60 seconds
