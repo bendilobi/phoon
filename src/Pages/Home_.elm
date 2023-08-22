@@ -78,19 +78,22 @@ view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = "Motivation"
     , attributes =
-        [ BG.color <| rgb255 47 72 126
-        , Font.color <| rgb255 255 253 233
+        [ BG.color <| rgb255 82 155 178
+        , Font.color <| rgb255 255 253 231
         ]
     , element =
-        el
+        textColumn
             [ width fill
-            , padding 30
+            , paddingXY 30 50
+            , spacing 40
             ]
-        <|
-            if List.length (SessionResults.getRetentionTimes shared.results) > 0 then
-                Utils.viewRetentionTimes <|
-                    SessionResults.getRetentionTimes shared.results
+            [ paragraph [ Font.size 30, Font.bold ] [ text "Ergebnisse der letzten Sitzung" ]
+            , el [ centerX ] <|
+                if List.length (SessionResults.getRetentionTimes shared.results) > 0 then
+                    Utils.viewRetentionTimes <|
+                        SessionResults.getRetentionTimes shared.results
 
-            else
-                text "Aktuell keine Ergebnisse gespeichert"
+                else
+                    text "Aktuell keine Ergebnisse gespeichert"
+            ]
     }

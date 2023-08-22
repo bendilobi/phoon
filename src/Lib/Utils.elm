@@ -85,7 +85,7 @@ viewRetentionTimes times =
                     , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
                     , paddingXY 0 7
                     ]
-                    [ el [] <| text "Durchschnitt: "
+                    [ el [ width fill ] <| text "Durchschnitt: "
                     , el
                         [ Font.bold
                         ]

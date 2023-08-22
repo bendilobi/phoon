@@ -75,12 +75,17 @@ subscriptions model =
 view : Model -> View Msg
 view model =
     { title = "Information"
-    , attributes = [ BG.color <| rgb255 255 253 233 ]
+    , attributes =
+        [ BG.color <| rgb255 255 255 255
+        , Font.color <| rgb255 50 49 46
+        ]
     , element =
-        el
+        textColumn
             [ width fill
-            , padding 30
+            , spacing 20
+            , paddingXY 30 50
             ]
-        <|
-            text "Zoff Version 0.2.8 \"Blind Man\""
+            [ paragraph [ Font.size 30, Font.bold ] [ text "Zoff - Wim Hoff Atmung mit dem Hauch von Zen" ]
+            , text "Version 0.2.9 \"Blind Man\""
+            ]
     }

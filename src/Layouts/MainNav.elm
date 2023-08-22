@@ -6,6 +6,8 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
+import FeatherIcons
+import Html.Events as HEvents
 import Layout exposing (Layout)
 import Route exposing (Route)
 import Route.Path
@@ -22,7 +24,7 @@ layout props shared route =
     Layout.new
         { init = init
         , update = update
-        , view = view
+        , view = view route
         , subscriptions = subscriptions
         }
 
@@ -74,8 +76,8 @@ subscriptions model =
 -- VIEW
 
 
-view : { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
-view { toContentMsg, model, content } =
+view : Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = []
     , element =
@@ -86,46 +88,71 @@ view { toContentMsg, model, content } =
                    ]
             )
             [ el [ height fill, width fill ] content.element
-            , viewNavBar |> map toContentMsg
+            , viewNavBar route |> map toContentMsg
             ]
     }
 
 
-viewNavBar : Element Msg
-viewNavBar =
-    row
+viewNavBar : Route () -> Element Msg
+viewNavBar route =
+    column
         [ width fill
-        , height <| px 70
-        , BG.color <| rgb 1 1 1
+        , BG.color <| rgb255 247 242 226
         , Font.color <| rgb 0 0 0
         , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
         , Border.color <| rgb255 200 196 166
-
-        -- TODO: Gibt es einen Standard-Abstand oder kann man die Safe Area irgendwie ermitteln?
-        , paddingEach { bottom = 15, top = 0, left = 0, right = 0 }
         ]
-        [ button
-            [ alignLeft
-            , paddingXY 20 0
-            , height fill
+        [ row
+            [ width fill
+            , paddingEach { top = 7, left = 50, right = 50, bottom = 3 }
             ]
-            { onPress = Just MotivationClicked
-            , label = text "Moti"
-            }
-        , button
-            [ centerX
-            , paddingXY 20 0
-            , height fill
+            [ el
+                [ alignLeft
+                , Font.color <|
+                    if route.path == Route.Path.Home_ then
+                        rgb255 82 155 178
+
+                    else
+                        rgb 0 0 0
+                ]
+              <|
+                -- TODO: ggf. den Icon-Code in eine Funktion auslagern... oder eine Komponente...?
+                html
+                <|
+                    FeatherIcons.toHtml [ HEvents.onClick MotivationClicked ] <|
+                        FeatherIcons.withSize 30 FeatherIcons.thumbsUp
+            , el
+                [ centerX
+                , Font.color <|
+                    if route.path == Route.Path.Session then
+                        rgb255 82 155 178
+
+                    else
+                        rgb 0 0 0
+                ]
+              <|
+                html <|
+                    FeatherIcons.toHtml [ HEvents.onClick SessionClicked ] <|
+                        FeatherIcons.withSize 30 FeatherIcons.play
+            , el
+                [ alignRight
+                , Font.color <|
+                    if route.path == Route.Path.Information then
+                        rgb255 82 155 178
+
+                    else
+                        rgb 0 0 0
+                ]
+              <|
+                html <|
+                    FeatherIcons.toHtml [ HEvents.onClick InformationClicked ] <|
+                        FeatherIcons.withSize 30 FeatherIcons.info
             ]
-            { onPress = Just SessionClicked
-            , label = text "Go"
-            }
-        , button
-            [ alignRight
-            , paddingXY 20 0
-            , height fill
+        , el
+            [ width fill
+
+            -- This is to compensate for the area with rounded screen corners on iPhone XR
+            , height <| px 41
             ]
-            { onPress = Just InformationClicked
-            , label = text "Info"
-            }
+            none
         ]

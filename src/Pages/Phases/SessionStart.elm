@@ -90,6 +90,9 @@ view model =
         , Font.color <| rgb255 200 196 183
         ]
     , element =
+        -- TODO: Feather Icon volume-x und Fragezeichen nutzen, als Hinweis auf Stummschaltung aufheben
+        -- Oder volume-x, ein Pfeil und volume-2?
+        -- Dazu wifiOff mit Fragezeichen?
         el
             ([ Font.bold
              , Font.size 40
