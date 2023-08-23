@@ -16,7 +16,7 @@ module Shared exposing
 import Effect exposing (Effect)
 import Json.Decode
 import Lib.BreathingSession as BreathingSession exposing (BreathingSession)
-import Lib.SessionResults as SR
+import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Route exposing (Route)
 import Route.Path
 import Shared.Model
@@ -47,7 +47,7 @@ type alias Model =
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     ( { session = BreathingSession.new
-      , results = SR.empty
+      , results = SessionResults.empty
       }
     , Effect.none
     )
@@ -77,19 +77,31 @@ update route msg model =
 
 navigateNext : BreathingSession -> Effect msg
 navigateNext session =
-    let
-        ( newSession, path ) =
-            case BreathingSession.goNext session of
-                Nothing ->
-                    ( BreathingSession.new, Route.Path.Home_ )
+    -- let
+    --     ( newSession, path ) =
+    --         case BreathingSession.goNext session of
+    --             Nothing ->
+    --                 ( BreathingSession.new, Route.Path.Home_ )
+    --             Just sess ->
+    --                 ( sess, BreathingSession.currentPath sess )
+    -- in
+    -- Effect.batch
+    --     [ Effect.sessionUpdated newSession
+    --     , Effect.navigate <| path
+    --     ]
+    case BreathingSession.goNext session of
+        Just sess ->
+            Effect.batch
+                [ Effect.sessionUpdated sess
+                , Effect.navigate <| BreathingSession.currentPath sess
+                ]
 
-                Just sess ->
-                    ( sess, BreathingSession.currentPath sess )
-    in
-    Effect.batch
-        [ Effect.sessionUpdated newSession
-        , Effect.navigate <| path
-        ]
+        Nothing ->
+            Effect.batch
+                [ Effect.sessionUpdated BreathingSession.new
+                , Effect.resultsUpdated SessionResults.empty
+                , Effect.navigate Route.Path.Home_
+                ]
 
 
 

@@ -1,6 +1,8 @@
 module Lib.SessionResults exposing (SessionResults, addRetention, currentRetentionTime, empty, getRetentionTimes, incrementCurrentRetention)
 
 -- TODO: Sollte ich das umbauen, sodass es besser mit currentCycle im BreathingSession harmoniert?
+--       Oder dort integrieren und dann dafür sorgen, dass BreathingSession.new auch gleich die
+--       Results leert?
 
 
 type SessionResults
