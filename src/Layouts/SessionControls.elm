@@ -8,7 +8,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Layout exposing (Layout)
-import Lib.BreathingSession as BreathingSession
+import Lib.BreathingSession as BS
 import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Route.Path
@@ -25,7 +25,7 @@ layout props shared route =
     Layout.new
         { init = init
         , update = update shared route
-        , view = view props shared
+        , view = view props shared route
         , subscriptions = subscriptions
         }
 
@@ -61,6 +61,7 @@ type Msg
     = Swipe Swipe.Event
     | SwipeEnd Swipe.Event
     | Cancelled
+    | AddCycle
     | ReleaseDebounceBlock
       -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
@@ -105,7 +106,25 @@ update shared route msg model =
             )
 
         Cancelled ->
-            ( model, Effect.navigate Route.Path.Phases_SessionEnd )
+            ( model
+            , if route.path == Route.Path.Phases_SessionStart then
+                Effect.navigate Route.Path.Session
+
+              else
+                Effect.navigate Route.Path.Phases_SessionEnd
+            )
+
+        AddCycle ->
+            let
+                newSession =
+                    BS.addCycle shared.session
+            in
+            ( { model | controlsShown = False }
+            , Effect.batch
+                [ Effect.sessionUpdated newSession
+                , Effect.navigate <| BS.currentPath newSession
+                ]
+            )
 
         ReleaseDebounceBlock ->
             ( { model | debounceBlock = False }, Effect.none )
@@ -132,9 +151,9 @@ subscriptions model =
 -- VIEW
 
 
-view : Props -> Shared.Model -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
-view props shared { toContentMsg, model, content } =
-    { title = content.title ++ " | Zoff"
+view : Props -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view props shared route { toContentMsg, model, content } =
+    { title = content.title ++ " | Zoff Session"
     , attributes = []
     , element =
         el
@@ -149,7 +168,7 @@ view props shared { toContentMsg, model, content } =
                             [ viewTouchOverlay model.debugButtonsShown
                                 |> map toContentMsg
                             , if model.controlsShown then
-                                viewSessionControls
+                                viewSessionControls route
                                     |> map toContentMsg
 
                               else
@@ -167,18 +186,19 @@ view props shared { toContentMsg, model, content } =
                         [ width fill
                         , BG.color <| rgb255 50 49 46
                         , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                        , Border.color <| rgb 0 0 0
+                        , Border.color <| rgb255 34 33 31
                         ]
                     <|
                         el
                             [ centerX
                             , padding 10
                             , Font.size 30
+                            , Font.color <| rgb 1 1 1
                             ]
                         <|
                             text <|
                                 "Runde "
-                                    ++ (String.fromInt <| BreathingSession.currentCycle shared.session)
+                                    ++ (String.fromInt <| BS.currentCycle shared.session)
 
                   else
                     none
@@ -222,15 +242,22 @@ viewDebugButton msg label =
         }
 
 
-viewSessionControls : Element Msg
-viewSessionControls =
+viewSessionControls : Route () -> Element Msg
+viewSessionControls route =
     column [ centerX, centerY ]
         [ button
             [ padding 20
             , BG.color <| rgb255 33 33 33
             ]
-            { onPress = Just Cancelled
-            , label = text "Sitzung abbrechen"
-            }
+          <|
+            if route.path == Route.Path.Phases_SessionEnd then
+                { onPress = Just AddCycle
+                , label = text "Noch 'ne Runde"
+                }
+
+            else
+                { onPress = Just Cancelled
+                , label = text "Sitzung abbrechen"
+                }
         , el [ height <| px 100 ] none
         ]

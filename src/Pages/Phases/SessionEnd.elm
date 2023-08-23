@@ -6,6 +6,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
+import Layouts
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
 import Page exposing (Page)
@@ -23,6 +24,13 @@ page shared route =
         , subscriptions = subscriptions
         , view = view shared
         }
+        |> Page.withLayout toLayout
+
+
+toLayout : Model -> Layouts.Layout Msg
+toLayout model =
+    Layouts.SessionControls
+        { showSessionProgress = False }
 
 
 
@@ -92,14 +100,5 @@ view shared model =
               <|
                 text "Sitzung beendet!"
             , Utils.viewRetentionTimes <| SessionResults.getRetentionTimes shared.results
-            , button
-                [ centerX
-                , centerY
-                , BG.color <| rgb255 30 30 30
-                , padding 20
-                ]
-                { onPress = Just NavigateHome
-                , label = text "Zurück zum Start"
-                }
             ]
     }
