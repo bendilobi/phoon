@@ -6,6 +6,7 @@ module Lib.BreathingSession exposing
     , currentPath
     , empty
     , goNext
+    , jumpToEnd
     )
 
 import Route.Path
@@ -46,12 +47,6 @@ createSession : Int -> BreathingSession
 createSession numberOfCycles =
     BreathingSession
         { phases = createPhases numberOfCycles
-
-        -- Route.Path.Phases_SessionStart
-        --     :: (List.repeat numberOfCycles cycle
-        --             |> List.concat
-        --        )
-        --     ++ [ Route.Path.Phases_SessionEnd ]
         , currentCycle = 0
         }
 
@@ -78,6 +73,14 @@ goNext (BreathingSession session) =
 
             else
                 session.currentCycle
+        }
+
+
+jumpToEnd : BreathingSession -> BreathingSession
+jumpToEnd (BreathingSession session) =
+    BreathingSession
+        { phases = List.drop (List.length session.phases - 1) session.phases
+        , currentCycle = session.currentCycle
         }
 
 

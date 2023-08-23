@@ -107,12 +107,19 @@ update shared route msg model =
             )
 
         Cancelled ->
-            ( model
+            let
+                newSession =
+                    BS.jumpToEnd shared.session
+            in
+            ( { model | controlsShown = False }
             , if route.path == Route.Path.Phases_SessionStart then
                 Effect.navigate Route.Path.Session
 
               else
-                Effect.navigate Route.Path.Phases_SessionEnd
+                Effect.batch
+                    [ Effect.sessionUpdated newSession
+                    , Effect.navigate <| BS.currentPath newSession
+                    ]
             )
 
         AddCycle ->
@@ -246,11 +253,7 @@ viewDebugButton msg label =
 viewSessionControls : Route () -> Element Msg
 viewSessionControls route =
     column [ centerX, centerY ]
-        [ Components.Button.view
-          -- [ padding 20
-          -- , BG.color <| rgb255 33 33 33
-          -- ]
-          <|
+        [ Components.Button.view <|
             if route.path == Route.Path.Phases_SessionEnd then
                 { onPress = Just AddCycle
                 , label = text "Noch 'ne Runde"
