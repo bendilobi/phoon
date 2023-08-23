@@ -47,7 +47,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = False
+      , debugButtonsShown = True
       , debounceBlock = False
       }
     , Effect.setWakeLock
@@ -107,7 +107,6 @@ update shared route msg model =
             )
 
         Cancelled ->
-            -- TODO: Wenn man vor Retention abbricht (d.h. bei Breathing), muss currentCycle wieder reduziert werden
             let
                 newSession =
                     Session.jumpToEnd shared.session
@@ -115,7 +114,7 @@ update shared route msg model =
             ( { model | controlsShown = False }
             , if route.path == Session.phasePath Session.Start then
                 -- TODO: Wohin soll navigiert werden, wenn man eine Runde hinzugefügt hat und
-                --       dann bei Start landet?
+                --       dann bei Start landet? => dorthin, wo man herkommt, also zum Ende...
                 Effect.navigate Route.Path.Session
 
               else

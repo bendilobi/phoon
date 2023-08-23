@@ -174,9 +174,18 @@ jumpToEnd (Session session) =
     Session
         { session
             | state = State End []
+            , currentCycle =
+                case currentPhase (Session session) of
+                    -- If there was no Retention yet, we discard the current cycle,
+                    -- as results are added during Retention
+                    Start ->
+                        session.currentCycle - 1
 
-            --List.drop (List.length session.phases - 1) session.phases
-            , currentCycle = session.currentCycle
+                    Breathing ->
+                        session.currentCycle - 1
+
+                    _ ->
+                        session.currentCycle
         }
 
 
