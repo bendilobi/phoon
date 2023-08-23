@@ -1,10 +1,12 @@
 module Pages.Session exposing (Model, Msg, page)
 
+-- import Element.Input exposing (button)
+
+import Components.Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
-import Element.Input exposing (button)
 import Layouts
 import Lib.BreathingSession as BS
 import Lib.SessionResults as SessionResults
@@ -94,14 +96,10 @@ view model =
             , BG.color <| rgb255 200 196 183
             ]
             [ el [ height fill, width fill ] <|
-                button
-                    [ centerX
-                    , centerY
-                    , padding 20
-                    , BG.color <| rgb255 161 158 147
-                    ]
-                    { onPress = Just SessionStartPressed
-                    , label = text "Los geht's!"
-                    }
+                el [ centerX, centerY ] <|
+                    Components.Button.view
+                        { onPress = Just SessionStartPressed
+                        , label = text "Los geht's!"
+                        }
             ]
     }

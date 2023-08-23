@@ -1,5 +1,6 @@
 module Layouts.SessionControls exposing (Model, Msg, Props, layout)
 
+import Components.Button
 import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -245,10 +246,10 @@ viewDebugButton msg label =
 viewSessionControls : Route () -> Element Msg
 viewSessionControls route =
     column [ centerX, centerY ]
-        [ button
-            [ padding 20
-            , BG.color <| rgb255 33 33 33
-            ]
+        [ Components.Button.view
+          -- [ padding 20
+          -- , BG.color <| rgb255 33 33 33
+          -- ]
           <|
             if route.path == Route.Path.Phases_SessionEnd then
                 { onPress = Just AddCycle

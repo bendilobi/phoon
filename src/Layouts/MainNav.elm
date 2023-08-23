@@ -5,7 +5,6 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input exposing (button)
 import FeatherIcons
 import Html.Events as HEvents
 import Layout exposing (Layout)

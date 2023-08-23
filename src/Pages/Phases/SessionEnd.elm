@@ -5,7 +5,6 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input exposing (button)
 import Layouts
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
