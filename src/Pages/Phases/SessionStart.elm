@@ -6,6 +6,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
+import Lib.BreathingSession as BreathingSession
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -18,7 +19,7 @@ page shared route =
     Page.new
         { init = init
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = subscriptions shared
         , view = view
         }
         |> Page.withLayout toLayout
@@ -68,14 +69,9 @@ update msg model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    -- WHM App speeds:
-    -- Normal 1750
-    -- Slow 2500
-    -- Quick 1375
-    -- TODO: Das mit der Breathing-Phase synchronisieren
-    Time.every 1750 Tick
+subscriptions : Shared.Model -> Model -> Sub Msg
+subscriptions shared model =
+    Time.every (BreathingSession.speedMillis shared.session |> toFloat) Tick
 
 
 

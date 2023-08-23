@@ -8,7 +8,7 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
-import Lib.BreathingSession as BS
+import Lib.BreathingSession as BreathingSession
 import Lib.SessionResults as SessionResults
 import Page exposing (Page)
 import Route exposing (Route)
@@ -61,13 +61,13 @@ update msg model =
         SessionStartPressed ->
             let
                 newSession =
-                    BS.createSession 4
+                    BreathingSession.new { cycles = 4 }
             in
             ( model
             , Effect.batch
                 [ Effect.sessionUpdated newSession
                 , Effect.resultsUpdated <| SessionResults.empty
-                , Effect.navigate <| BS.currentPath newSession
+                , Effect.navigate <| BreathingSession.currentPath newSession
                 ]
             )
 

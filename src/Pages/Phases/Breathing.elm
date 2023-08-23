@@ -6,6 +6,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
+import Lib.BreathingSession as BreathingSession
 import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
@@ -18,8 +19,8 @@ page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
         { init = init
-        , update = update
-        , subscriptions = subscriptions
+        , update = update shared
+        , subscriptions = subscriptions shared
         , view = view
         }
         |> Page.withLayout toLayout
@@ -60,8 +61,8 @@ type Msg
     = Tick Time.Posix
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update shared msg model =
     case msg of
         Tick _ ->
             let
@@ -74,7 +75,7 @@ update msg model =
                             ( AtBreath n Out, Effect.none )
 
                         AtBreath n Out ->
-                            if n < 40 then
+                            if n < BreathingSession.breathCount shared.session then
                                 ( AtBreath (n + 1) In, Effect.none )
 
                             else
@@ -90,15 +91,11 @@ update msg model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : Shared.Model -> Model -> Sub Msg
+subscriptions shared model =
     case model of
         AtBreath _ _ ->
-            -- WHM App speeds:
-            -- Normal 1750
-            -- Slow 2500
-            -- Quick 1375
-            Time.every 1750 Tick
+            Time.every (BreathingSession.speedMillis shared.session |> toFloat) Tick
 
         _ ->
             Sub.none

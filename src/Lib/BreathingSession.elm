@@ -1,29 +1,55 @@
 module Lib.BreathingSession exposing
     ( BreathingSession
     , addCycle
-    , createSession
+    , breathCount
     , currentCycle
     , currentPath
     , empty
     , goNext
     , jumpToEnd
+    , new
+    , relaxRetDuration
+    , speedMillis
+      -- , estimatedDuration
+    , withFiftyBreaths
+    , withRelaxRetDuration
+    , withSpeedQuick
+    , withThirtyBreaths
     )
 
 import Route.Path
+
+
+type BreathingSpeed
+    = Slow
+    | Normal
+    | Quick
+
+
+type BreathCount
+    = Thirty
+    | Forty
+    | Fifty
 
 
 type BreathingSession
     = BreathingSession
         { phases : List Route.Path.Path
         , currentCycle : Int
+        , breathCount : BreathCount
+        , breathingSpeed : BreathingSpeed
+        , relaxRetentionDuration : Int
         }
 
 
-empty : BreathingSession
-empty =
+new : { cycles : Int } -> BreathingSession
+new props =
     BreathingSession
-        { phases = []
+        { phases = createPhases props.cycles
         , currentCycle = 0
+        , breathCount = Forty
+        , breathingSpeed = Normal
+        , relaxRetentionDuration = 15
         }
 
 
@@ -43,19 +69,42 @@ createPhases numberOfCycles =
         ++ [ Route.Path.Phases_SessionEnd ]
 
 
-createSession : Int -> BreathingSession
-createSession numberOfCycles =
-    BreathingSession
-        { phases = createPhases numberOfCycles
-        , currentCycle = 0
-        }
+empty : BreathingSession
+empty =
+    new { cycles = 0 }
+
+
+withThirtyBreaths : BreathingSession -> BreathingSession
+withThirtyBreaths (BreathingSession session) =
+    BreathingSession { session | breathCount = Thirty }
+
+
+withFiftyBreaths : BreathingSession -> BreathingSession
+withFiftyBreaths (BreathingSession session) =
+    BreathingSession { session | breathCount = Fifty }
+
+
+withSpeedSlow : BreathingSession -> BreathingSession
+withSpeedSlow (BreathingSession session) =
+    BreathingSession { session | breathingSpeed = Slow }
+
+
+withSpeedQuick : BreathingSession -> BreathingSession
+withSpeedQuick (BreathingSession session) =
+    BreathingSession { session | breathingSpeed = Quick }
+
+
+withRelaxRetDuration : Int -> BreathingSession -> BreathingSession
+withRelaxRetDuration dur (BreathingSession session) =
+    BreathingSession { session | relaxRetentionDuration = dur }
 
 
 addCycle : BreathingSession -> BreathingSession
 addCycle (BreathingSession session) =
     BreathingSession
-        { phases = createPhases 1
-        , currentCycle = session.currentCycle
+        { session
+            | phases = createPhases 1
+            , currentCycle = session.currentCycle
         }
 
 
@@ -66,22 +115,56 @@ goNext (BreathingSession session) =
             List.drop 1 session.phases
     in
     BreathingSession
-        { phases = phases
-        , currentCycle =
-            if List.head phases == Just Route.Path.Phases_Breathing then
-                session.currentCycle + 1
+        { session
+            | phases = phases
+            , currentCycle =
+                if List.head phases == Just Route.Path.Phases_Breathing then
+                    session.currentCycle + 1
 
-            else
-                session.currentCycle
+                else
+                    session.currentCycle
         }
 
 
 jumpToEnd : BreathingSession -> BreathingSession
 jumpToEnd (BreathingSession session) =
     BreathingSession
-        { phases = List.drop (List.length session.phases - 1) session.phases
-        , currentCycle = session.currentCycle
+        { session
+            | phases = List.drop (List.length session.phases - 1) session.phases
+            , currentCycle = session.currentCycle
         }
+
+
+speedMillis : BreathingSession -> Int
+speedMillis (BreathingSession session) =
+    -- These are the speeds of the official WHM App (as of August 2023)
+    case session.breathingSpeed of
+        Slow ->
+            2500
+
+        Normal ->
+            1750
+
+        Quick ->
+            1375
+
+
+breathCount : BreathingSession -> Int
+breathCount (BreathingSession session) =
+    case session.breathCount of
+        Thirty ->
+            30
+
+        Forty ->
+            40
+
+        Fifty ->
+            50
+
+
+relaxRetDuration : BreathingSession -> Int
+relaxRetDuration (BreathingSession session) =
+    session.relaxRetentionDuration
 
 
 currentPath : BreathingSession -> Route.Path.Path
@@ -97,3 +180,8 @@ currentPath (BreathingSession session) =
 currentCycle : BreathingSession -> Int
 currentCycle (BreathingSession session) =
     session.currentCycle
+
+
+
+-- estimatedDuration :BreathingSession -> Int
+-- estimatedDuration (BreathingSession session) =
