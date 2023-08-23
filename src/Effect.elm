@@ -142,6 +142,9 @@ soundEncoder sound =
             "/audio/"
     in
     case sound of
+        Utils.SessionStart ->
+            Json.Encode.string <| audioPath ++ "ding.mp3"
+
         Utils.Breathing ->
             Json.Encode.string <| audioPath ++ "breathing.mp3"
 

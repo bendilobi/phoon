@@ -48,7 +48,8 @@ formatSeconds sec =
 
 
 type SessionSound
-    = Breathing
+    = SessionStart
+    | Breathing
     | Retention
     | RelaxRetention
     | SessionEnd
