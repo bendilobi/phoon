@@ -4,6 +4,7 @@ import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Layout exposing (Layout)
@@ -153,11 +154,6 @@ view props shared { toContentMsg, model, content } =
 
                               else
                                 none
-
-                            -- , if model.debounceBlock then
-                            --     el [] <| text "Blocked"
-                            --   else
-                            --     el [] <| text "Not blocked"
                             ]
                    ]
             )
@@ -168,14 +164,21 @@ view props shared { toContentMsg, model, content } =
                 ]
                 [ if props.showSessionProgress then
                     el
-                        [ centerX
-                        , padding 10
-                        , Font.size 30
+                        [ width fill
+                        , BG.color <| rgb255 50 49 46
+                        , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                        , Border.color <| rgb 0 0 0
                         ]
                     <|
-                        text <|
-                            "Runde "
-                                ++ (String.fromInt <| BreathingSession.currentCycle shared.session)
+                        el
+                            [ centerX
+                            , padding 10
+                            , Font.size 30
+                            ]
+                        <|
+                            text <|
+                                "Runde "
+                                    ++ (String.fromInt <| BreathingSession.currentCycle shared.session)
 
                   else
                     none

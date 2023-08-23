@@ -86,6 +86,6 @@ view model =
             , paddingXY 30 50
             ]
             [ paragraph [ Font.size 30, Font.bold ] [ text "Zoff - Wim Hoff Atmung mit dem Hauch von Zen" ]
-            , text "Version 0.2.9 \"Blind Man\""
+            , text "Version 0.2.10 \"Blind Man\""
             ]
     }
