@@ -52,15 +52,15 @@ init () =
 
 
 type Msg
-    = NavigateHome
+    = NoOp
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        NavigateHome ->
+        NoOp ->
             ( model
-            , Effect.navigate Route.Path.Home_
+            , Effect.none
             )
 
 

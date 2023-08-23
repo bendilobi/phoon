@@ -9,7 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Layout exposing (Layout)
-import Lib.BreathingSession as BS
+import Lib.BreathingSession as BreathingSession
 import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Route.Path
@@ -99,7 +99,7 @@ update shared route msg model =
             , if multitouchRegistered then
                 Effect.batch
                     [ Effect.sendCmd <| Delay.after 1000 ReleaseDebounceBlock
-                    , Effect.navigateNext shared.session
+                    , Shared.navigateNext shared.session
                     ]
 
               else
@@ -109,28 +109,30 @@ update shared route msg model =
         Cancelled ->
             let
                 newSession =
-                    BS.jumpToEnd shared.session
+                    BreathingSession.jumpToEnd shared.session
             in
             ( { model | controlsShown = False }
-            , if route.path == Route.Path.Phases_SessionStart then
+            , if route.path == BreathingSession.phasePath BreathingSession.Start then
+                -- TODO: Wohin soll navigiert werden, wenn man eine Runde hinzugefügt hat und
+                --       dann bei Start landet?
                 Effect.navigate Route.Path.Session
 
               else
                 Effect.batch
                     [ Effect.sessionUpdated newSession
-                    , Effect.navigate <| BS.currentPath newSession
+                    , Effect.navigate <| BreathingSession.currentPath newSession
                     ]
             )
 
         AddCycle ->
             let
                 newSession =
-                    BS.addCycle shared.session
+                    BreathingSession.addCycle shared.session
             in
             ( { model | controlsShown = False }
             , Effect.batch
                 [ Effect.sessionUpdated newSession
-                , Effect.navigate <| BS.currentPath newSession
+                , Effect.navigate <| BreathingSession.currentPath newSession
                 ]
             )
 
@@ -143,7 +145,7 @@ update shared route msg model =
         MouseNavTap ->
             ( { model | controlsShown = False }
             , if not model.controlsShown then
-                Effect.navigateNext shared.session
+                Shared.navigateNext shared.session
 
               else
                 Effect.none
@@ -206,7 +208,7 @@ view props shared route { toContentMsg, model, content } =
                         <|
                             text <|
                                 "Runde "
-                                    ++ (String.fromInt <| BS.currentCycle shared.session)
+                                    ++ (String.fromInt <| BreathingSession.currentCycle shared.session)
 
                   else
                     none
@@ -254,7 +256,7 @@ viewSessionControls : Route () -> Element Msg
 viewSessionControls route =
     column [ centerX, centerY ]
         [ Components.Button.view <|
-            if route.path == Route.Path.Phases_SessionEnd then
+            if route.path == BreathingSession.phasePath BreathingSession.End then
                 { onPress = Just AddCycle
                 , label = text "Noch 'ne Runde"
                 }

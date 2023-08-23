@@ -10,6 +10,7 @@ import Element.Font as Font
 import Layouts
 import Lib.BreathingSession as BreathingSession
 import Lib.SessionResults as SessionResults
+import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -20,9 +21,9 @@ page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
         { init = init
-        , update = update
+        , update = update shared
         , subscriptions = subscriptions
-        , view = view
+        , view = view shared
         }
         |> Page.withLayout toLayout
 
@@ -55,20 +56,12 @@ type Msg
     = SessionStartPressed
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update shared msg model =
     case msg of
         SessionStartPressed ->
-            let
-                newSession =
-                    BreathingSession.new { cycles = 4 }
-            in
             ( model
-            , Effect.batch
-                [ Effect.sessionUpdated newSession
-                , Effect.resultsUpdated <| SessionResults.empty
-                , Effect.navigate <| BreathingSession.currentPath newSession
-                ]
+            , Effect.navigate <| BreathingSession.currentPath shared.session
             )
 
 
@@ -85,8 +78,8 @@ subscriptions model =
 -- VIEW
 
 
-view : Model -> View Msg
-view model =
+view : Shared.Model -> Model -> View Msg
+view shared model =
     { title = "Session"
     , attributes = []
     , element =
@@ -94,12 +87,19 @@ view model =
             [ width fill
             , height fill
             , BG.color <| rgb255 200 196 183
+            , spacing 50
             ]
-            [ el [ height fill, width fill ] <|
-                el [ centerX, centerY ] <|
-                    Components.Button.view
-                        { onPress = Just SessionStartPressed
-                        , label = text "Los geht's!"
-                        }
+            [ el [ centerX, centerY ] <|
+                text <|
+                    "Geschätzte Dauer: "
+                        ++ (Utils.formatSeconds <|
+                                BreathingSession.estimatedDuration shared.session
+                           )
+                        ++ " Minuten"
+            , el [ centerX, centerY ] <|
+                Components.Button.view
+                    { onPress = Just SessionStartPressed
+                    , label = text "Los geht's!"
+                    }
             ]
     }

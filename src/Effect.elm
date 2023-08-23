@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , navigate, navigateNext, playSound, resultsUpdated, sessionUpdated, setWakeLock, soundEncoder
+    , navigate, playSound, resultsUpdated, sessionUpdated, setWakeLock, soundEncoder
     )
 
 {-|
@@ -120,18 +120,6 @@ navigate path =
         , query = Dict.empty
         , hash = Nothing
         }
-
-
-navigateNext : BreathingSession -> Effect msg
-navigateNext session =
-    let
-        newSession =
-            BS.goNext session
-    in
-    batch
-        [ sessionUpdated newSession
-        , navigate <| BS.currentPath newSession
-        ]
 
 
 {-| Redirect users to a new URL, somewhere external your web application.

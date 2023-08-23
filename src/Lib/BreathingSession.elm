@@ -1,23 +1,30 @@
 module Lib.BreathingSession exposing
     ( BreathingSession
+    , Phase(..)
     , addCycle
     , breathCount
     , currentCycle
     , currentPath
-    , empty
+    , estimatedDuration
     , goNext
     , jumpToEnd
     , new
+    , phasePath
     , relaxRetDuration
     , speedMillis
-      -- , estimatedDuration
+    , withCycles
     , withFiftyBreaths
     , withRelaxRetDuration
     , withSpeedQuick
+    , withSpeedSlow
     , withThirtyBreaths
     )
 
 import Route.Path
+
+
+
+-- TODO: Modul in "Session" umbenennen?
 
 
 type BreathingSpeed
@@ -32,9 +39,21 @@ type BreathCount
     | Fifty
 
 
+type Phase
+    = Start
+    | Breathing
+    | Retention
+    | RelaxRetention
+    | End
+
+
+type SessionState
+    = State Phase (List Phase)
+
+
 type BreathingSession
     = BreathingSession
-        { phases : List Route.Path.Path
+        { state : SessionState
         , currentCycle : Int
         , breathCount : BreathCount
         , breathingSpeed : BreathingSpeed
@@ -42,10 +61,10 @@ type BreathingSession
         }
 
 
-new : { cycles : Int } -> BreathingSession
-new props =
+new : BreathingSession
+new =
     BreathingSession
-        { phases = createPhases props.cycles
+        { state = createState 4
         , currentCycle = 0
         , breathCount = Forty
         , breathingSpeed = Normal
@@ -53,25 +72,44 @@ new props =
         }
 
 
-createPhases : Int -> List Route.Path.Path
-createPhases numberOfCycles =
+phasePath : Phase -> Route.Path.Path
+phasePath phase =
+    case phase of
+        Start ->
+            Route.Path.Phases_SessionStart
+
+        Breathing ->
+            Route.Path.Phases_Breathing
+
+        Retention ->
+            Route.Path.Phases_Retention
+
+        RelaxRetention ->
+            Route.Path.Phases_RelaxRetention
+
+        End ->
+            Route.Path.Phases_SessionEnd
+
+
+createState : Int -> SessionState
+createState numberOfCycles =
     let
         cycle =
-            [ Route.Path.Phases_Breathing
-            , Route.Path.Phases_Retention
-            , Route.Path.Phases_RelaxRetention
+            [ Breathing
+            , Retention
+            , RelaxRetention
             ]
     in
-    Route.Path.Phases_SessionStart
-        :: (List.repeat numberOfCycles cycle
-                |> List.concat
-           )
-        ++ [ Route.Path.Phases_SessionEnd ]
+    State Start <|
+        (List.repeat numberOfCycles cycle
+            |> List.concat
+        )
+            ++ [ End ]
 
 
-empty : BreathingSession
-empty =
-    new { cycles = 0 }
+withCycles : Int -> BreathingSession -> BreathingSession
+withCycles numberOfCycles (BreathingSession session) =
+    BreathingSession { session | state = createState numberOfCycles }
 
 
 withThirtyBreaths : BreathingSession -> BreathingSession
@@ -99,38 +137,48 @@ withRelaxRetDuration dur (BreathingSession session) =
     BreathingSession { session | relaxRetentionDuration = dur }
 
 
+
+-- TODO: besser "continueSession"?
+
+
 addCycle : BreathingSession -> BreathingSession
 addCycle (BreathingSession session) =
     BreathingSession
         { session
-            | phases = createPhases 1
+            | state = createState 1
             , currentCycle = session.currentCycle
         }
 
 
-goNext : BreathingSession -> BreathingSession
+goNext : BreathingSession -> Maybe BreathingSession
 goNext (BreathingSession session) =
     let
-        phases =
-            List.drop 1 session.phases
+        (State _ remainingPhases) =
+            session.state
     in
-    BreathingSession
-        { session
-            | phases = phases
-            , currentCycle =
-                if List.head phases == Just Route.Path.Phases_Breathing then
-                    session.currentCycle + 1
+    List.head remainingPhases
+        |> Maybe.map
+            (\phase ->
+                BreathingSession
+                    { session
+                        | state = State phase <| List.drop 1 remainingPhases
+                        , currentCycle =
+                            if phase == Breathing then
+                                session.currentCycle + 1
 
-                else
-                    session.currentCycle
-        }
+                            else
+                                session.currentCycle
+                    }
+            )
 
 
 jumpToEnd : BreathingSession -> BreathingSession
 jumpToEnd (BreathingSession session) =
     BreathingSession
         { session
-            | phases = List.drop (List.length session.phases - 1) session.phases
+            | state = State End []
+
+            --List.drop (List.length session.phases - 1) session.phases
             , currentCycle = session.currentCycle
         }
 
@@ -169,12 +217,25 @@ relaxRetDuration (BreathingSession session) =
 
 currentPath : BreathingSession -> Route.Path.Path
 currentPath (BreathingSession session) =
-    case List.head session.phases of
-        Nothing ->
-            Route.Path.Home_
+    let
+        (State current _) =
+            session.state
+    in
+    phasePath current
 
-        Just path ->
-            path
+
+
+-- List.head session.state
+--     |> Maybe.map phasePath
+-- List.head session.phases
+--     |> phasePath
+-- case List.head session.phases of
+--     Nothing ->
+--         -- TODO: Wenn der currentPath Home_ ist, sollte eine neue Session initialisiert werden
+--         --       => wie und wo implementieren?
+--         Route.Path.Home_
+--     Just phase ->
+--         phasePath phase
 
 
 currentCycle : BreathingSession -> Int
@@ -183,5 +244,36 @@ currentCycle (BreathingSession session) =
 
 
 
--- estimatedDuration :BreathingSession -> Int
--- estimatedDuration (BreathingSession session) =
+-- TODO: Eigenen Typ für Zeit definieren? type Duration = Seconds | Millis?
+--       Sodass in Signaturen klar ist, um welche Einheit es geht?
+
+
+phaseDuration : BreathingSession -> Phase -> Int
+phaseDuration session phase =
+    case phase of
+        Start ->
+            5
+
+        Breathing ->
+            (speedMillis session * 2 * breathCount session) // 1000
+
+        Retention ->
+            -- TODO: Stattdessen aus vergangenen Sessions ermitteln
+            2 * 60
+
+        RelaxRetention ->
+            relaxRetDuration session
+
+        End ->
+            0
+
+
+estimatedDuration : BreathingSession -> Int
+estimatedDuration (BreathingSession session) =
+    let
+        (State currentPhase remainingPhases) =
+            session.state
+    in
+    (currentPhase :: remainingPhases)
+        |> List.map (phaseDuration <| BreathingSession session)
+        |> List.sum

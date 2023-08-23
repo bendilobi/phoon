@@ -83,7 +83,7 @@ update shared msg model =
             in
             ( Counting seconds
             , if seconds == 0 then
-                Effect.navigateNext shared.session
+                Shared.navigateNext shared.session
 
               else
                 Effect.none
