@@ -13,6 +13,7 @@ module Shared exposing
 
 -}
 
+import Dict
 import Effect exposing (Effect)
 import Json.Decode
 import Lib.Session as Session exposing (Session)
@@ -48,6 +49,7 @@ init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     ( { session = Session.new
       , results = SessionResults.empty
+      , previousPath = Route.Path.Home_
       }
     , Effect.none
     )
@@ -72,6 +74,15 @@ update route msg model =
         Shared.Msg.ResultsUpdated results ->
             ( { model | results = results }
             , Effect.none
+            )
+
+        Shared.Msg.NavigateTriggered path ->
+            ( { model | previousPath = route.path }
+            , Effect.replaceRoute
+                { path = path
+                , query = Dict.empty
+                , hash = Nothing
+                }
             )
 
 

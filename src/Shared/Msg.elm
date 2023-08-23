@@ -4,6 +4,7 @@ module Shared.Msg exposing (Msg(..))
 
 import Lib.Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
+import Route.Path
 
 
 {-| Normally, this value would live in "Shared.elm"
@@ -16,3 +17,4 @@ own file, so they can be imported by `Effect.elm`
 type Msg
     = SessionUpdated Session
     | ResultsUpdated SessionResults
+    | NavigateTriggered Route.Path.Path

@@ -113,15 +113,6 @@ replaceRoute route =
     ReplaceUrl (Route.toString route)
 
 
-navigate : Route.Path.Path -> Effect msg
-navigate path =
-    replaceRoute
-        { path = path
-        , query = Dict.empty
-        , hash = Nothing
-        }
-
-
 {-| Redirect users to a new URL, somewhere external your web application.
 -}
 loadExternalUrl : String -> Effect msg
@@ -184,6 +175,11 @@ sessionUpdated session =
 resultsUpdated : SessionResults -> Effect msg
 resultsUpdated results =
     SendSharedMsg <| Shared.Msg.ResultsUpdated results
+
+
+navigate : Route.Path.Path -> Effect msg
+navigate path =
+    SendSharedMsg <| Shared.Msg.NavigateTriggered path
 
 
 

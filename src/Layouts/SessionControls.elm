@@ -112,10 +112,12 @@ update shared route msg model =
                     Session.jumpToEnd shared.session
             in
             ( { model | controlsShown = False }
-            , if route.path == Session.phasePath Session.Start then
-                -- TODO: Wohin soll navigiert werden, wenn man eine Runde hinzugefügt hat und
-                --       dann bei Start landet? => dorthin, wo man herkommt, also zum Ende...
-                Effect.navigate Route.Path.Session
+            , if
+                route.path
+                    == Session.phasePath Session.Start
+                    && not (shared.previousPath == Session.phasePath Session.End)
+              then
+                Effect.navigate shared.previousPath
 
               else
                 Effect.batch
