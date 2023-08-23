@@ -14,6 +14,7 @@ import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
+import Time
 import View exposing (View)
 
 
@@ -94,10 +95,17 @@ view shared model =
             , spacing 50
             ]
             [ el [ centerX, centerY ] <|
+                paragraph []
+                    [ text "Geschätztes Ende: "
+                    , viewEstimatedTime shared
+                    , text " Uhr"
+                    ]
+            , el [ centerX, centerY ] <|
                 text <|
                     "Geschätzte Dauer: "
                         ++ (Utils.formatSeconds <|
                                 Session.estimatedDuration shared.session
+                                    // 1000
                            )
                         ++ " Minuten"
             , el [ centerX, centerY ] <|
@@ -107,3 +115,23 @@ view shared model =
                     }
             ]
     }
+
+
+viewEstimatedTime : Shared.Model -> Element msg
+viewEstimatedTime shared =
+    let
+        estimate =
+            shared.time
+                |> Time.posixToMillis
+                |> (+) (Session.estimatedDuration shared.session)
+                |> Time.millisToPosix
+
+        hour =
+            String.fromInt <| Time.toHour shared.zone estimate
+
+        minute =
+            Time.toMinute shared.zone estimate
+                |> String.fromInt
+                |> String.padLeft 2 '0'
+    in
+    text <| hour ++ ":" ++ minute

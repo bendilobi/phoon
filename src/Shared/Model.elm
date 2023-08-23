@@ -3,6 +3,7 @@ module Shared.Model exposing (Model)
 import Lib.Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
+import Time
 
 
 {-| Normally, this value would live in "Shared.elm"
@@ -13,7 +14,9 @@ own file, so they can be imported by `Effect.elm`
 
 -}
 type alias Model =
-    { session : Session
+    { zone : Time.Zone
+    , time : Time.Posix
+    , session : Session
     , results : SessionResults
     , previousPath : Route.Path.Path
     }

@@ -249,17 +249,17 @@ phaseDuration : Session -> Phase -> Int
 phaseDuration session phase =
     case phase of
         Start ->
-            5
+            5000
 
         Breathing ->
-            (speedMillis session * 2 * breathCount session) // 1000
+            speedMillis session * 2 * breathCount session
 
         Retention ->
             -- TODO: Stattdessen aus vergangenen Sessions ermitteln
-            2 * 60
+            2 * 60000
 
         RelaxRetention ->
-            relaxRetDuration session
+            relaxRetDuration session * 1000
 
         End ->
             0

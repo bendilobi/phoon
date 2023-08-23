@@ -76,8 +76,8 @@ view : Model -> View Msg
 view model =
     { title = "Information"
     , attributes =
-        [ BG.color <| rgb255 255 255 255
-        , Font.color <| rgb255 50 49 46
+        [ BG.color <| rgb255 50 49 46
+        , Font.color <| rgb 1 1 1
         ]
     , element =
         textColumn
@@ -86,6 +86,6 @@ view model =
             , paddingXY 30 50
             ]
             [ paragraph [ Font.size 30, Font.bold ] [ text "Zoff - Wim Hoff Atmung mit dem Hauch von Zen" ]
-            , text "Version 0.2.11 \"Blind Man\""
+            , text "Version 0.2.12 \"Just in Time\""
             ]
     }
