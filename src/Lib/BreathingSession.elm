@@ -5,6 +5,7 @@ module Lib.BreathingSession exposing
     , breathCount
     , currentCycle
     , currentPath
+    , currentPhase
     , estimatedDuration
     , goNext
     , jumpToEnd
@@ -216,26 +217,17 @@ relaxRetDuration (BreathingSession session) =
 
 
 currentPath : BreathingSession -> Route.Path.Path
-currentPath (BreathingSession session) =
+currentPath session =
+    phasePath <| currentPhase session
+
+
+currentPhase : BreathingSession -> Phase
+currentPhase (BreathingSession session) =
     let
         (State current _) =
             session.state
     in
-    phasePath current
-
-
-
--- List.head session.state
---     |> Maybe.map phasePath
--- List.head session.phases
---     |> phasePath
--- case List.head session.phases of
---     Nothing ->
---         -- TODO: Wenn der currentPath Home_ ist, sollte eine neue Session initialisiert werden
---         --       => wie und wo implementieren?
---         Route.Path.Home_
---     Just phase ->
---         phasePath phase
+    current
 
 
 currentCycle : BreathingSession -> Int
@@ -271,9 +263,9 @@ phaseDuration session phase =
 estimatedDuration : BreathingSession -> Int
 estimatedDuration (BreathingSession session) =
     let
-        (State currentPhase remainingPhases) =
+        (State curPhase remainingPhases) =
             session.state
     in
-    (currentPhase :: remainingPhases)
+    (curPhase :: remainingPhases)
         |> List.map (phaseDuration <| BreathingSession session)
         |> List.sum

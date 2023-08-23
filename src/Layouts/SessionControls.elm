@@ -107,6 +107,7 @@ update shared route msg model =
             )
 
         Cancelled ->
+            -- TODO: Wenn man vor Retention abbricht (d.h. bei Breathing), muss currentCycle wieder reduziert werden
             let
                 newSession =
                     BreathingSession.jumpToEnd shared.session

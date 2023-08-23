@@ -61,7 +61,11 @@ update shared msg model =
     case msg of
         SessionStartPressed ->
             ( model
-            , Effect.navigate <| BreathingSession.currentPath shared.session
+            , Effect.batch
+                [ Effect.resultsUpdated SessionResults.empty
+                , Effect.navigate <|
+                    BreathingSession.currentPath shared.session
+                ]
             )
 
 

@@ -77,29 +77,16 @@ update route msg model =
 
 navigateNext : BreathingSession -> Effect msg
 navigateNext session =
-    -- let
-    --     ( newSession, path ) =
-    --         case BreathingSession.goNext session of
-    --             Nothing ->
-    --                 ( BreathingSession.new, Route.Path.Home_ )
-    --             Just sess ->
-    --                 ( sess, BreathingSession.currentPath sess )
-    -- in
-    -- Effect.batch
-    --     [ Effect.sessionUpdated newSession
-    --     , Effect.navigate <| path
-    --     ]
     case BreathingSession.goNext session of
         Just sess ->
             Effect.batch
                 [ Effect.sessionUpdated sess
-                , Effect.navigate <| BreathingSession.currentPath sess
+                , Effect.navigate <| BreathingSession.phasePath <| BreathingSession.currentPhase sess
                 ]
 
         Nothing ->
             Effect.batch
                 [ Effect.sessionUpdated BreathingSession.new
-                , Effect.resultsUpdated SessionResults.empty
                 , Effect.navigate Route.Path.Home_
                 ]
 
