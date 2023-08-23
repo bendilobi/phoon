@@ -6,7 +6,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
-import Lib.BreathingSession as BreathingSession
+import Lib.Session as Session
 import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
@@ -75,7 +75,7 @@ update shared msg model =
                             ( AtBreath n Out, Effect.none )
 
                         AtBreath n Out ->
-                            if n < BreathingSession.breathCount shared.session then
+                            if n < Session.breathCount shared.session then
                                 ( AtBreath (n + 1) In, Effect.none )
 
                             else
@@ -95,7 +95,7 @@ subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
     case model of
         AtBreath _ _ ->
-            Time.every (BreathingSession.speedMillis shared.session |> toFloat) Tick
+            Time.every (Session.speedMillis shared.session |> toFloat) Tick
 
         _ ->
             Sub.none

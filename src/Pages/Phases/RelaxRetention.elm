@@ -5,7 +5,7 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
-import Lib.BreathingSession as BreathingSession
+import Lib.Session as Session
 import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
@@ -76,7 +76,7 @@ update shared msg model =
                 seconds =
                     case model of
                         Starting ->
-                            BreathingSession.relaxRetDuration shared.session
+                            Session.relaxRetDuration shared.session
 
                         Counting sec ->
                             sec - 1

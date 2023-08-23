@@ -1,6 +1,6 @@
-module Lib.BreathingSession exposing
-    ( BreathingSession
-    , Phase(..)
+module Lib.Session exposing
+    ( Phase(..)
+    , Session
     , addCycle
     , breathCount
     , currentCycle
@@ -22,10 +22,6 @@ module Lib.BreathingSession exposing
     )
 
 import Route.Path
-
-
-
--- TODO: Modul in "Session" umbenennen?
 
 
 type BreathingSpeed
@@ -52,8 +48,8 @@ type SessionState
     = State Phase (List Phase)
 
 
-type BreathingSession
-    = BreathingSession
+type Session
+    = Session
         { state : SessionState
         , currentCycle : Int
         , breathCount : BreathCount
@@ -62,9 +58,9 @@ type BreathingSession
         }
 
 
-new : BreathingSession
+new : Session
 new =
-    BreathingSession
+    Session
         { state = createState 4
         , currentCycle = 0
         , breathCount = Forty
@@ -108,51 +104,51 @@ createState numberOfCycles =
             ++ [ End ]
 
 
-withCycles : Int -> BreathingSession -> BreathingSession
-withCycles numberOfCycles (BreathingSession session) =
-    BreathingSession { session | state = createState numberOfCycles }
+withCycles : Int -> Session -> Session
+withCycles numberOfCycles (Session session) =
+    Session { session | state = createState numberOfCycles }
 
 
-withThirtyBreaths : BreathingSession -> BreathingSession
-withThirtyBreaths (BreathingSession session) =
-    BreathingSession { session | breathCount = Thirty }
+withThirtyBreaths : Session -> Session
+withThirtyBreaths (Session session) =
+    Session { session | breathCount = Thirty }
 
 
-withFiftyBreaths : BreathingSession -> BreathingSession
-withFiftyBreaths (BreathingSession session) =
-    BreathingSession { session | breathCount = Fifty }
+withFiftyBreaths : Session -> Session
+withFiftyBreaths (Session session) =
+    Session { session | breathCount = Fifty }
 
 
-withSpeedSlow : BreathingSession -> BreathingSession
-withSpeedSlow (BreathingSession session) =
-    BreathingSession { session | breathingSpeed = Slow }
+withSpeedSlow : Session -> Session
+withSpeedSlow (Session session) =
+    Session { session | breathingSpeed = Slow }
 
 
-withSpeedQuick : BreathingSession -> BreathingSession
-withSpeedQuick (BreathingSession session) =
-    BreathingSession { session | breathingSpeed = Quick }
+withSpeedQuick : Session -> Session
+withSpeedQuick (Session session) =
+    Session { session | breathingSpeed = Quick }
 
 
-withRelaxRetDuration : Int -> BreathingSession -> BreathingSession
-withRelaxRetDuration dur (BreathingSession session) =
-    BreathingSession { session | relaxRetentionDuration = dur }
+withRelaxRetDuration : Int -> Session -> Session
+withRelaxRetDuration dur (Session session) =
+    Session { session | relaxRetentionDuration = dur }
 
 
 
 -- TODO: besser "continueSession"?
 
 
-addCycle : BreathingSession -> BreathingSession
-addCycle (BreathingSession session) =
-    BreathingSession
+addCycle : Session -> Session
+addCycle (Session session) =
+    Session
         { session
             | state = createState 1
             , currentCycle = session.currentCycle
         }
 
 
-goNext : BreathingSession -> Maybe BreathingSession
-goNext (BreathingSession session) =
+goNext : Session -> Maybe Session
+goNext (Session session) =
     let
         (State _ remainingPhases) =
             session.state
@@ -160,7 +156,7 @@ goNext (BreathingSession session) =
     List.head remainingPhases
         |> Maybe.map
             (\phase ->
-                BreathingSession
+                Session
                     { session
                         | state = State phase <| List.drop 1 remainingPhases
                         , currentCycle =
@@ -173,9 +169,9 @@ goNext (BreathingSession session) =
             )
 
 
-jumpToEnd : BreathingSession -> BreathingSession
-jumpToEnd (BreathingSession session) =
-    BreathingSession
+jumpToEnd : Session -> Session
+jumpToEnd (Session session) =
+    Session
         { session
             | state = State End []
 
@@ -184,8 +180,8 @@ jumpToEnd (BreathingSession session) =
         }
 
 
-speedMillis : BreathingSession -> Int
-speedMillis (BreathingSession session) =
+speedMillis : Session -> Int
+speedMillis (Session session) =
     -- These are the speeds of the official WHM App (as of August 2023)
     case session.breathingSpeed of
         Slow ->
@@ -198,8 +194,8 @@ speedMillis (BreathingSession session) =
             1375
 
 
-breathCount : BreathingSession -> Int
-breathCount (BreathingSession session) =
+breathCount : Session -> Int
+breathCount (Session session) =
     case session.breathCount of
         Thirty ->
             30
@@ -211,18 +207,18 @@ breathCount (BreathingSession session) =
             50
 
 
-relaxRetDuration : BreathingSession -> Int
-relaxRetDuration (BreathingSession session) =
+relaxRetDuration : Session -> Int
+relaxRetDuration (Session session) =
     session.relaxRetentionDuration
 
 
-currentPath : BreathingSession -> Route.Path.Path
+currentPath : Session -> Route.Path.Path
 currentPath session =
     phasePath <| currentPhase session
 
 
-currentPhase : BreathingSession -> Phase
-currentPhase (BreathingSession session) =
+currentPhase : Session -> Phase
+currentPhase (Session session) =
     let
         (State current _) =
             session.state
@@ -230,8 +226,8 @@ currentPhase (BreathingSession session) =
     current
 
 
-currentCycle : BreathingSession -> Int
-currentCycle (BreathingSession session) =
+currentCycle : Session -> Int
+currentCycle (Session session) =
     session.currentCycle
 
 
@@ -240,7 +236,7 @@ currentCycle (BreathingSession session) =
 --       Sodass in Signaturen klar ist, um welche Einheit es geht?
 
 
-phaseDuration : BreathingSession -> Phase -> Int
+phaseDuration : Session -> Phase -> Int
 phaseDuration session phase =
     case phase of
         Start ->
@@ -260,12 +256,12 @@ phaseDuration session phase =
             0
 
 
-estimatedDuration : BreathingSession -> Int
-estimatedDuration (BreathingSession session) =
+estimatedDuration : Session -> Int
+estimatedDuration (Session session) =
     let
         (State curPhase remainingPhases) =
             session.state
     in
     (curPhase :: remainingPhases)
-        |> List.map (phaseDuration <| BreathingSession session)
+        |> List.map (phaseDuration <| Session session)
         |> List.sum

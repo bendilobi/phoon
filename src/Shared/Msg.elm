@@ -2,7 +2,7 @@ module Shared.Msg exposing (Msg(..))
 
 {-| -}
 
-import Lib.BreathingSession exposing (BreathingSession)
+import Lib.Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 
 
@@ -14,5 +14,5 @@ own file, so they can be imported by `Effect.elm`
 
 -}
 type Msg
-    = SessionUpdated BreathingSession
+    = SessionUpdated Session
     | ResultsUpdated SessionResults

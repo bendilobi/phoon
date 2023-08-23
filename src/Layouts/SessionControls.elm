@@ -9,7 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Layout exposing (Layout)
-import Lib.BreathingSession as BreathingSession
+import Lib.Session as Session
 import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Route.Path
@@ -110,10 +110,10 @@ update shared route msg model =
             -- TODO: Wenn man vor Retention abbricht (d.h. bei Breathing), muss currentCycle wieder reduziert werden
             let
                 newSession =
-                    BreathingSession.jumpToEnd shared.session
+                    Session.jumpToEnd shared.session
             in
             ( { model | controlsShown = False }
-            , if route.path == BreathingSession.phasePath BreathingSession.Start then
+            , if route.path == Session.phasePath Session.Start then
                 -- TODO: Wohin soll navigiert werden, wenn man eine Runde hinzugefügt hat und
                 --       dann bei Start landet?
                 Effect.navigate Route.Path.Session
@@ -121,19 +121,19 @@ update shared route msg model =
               else
                 Effect.batch
                     [ Effect.sessionUpdated newSession
-                    , Effect.navigate <| BreathingSession.currentPath newSession
+                    , Effect.navigate <| Session.currentPath newSession
                     ]
             )
 
         AddCycle ->
             let
                 newSession =
-                    BreathingSession.addCycle shared.session
+                    Session.addCycle shared.session
             in
             ( { model | controlsShown = False }
             , Effect.batch
                 [ Effect.sessionUpdated newSession
-                , Effect.navigate <| BreathingSession.currentPath newSession
+                , Effect.navigate <| Session.currentPath newSession
                 ]
             )
 
@@ -209,7 +209,7 @@ view props shared route { toContentMsg, model, content } =
                         <|
                             text <|
                                 "Runde "
-                                    ++ (String.fromInt <| BreathingSession.currentCycle shared.session)
+                                    ++ (String.fromInt <| Session.currentCycle shared.session)
 
                   else
                     none
@@ -257,7 +257,7 @@ viewSessionControls : Route () -> Element Msg
 viewSessionControls route =
     column [ centerX, centerY ]
         [ Components.Button.view <|
-            if route.path == BreathingSession.phasePath BreathingSession.End then
+            if route.path == Session.phasePath Session.End then
                 { onPress = Just AddCycle
                 , label = text "Noch 'ne Runde"
                 }

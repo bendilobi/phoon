@@ -6,7 +6,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
-import Lib.BreathingSession as BreathingSession
+import Lib.Session as Session
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -71,7 +71,7 @@ update msg model =
 
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
-    Time.every (BreathingSession.speedMillis shared.session |> toFloat) Tick
+    Time.every (Session.speedMillis shared.session |> toFloat) Tick
 
 
 

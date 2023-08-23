@@ -15,7 +15,7 @@ module Shared exposing
 
 import Effect exposing (Effect)
 import Json.Decode
-import Lib.BreathingSession as BreathingSession exposing (BreathingSession)
+import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Route exposing (Route)
 import Route.Path
@@ -46,7 +46,7 @@ type alias Model =
 
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
-    ( { session = BreathingSession.new
+    ( { session = Session.new
       , results = SessionResults.empty
       }
     , Effect.none
@@ -75,18 +75,18 @@ update route msg model =
             )
 
 
-navigateNext : BreathingSession -> Effect msg
+navigateNext : Session -> Effect msg
 navigateNext session =
-    case BreathingSession.goNext session of
+    case Session.goNext session of
         Just sess ->
             Effect.batch
                 [ Effect.sessionUpdated sess
-                , Effect.navigate <| BreathingSession.phasePath <| BreathingSession.currentPhase sess
+                , Effect.navigate <| Session.phasePath <| Session.currentPhase sess
                 ]
 
         Nothing ->
             Effect.batch
-                [ Effect.sessionUpdated BreathingSession.new
+                [ Effect.sessionUpdated Session.new
                 , Effect.navigate Route.Path.Home_
                 ]
 

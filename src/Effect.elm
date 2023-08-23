@@ -21,7 +21,7 @@ port module Effect exposing
 import Browser.Navigation
 import Dict exposing (Dict)
 import Json.Encode
-import Lib.BreathingSession as BS exposing (BreathingSession)
+import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Lib.Utils as Utils
 import Route exposing (Route)
@@ -176,7 +176,7 @@ setWakeLock =
 -- SHARED
 
 
-sessionUpdated : BreathingSession -> Effect msg
+sessionUpdated : Session -> Effect msg
 sessionUpdated session =
     SendSharedMsg <| Shared.Msg.SessionUpdated session
 

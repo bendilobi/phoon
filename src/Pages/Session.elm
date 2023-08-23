@@ -8,7 +8,7 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
-import Lib.BreathingSession as BreathingSession
+import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
 import Page exposing (Page)
@@ -64,7 +64,7 @@ update shared msg model =
             , Effect.batch
                 [ Effect.resultsUpdated SessionResults.empty
                 , Effect.navigate <|
-                    BreathingSession.currentPath shared.session
+                    Session.currentPath shared.session
                 ]
             )
 
@@ -97,7 +97,7 @@ view shared model =
                 text <|
                     "Geschätzte Dauer: "
                         ++ (Utils.formatSeconds <|
-                                BreathingSession.estimatedDuration shared.session
+                                Session.estimatedDuration shared.session
                            )
                         ++ " Minuten"
             , el [ centerX, centerY ] <|
