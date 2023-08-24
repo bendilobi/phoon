@@ -97,6 +97,7 @@ view shared model =
             [ el [ centerX, centerY ] <| viewReminder shared FeatherIcons.volume2
 
             -- TODO: Das synchronisieren mit der Darstellung bei Breathing
+            --       => Abwarten, bis die Visualisierung optimiert wird...
             , el
                 ([ Font.bold
                  , Font.size 40

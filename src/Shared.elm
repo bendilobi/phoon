@@ -91,7 +91,15 @@ update route msg model =
             )
 
         Shared.Msg.NavigateTriggered path ->
-            ( { model | previousPath = route.path }
+            ( { model
+                | previousPath = route.path
+                , results =
+                    if route.path == Session.phasePath Session.RelaxRetention then
+                        SessionResults.addRetention model.results
+
+                    else
+                        model.results
+              }
             , Effect.replaceRoute
                 { path = path
                 , query = Dict.empty

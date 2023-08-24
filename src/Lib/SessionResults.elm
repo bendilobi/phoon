@@ -1,4 +1,12 @@
-module Lib.SessionResults exposing (SessionResults, addRetention, currentRetentionTime, empty, getRetentionTimes, incrementCurrentRetention)
+module Lib.SessionResults exposing
+    ( SessionResults
+    , addRetention
+    , currentRetentionTime
+    , empty
+    , finishedCycles
+    , getRetentionTimes
+    , incrementCurrentRetention
+    )
 
 -- TODO: Sollte ich das umbauen, sodass es besser mit currentCycle im BreathingSession harmoniert?
 --       Oder dort integrieren und dann dafür sorgen, dass BreathingSession.new auch gleich die
@@ -51,5 +59,11 @@ getRetentionTimes results =
         NoResults ->
             []
 
-        Results list current ->
-            list ++ [ current ]
+        Results list _ ->
+            list
+
+
+finishedCycles : SessionResults -> Int
+finishedCycles results =
+    getRetentionTimes results
+        |> List.length

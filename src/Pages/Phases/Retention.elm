@@ -42,10 +42,7 @@ type alias Model =
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( {}
-    , Effect.batch
-        [ Effect.playSound Utils.Retention
-        , Effect.resultsUpdated <| SessionResults.addRetention shared.results
-        ]
+    , Effect.playSound Utils.Retention
     )
 
 

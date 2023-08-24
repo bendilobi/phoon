@@ -98,6 +98,8 @@ view shared model =
                 ]
               <|
                 text "Sitzung beendet!"
+
+            -- TODO: Zeiten nur zeigen, wenns welche gibt...
             , Utils.viewRetentionTimes <| SessionResults.getRetentionTimes shared.results
             ]
     }

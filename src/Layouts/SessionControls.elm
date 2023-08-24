@@ -10,6 +10,7 @@ import Element.Font as Font
 import Element.Input exposing (button)
 import Layout exposing (Layout)
 import Lib.Session as Session
+import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Route.Path
@@ -47,7 +48,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = False
+      , debugButtonsShown = True
       , debounceBlock = False
       }
     , Effect.setWakeLock
@@ -129,7 +130,7 @@ update shared route msg model =
         AddCycle ->
             let
                 newSession =
-                    Session.addCycle shared.session
+                    Session.withCycles 1 shared.session
             in
             ( { model | controlsShown = False }
             , Effect.batch
@@ -210,7 +211,10 @@ view props shared route { toContentMsg, model, content } =
                         <|
                             text <|
                                 "Runde "
-                                    ++ (String.fromInt <| Session.currentCycle shared.session)
+                                    ++ (String.fromInt <|
+                                            SessionResults.finishedCycles shared.results
+                                                + 1
+                                       )
 
                   else
                     none

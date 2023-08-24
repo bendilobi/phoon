@@ -4,6 +4,7 @@ import Components.Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
+import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.Session as Session
@@ -93,25 +94,52 @@ view shared model =
             , BG.color <| rgb255 200 196 183
             , spacing 50
             ]
-            [ el [ centerX, centerY ] <|
-                paragraph []
+            [ el
+                [ width fill
+                , Font.color <| rgb255 200 196 183
+                , Font.center
+                , Font.bold
+                , BG.color <| rgb255 50 49 46
+                , padding 10
+                , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                , Border.color <| rgb255 34 33 31
+                ]
+              <|
+                text "Sitzung vorbereiten"
+            , column
+                [ width fill
+                , padding 20
+                , Font.center
+                , spacing 30
+                , centerX
+                , centerY
+                ]
+                [ paragraph []
+                    -- TODO: Entscheiden, wie ich in Session die Rundenanzahl repräsentieren
+                    --       möchte und dann hier verwenden
+                    [ el [ Font.bold ] <| text "4"
+                    , text " Runden"
+                    ]
+                , paragraph []
                     [ text "Geschätztes Ende: "
-                    , viewEstimatedTime shared
+                    , el [ Font.bold ] <| viewEstimatedTime shared
                     , text " Uhr"
                     ]
-            , el [ centerX, centerY ] <|
-                text <|
-                    "Geschätzte Dauer: "
-                        ++ (Utils.formatSeconds <|
-                                Session.estimatedDuration shared.session
-                                    // 1000
-                           )
-                        ++ " Minuten"
-            , el [ centerX, centerY ] <|
-                Components.Button.view
-                    { onPress = Just SessionStartPressed
-                    , label = text "Los geht's!"
-                    }
+
+                -- , el [] <|
+                --     text <|
+                --         "Geschätzte Dauer: "
+                --             ++ (Utils.formatSeconds <|
+                --                     Session.estimatedDuration shared.session
+                --                         // 1000
+                --                )
+                --             ++ " Minuten"
+                , el [ width fill ] <|
+                    Components.Button.view
+                        { onPress = Just SessionStartPressed
+                        , label = text "Los geht's!"
+                        }
+                ]
             ]
     }
 

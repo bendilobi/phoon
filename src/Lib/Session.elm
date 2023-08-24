@@ -1,9 +1,7 @@
 module Lib.Session exposing
     ( Phase(..)
     , Session
-    , addCycle
     , breathCount
-    , currentCycle
     , currentPath
     , currentPhase
     , estimatedDuration
@@ -51,7 +49,10 @@ type SessionState
 type Session
     = Session
         { state : SessionState
-        , currentCycle : Int
+
+        -- TODO: Stattdessen: remainingCycles?
+        -- TODO: Das gehört eigentlich zum State...
+        -- , remainingCycles : Int
         , breathCount : BreathCount
         , breathingSpeed : BreathingSpeed
         , relaxRetentionDuration : Int
@@ -62,7 +63,8 @@ new : Session
 new =
     Session
         { state = createState 4
-        , currentCycle = 0
+
+        -- , remainingCycles = 4
         , breathCount = Forty
         , breathingSpeed = Normal
         , relaxRetentionDuration = 15
@@ -136,15 +138,13 @@ withRelaxRetDuration dur (Session session) =
 
 
 -- TODO: besser "continueSession"?
-
-
-addCycle : Session -> Session
-addCycle (Session session) =
-    Session
-        { session
-            | state = createState 1
-            , currentCycle = session.currentCycle
-        }
+-- addCycle : Session -> Session
+-- addCycle (Session session) =
+--     Session
+--         { session
+--             | state = createState 1
+--             -- , remainingCycles = 1
+--         }
 
 
 goNext : Session -> Maybe Session
@@ -156,15 +156,13 @@ goNext (Session session) =
     List.head remainingPhases
         |> Maybe.map
             (\phase ->
+                let
+                    newCycleStarted =
+                        phase == Breathing
+                in
                 Session
                     { session
                         | state = State phase <| List.drop 1 remainingPhases
-                        , currentCycle =
-                            if phase == Breathing then
-                                session.currentCycle + 1
-
-                            else
-                                session.currentCycle
                     }
             )
 
@@ -174,19 +172,13 @@ jumpToEnd (Session session) =
     Session
         { session
             | state = State End []
-            , currentCycle =
-                case currentPhase (Session session) of
-                    -- If there was no Retention yet, we discard the current cycle,
-                    -- as results are added during Retention
-                    Start ->
-                        session.currentCycle - 1
-
-                    Breathing ->
-                        session.currentCycle - 1
-
-                    _ ->
-                        session.currentCycle
         }
+
+
+
+-- cycles : Session -> Int
+-- cycles (Session session) =
+--     let
 
 
 speedMillis : Session -> Int
@@ -233,11 +225,6 @@ currentPhase (Session session) =
             session.state
     in
     current
-
-
-currentCycle : Session -> Int
-currentCycle (Session session) =
-    session.currentCycle
 
 
 

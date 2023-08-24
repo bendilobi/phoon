@@ -70,7 +70,7 @@ subscriptions model =
 view : Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
-    , attributes = []
+    , attributes = [ Font.size 17 ]
     , element =
         column
             (content.attributes

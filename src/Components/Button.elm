@@ -14,9 +14,11 @@ view :
     -> Element msg
 view props =
     button
-        [ padding 20
+        [ width fill
+        , padding 20
         , BG.color <| rgb255 33 33 33
         , Font.color <| rgb 1 1 1
+        , Font.center
         , Border.rounded 15
         , Border.width 1
         , Border.color <| rgb 0 0 0
