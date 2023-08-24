@@ -48,22 +48,14 @@ init _ =
 
 
 type Msg
-    = MotivationClicked
-    | SessionClicked
-    | InformationClicked
+    = NavButtonClicked Route.Path.Path
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        MotivationClicked ->
-            ( model, Effect.navigate Route.Path.Home_ )
-
-        SessionClicked ->
-            ( model, Effect.navigate Route.Path.Session )
-
-        InformationClicked ->
-            ( model, Effect.navigate Route.Path.Information )
+        NavButtonClicked path ->
+            ( model, Effect.navigate path )
 
 
 subscriptions : Model -> Sub Msg
@@ -103,49 +95,14 @@ viewNavBar route =
         ]
         [ row
             [ width fill
-            , paddingEach { top = 7, left = 50, right = 50, bottom = 3 }
+            , paddingEach { top = 10, left = 50, right = 50, bottom = 3 }
             ]
-            [ el
-                [ alignLeft
-                , Font.color <|
-                    if route.path == Route.Path.Home_ then
-                        rgb255 82 155 178
-
-                    else
-                        rgb 0 0 0
-                ]
-              <|
-                -- TODO: ggf. den Icon-Code in eine Funktion auslagern... oder eine Komponente...?
-                html
-                <|
-                    FeatherIcons.toHtml [ HEvents.onClick MotivationClicked ] <|
-                        FeatherIcons.withSize 30 FeatherIcons.thumbsUp
-            , el
-                [ centerX
-                , Font.color <|
-                    if route.path == Route.Path.Session then
-                        rgb255 82 155 178
-
-                    else
-                        rgb 0 0 0
-                ]
-              <|
-                html <|
-                    FeatherIcons.toHtml [ HEvents.onClick SessionClicked ] <|
-                        FeatherIcons.withSize 30 FeatherIcons.play
-            , el
-                [ alignRight
-                , Font.color <|
-                    if route.path == Route.Path.Information then
-                        rgb255 82 155 178
-
-                    else
-                        rgb 0 0 0
-                ]
-              <|
-                html <|
-                    FeatherIcons.toHtml [ HEvents.onClick InformationClicked ] <|
-                        FeatherIcons.withSize 30 FeatherIcons.info
+            [ el [ alignLeft ] <|
+                viewNavButton route FeatherIcons.thumbsUp Route.Path.Home_
+            , el [ centerX ] <|
+                viewNavButton route FeatherIcons.play Route.Path.PrepareSession
+            , el [ alignRight ] <|
+                viewNavButton route FeatherIcons.info Route.Path.Information
             ]
         , el
             [ width fill
@@ -155,3 +112,19 @@ viewNavBar route =
             ]
             none
         ]
+
+
+viewNavButton : Route () -> FeatherIcons.Icon -> Route.Path.Path -> Element Msg
+viewNavButton route icon path =
+    el
+        [ Font.color <|
+            if route.path == path then
+                rgb255 82 155 178
+
+            else
+                rgb 0 0 0
+        ]
+    <|
+        html <|
+            FeatherIcons.toHtml [ HEvents.onClick <| NavButtonClicked path ] <|
+                FeatherIcons.withSize 30 icon

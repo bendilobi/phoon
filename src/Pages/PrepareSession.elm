@@ -1,4 +1,4 @@
-module Pages.Session exposing (Model, Msg, page)
+module Pages.PrepareSession exposing (Model, Msg, page)
 
 -- import Element.Input exposing (button)
 
