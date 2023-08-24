@@ -108,6 +108,8 @@ viewNavBar route =
             [ width fill
 
             -- This is to compensate for the area with rounded screen corners on iPhone XR
+            -- TODO: Das portabler machen wie in Tip 5 beschrieben:
+            -- https://samselikoff.com/blog/8-tips-to-make-your-website-feel-like-an-ios-app
             , height <| px 41
             ]
             none

@@ -43,35 +43,44 @@ withDisabled isDisabled (Settings settings) =
 
 
 -- VIEW
+-- TODO: Anzeige ändern, wenn der Nutzer den Button drückt, ohne loszulassen...
+--       Mit Swipe?
 
 
 view : Button msg -> Element msg
 view (Settings settings) =
-    button
-        [ width fill
-        , padding 20
-        , BG.color <|
-            if settings.isDisabled then
-                rgb255 157 154 143
+    let
+        commonAttributes =
+            [ width fill
+            , padding 20
+            , Font.color <| rgb 1 1 1
+            , Font.center
+            , Border.rounded 15
+            , Border.width 1
+            ]
+    in
+    if settings.isDisabled then
+        el
+            ([ BG.color <| rgb255 157 154 143
+             , Border.color <| rgb255 72 70 66
+             ]
+                ++ commonAttributes
+            )
+        <|
+            settings.label
 
-            else
-                rgb255 33 33 33
-        , Font.color <| rgb 1 1 1
-        , Font.center
-        , Border.rounded 15
-        , Border.width 1
-        , Border.color <|
-            if settings.isDisabled then
-                rgb255 72 70 66
+    else
+        button
+            ([ BG.color <| rgb255 33 33 33
+             , Border.color <| rgb 0 0 0
+             ]
+                ++ commonAttributes
+            )
+            { onPress =
+                if settings.isDisabled then
+                    Nothing
 
-            else
-                rgb 0 0 0
-        ]
-        { onPress =
-            if settings.isDisabled then
-                Nothing
-
-            else
-                settings.onPress
-        , label = settings.label
-        }
+                else
+                    settings.onPress
+            , label = settings.label
+            }
