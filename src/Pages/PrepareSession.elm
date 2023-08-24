@@ -54,6 +54,8 @@ init () =
 
 type Msg
     = SessionStartPressed
+    | AddCyclePressed
+    | RemoveCyclePressed
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -67,6 +69,20 @@ update shared msg model =
                 , Effect.navigate <|
                     Session.currentPath shared.session
                 ]
+            )
+
+        AddCyclePressed ->
+            ( model
+            , shared.session
+                |> Session.withCycles (Session.remainingCycles shared.session + 1)
+                |> Effect.sessionUpdated
+            )
+
+        RemoveCyclePressed ->
+            ( model
+            , shared.session
+                |> Session.withCycles (Session.remainingCycles shared.session - 1)
+                |> Effect.sessionUpdated
             )
 
 
@@ -110,19 +126,32 @@ view shared model =
                 [ width fill
                 , padding 20
                 , Font.center
-                , spacing 30
+                , spacing 50
                 , centerX
                 , centerY
                 ]
-                [ paragraph []
-                    -- TODO: Entscheiden, wie ich in Session die Rundenanzahl repräsentieren
-                    --       möchte und dann hier verwenden
-                    [ el [ Font.bold ] <| text "4"
-                    , text " Runden"
+                [ row [ centerX, spacing 10 ]
+                    [ row []
+                        -- TODO: Entscheiden, wie ich in Session die Rundenanzahl repräsentieren
+                        --       möchte und dann hier verwenden
+                        [ el [ Font.bold ] <| text <| String.fromInt <| Session.remainingCycles shared.session
+                        , text " Runden"
+                        ]
+                    , Components.Button.new { onPress = Just AddCyclePressed, label = text "+" }
+                        |> Components.Button.view
+                    , if Session.remainingCycles shared.session == 1 then
+                        -- TODO: Code-Doppelung hier auflösen...
+                        Components.Button.new { onPress = Just RemoveCyclePressed, label = text "-" }
+                            |> Components.Button.withDisabled True
+                            |> Components.Button.view
+
+                      else
+                        Components.Button.new { onPress = Just RemoveCyclePressed, label = text "-" }
+                            |> Components.Button.view
                     ]
                 , paragraph []
                     [ text "Geschätztes Ende: "
-                    , el [ Font.bold ] <| viewEstimatedTime shared
+                    , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared
                     , text " Uhr"
                     ]
 
@@ -134,11 +163,13 @@ view shared model =
                 --                         // 1000
                 --                )
                 --             ++ " Minuten"
-                , el [ width fill ] <|
-                    Components.Button.view
+                , el [ width fill ]
+                    (Components.Button.new
                         { onPress = Just SessionStartPressed
                         , label = text "Los geht's!"
                         }
+                        |> Components.Button.view
+                    )
                 ]
             ]
     }

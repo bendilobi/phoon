@@ -10,6 +10,7 @@ module Lib.Session exposing
     , new
     , phasePath
     , relaxRetDuration
+    , remainingCycles
     , speedMillis
     , withCycles
     , withFiftyBreaths
@@ -136,17 +137,6 @@ withRelaxRetDuration dur (Session session) =
     Session { session | relaxRetentionDuration = dur }
 
 
-
--- TODO: besser "continueSession"?
--- addCycle : Session -> Session
--- addCycle (Session session) =
---     Session
---         { session
---             | state = createState 1
---             -- , remainingCycles = 1
---         }
-
-
 goNext : Session -> Maybe Session
 goNext (Session session) =
     let
@@ -175,10 +165,13 @@ jumpToEnd (Session session) =
         }
 
 
-
--- cycles : Session -> Int
--- cycles (Session session) =
---     let
+remainingCycles : Session -> Int
+remainingCycles (Session session) =
+    let
+        (State _ upcomingPhases) =
+            session.state
+    in
+    (List.length upcomingPhases - 1) // 3
 
 
 speedMillis : Session -> Int

@@ -48,7 +48,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = True
+      , debugButtonsShown = False
       , debounceBlock = False
       }
     , Effect.setWakeLock
@@ -261,15 +261,17 @@ viewDebugButton msg label =
 viewSessionControls : Route () -> Element Msg
 viewSessionControls route =
     column [ centerX, centerY ]
-        [ Components.Button.view <|
-            if route.path == Session.phasePath Session.End then
+        [ Components.Button.new
+            (if route.path == Session.phasePath Session.End then
                 { onPress = Just AddCycle
                 , label = text "Noch 'ne Runde"
                 }
 
-            else
+             else
                 { onPress = Just Cancelled
                 , label = text "Sitzung abbrechen"
                 }
+            )
+            |> Components.Button.view
         , el [ height <| px 100 ] none
         ]
