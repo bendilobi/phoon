@@ -1,7 +1,5 @@
 module Pages.PrepareSession exposing (Model, Msg, page)
 
--- import Element.Input exposing (button)
-
 import Components.Button
 import Effect exposing (Effect)
 import Element exposing (..)
