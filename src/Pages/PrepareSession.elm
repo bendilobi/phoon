@@ -1,6 +1,7 @@
 module Pages.PrepareSession exposing (Model, Msg, page)
 
 import Components.Button
+import Components.CrementButton
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -130,24 +131,33 @@ view shared model =
                 , centerX
                 , centerY
                 ]
-                [ row [ centerX, spacing 10 ]
-                    [ row []
-                        -- TODO: Entscheiden, wie ich in Session die Rundenanzahl repräsentieren
-                        --       möchte und dann hier verwenden
+                [ row
+                    [ centerX
+                    , spacing 10
+                    , Font.size 20
+                    ]
+                    [ Components.CrementButton.new
+                        { onPress = RemoveCyclePressed
+                        , crement =
+                            Components.CrementButton.De
+                        }
+                        |> (if Session.remainingCycles shared.session == 1 then
+                                Components.CrementButton.withDisabled True
+
+                            else
+                                Components.CrementButton.withDisabled False
+                           )
+                        |> Components.CrementButton.view
+                    , row []
                         [ el [ Font.bold ] <| text <| String.fromInt <| Session.remainingCycles shared.session
                         , text " Runden"
                         ]
-                    , Components.Button.new { onPress = Just AddCyclePressed, label = text "+" }
-                        |> Components.Button.view
-                    , if Session.remainingCycles shared.session == 1 then
-                        -- TODO: Code-Doppelung hier auflösen...
-                        Components.Button.new { onPress = Just RemoveCyclePressed, label = text "-" }
-                            |> Components.Button.withDisabled True
-                            |> Components.Button.view
-
-                      else
-                        Components.Button.new { onPress = Just RemoveCyclePressed, label = text "-" }
-                            |> Components.Button.view
+                    , Components.CrementButton.new
+                        { onPress = AddCyclePressed
+                        , crement =
+                            Components.CrementButton.In
+                        }
+                        |> Components.CrementButton.view
                     ]
                 , paragraph []
                     [ text "Geschätztes Ende: "

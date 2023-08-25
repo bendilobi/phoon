@@ -44,7 +44,7 @@ withDisabled isDisabled (Settings settings) =
 
 -- VIEW
 -- TODO: Anzeige ändern, wenn der Nutzer den Button drückt, ohne loszulassen...
---       Mit Swipe?
+--       Mit Swipe? Oder doch mit :on-hover CSS + ontouchstart... Siehe Internet irgendwo...
 
 
 view : Button msg -> Element msg
