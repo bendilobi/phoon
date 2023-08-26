@@ -31,12 +31,13 @@ import Time
 
 
 type alias Flags =
-    {}
+    { message : String }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.succeed {}
+    Json.Decode.field "message" Json.Decode.string
+        |> Json.Decode.map Flags
 
 
 
@@ -49,11 +50,21 @@ type alias Model =
 
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
+    let
+        storedData =
+            case flagsResult of
+                Err _ ->
+                    "Fehler..."
+
+                Ok data ->
+                    data.message
+    in
     ( { zone = Time.utc
       , time = Time.millisToPosix 0
       , session = Session.new
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
+      , storedData = storedData
       }
     , Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
     )

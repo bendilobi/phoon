@@ -1,5 +1,6 @@
 module Pages.Information exposing (Model, Msg, page)
 
+import Components.Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -47,15 +48,15 @@ init () =
 
 
 type Msg
-    = ExampleMsgReplaceMe
+    = ReloadApp
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        ExampleMsgReplaceMe ->
+        ReloadApp ->
             ( model
-            , Effect.none
+            , Effect.reloadApp
             )
 
 
@@ -82,10 +83,14 @@ view model =
     , element =
         textColumn
             [ width fill
-            , spacing 20
+            , spacing 50
             , paddingXY 30 50
             ]
             [ paragraph [ Font.size 30, Font.bold ] [ text "Zoff - Wim Hoff Atmung mit dem Hauch von Zen" ]
-            , text "Version 0.2.13 \"Just in Time\""
+
+            -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
+            , text "Version 0.2.32 \"Just in Time\""
+            , Components.Button.new { onPress = Just ReloadApp, label = text "Reload" }
+                |> Components.Button.view
             ]
     }

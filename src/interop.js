@@ -1,8 +1,28 @@
 
+export const flags = ({ env }) => {
+    const storedData = localStorage.getItem('data')
+    const jsonStoredData = storedData ? JSON.parse(storedData) : null
+    return {
+      message: jsonStoredData
+    }
+  }
+
+
 export const onReady = ({app, env}) => {
     if (app.ports && app.ports.outgoing) {
         app.ports.outgoing.subscribe(({tag, data}) => {
             switch (tag) {
+                case 'RELOAD_APP':
+                    window.location.reload();
+                    return
+
+
+                case 'STORE_DATA':
+                    console.log('Saving data to localStorage:' + data)
+                    localStorage.setItem('data', JSON.stringify(data))
+                    return
+
+
                 case 'PLAY_SOUND':
                     console.log('Playing sound ' + data)
 
@@ -10,6 +30,8 @@ export const onReady = ({app, env}) => {
                     var audio = new Howl({src: [data]})
                     audio.play()
                     return
+
+
                 case 'SET_WAKE_LOCK':
                     console.log('WakeLock request received from Elm')
 
@@ -30,6 +52,8 @@ export const onReady = ({app, env}) => {
                     };
                     requestWakeLock()
                     return
+
+
                 default:
                     console.warn(`Unhandled outgoing port: "${tag}"`)
                     return

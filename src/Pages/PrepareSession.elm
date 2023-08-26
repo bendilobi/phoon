@@ -67,6 +67,7 @@ update shared msg model =
             , Effect.batch
                 [ Effect.resultsUpdated SessionResults.empty
                 , Effect.playSound Utils.SessionStart
+                , Effect.storeData <| String.fromInt <| Time.posixToMillis shared.time
                 , Effect.navigate <|
                     Session.currentPath shared.session
                 ]

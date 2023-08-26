@@ -1,5 +1,6 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
+import Components.Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -49,13 +50,13 @@ init () =
 
 
 type Msg
-    = ExampleMsgReplaceMe
+    = NoOp
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        ExampleMsgReplaceMe ->
+        NoOp ->
             ( model
             , Effect.none
             )
@@ -95,5 +96,6 @@ view shared model =
 
                 else
                     text "Aktuell keine Ergebnisse gespeichert"
+            , el [] <| text shared.storedData
             ]
     }

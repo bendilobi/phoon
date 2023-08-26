@@ -236,13 +236,13 @@ phaseDuration session phase =
 
         Retention ->
             -- TODO: Stattdessen aus vergangenen Sessions ermitteln
-            2 * 60000
+            2 * 60000 + 15000
 
         RelaxRetention ->
             relaxRetDuration session * 1000
 
         End ->
-            0
+            2 * 60000
 
 
 estimatedDuration : Session -> Int

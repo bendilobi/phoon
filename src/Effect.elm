@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , navigate, playSound, resultsUpdated, sessionUpdated, setWakeLock, soundEncoder
+    , navigate, playSound, reloadApp, resultsUpdated, sessionUpdated, setWakeLock, soundEncoder, storeData
     )
 
 {-|
@@ -125,6 +125,22 @@ loadExternalUrl =
 
 
 port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
+
+
+reloadApp : Effect msg
+reloadApp =
+    SendMessageToJavaScript
+        { tag = "RELOAD_APP"
+        , data = Json.Encode.string ""
+        }
+
+
+storeData : String -> Effect msg
+storeData data =
+    SendMessageToJavaScript
+        { tag = "STORE_DATA"
+        , data = Json.Encode.string data
+        }
 
 
 playSound : Utils.SessionSound -> Effect msg

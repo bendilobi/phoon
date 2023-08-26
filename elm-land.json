@@ -14,16 +14,17 @@
       "meta": [
         { "charset": "UTF-8" },
         { "http-equiv": "X-UA-Compatible", "content": "IE=edge" },
-        { "name": "viewport", "content": "width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, height=device-height" }
+        { "name": "viewport", "content": "width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, height=device-height" },
+        { "name": "theme-color", "content": "#32312e"}
       ],
       "link": [
-        {"rel": "manifest", "href": "./manifest"},
+        {"rel": "manifest", "href": "/manifest.json"},
         {"rel": "stylesheet", "href": "/scroll.css"}
       ],
-      "script": [{"src": "./registerServiceWorker.js"}, {"src": "./howler.core.min.js"}]
+      "script": [{"src": "/registerServiceWorker.js"}, {"src": "/howler.core.min.js"}]
     },
     "router": {
-      "useHashRouting": false
+      "useHashRouting": true
     }
   }
 }

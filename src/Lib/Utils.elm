@@ -47,6 +47,10 @@ formatSeconds sec =
     String.join ":" pos
 
 
+
+-- TODO: das vielleicht in Session integrieren?
+
+
 type SessionSound
     = SessionStart
     | Breathing
