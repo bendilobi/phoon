@@ -146,10 +146,6 @@ goNext (Session session) =
     List.head remainingPhases
         |> Maybe.map
             (\phase ->
-                let
-                    newCycleStarted =
-                        phase == Breathing
-                in
                 Session
                     { session
                         | state = State phase <| List.drop 1 remainingPhases

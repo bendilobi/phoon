@@ -1,6 +1,5 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
-import Components.Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG

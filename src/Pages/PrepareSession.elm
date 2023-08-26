@@ -110,7 +110,6 @@ view shared model =
             [ width fill
             , height fill
             , BG.color <| rgb255 200 196 183
-            , spacing 50
             ]
             [ el
                 [ width fill
@@ -128,42 +127,47 @@ view shared model =
                 [ width fill
                 , padding 20
                 , Font.center
-                , spacing 50
-                , centerX
+                , spacing 70
+
+                -- , centerX
+                -- , explain Debug.todo
                 , centerY
                 ]
-                [ row
-                    [ centerX
-                    , spacing 10
-                    , Font.size 20
-                    ]
-                    [ Components.CrementButton.new
-                        { onPress = RemoveCyclePressed
-                        , crement =
-                            Components.CrementButton.De
-                        }
-                        |> (if Session.remainingCycles shared.session == 1 then
-                                Components.CrementButton.withDisabled True
-
-                            else
-                                Components.CrementButton.withDisabled False
-                           )
-                        |> Components.CrementButton.view
-                    , row []
-                        [ el [ Font.bold ] <| text <| String.fromInt <| Session.remainingCycles shared.session
-                        , text " Runden"
+                [ column [ centerX, spacing 30 ]
+                    --
+                    [ row
+                        [ centerX
+                        , spacing 10
+                        , Font.size 20
                         ]
-                    , Components.CrementButton.new
-                        { onPress = AddCyclePressed
-                        , crement =
-                            Components.CrementButton.In
-                        }
-                        |> Components.CrementButton.view
-                    ]
-                , paragraph []
-                    [ text "Geschätztes Ende: "
-                    , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared
-                    , text " Uhr"
+                        [ Components.CrementButton.new
+                            { onPress = RemoveCyclePressed
+                            , crement =
+                                Components.CrementButton.De
+                            }
+                            |> (if Session.remainingCycles shared.session == 1 then
+                                    Components.CrementButton.withDisabled True
+
+                                else
+                                    Components.CrementButton.withDisabled False
+                               )
+                            |> Components.CrementButton.view
+                        , row []
+                            [ el [ Font.bold ] <| text <| String.fromInt <| Session.remainingCycles shared.session
+                            , text " Runden"
+                            ]
+                        , Components.CrementButton.new
+                            { onPress = AddCyclePressed
+                            , crement =
+                                Components.CrementButton.In
+                            }
+                            |> Components.CrementButton.view
+                        ]
+                    , paragraph []
+                        [ text "Geschätztes Ende: "
+                        , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared
+                        , text " Uhr"
+                        ]
                     ]
 
                 -- , el [] <|
