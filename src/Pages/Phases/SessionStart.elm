@@ -1,5 +1,6 @@
 module Pages.Phases.SessionStart exposing (Model, Msg, page)
 
+import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -37,15 +38,23 @@ toLayout model =
 -- INIT
 
 
-type Model
+type Breath
     = In
     | Out
 
 
+type alias Model =
+    { breathingPreview : Breath
+    , reminderShown : Bool
+    }
+
+
 init : () -> ( Model, Effect Msg )
 init () =
-    ( In
-    , Effect.none
+    ( { breathingPreview = In
+      , reminderShown = False
+      }
+    , Effect.sendCmd <| Delay.after 2000 ReminderDelayOver
     )
 
 
@@ -55,16 +64,29 @@ init () =
 
 type Msg
     = Tick Time.Posix
+    | ReminderDelayOver
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
-    case ( msg, model ) of
-        ( Tick _, In ) ->
-            ( Out, Effect.none )
+    case msg of
+        Tick _ ->
+            ( { model
+                | breathingPreview =
+                    case model.breathingPreview of
+                        In ->
+                            Out
 
-        ( Tick _, Out ) ->
-            ( In, Effect.none )
+                        Out ->
+                            In
+              }
+            , Effect.none
+            )
+
+        ReminderDelayOver ->
+            ( { model | reminderShown = True }
+            , Effect.none
+            )
 
 
 
@@ -88,13 +110,13 @@ view shared model =
         , Font.color <| rgb255 200 196 183
         ]
     , element =
-        column [ width fill, spacing 60 ]
-            -- [ row [ centerX, spacing 20 ]
-            -- [ viewIcon FeatherIcons.volumeX
-            -- , viewIcon FeatherIcons.arrowRight
-            -- , viewIcon FeatherIcons.volume2
-            -- ]
-            [ el [ centerX, centerY ] <| viewReminder shared FeatherIcons.volume2
+        column [ width fill, spacing 100 ]
+            [ el [ centerX, centerY ] <|
+                if model.reminderShown then
+                    viewReminder shared FeatherIcons.volume2
+
+                else
+                    none
 
             -- TODO: Das synchronisieren mit der Darstellung bei Breathing
             --       => Abwarten, bis die Visualisierung optimiert wird...
@@ -105,7 +127,7 @@ view shared model =
                  , height <| px 200
                  , Border.rounded 100
                  ]
-                    ++ (case model of
+                    ++ (case model.breathingPreview of
                             In ->
                                 [ BG.color <| rgb255 200 196 183
                                 , Font.color <| rgb255 50 49 46
@@ -118,24 +140,14 @@ view shared model =
               <|
                 el [ centerX, centerY ] <|
                     text "Start"
+            , el [ centerX, centerY ] <|
+                if model.reminderShown then
+                    viewReminder shared FeatherIcons.bellOff
 
-            -- , row [ centerX, spacing 20 ]
-            -- [ viewIcon FeatherIcons.bell
-            -- , viewIcon FeatherIcons.arrowRight
-            -- , viewIcon FeatherIcons.bellOff
-            -- ]
-            , el [ centerX, centerY ] <| viewReminder shared FeatherIcons.bellOff
+                else
+                    none
             ]
     }
-
-
-
--- viewIcon : FeatherIcons.Icon -> Element msg
--- viewIcon icon =
---     el [ Font.color <| rgb255 200 196 183 ] <|
---         html <|
---             FeatherIcons.toHtml [] <|
---                 FeatherIcons.withSize 30 icon
 
 
 viewReminder : Shared.Model -> FeatherIcons.Icon -> Element msg
