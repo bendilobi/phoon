@@ -15,7 +15,6 @@ own file, so they can be imported by `Effect.elm`
 -}
 type alias Model =
     { zone : Time.Zone
-    , time : Time.Posix
     , session : Session
     , results : SessionResults
     , previousPath : Route.Path.Path

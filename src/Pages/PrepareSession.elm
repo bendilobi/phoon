@@ -8,12 +8,13 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
-import Lib.Session as Session
+import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
+import Task
 import Time
 import View exposing (View)
 
@@ -39,13 +40,15 @@ toLayout model =
 
 
 type alias Model =
-    {}
+    { time : Time.Posix
+    }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( {}
-    , Effect.none
+    ( { time = Time.millisToPosix 0
+      }
+    , Effect.sendCmd <| Task.perform Tick Time.now
     )
 
 
@@ -54,7 +57,8 @@ init () =
 
 
 type Msg
-    = SessionStartPressed
+    = Tick Time.Posix
+    | SessionStartPressed
     | AddCyclePressed
     | RemoveCyclePressed
 
@@ -62,12 +66,17 @@ type Msg
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
+        Tick newTime ->
+            ( { model | time = newTime }
+            , Effect.none
+            )
+
         SessionStartPressed ->
             ( model
             , Effect.batch
                 [ Effect.resultsUpdated SessionResults.empty
                 , Effect.playSound Utils.SessionStart
-                , Effect.storeData <| String.fromInt <| Time.posixToMillis shared.time
+                , Effect.storeData <| String.fromInt <| Time.posixToMillis model.time
                 , Effect.navigate <|
                     Session.currentPath shared.session
                 ]
@@ -94,7 +103,7 @@ update shared msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every 1000 Tick
 
 
 
@@ -165,19 +174,10 @@ view shared model =
                         ]
                     , paragraph []
                         [ text "Geschätztes Ende: "
-                        , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared
+                        , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared.session shared.zone model.time
                         , text " Uhr"
                         ]
                     ]
-
-                -- , el [] <|
-                --     text <|
-                --         "Geschätzte Dauer: "
-                --             ++ (Utils.formatSeconds <|
-                --                     Session.estimatedDuration shared.session
-                --                         // 1000
-                --                )
-                --             ++ " Minuten"
                 , el [ width fill ]
                     (Components.Button.new
                         { onPress = Just SessionStartPressed
@@ -190,20 +190,20 @@ view shared model =
     }
 
 
-viewEstimatedTime : Shared.Model -> Element msg
-viewEstimatedTime shared =
+viewEstimatedTime : Session -> Time.Zone -> Time.Posix -> Element msg
+viewEstimatedTime session zone time =
     let
         estimate =
-            shared.time
+            time
                 |> Time.posixToMillis
-                |> (+) (Session.estimatedDuration shared.session)
+                |> (+) (Session.estimatedDuration session)
                 |> Time.millisToPosix
 
         hour =
-            String.fromInt <| Time.toHour shared.zone estimate
+            String.fromInt <| Time.toHour zone estimate
 
         minute =
-            Time.toMinute shared.zone estimate
+            Time.toMinute zone estimate
                 |> String.fromInt
                 |> String.padLeft 2 '0'
     in

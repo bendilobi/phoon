@@ -60,7 +60,6 @@ init flagsResult route =
                     data.message
     in
     ( { zone = Time.utc
-      , time = Time.millisToPosix 0
       , session = Session.new
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
@@ -81,11 +80,6 @@ type alias Msg =
 update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
-        Shared.Msg.Tick newTime ->
-            ( { model | time = newTime }
-            , Effect.none
-            )
-
         Shared.Msg.AdjustTimeZone newZone ->
             ( { model | zone = newZone }
             , Effect.none
@@ -141,4 +135,4 @@ navigateNext session =
 
 subscriptions : Route () -> Model -> Sub Msg
 subscriptions route model =
-    Time.every 1000 Shared.Msg.Tick
+    Sub.none

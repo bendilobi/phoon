@@ -16,8 +16,7 @@ own file, so they can be imported by `Effect.elm`
 
 -}
 type Msg
-    = Tick Time.Posix
-    | AdjustTimeZone Time.Zone
+    = AdjustTimeZone Time.Zone
     | SessionUpdated Session
     | ResultsUpdated SessionResults
     | NavigateTriggered Route.Path.Path
