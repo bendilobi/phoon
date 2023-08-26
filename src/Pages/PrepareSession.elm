@@ -143,7 +143,6 @@ view shared model =
                 , centerY
                 ]
                 [ column [ centerX, spacing 30 ]
-                    --
                     [ row
                         [ centerX
                         , spacing 10
@@ -163,7 +162,8 @@ view shared model =
                             |> Components.CrementButton.view
                         , row []
                             [ el [ Font.bold ] <| text <| String.fromInt <| Session.remainingCycles shared.session
-                            , text " Runden"
+                            , text " Runde"
+                            , el [ transparent <| Session.remainingCycles shared.session == 1 ] <| text "n"
                             ]
                         , Components.CrementButton.new
                             { onPress = AddCyclePressed
