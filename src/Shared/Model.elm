@@ -1,5 +1,6 @@
 module Shared.Model exposing (Model)
 
+import Lib.MotivationData exposing (MotivationData)
 import Lib.Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
@@ -19,4 +20,5 @@ type alias Model =
     , results : SessionResults
     , previousPath : Route.Path.Path
     , storedData : String
+    , motivationData : MotivationData
     }

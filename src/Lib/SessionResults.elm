@@ -6,6 +6,7 @@ module Lib.SessionResults exposing
     , finishedCycles
     , getRetentionTimes
     , incrementCurrentRetention
+    , meanRetentionTime
     )
 
 -- TODO: Sollte ich das umbauen, sodass es besser mit currentCycle im BreathingSession harmoniert?
@@ -18,9 +19,17 @@ type SessionResults
     | Results (List Int) Int
 
 
+
+-- CREATION
+
+
 empty : SessionResults
 empty =
     NoResults
+
+
+
+-- UPDATE
 
 
 addRetention : SessionResults -> SessionResults
@@ -43,6 +52,10 @@ incrementCurrentRetention results =
             Results list (current + 1)
 
 
+
+-- INTROSPECTION
+
+
 currentRetentionTime : SessionResults -> Int
 currentRetentionTime results =
     case results of
@@ -61,6 +74,21 @@ getRetentionTimes results =
 
         Results list _ ->
             list
+
+
+meanRetentionTime : SessionResults -> Maybe Int
+meanRetentionTime results =
+    case results of
+        NoResults ->
+            Nothing
+
+        Results retTimes currentRetTime ->
+            retTimes
+                |> List.sum
+                |> toFloat
+                |> (\sum -> sum / (toFloat <| List.length retTimes))
+                |> round
+                |> Just
 
 
 finishedCycles : SessionResults -> Int

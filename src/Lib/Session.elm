@@ -50,10 +50,6 @@ type SessionState
 type Session
     = Session
         { state : SessionState
-
-        -- TODO: Stattdessen: remainingCycles?
-        -- TODO: Das gehört eigentlich zum State...
-        -- , remainingCycles : Int
         , breathCount : BreathCount
         , breathingSpeed : BreathingSpeed
         , relaxRetentionDuration : Int
@@ -64,8 +60,6 @@ new : Session
 new =
     Session
         { state = createState 4
-
-        -- , remainingCycles = 4
         , breathCount = Forty
         , breathingSpeed = Normal
         , relaxRetentionDuration = 15
@@ -219,6 +213,7 @@ currentPhase (Session session) =
 
 -- TODO: Eigenen Typ für Zeit definieren? type Duration = Seconds | Millis?
 --       Sodass in Signaturen klar ist, um welche Einheit es geht?
+-- https://package.elm-lang.org/packages/jxxcarlson/elm-typed-time/latest/
 
 
 phaseDuration : Session -> Phase -> Int

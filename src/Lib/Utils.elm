@@ -60,7 +60,7 @@ type SessionSound
 
 
 
--- TODO: Das als eine "Component" umsetzen?
+-- TODO: Das wieder zurück in SessionEnd + SessionResults.meanRetentionTime verwenden
 
 
 viewRetentionTimes : List Int -> Element msg

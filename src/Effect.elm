@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , navigate, playSound, reloadApp, resultsUpdated, sessionUpdated, setWakeLock, soundEncoder, storeData
+    , navigate, playSound, reloadApp, resultsUpdated, sessionEnded, sessionUpdated, setWakeLock, soundEncoder, storeData
     )
 
 {-|
@@ -19,6 +19,7 @@ port module Effect exposing
 -}
 
 import Browser.Navigation
+import Date
 import Dict exposing (Dict)
 import Json.Encode
 import Lib.Session as Session exposing (Session)
@@ -199,6 +200,17 @@ resultsUpdated results =
 navigate : Route.Path.Path -> Effect msg
 navigate path =
     SendSharedMsg <| Shared.Msg.NavigateTriggered path
+
+
+
+-- sessionEnded : Date.Date -> Effect msg
+-- sessionEnded today =
+--     SendSharedMsg <| Shared.Msg.SessionEnded today
+
+
+sessionEnded : Effect msg
+sessionEnded =
+    SendSharedMsg <| Shared.Msg.SessionEndedX
 
 
 

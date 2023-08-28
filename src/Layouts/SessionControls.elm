@@ -66,6 +66,7 @@ type Msg
     | AddCycle
     | ReleaseDebounceBlock
       -- To simulate gestures via buttons for debugging in desktop browser:
+      -- TODO: Ausprobieren, ob der Mobile-Simulator von Chrome das übernehmen kann
     | MouseNavTap
     | MouseNavSwipe
 

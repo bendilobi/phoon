@@ -17,12 +17,14 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "feathericons/elm-feather": "1.5.0",
+            "justinmimbs/date": "4.0.1",
             "mdgriffith/elm-ui": "1.1.8",
             "mpizenberg/elm-pointer-events": "4.0.2"
         },
         "indirect": {
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
+            "elm/parser": "1.1.0",
             "elm/svg": "1.0.1",
             "elm/virtual-dom": "1.0.3"
         }

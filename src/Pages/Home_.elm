@@ -1,10 +1,12 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
+import Date
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
+import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
 import Page exposing (Page)
@@ -96,5 +98,17 @@ view shared model =
                 else
                     text "Aktuell keine Ergebnisse gespeichert"
             , el [] <| text shared.storedData
+            , el [] <|
+                case MotivationData.getMotivationData shared.motivationData of
+                    Nothing ->
+                        text "Noch keine Motivationsdaten vorhanden"
+
+                    Just data ->
+                        column [ spacing 10 ]
+                            [ text <| "Serie: " ++ String.fromInt data.series
+                            , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSession
+                            , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
+                            , text <| "Max Ret: " ++ String.fromInt data.maxRetention
+                            ]
             ]
     }

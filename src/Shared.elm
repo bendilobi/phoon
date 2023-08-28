@@ -13,9 +13,11 @@ module Shared exposing
 
 -}
 
+import Date
 import Dict
 import Effect exposing (Effect)
 import Json.Decode
+import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Route exposing (Route)
@@ -64,6 +66,7 @@ init flagsResult route =
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
       , storedData = storedData
+      , motivationData = MotivationData.empty
       }
     , Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
     )
@@ -112,6 +115,19 @@ update route msg model =
                 }
             )
 
+        -- TODO: Im Elm Land Discord fragen, wie man mit den Effekten ein Task.andThen macht
+        Shared.Msg.SessionEndedX ->
+            ( model, Effect.sendCmd <| Task.perform Shared.Msg.SessionEnded Date.today )
+
+        Shared.Msg.SessionEnded today ->
+            -- TODO: Motivationsdaten speichern veranlassen
+            ( { model
+                | session = Session.new
+                , motivationData = MotivationData.update model.results today model.motivationData
+              }
+            , Effect.navigate Route.Path.Home_
+            )
+
 
 navigateNext : Session -> Effect msg
 navigateNext session =
@@ -123,10 +139,12 @@ navigateNext session =
                 ]
 
         Nothing ->
-            Effect.batch
-                [ Effect.sessionUpdated Session.new
-                , Effect.navigate Route.Path.Home_
-                ]
+            -- TODO: Ich würde gerne eine SessionEnded-Message mit dem aktuellen
+            --       Datum schicken -> wie geht das?
+            -- Date.today
+            --     |> Task.andThen Effect.sessionEnded
+            --     |> Effect.sendCmd
+            Effect.sessionEnded
 
 
 
