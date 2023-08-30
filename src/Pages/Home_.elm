@@ -106,9 +106,17 @@ view shared model =
                     Just data ->
                         column [ spacing 10 ]
                             [ text <| "Serie: " ++ String.fromInt data.series
-                            , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSession
+                            , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
                             , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
                             , text <| "Max Ret: " ++ String.fromInt data.maxRetention
+
+                            -- , text <|
+                            --     "Test: "
+                            --         ++ (Date.add Date.Days -1 data.lastSessionDate
+                            --                 -- |> Date.toIsoString
+                            --                 |> Date.diff Date.Days data.lastSessionDate
+                            --                 |> String.fromInt
+                            --            )
                             ]
             ]
     }

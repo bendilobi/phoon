@@ -8,7 +8,7 @@ type MotivationData
     = NoData
     | MotivationData
         { series : Int
-        , lastSession : Date.Date
+        , lastSessionDate : Date.Date
         , meanRetentiontimes : List Int
         , maxRetention : Int
         }
@@ -26,7 +26,9 @@ update results today motivationData =
             SessionResults.meanRetentionTime results
 
         maxRetTime =
-            SessionResults.getRetentionTimes results |> List.maximum
+            SessionResults.getRetentionTimes results
+                |> List.maximum
+                |> Maybe.withDefault 0
     in
     case motivationData of
         NoData ->
@@ -35,28 +37,35 @@ update results today motivationData =
                     NoData
 
                 Just mean ->
+                    -- If there are results, but no preexisting motivation data, initialize the latter
                     MotivationData
                         { series = 1
-                        , lastSession = today
+                        , lastSessionDate = today
                         , meanRetentiontimes = [ mean ]
-                        , maxRetention = maxRetTime |> Maybe.withDefault 0
+                        , maxRetention = maxRetTime
                         }
 
         MotivationData motData ->
             case meanRetTime of
+                -- There is preexisting motivation data, but no results
                 Nothing ->
                     MotivationData motData
 
                 Just mean ->
+                    -- There is preexisting motivation data and there are results
                     MotivationData
                         { motData
-                          -- TODO: Nur inkrementieren, wenn today - 1 Tag != yesterday, ansonsten series = 1
-                            | series = motData.series + 1
-                            , lastSession = today
-                            , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
+                            | series =
+                                if Date.diff Date.Days today motData.lastSessionDate < -1 then
+                                    -- Last session is longer ago than yesterday, so we start at 1
+                                    1
 
-                            -- TODO: bisheriges Maximum nehmen
-                            , maxRetention = maxRetTime |> Maybe.withDefault motData.maxRetention
+                                else
+                                    -- TODO: soll auch inkrementiert werden, wenn mehrere Sessions an einem Tag?
+                                    motData.series + 1
+                            , lastSessionDate = today
+                            , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
+                            , maxRetention = max maxRetTime motData.maxRetention
                         }
 
 
@@ -65,7 +74,7 @@ getMotivationData :
     ->
         Maybe
             { series : Int
-            , lastSession : Date.Date
+            , lastSessionDate : Date.Date
             , meanRetentiontimes : List Int
             , maxRetention : Int
             }

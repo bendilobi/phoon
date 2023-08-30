@@ -36,7 +36,8 @@ addRetention : SessionResults -> SessionResults
 addRetention results =
     case results of
         NoResults ->
-            Results [] 0
+            -- We add a retention that hasn't been incremented...
+            Results [ 0 ] 0
 
         Results list current ->
             Results (list ++ [ current ]) 0
