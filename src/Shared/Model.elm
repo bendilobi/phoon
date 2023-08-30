@@ -19,6 +19,5 @@ type alias Model =
     , session : Session
     , results : SessionResults
     , previousPath : Route.Path.Path
-    , storedData : String
     , motivationData : MotivationData
     }

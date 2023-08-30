@@ -1,9 +1,11 @@
 
+// const MOTIVATION_DATA_KEY = 'motivationData'
+
 export const flags = ({ env }) => {
-    const storedData = localStorage.getItem('data')
-    const jsonStoredData = storedData ? JSON.parse(storedData) : null
+    const motivationStored = localStorage.getItem('motivationData')
+    const motivationJson = motivationStored ? JSON.parse(motivationStored) : null
     return {
-      message: jsonStoredData
+      storedMotivationData: motivationJson
     }
   }
 
@@ -17,10 +19,15 @@ export const onReady = ({app, env}) => {
                     return
 
 
-                case 'STORE_DATA':
-                    console.log('Saving data to localStorage:' + data)
-                    localStorage.setItem('data', JSON.stringify(data))
+                // case 'STORE_DATA':
+                //     console.log('Saving data to localStorage:' + data)
+                //     localStorage.setItem('data', JSON.stringify(data))
+                //     return
+                case 'STORE_MOTIVATION_DATA':
+                    console.log('Saving data to localStorage: ' + data)
+                    localStorage.setItem('motivationData', JSON.stringify(data))
                     return
+
 
 
                 case 'PLAY_SOUND':
@@ -52,6 +59,7 @@ export const onReady = ({app, env}) => {
                     };
                     requestWakeLock()
                     return
+
 
 
                 default:

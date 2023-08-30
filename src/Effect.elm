@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , navigate, playSound, reloadApp, resultsUpdated, sessionEnded, sessionUpdated, setWakeLock, soundEncoder, storeData
+    , navigate, playSound, reloadApp, resultsUpdated, saveMotivationData, sessionEnded, sessionUpdated, setWakeLock, soundEncoder
     )
 
 {-|
@@ -22,6 +22,7 @@ import Browser.Navigation
 import Date
 import Dict exposing (Dict)
 import Json.Encode
+import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Lib.Utils as Utils
@@ -136,12 +137,13 @@ reloadApp =
         }
 
 
-storeData : String -> Effect msg
-storeData data =
-    SendMessageToJavaScript
-        { tag = "STORE_DATA"
-        , data = Json.Encode.string data
-        }
+
+-- storeData : String -> Effect msg
+-- storeData data =
+--     SendMessageToJavaScript
+--         { tag = "STORE_DATA"
+--         , data = Json.Encode.string data
+--         }
 
 
 playSound : Utils.SessionSound -> Effect msg
@@ -180,6 +182,14 @@ setWakeLock =
     SendMessageToJavaScript
         { tag = "SET_WAKE_LOCK"
         , data = Json.Encode.string ""
+        }
+
+
+saveMotivationData : MotivationData -> Effect msg
+saveMotivationData motData =
+    SendMessageToJavaScript
+        { tag = "STORE_MOTIVATION_DATA"
+        , data = MotivationData.encoder motData
         }
 
 

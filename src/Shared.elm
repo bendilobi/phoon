@@ -33,12 +33,12 @@ import Time
 
 
 type alias Flags =
-    { message : String }
+    { storedMotivationData : MotivationData.Fields }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.field "message" Json.Decode.string
+    Json.Decode.field "storedMotivationData" MotivationData.fieldsDecoder
         |> Json.Decode.map Flags
 
 
@@ -53,20 +53,19 @@ type alias Model =
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     let
-        storedData =
+        motData =
             case flagsResult of
-                Err _ ->
-                    "Fehler..."
+                Err e ->
+                    MotivationData.empty
 
                 Ok data ->
-                    data.message
+                    MotivationData.fromFields data.storedMotivationData
     in
     ( { zone = Time.utc
       , session = Session.new
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
-      , storedData = storedData
-      , motivationData = MotivationData.empty
+      , motivationData = motData
       }
     , Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
     )
@@ -120,12 +119,18 @@ update route msg model =
             ( model, Effect.sendCmd <| Task.perform Shared.Msg.SessionEnded Date.today )
 
         Shared.Msg.SessionEnded today ->
-            -- TODO: Motivationsdaten speichern veranlassen
+            let
+                newMotData =
+                    MotivationData.update model.results today model.motivationData
+            in
             ( { model
                 | session = Session.new
-                , motivationData = MotivationData.update model.results today model.motivationData
+                , motivationData = newMotData
               }
-            , Effect.navigate Route.Path.Home_
+            , Effect.batch
+                [ Effect.saveMotivationData newMotData
+                , Effect.navigate Route.Path.Home_
+                ]
             )
 
 

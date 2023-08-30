@@ -97,7 +97,6 @@ view shared model =
 
                 else
                     text "Aktuell keine Ergebnisse gespeichert"
-            , el [] <| text shared.storedData
             , el [] <|
                 case MotivationData.getMotivationData shared.motivationData of
                     Nothing ->
