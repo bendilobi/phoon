@@ -82,8 +82,10 @@ update results today motivationData =
                                     -- Last session is longer ago than yesterday, so we start at 1
                                     1
 
+                                else if motData.lastSessionDate == today then
+                                    motData.series
+
                                 else
-                                    -- TODO: soll auch inkrementiert werden, wenn mehrere Sessions an einem Tag?
                                     motData.series + 1
                             , lastSessionDate = today
                             , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30

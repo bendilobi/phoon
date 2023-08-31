@@ -45,16 +45,18 @@ type Breath
 
 type alias Model =
     { breathingPreview : Breath
-    , reminderShown : Bool
+    , soundReminderShown : Bool
+    , notificationReminderShown : Bool
     }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
     ( { breathingPreview = In
-      , reminderShown = False
+      , soundReminderShown = False
+      , notificationReminderShown = False
       }
-    , Effect.sendCmd <| Delay.after 2000 ReminderDelayOver
+    , Effect.sendCmd <| Delay.after 1000 SoundReminderDelayOver
     )
 
 
@@ -64,7 +66,8 @@ init () =
 
 type Msg
     = Tick Time.Posix
-    | ReminderDelayOver
+    | SoundReminderDelayOver
+    | NotificationReminderDelayOver
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -83,8 +86,13 @@ update msg model =
             , Effect.none
             )
 
-        ReminderDelayOver ->
-            ( { model | reminderShown = True }
+        SoundReminderDelayOver ->
+            ( { model | soundReminderShown = True }
+            , Effect.sendCmd <| Delay.after 1000 NotificationReminderDelayOver
+            )
+
+        NotificationReminderDelayOver ->
+            ( { model | notificationReminderShown = True }
             , Effect.none
             )
 
@@ -111,12 +119,13 @@ view shared model =
         ]
     , element =
         column [ width fill, spacing 100 ]
-            [ el [ centerX, centerY ] <|
-                if model.reminderShown then
-                    viewReminder shared FeatherIcons.volume2
-
-                else
-                    none
+            [ el
+                [ centerX
+                , centerY
+                , transparent <| not model.soundReminderShown
+                ]
+              <|
+                viewReminder shared FeatherIcons.volume2
 
             -- TODO: Das synchronisieren mit der Darstellung bei Breathing
             --       => Abwarten, bis die Visualisierung optimiert wird...
@@ -140,12 +149,13 @@ view shared model =
               <|
                 el [ centerX, centerY ] <|
                     text "Start"
-            , el [ centerX, centerY ] <|
-                if model.reminderShown then
-                    viewReminder shared FeatherIcons.bellOff
-
-                else
-                    none
+            , el
+                [ centerX
+                , centerY
+                , transparent <| not model.notificationReminderShown
+                ]
+              <|
+                viewReminder shared FeatherIcons.bellOff
             ]
     }
 
