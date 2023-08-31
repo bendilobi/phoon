@@ -1,4 +1,4 @@
-module Lib.MotivationData exposing (Fields, MotivationData, empty, encoder, fieldsDecoder, fromFields, getMotivationData, update)
+module Lib.MotivationData exposing (Fields, MotivationData, empty, encoder, fieldsDecoder, fromFields, getMotivationData, lastSessionDate, series, update)
 
 import Date
 import Json.Decode
@@ -10,7 +10,7 @@ type
     MotivationData
     -- TODO: Ist das zu umständliche mit NoData vs MotivationData?
     --       Alternative wäre: Den Fall, dass es keine Daten gibt, außerhalb
-    --       handhaben.
+    --       handhaben. => Ist wohl besser. MotivationData ist eben Daten, nicht NoData...
     = NoData
     | MotivationData Fields
 
@@ -105,6 +105,26 @@ getMotivationData motData =
 
         MotivationData data ->
             Just data
+
+
+series : MotivationData -> Maybe Int
+series motData =
+    case motData of
+        NoData ->
+            Nothing
+
+        MotivationData data ->
+            Just <| data.series
+
+
+lastSessionDate : MotivationData -> Maybe Date.Date
+lastSessionDate motData =
+    case motData of
+        NoData ->
+            Nothing
+
+        MotivationData data ->
+            Just <| data.lastSessionDate
 
 
 

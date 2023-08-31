@@ -1,11 +1,13 @@
 module Pages.Information exposing (Model, Msg, page)
 
 import Components.Button
+import Date
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
+import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -18,7 +20,7 @@ page shared route =
         { init = init
         , update = update
         , subscriptions = subscriptions
-        , view = view
+        , view = view shared
         }
         |> Page.withLayout toLayout
 
@@ -73,8 +75,8 @@ subscriptions model =
 -- VIEW
 
 
-view : Model -> View Msg
-view model =
+view : Shared.Model -> Model -> View Msg
+view shared model =
     { title = "Information"
     , attributes =
         [ BG.color <| rgb255 50 49 46
@@ -89,8 +91,29 @@ view model =
             [ paragraph [ Font.size 30, Font.bold ] [ text "Zoff - Wim Hoff Atmung mit dem Hauch von Zen" ]
 
             -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
-            , text "Version 0.3.5 \"Der Motivator\""
-            , Components.Button.new { onPress = Just ReloadApp, label = text "Reload" }
+            , text "Version 0.3.7 \"Der Motivator\""
+            , Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
                 |> Components.Button.view
+            , el [] <|
+                case MotivationData.getMotivationData shared.motivationData of
+                    Nothing ->
+                        text "Noch keine Motivationsdaten vorhanden"
+
+                    Just data ->
+                        column [ spacing 10 ]
+                            [ el [ Font.bold, Font.size 20 ] <| text "Aktuell gespeicherte Motivationsdaten"
+                            , text <| "Serie: " ++ String.fromInt data.series
+                            , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
+                            , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
+                            , text <| "Max Ret: " ++ String.fromInt data.maxRetention
+
+                            -- , text <|
+                            --     "Test: "
+                            --         ++ (Date.add Date.Days -1 data.lastSessionDate
+                            --                 -- |> Date.toIsoString
+                            --                 |> Date.diff Date.Days data.lastSessionDate
+                            --                 |> String.fromInt
+                            --            )
+                            ]
             ]
     }
