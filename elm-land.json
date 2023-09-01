@@ -15,11 +15,15 @@
         { "charset": "UTF-8" },
         { "http-equiv": "X-UA-Compatible", "content": "IE=edge" },
         { "name": "viewport", "content": "width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, height=device-height" },
-        { "name": "theme-color", "content": "#32312e"}
+        { "name": "theme-color", "content": "#32312e"},
+        { "name": "mobile-web-app-capable", "content": "yes" },
+        { "name": "apple-touch-fullscreen", "content": "yes" },
+        { "name": "apple-mobile-web-app-capable", "content": "yes" }
       ],
       "link": [
         {"rel": "manifest", "href": "/manifest.json"},
-        {"rel": "stylesheet", "href": "/scroll.css"}
+        {"rel": "stylesheet", "href": "/scroll.css"},
+        {"rel": "apple-touch-startup-image", "href": "/img/splashscreenXR.png", "media": "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)"}
       ],
       "script": [{"src": "/registerServiceWorker.js"}, {"src": "/howler.core.min.js"}]
     },
