@@ -1,8 +1,8 @@
 
-// const MOTIVATION_DATA_KEY = 'motivationData'
+const MOTIVATION_DATA_KEY = 'motivationData'
 
 export const flags = ({ env }) => {
-    const motivationStored = localStorage.getItem('motivationData')
+    const motivationStored = localStorage.getItem(MOTIVATION_DATA_KEY)
     const motivationJson = motivationStored ? JSON.parse(motivationStored) : null
     return {
       storedMotivationData: motivationJson
@@ -19,15 +19,10 @@ export const onReady = ({app, env}) => {
                     return
 
 
-                // case 'STORE_DATA':
-                //     console.log('Saving data to localStorage:' + data)
-                //     localStorage.setItem('data', JSON.stringify(data))
-                //     return
                 case 'STORE_MOTIVATION_DATA':
                     console.log('Saving data to localStorage: ' + data)
-                    localStorage.setItem('motivationData', JSON.stringify(data))
+                    localStorage.setItem(MOTIVATION_DATA_KEY, JSON.stringify(data))
                     return
-
 
 
                 case 'PLAY_SOUND':

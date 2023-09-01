@@ -91,7 +91,7 @@ view shared model =
             [ paragraph [ Font.size 30, Font.bold ] [ text "Zoff - Wim Hoff Atmung mit dem Hauch von Zen" ]
 
             -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
-            , text "Version 0.3.7 \"Der Motivator\""
+            , text "Version 0.3.9 \"Der Motivator\""
             , Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
                 |> Components.Button.view
             , el [] <|
@@ -106,14 +106,6 @@ view shared model =
                             , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
                             , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
                             , text <| "Max Ret: " ++ String.fromInt data.maxRetention
-
-                            -- , text <|
-                            --     "Test: "
-                            --         ++ (Date.add Date.Days -1 data.lastSessionDate
-                            --                 -- |> Date.toIsoString
-                            --                 |> Date.diff Date.Days data.lastSessionDate
-                            --                 |> String.fromInt
-                            --            )
                             ]
             ]
     }

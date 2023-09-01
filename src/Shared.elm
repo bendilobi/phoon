@@ -56,6 +56,8 @@ init flagsResult route =
         motData =
             case flagsResult of
                 Err e ->
+                    --TODO: Styling und Methode für Fehlermeldungen implementieren und
+                    --      hier eine Meldung zeigen
                     MotivationData.empty
 
                 Ok data ->

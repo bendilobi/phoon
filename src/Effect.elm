@@ -137,15 +137,6 @@ reloadApp =
         }
 
 
-
--- storeData : String -> Effect msg
--- storeData data =
---     SendMessageToJavaScript
---         { tag = "STORE_DATA"
---         , data = Json.Encode.string data
---         }
-
-
 playSound : Utils.SessionSound -> Effect msg
 playSound sound =
     SendMessageToJavaScript

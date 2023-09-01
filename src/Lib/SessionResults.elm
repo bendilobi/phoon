@@ -12,6 +12,9 @@ module Lib.SessionResults exposing
 -- TODO: Sollte ich das umbauen, sodass es besser mit currentCycle im BreathingSession harmoniert?
 --       Oder dort integrieren und dann dafür sorgen, dass BreathingSession.new auch gleich die
 --       Results leert?
+--TODO: Nochmal durchdenken, wie ich das hier handhabe... eigentlich ists ja NoResults
+--      auch wenn die Liste leer ist, der Zähler aber läuft. Vielleicht so umbauen?
+--      Oder will ich eine angefangene Retention doch als Ergebnis zählen?
 
 
 type SessionResults

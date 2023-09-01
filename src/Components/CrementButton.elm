@@ -3,7 +3,6 @@ module Components.CrementButton exposing
     , new
     , view
     , withDisabled
-      -- , withSize
     )
 
 import Element exposing (..)
@@ -58,9 +57,6 @@ withDisabled isDisabled (Settings settings) =
 
 
 
--- withSize : Int -> Button msg -> Button msg
--- withSize size (Settings settings) =
---     Settings { settings | size = size }
 -- VIEW
 -- TODO: Anzeige ändern, wenn der Nutzer den Button drückt, ohne loszulassen...
 --       Mit Swipe? Oder doch mit :on-hover CSS + ontouchstart... Siehe Internet irgendwo...

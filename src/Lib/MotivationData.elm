@@ -71,7 +71,7 @@ update results today motivationData =
             case meanRetTime of
                 -- There is preexisting motivation data, but no results
                 Nothing ->
-                    MotivationData motData
+                    motivationData
 
                 Just mean ->
                     -- There is preexisting motivation data and there are results

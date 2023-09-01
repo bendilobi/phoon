@@ -76,8 +76,6 @@ update shared msg model =
             , Effect.batch
                 [ Effect.resultsUpdated SessionResults.empty
                 , Effect.playSound Utils.SessionStart
-
-                -- , Effect.storeData <| String.fromInt <| Time.posixToMillis model.time
                 , Effect.navigate <|
                     Session.currentPath shared.session
                 ]
@@ -138,9 +136,6 @@ view shared model =
                 , padding 20
                 , Font.center
                 , spacing 70
-
-                -- , centerX
-                -- , explain Debug.todo
                 , centerY
                 ]
                 [ column [ centerX, spacing 30 ]

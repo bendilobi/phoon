@@ -168,7 +168,7 @@ viewMotivationData today motData =
                     Just series ->
                         if seriesContinued then
                             if series == 1 then
-                                "...Tag durchgehend praktiziert!"
+                                "...Tag praktiziert!"
 
                             else
                                 "...Tage durchgehend praktiziert! Super!"
@@ -179,14 +179,3 @@ viewMotivationData today motData =
                         else
                             "...Tage ausgelassen... hm..."
         ]
-
-
-
--- [ paragraph [ Font.size 30, Font.bold ] [ text "Ergebnisse der letzten Sitzung" ]
--- , el [ centerX ] <|
---     if List.length (SessionResults.getRetentionTimes shared.results) > 0 then
---         Utils.viewRetentionTimes <|
---             SessionResults.getRetentionTimes shared.results
---     else
---         text "Aktuell keine Ergebnisse gespeichert"
--- ]
