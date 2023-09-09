@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , navigate, playSound, reloadApp, resultsUpdated, saveMotivationData, sessionEnded, sessionUpdated, setWakeLock, soundEncoder
+    , navigate, playSound, resultsUpdated, saveMotivationData, sessionEnded, sessionUpdated, setWakeLock, soundEncoder
     )
 
 {-|
@@ -19,7 +19,6 @@ port module Effect exposing
 -}
 
 import Browser.Navigation
-import Date
 import Dict exposing (Dict)
 import Json.Encode
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -127,14 +126,6 @@ loadExternalUrl =
 
 
 port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
-
-
-reloadApp : Effect msg
-reloadApp =
-    SendMessageToJavaScript
-        { tag = "RELOAD_APP"
-        , data = Json.Encode.string ""
-        }
 
 
 playSound : Utils.SessionSound -> Effect msg

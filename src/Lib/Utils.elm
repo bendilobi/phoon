@@ -3,10 +3,6 @@ module Lib.Utils exposing
     , formatSeconds
     )
 
-import Element exposing (..)
-import Element.Border as Border
-import Element.Font as Font
-
 
 formatSeconds : Int -> String
 formatSeconds sec =

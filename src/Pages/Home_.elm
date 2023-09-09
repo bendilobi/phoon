@@ -8,8 +8,6 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.MotivationData as MotivationData exposing (MotivationData, series)
-import Lib.SessionResults as SessionResults
-import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared

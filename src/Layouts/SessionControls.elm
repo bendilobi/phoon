@@ -13,7 +13,6 @@ import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
 import Route exposing (Route)
-import Route.Path
 import Shared
 import View exposing (View)
 

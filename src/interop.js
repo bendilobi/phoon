@@ -14,11 +14,6 @@ export const onReady = ({app, env}) => {
     if (app.ports && app.ports.outgoing) {
         app.ports.outgoing.subscribe(({tag, data}) => {
             switch (tag) {
-                case 'RELOAD_APP':
-                    window.location.reload();
-                    return
-
-
                 case 'STORE_MOTIVATION_DATA':
                     console.log('Saving data to localStorage: ' + data)
                     localStorage.setItem(MOTIVATION_DATA_KEY, JSON.stringify(data))

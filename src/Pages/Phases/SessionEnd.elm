@@ -10,7 +10,6 @@ import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
-import Route.Path
 import Shared
 import View exposing (View)
 
