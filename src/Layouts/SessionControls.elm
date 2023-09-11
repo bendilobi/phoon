@@ -12,6 +12,7 @@ import Layout exposing (Layout)
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
+import Lib.Utils as Utils
 import Route exposing (Route)
 import Shared
 import View exposing (View)
@@ -87,6 +88,11 @@ update shared route msg model =
                     not model.controlsShown
                         && not model.debounceBlock
                         && (Swipe.maxFingers gesture == 2)
+
+                singleTapRegistered =
+                    not model.controlsShown
+                        && Swipe.isTap gesture
+                        && (Swipe.maxFingers gesture == 1)
             in
             ( { model
                 | gesture = Swipe.blanco
@@ -103,9 +109,15 @@ update shared route msg model =
                     , Shared.navigateNext shared.session
                     ]
 
+              else if singleTapRegistered then
+                Effect.playSound Utils.SessionStart
+
               else
                 Effect.none
             )
+
+        ReleaseDebounceBlock ->
+            ( { model | debounceBlock = False }, Effect.none )
 
         Cancelled ->
             let
@@ -138,9 +150,6 @@ update shared route msg model =
                 , Effect.navigate <| Session.currentPath newSession
                 ]
             )
-
-        ReleaseDebounceBlock ->
-            ( { model | debounceBlock = False }, Effect.none )
 
         MouseNavSwipe ->
             ( { model | controlsShown = True }, Effect.none )
