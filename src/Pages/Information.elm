@@ -93,7 +93,7 @@ view shared model =
             [ paragraph [ Font.size 30, Font.bold ] [ text "Zoff - Wim Hoff Atmung mit dem Hauch von Zen" ]
 
             -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
-            , text "Version 0.3.23 \"Der Motivator\""
+            , text "Version 0.3.27 \"Der Motivator\""
             , Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
                 |> Components.Button.view
             , el [] <|
