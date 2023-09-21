@@ -64,12 +64,16 @@ init flagsResult route =
                     MotivationData.fromFields data.storedMotivationData
     in
     ( { zone = Time.utc
+      , today = Date.fromRataDie 0
       , session = Session.new
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
       , motivationData = motData
       }
-    , Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
+    , Effect.batch
+        [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
+        , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
+        ]
     )
 
 
@@ -86,6 +90,11 @@ update route msg model =
     case msg of
         Shared.Msg.AdjustTimeZone newZone ->
             ( { model | zone = newZone }
+            , Effect.none
+            )
+
+        Shared.Msg.AdjustToday today ->
+            ( { model | today = today }
             , Effect.none
             )
 
@@ -117,13 +126,13 @@ update route msg model =
             )
 
         -- TODO: Im Elm Land Discord fragen, wie man mit den Effekten ein Task.andThen macht
-        Shared.Msg.SessionEndedX ->
-            ( model, Effect.sendCmd <| Task.perform Shared.Msg.SessionEnded Date.today )
-
-        Shared.Msg.SessionEnded today ->
+        --       Oder die Untescheidung bzgl. SessionEnded einfach in NavigateTriggered machen?
+        -- Shared.Msg.SessionEndedX ->
+        --     ( model, Effect.sendCmd <| Task.perform Shared.Msg.SessionEnded Date.today )
+        Shared.Msg.SessionEnded ->
             let
                 newMotData =
-                    MotivationData.update model.results today model.motivationData
+                    MotivationData.update model.results model.today model.motivationData
             in
             ( { model
                 | session = Session.new
@@ -141,15 +150,19 @@ navigateNext session =
     case Session.goNext session of
         Just sess ->
             Effect.batch
-                [ Effect.sessionUpdated sess
+                [ --TODO: kann ich hier in Shared auch direkt machen...
+                  Effect.sessionUpdated sess
                 , Effect.navigate <| Session.phasePath <| Session.currentPhase sess
                 ]
 
         Nothing ->
             -- TODO: Ich würde gerne eine SessionEnded-Message mit dem aktuellen
             --       Datum schicken -> wie geht das?
+            -- Task.perform Effect.sessionEnded Date.today
+            --     |> Effect.sendCmd
             -- Date.today
-            --     |> Task.andThen Effect.sessionEnded
+            --     |> Task.andThen (\today -> Task.succeed (Effect.sessionEnded today))
+            --     |> Task.perform
             --     |> Effect.sendCmd
             Effect.sessionEnded
 

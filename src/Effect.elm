@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , navigate, playSound, resultsUpdated, saveMotivationData, sessionEnded, sessionUpdated, setWakeLock, soundEncoder
+    , adjustToday, navigate, playSound, resultsUpdated, saveMotivationData, sessionEnded, sessionUpdated, setWakeLock, soundEncoder
     )
 
 {-|
@@ -19,6 +19,7 @@ port module Effect exposing
 -}
 
 import Browser.Navigation
+import Date
 import Dict exposing (Dict)
 import Json.Encode
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -179,6 +180,22 @@ saveMotivationData motData =
 -- SHARED
 
 
+adjustToday : Date.Date -> Effect msg
+adjustToday today =
+    SendSharedMsg <| Shared.Msg.AdjustToday today
+
+
+
+-- adjustToday =
+--     Date.today
+--         |> Task.perform (\today -> SendSharedMsg <| Shared.Msg.AdjustToday today)
+--         |> sendCmd
+-- Date.today
+--     |> Task.andThen (\today -> Task.succeed Shared.Msg.AdjustToday today)
+--     |> Task.perform SendSharedMsg
+--     |> sendCmd
+
+
 sessionUpdated : Session -> Effect msg
 sessionUpdated session =
     SendSharedMsg <| Shared.Msg.SessionUpdated session
@@ -202,7 +219,7 @@ navigate path =
 
 sessionEnded : Effect msg
 sessionEnded =
-    SendSharedMsg <| Shared.Msg.SessionEndedX
+    SendSharedMsg <| Shared.Msg.SessionEnded
 
 
 

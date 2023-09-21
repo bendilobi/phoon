@@ -1,5 +1,6 @@
 module Shared.Model exposing (Model)
 
+import Date
 import Lib.MotivationData exposing (MotivationData)
 import Lib.Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
@@ -16,6 +17,7 @@ own file, so they can be imported by `Effect.elm`
 -}
 type alias Model =
     { zone : Time.Zone
+    , today : Date.Date
     , session : Session
     , results : SessionResults
     , previousPath : Route.Path.Path

@@ -18,8 +18,9 @@ own file, so they can be imported by `Effect.elm`
 -}
 type Msg
     = AdjustTimeZone Time.Zone
+    | AdjustToday Date.Date
     | SessionUpdated Session
     | ResultsUpdated SessionResults
     | NavigateTriggered Route.Path.Path
-    | SessionEndedX
-    | SessionEnded Date.Date
+      -- | SessionEndedX
+    | SessionEnded

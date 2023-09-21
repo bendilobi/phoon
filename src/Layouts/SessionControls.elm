@@ -1,6 +1,7 @@
 module Layouts.SessionControls exposing (Model, Msg, Props, layout)
 
 import Components.Button
+import Date
 import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -15,6 +16,8 @@ import Lib.Swipe as Swipe
 import Lib.Utils as Utils
 import Route exposing (Route)
 import Shared
+import Shared.Msg
+import Task
 import View exposing (View)
 
 
@@ -51,7 +54,10 @@ init _ =
       , debugButtonsShown = False
       , debounceBlock = False
       }
-    , Effect.setWakeLock
+    , Effect.batch
+        [ Effect.setWakeLock
+        , Effect.sendCmd <| Task.perform AdjustToday Date.today
+        ]
     )
 
 
@@ -65,6 +71,7 @@ type Msg
     | Cancelled
     | AddCycle
     | ReleaseDebounceBlock
+    | AdjustToday Date.Date
       -- | SoundCheck
       -- To simulate gestures via buttons for debugging in desktop browser:
       -- TODO: Herausfinden, ob der Mobile-Simulator von Chrome multitouch kann
@@ -122,6 +129,11 @@ update shared route msg model =
 
         ReleaseDebounceBlock ->
             ( { model | debounceBlock = False }, Effect.none )
+
+        AdjustToday today ->
+            ( model
+            , Effect.adjustToday today
+            )
 
         -- SoundCheck ->
         --     ( model
