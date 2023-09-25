@@ -12,6 +12,7 @@ module Lib.ColorScheme exposing
     , phaseRetention
     , phaseSessionEnd
     , phaseSessionStart
+    , primary
     , primaryInformation
     , primaryMotivation
     , primaryPrepareSession
@@ -28,9 +29,11 @@ import Element.Font as Font
 
 type alias Colors =
     { primary : Color
+    , primaryCopy : Color
+    , primaryMotivation : Color
     , primaryPrepareSession : Color
     , primaryInformation : Color
-    , primaryCopy : Color
+    , primaryMotivationCopy : Color
     , interactActive : Color
     , interactActiveDarker : Color
     , interactActiveCopy : Color
@@ -67,9 +70,11 @@ newSunrise : ColorScheme
 newSunrise =
     ColorScheme
         { primary = rgb255 4 14 30
+        , primaryCopy = rgb255 241 241 230
+        , primaryMotivation = rgb255 4 14 30
         , primaryPrepareSession = rgb255 21 35 65 --57 68 101
         , primaryInformation = rgb255 246 249 255 --229 238 255 --242 249 255 --241 241 230
-        , primaryCopy = rgb255 241 241 230
+        , primaryMotivationCopy = rgb255 241 241 230
         , interactActive = rgb255 132 110 141 --147 110 158 --255 180 93
         , interactActiveDarker = rgb255 85 77 104 --98 80 124 --237 120 105
         , interactActiveCopy = rgb255 241 241 230
@@ -101,10 +106,12 @@ newSunrise =
 newDaylight : ColorScheme
 newDaylight =
     ColorScheme
-        { primary = rgb255 0 148 255
+        { primary = rgb255 4 14 30
+        , primaryCopy = rgb255 241 241 230
+        , primaryMotivation = rgb255 0 148 255
         , primaryPrepareSession = rgb255 100 129 232 --123 145 188
-        , primaryInformation = rgb255 246 249 255 --229 238 255 --242 249 255 --241 241 230
-        , primaryCopy = rgb255 245 249 255
+        , primaryInformation = rgb255 243 249 255 --229 238 255 --242 249 255 --241 241 230
+        , primaryMotivationCopy = rgb255 245 249 255
         , interactActive = rgb255 155 74 146 --243 91 136
         , interactActiveDarker = rgb255 154 59 116 --182 26 87
         , interactActiveCopy = rgb255 245 249 255
@@ -129,21 +136,28 @@ newDaylight =
         , phaseSessionEndCopy = rgb255 255 247 214 --255 255 255
         , navbar = rgb255 0 83 78
         , navbarBorder = rgb255 8 32 30
-        , navbarCopy = rgb255 164 171 189
+        , navbarCopy = rgb255 123 145 188 --141 149 168 --164 171 189
         }
+
+
+primary : ColorScheme -> List (Attribute msg)
+primary (ColorScheme colors) =
+    [ BG.color colors.primary
+    , Font.color colors.primaryCopy
+    ]
 
 
 primaryMotivation : ColorScheme -> List (Attribute msg)
 primaryMotivation (ColorScheme colors) =
-    [ BG.color colors.primary
-    , Font.color colors.primaryCopy
+    [ BG.color colors.primaryMotivation
+    , Font.color colors.primaryMotivationCopy
     ]
 
 
 primaryPrepareSession : ColorScheme -> List (Attribute msg)
 primaryPrepareSession (ColorScheme colors) =
     [ BG.color colors.primaryPrepareSession
-    , Font.color colors.primaryCopy
+    , Font.color colors.primaryMotivationCopy
     ]
 
 

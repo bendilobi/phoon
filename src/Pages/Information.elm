@@ -97,7 +97,7 @@ view shared model =
                 [ text "Zoff - Wim Hof Atmung mit dem Hauch von Zen" ]
 
             -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
-            , text "Version 0.3.46 \"Sunrise\""
+            , text "Version 0.3.48 \"Sunrise\""
             , Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
                 |> Components.Button.view shared.colorScheme
             , el [] <|

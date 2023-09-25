@@ -235,7 +235,7 @@ view props shared route { toContentMsg, model, content } =
                          --  , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
                          -- , Border.color <| rgb255 34 33 31
                          ]
-                            ++ CS.primaryMotivation shared.colorScheme
+                            ++ CS.primary shared.colorScheme
                         )
                     <|
                         el
