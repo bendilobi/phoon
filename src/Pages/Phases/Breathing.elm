@@ -6,6 +6,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
+import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session
 import Lib.Utils as Utils
 import Page exposing (Page)
@@ -21,7 +22,7 @@ page shared route =
         { init = init
         , update = update shared
         , subscriptions = subscriptions shared
-        , view = view
+        , view = view shared
         }
         |> Page.withLayout toLayout
 
@@ -105,13 +106,11 @@ subscriptions shared model =
 -- VIEW
 
 
-view : Model -> View Msg
-view model =
+view : Shared.Model -> Model -> View Msg
+view shared model =
     { title = "Atem-Phase"
     , attributes =
-        [ BG.color <| rgb255 50 49 46
-        , Font.color <| rgb255 200 196 183
-        ]
+        CS.phaseBreathing shared.colorScheme
     , element =
         el
             ([ Font.bold
@@ -121,9 +120,10 @@ view model =
              ]
                 ++ (case model of
                         AtBreath _ In ->
-                            [ BG.color <| rgb255 200 196 183
-                            , Font.color <| rgb255 50 49 46
-                            ]
+                            -- [ BG.color <| rgb255 200 196 183
+                            -- , Font.color <| rgb255 181 78 117 --50 49 46
+                            -- ]
+                            CS.breathingInverted shared.colorScheme
 
                         _ ->
                             []

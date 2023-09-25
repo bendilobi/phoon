@@ -8,6 +8,7 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Font as Font
 import Layouts
+import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Page exposing (Page)
 import Route exposing (Route)
@@ -81,21 +82,24 @@ view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = "Information"
     , attributes =
-        [ BG.color <| rgb255 50 49 46
-        , Font.color <| rgb 1 1 1
-        ]
+        CS.primaryInformation shared.colorScheme
     , element =
         textColumn
             [ width fill
             , spacing 50
             , paddingXY 30 50
             ]
-            [ paragraph [ Font.size 30, Font.bold ] [ text "Zoff - Wim Hoff Atmung mit dem Hauch von Zen" ]
+            [ paragraph
+                [ Font.size 30
+                , Font.bold
+                , Font.color <| CS.guide shared.colorScheme
+                ]
+                [ text "Zoff - Wim Hof Atmung mit dem Hauch von Zen" ]
 
             -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
-            , text "Version 0.3.27 \"Der Motivator\""
+            , text "Version 0.3.45 \"Sunrise\""
             , Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
-                |> Components.Button.view
+                |> Components.Button.view shared.colorScheme
             , el [] <|
                 case MotivationData.getMotivationData shared.motivationData of
                     Nothing ->
@@ -103,7 +107,13 @@ view shared model =
 
                     Just data ->
                         column [ spacing 10 ]
-                            [ el [ Font.bold, Font.size 20 ] <| text "Aktuell gespeicherte Motivationsdaten"
+                            [ el
+                                [ Font.bold
+                                , Font.size 20
+                                , Font.color <| CS.guide shared.colorScheme
+                                ]
+                              <|
+                                text "Aktuell gespeicherte Motivationsdaten"
                             , text <| "Serie: " ++ String.fromInt data.series
                             , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
                             , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)

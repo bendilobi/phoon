@@ -15,7 +15,7 @@
         { "charset": "UTF-8" },
         { "http-equiv": "X-UA-Compatible", "content": "IE=edge" },
         { "name": "viewport", "content": "width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, height=device-height" },
-        { "name": "theme-color", "content": "#0C2654"},
+        { "name": "theme-color", "content": "#040e1e"},
         { "name": "mobile-web-app-capable", "content": "yes" },
         { "name": "apple-touch-fullscreen", "content": "yes" },
         { "name": "apple-mobile-web-app-capable", "content": "yes" }

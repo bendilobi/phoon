@@ -17,6 +17,7 @@ import Date
 import Dict
 import Effect exposing (Effect)
 import Json.Decode
+import Lib.ColorScheme as CS
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
@@ -69,6 +70,7 @@ init flagsResult route =
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
       , motivationData = motData
+      , colorScheme = CS.newSunrise
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here

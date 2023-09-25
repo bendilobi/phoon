@@ -6,6 +6,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
+import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
 import Page exposing (Page)
@@ -80,9 +81,7 @@ view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = "Session End"
     , attributes =
-        [ BG.color <| rgb255 50 49 46
-        , Font.color <| rgb255 255 255 255
-        ]
+        CS.phaseSessionEnd shared.colorScheme
     , element =
         column
             [ width fill

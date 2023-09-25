@@ -11,6 +11,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons
+import Lib.ColorScheme as CS exposing (ColorScheme)
 
 
 
@@ -60,8 +61,8 @@ withDisabled isDisabled (Settings settings) =
 --       Mit Swipe? Oder doch mit :on-hover CSS + ontouchstart... Siehe Internet irgendwo...
 
 
-view : Button msg -> Element msg
-view (Settings settings) =
+view : ColorScheme -> Button msg -> Element msg
+view colorScheme (Settings settings) =
     let
         commonAttributes =
             [ width <| px settings.size
@@ -77,10 +78,7 @@ view (Settings settings) =
     in
     if settings.isDisabled then
         el
-            ([ BG.color <| rgb255 157 154 143
-             , Border.color <| rgb255 200 200 200
-             , Font.color <| rgb255 200 200 200
-             ]
+            (CS.interactInactive colorScheme
                 ++ commonAttributes
             )
         <|
@@ -88,12 +86,10 @@ view (Settings settings) =
 
     else
         el
-            ([ BG.color <| rgb255 157 154 143
-             , Border.color <| rgb255 200 200 200
-             , Font.color <| rgb255 70 70 70
-             , Events.onClick settings.onPress
+            ([ Events.onClick settings.onPress
              ]
                 ++ commonAttributes
+                ++ CS.interactActive colorScheme
             )
         <|
             viewIcon settings.crement settings.size

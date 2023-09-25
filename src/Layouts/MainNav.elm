@@ -8,6 +8,7 @@ import Element.Font as Font
 import FeatherIcons
 import Html.Events as HEvents
 import Layout exposing (Layout)
+import Lib.ColorScheme as CS exposing (ColorScheme)
 import Route exposing (Route)
 import Route.Path
 import Shared
@@ -23,7 +24,7 @@ layout props shared route =
     Layout.new
         { init = init
         , update = update
-        , view = view route
+        , view = view shared route
         , subscriptions = subscriptions
         }
 
@@ -67,8 +68,8 @@ subscriptions model =
 -- VIEW
 
 
-view : Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
-view route { toContentMsg, model, content } =
+view : Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = [ Font.size 17 ]
     , element =
@@ -79,30 +80,34 @@ view route { toContentMsg, model, content } =
                    ]
             )
             [ el [ height fill, width fill ] content.element
-            , viewNavBar route |> map toContentMsg
+            , viewNavBar shared route |> map toContentMsg
             ]
     }
 
 
-viewNavBar : Route () -> Element Msg
-viewNavBar route =
+viewNavBar : Shared.Model -> Route () -> Element Msg
+viewNavBar shared route =
     column
-        [ width fill
-        , BG.color <| rgb255 247 242 226
-        , Font.color <| rgb 0 0 0
-        , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
-        , Border.color <| rgb255 200 196 166
-        ]
+        ([ width fill
+
+         -- , BG.color <| rgb255 0 15 8
+         -- , Font.color <| rgb 241 241 230
+         , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
+
+         -- , Border.color <| rgb255 24 37 68 --52 63 97
+         ]
+            ++ CS.navbar shared.colorScheme
+        )
         [ row
             [ width fill
             , paddingEach { top = 10, left = 50, right = 50, bottom = 3 }
             ]
             [ el [ alignLeft ] <|
-                viewNavButton route FeatherIcons.thumbsUp Route.Path.Home_
+                viewNavButton shared.colorScheme route FeatherIcons.thumbsUp Route.Path.Home_
             , el [ centerX ] <|
-                viewNavButton route FeatherIcons.play Route.Path.PrepareSession
+                viewNavButton shared.colorScheme route FeatherIcons.play Route.Path.PrepareSession
             , el [ alignRight ] <|
-                viewNavButton route FeatherIcons.info Route.Path.Information
+                viewNavButton shared.colorScheme route FeatherIcons.info Route.Path.Information
             ]
         , el
             [ width fill
@@ -116,16 +121,18 @@ viewNavBar route =
         ]
 
 
-viewNavButton : Route () -> FeatherIcons.Icon -> Route.Path.Path -> Element Msg
-viewNavButton route icon path =
+viewNavButton : ColorScheme -> Route () -> FeatherIcons.Icon -> Route.Path.Path -> Element Msg
+viewNavButton colorScheme route icon path =
     el
-        [ Font.color <|
-            if route.path == path then
-                rgb255 82 155 178
+        (if route.path == path then
+            [ Font.color <| CS.guide colorScheme ]
 
-            else
-                rgb 0 0 0
-        ]
+         else
+            []
+         --112 119 136
+         --51 75 73
+         --121 128 118
+        )
     <|
         html <|
             FeatherIcons.toHtml [ HEvents.onClick <| NavButtonClicked path ] <|

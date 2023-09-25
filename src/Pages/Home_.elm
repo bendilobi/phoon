@@ -7,7 +7,8 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
-import Lib.MotivationData as MotivationData exposing (MotivationData, series)
+import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -80,35 +81,35 @@ view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = "Motivation"
     , attributes =
-        [ BG.color <| rgb255 82 155 178
-        , Font.color <| rgb255 255 253 231
-        ]
+        CS.primaryMotivation shared.colorScheme
     , element =
         column
             [ width fill
             , height fill
-            , BG.color <| rgb255 82 155 178
+
+            -- , BG.color <| rgb255 4 14 30 --8 25 54
             ]
             [ -- TODO: Die Titeldarstellung ins Layout auslagern?
-              el
-                [ width fill
-                , Font.color <| rgb255 82 155 178
-                , Font.center
-                , Font.bold
-                , BG.color <| rgb255 50 49 46
-                , padding 10
-                , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                , Border.color <| rgb255 34 33 31
-                ]
-              <|
-                text "Motivation finden"
-            , viewMotivationData model.today shared.motivationData
+              --   el
+              --     [ width fill
+              --     , Font.color <| rgb255 255 247 214
+              --     , Font.center
+              --     , Font.bold
+              --     , BG.color <| rgb255 8 25 54
+              --     , padding 10
+              --     , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+              --     , Border.color <| rgb255 34 33 31
+              --     ]
+              --   <|
+              --     text "Motivation finden"
+              -- ,
+              viewMotivationData model.today shared.motivationData shared.colorScheme
             ]
     }
 
 
-viewMotivationData : Date.Date -> MotivationData -> Element msg
-viewMotivationData today motData =
+viewMotivationData : Date.Date -> MotivationData -> ColorScheme -> Element msg
+viewMotivationData today motData colorScheme =
     let
         daysSinceLastSession =
             MotivationData.lastSessionDate motData
@@ -120,10 +121,10 @@ viewMotivationData today motData =
 
         seriesColor =
             if seriesContinued then
-                rgb255 170 255 0
+                CS.seriesGood colorScheme
 
             else
-                rgb255 184 37 17
+                CS.seriesBad colorScheme
     in
     column
         [ width fill

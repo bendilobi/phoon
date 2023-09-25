@@ -8,6 +8,7 @@ import Element.Border as Border
 import Element.Font as Font
 import FeatherIcons
 import Layouts
+import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session
 import Page exposing (Page)
 import Route exposing (Route)
@@ -114,9 +115,7 @@ view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = "Preparation Phase"
     , attributes =
-        [ BG.color <| rgb255 50 49 46
-        , Font.color <| rgb255 200 196 183
-        ]
+        CS.phaseSessionStart shared.colorScheme
     , element =
         column [ width fill, spacing 100 ]
             [ el
@@ -138,9 +137,10 @@ view shared model =
                  ]
                     ++ (case model.breathingPreview of
                             In ->
-                                [ BG.color <| rgb255 200 196 183
-                                , Font.color <| rgb255 50 49 46
-                                ]
+                                -- [ BG.color <| rgb255 200 196 183
+                                -- , Font.color <| rgb255 105 56 112 --50 49 46
+                                -- ]
+                                CS.sessionStartInverted shared.colorScheme
 
                             Out ->
                                 []
@@ -166,7 +166,8 @@ viewReminder shared icon =
         row
             [ spacing 10
             , Font.size 30
-            , Font.color <| rgb255 200 196 183
+
+            -- , Font.color <| rgb255 200 196 183
             ]
             [ el [] <|
                 html <|

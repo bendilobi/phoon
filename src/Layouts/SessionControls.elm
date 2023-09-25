@@ -10,6 +10,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Layout exposing (Layout)
+import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
@@ -51,7 +52,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = False
+      , debugButtonsShown = True
       , debounceBlock = False
       }
     , Effect.batch
@@ -213,7 +214,7 @@ view props shared route { toContentMsg, model, content } =
                             [ viewTouchOverlay model.debugButtonsShown
                                 |> map toContentMsg
                             , if model.controlsShown then
-                                viewSessionControls route
+                                viewSessionControls shared.colorScheme route
                                     |> map toContentMsg
 
                               else
@@ -228,17 +229,21 @@ view props shared route { toContentMsg, model, content } =
                 ]
                 [ if props.showSessionProgress then
                     el
-                        [ width fill
-                        , BG.color <| rgb255 50 49 46
-                        , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                        , Border.color <| rgb255 34 33 31
-                        ]
+                        ([ width fill
+
+                         -- , BG.color <| rgb255 4 14 30 --50 49 46
+                         --  , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                         -- , Border.color <| rgb255 34 33 31
+                         ]
+                            ++ CS.primaryMotivation shared.colorScheme
+                        )
                     <|
                         el
                             [ centerX
                             , padding 10
                             , Font.size 30
-                            , Font.color <| rgb 1 1 1
+
+                            -- , Font.color <| rgb 1 1 1
                             ]
                         <|
                             text <|
@@ -280,6 +285,7 @@ viewDebugButton : Msg -> String -> Element Msg
 viewDebugButton msg label =
     button
         [ BG.color <| rgb255 33 33 33
+        , Font.color <| rgb 1 1 1
         , padding 10
         , width fill
         , Font.center
@@ -290,8 +296,8 @@ viewDebugButton msg label =
         }
 
 
-viewSessionControls : Route () -> Element Msg
-viewSessionControls route =
+viewSessionControls : ColorScheme -> Route () -> Element Msg
+viewSessionControls colorScheme route =
     column [ centerX, centerY ]
         [ Components.Button.new
             (if route.path == Session.phasePath Session.End then
@@ -304,6 +310,6 @@ viewSessionControls route =
                 , label = text "Sitzung abbrechen"
                 }
             )
-            |> Components.Button.view
+            |> Components.Button.view colorScheme
         , el [ height <| px 100 ] none
         ]

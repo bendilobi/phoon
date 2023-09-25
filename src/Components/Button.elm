@@ -5,6 +5,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
+import Lib.ColorScheme as CS exposing (ColorScheme)
 
 
 
@@ -47,13 +48,14 @@ withDisabled isDisabled (Settings settings) =
 --       Mit Swipe? Oder doch mit :on-hover CSS + ontouchstart... Siehe Internet irgendwo...
 
 
-view : Button msg -> Element msg
-view (Settings settings) =
+view : ColorScheme -> Button msg -> Element msg
+view colorScheme (Settings settings) =
     let
         commonAttributes =
             [ width fill
             , padding 20
-            , Font.color <| rgb 1 1 1
+
+            -- , Font.color <| rgb255 241 241 230
             , Font.center
             , Border.rounded 15
             , Border.width 1
@@ -61,21 +63,13 @@ view (Settings settings) =
     in
     if settings.isDisabled then
         el
-            ([ BG.color <| rgb255 157 154 143
-             , Border.color <| rgb255 72 70 66
-             ]
-                ++ commonAttributes
-            )
+            (commonAttributes ++ CS.interactInactive colorScheme)
         <|
             settings.label
 
     else
         button
-            ([ BG.color <| rgb255 33 33 33
-             , Border.color <| rgb 0 0 0
-             ]
-                ++ commonAttributes
-            )
+            (commonAttributes ++ CS.interactActive colorScheme)
             { onPress =
                 if settings.isDisabled then
                     Nothing

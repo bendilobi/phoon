@@ -5,6 +5,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Layouts
+import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
 import Page exposing (Page)
@@ -78,9 +79,7 @@ view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = "Retentions-Phase"
     , attributes =
-        [ Background.color <| rgb255 38 86 86
-        , Font.color <| rgb255 255 255 255
-        ]
+        CS.phaseRetention shared.colorScheme
     , element =
         el [ Font.size 30 ] <| text <| Utils.formatSeconds <| SessionResults.currentRetentionTime shared.results
     }

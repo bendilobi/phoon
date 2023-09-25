@@ -8,6 +8,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
+import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
@@ -112,23 +113,29 @@ subscriptions model =
 view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = "Session"
-    , attributes = []
+    , attributes = CS.primaryPrepareSession shared.colorScheme
     , element =
         column
             [ width fill
             , height fill
-            , BG.color <| rgb255 200 196 183
+
+            -- , BG.color <| rgb255 21 35 65 --57 68 101
             ]
             [ el
-                [ width fill
-                , Font.color <| rgb255 200 196 183
-                , Font.center
-                , Font.bold
-                , BG.color <| rgb255 50 49 46
-                , padding 10
-                , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                , Border.color <| rgb255 34 33 31
-                ]
+                ([ width fill
+
+                 -- , Font.color <| rgb255 241 241 230
+                 , Font.center
+                 , Font.bold
+
+                 -- , BG.color <| rgb255 4 14 30
+                 , padding 10
+
+                 --  , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                 --  , Border.color <| rgb255 34 33 31
+                 ]
+                    ++ CS.primaryMotivation shared.colorScheme
+                )
               <|
                 text "Sitzung vorbereiten"
             , column
@@ -141,7 +148,7 @@ view shared model =
                 [ column [ centerX, spacing 30 ]
                     [ row
                         [ centerX
-                        , spacing 10
+                        , spacing 20
                         , Font.size 20
                         ]
                         [ Components.CrementButton.new
@@ -155,7 +162,7 @@ view shared model =
                                 else
                                     Components.CrementButton.withDisabled False
                                )
-                            |> Components.CrementButton.view
+                            |> Components.CrementButton.view shared.colorScheme
                         , row []
                             [ el [ Font.bold ] <| text <| String.fromInt <| Session.remainingCycles shared.session
                             , text " Runde"
@@ -166,7 +173,7 @@ view shared model =
                             , crement =
                                 Components.CrementButton.In
                             }
-                            |> Components.CrementButton.view
+                            |> Components.CrementButton.view shared.colorScheme
                         ]
                     , paragraph []
                         [ text "Geschätztes Ende: "
@@ -179,7 +186,7 @@ view shared model =
                         { onPress = Just SessionStartPressed
                         , label = text "Los geht's!"
                         }
-                        |> Components.Button.view
+                        |> Components.Button.view shared.colorScheme
                     )
                 ]
             ]
