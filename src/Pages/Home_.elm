@@ -37,12 +37,12 @@ toLayout model =
 
 
 type alias Model =
-    { today : Date.Date }
+    {}
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { today = Date.fromRataDie 0 }
+    ( {}
     , Effect.sendCmd <| Task.perform TodayIs Date.today
     )
 
@@ -59,8 +59,8 @@ update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         TodayIs date ->
-            ( { model | today = date }
-            , Effect.none
+            ( model
+            , Effect.adjustToday date
             )
 
 
@@ -103,7 +103,7 @@ view shared model =
               --   <|
               --     text "Motivation finden"
               -- ,
-              viewMotivationData model.today shared.motivationData shared.colorScheme
+              viewMotivationData shared.today shared.motivationData shared.colorScheme
             ]
     }
 

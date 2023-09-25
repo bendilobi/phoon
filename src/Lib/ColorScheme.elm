@@ -5,6 +5,7 @@ module Lib.ColorScheme exposing
     , interactActive
     , interactInactive
     , navbar
+    , newDaylight
     , newSunrise
     , phaseBreathing
     , phaseRelaxRetention
@@ -94,6 +95,41 @@ newSunrise =
         , navbar = rgb255 0 15 8
         , navbarBorder = rgb255 24 37 68 --52 63 97
         , navbarCopy = rgb255 91 101 96
+        }
+
+
+newDaylight : ColorScheme
+newDaylight =
+    ColorScheme
+        { primary = rgb255 0 148 255
+        , primaryPrepareSession = rgb255 100 129 232 --123 145 188
+        , primaryInformation = rgb255 246 249 255 --229 238 255 --242 249 255 --241 241 230
+        , primaryCopy = rgb255 245 249 255
+        , interactActive = rgb255 155 74 146 --243 91 136
+        , interactActiveDarker = rgb255 154 59 116 --182 26 87
+        , interactActiveCopy = rgb255 245 249 255
+        , interactInactive = rgb255 167 170 189
+        , interactInactiveDarker = rgb255 115 118 135
+        , interactInactiveCopy = rgb255 245 248 255
+        , guide = rgb255 197 167 117 --238 232 169
+        , actionNeeded = rgb255 184 37 17
+        , actionNeededCopy = rgb255 0 0 0
+        , success = rgb255 0 125 84
+        , seriesGood = rgb255 238 232 169
+        , seriesBad = rgb255 184 37 17
+        , phaseSessionStart = rgb255 105 56 112
+        , phaseSessionStartCopy = rgb255 200 196 183
+        , phaseBreathing = rgb255 181 78 117 --50 49 46
+        , phaseBreathingCopy = rgb255 200 196 183
+        , phaseRetention = rgb255 255 180 93 --38 86 86
+        , phaseRetentionCopy = rgb255 12 38 84 --255 255 255
+        , phaseRelaxRetention = rgb255 249 248 113 --46 69 131
+        , phaseRelaxRetentionCopy = rgb255 0 148 255 --255 255 255
+        , phaseSessionEnd = rgb255 0 148 255 --50 49 46
+        , phaseSessionEndCopy = rgb255 255 247 214 --255 255 255
+        , navbar = rgb255 0 83 78
+        , navbarBorder = rgb255 8 32 30
+        , navbarCopy = rgb255 164 171 189
         }
 
 

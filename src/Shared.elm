@@ -96,7 +96,24 @@ update route msg model =
             )
 
         Shared.Msg.AdjustToday today ->
-            ( { model | today = today }
+            let
+                practicedToday =
+                    case MotivationData.lastSessionDate model.motivationData of
+                        Nothing ->
+                            False
+
+                        Just date ->
+                            date == today
+            in
+            ( { model
+                | today = today
+                , colorScheme =
+                    if practicedToday then
+                        CS.newDaylight
+
+                    else
+                        CS.newSunrise
+              }
             , Effect.none
             )
 
