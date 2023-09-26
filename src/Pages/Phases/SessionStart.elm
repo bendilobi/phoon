@@ -137,9 +137,6 @@ view shared model =
                  ]
                     ++ (case model.breathingPreview of
                             In ->
-                                -- [ BG.color <| rgb255 200 196 183
-                                -- , Font.color <| rgb255 105 56 112 --50 49 46
-                                -- ]
                                 CS.sessionStartInverted shared.colorScheme
 
                             Out ->
@@ -166,8 +163,6 @@ viewReminder shared icon =
         row
             [ spacing 10
             , Font.size 30
-
-            -- , Font.color <| rgb255 200 196 183
             ]
             [ el [] <|
                 html <|

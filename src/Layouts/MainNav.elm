@@ -79,7 +79,12 @@ view shared route { toContentMsg, model, content } =
                    , height fill
                    ]
             )
-            [ el [ height fill, width fill ] content.element
+            [ el
+                [ height fill
+                , width fill
+                , scrollbarY
+                ]
+                content.element
             , viewNavBar shared route |> map toContentMsg
             ]
     }
@@ -89,12 +94,7 @@ viewNavBar : Shared.Model -> Route () -> Element Msg
 viewNavBar shared route =
     column
         ([ width fill
-
-         -- , BG.color <| rgb255 0 15 8
-         -- , Font.color <| rgb 241 241 230
          , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
-
-         -- , Border.color <| rgb255 24 37 68 --52 63 97
          ]
             ++ CS.navbar shared.colorScheme
         )
@@ -125,13 +125,10 @@ viewNavButton : ColorScheme -> Route () -> FeatherIcons.Icon -> Route.Path.Path 
 viewNavButton colorScheme route icon path =
     el
         (if route.path == path then
-            [ Font.color <| CS.guide colorScheme ]
+            [ Font.color <| CS.guideColor colorScheme ]
 
          else
             []
-         --112 119 136
-         --51 75 73
-         --121 128 118
         )
     <|
         html <|

@@ -230,10 +230,7 @@ view props shared route { toContentMsg, model, content } =
                 [ if props.showSessionProgress then
                     el
                         ([ width fill
-
-                         -- , BG.color <| rgb255 4 14 30 --50 49 46
-                         --  , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                         -- , Border.color <| rgb255 34 33 31
+                         , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
                          ]
                             ++ CS.primary shared.colorScheme
                         )
@@ -242,8 +239,6 @@ view props shared route { toContentMsg, model, content } =
                             [ centerX
                             , padding 10
                             , Font.size 30
-
-                            -- , Font.color <| rgb 1 1 1
                             ]
                         <|
                             text <|

@@ -171,14 +171,6 @@ navigateNext session =
                 ]
 
         Nothing ->
-            -- TODO: Ich würde gerne eine SessionEnded-Message mit dem aktuellen
-            --       Datum schicken -> wie geht das?
-            -- Task.perform Effect.sessionEnded Date.today
-            --     |> Effect.sendCmd
-            -- Date.today
-            --     |> Task.andThen (\today -> Task.succeed (Effect.sessionEnded today))
-            --     |> Task.perform
-            --     |> Effect.sendCmd
             Effect.sessionEnded
 
 

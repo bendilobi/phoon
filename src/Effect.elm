@@ -185,17 +185,6 @@ adjustToday today =
     SendSharedMsg <| Shared.Msg.AdjustToday today
 
 
-
--- adjustToday =
---     Date.today
---         |> Task.perform (\today -> SendSharedMsg <| Shared.Msg.AdjustToday today)
---         |> sendCmd
--- Date.today
---     |> Task.andThen (\today -> Task.succeed Shared.Msg.AdjustToday today)
---     |> Task.perform SendSharedMsg
---     |> sendCmd
-
-
 sessionUpdated : Session -> Effect msg
 sessionUpdated session =
     SendSharedMsg <| Shared.Msg.SessionUpdated session
@@ -209,12 +198,6 @@ resultsUpdated results =
 navigate : Route.Path.Path -> Effect msg
 navigate path =
     SendSharedMsg <| Shared.Msg.NavigateTriggered path
-
-
-
--- sessionEnded : Date.Date -> Effect msg
--- sessionEnded today =
---     SendSharedMsg <| Shared.Msg.SessionEnded today
 
 
 sessionEnded : Effect msg

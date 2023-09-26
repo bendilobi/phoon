@@ -120,9 +120,6 @@ view shared model =
              ]
                 ++ (case model of
                         AtBreath _ In ->
-                            -- [ BG.color <| rgb255 200 196 183
-                            -- , Font.color <| rgb255 181 78 117 --50 49 46
-                            -- ]
                             CS.breathingInverted shared.colorScheme
 
                         _ ->

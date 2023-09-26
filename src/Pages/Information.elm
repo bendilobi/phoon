@@ -92,12 +92,12 @@ view shared model =
             [ paragraph
                 [ Font.size 30
                 , Font.bold
-                , Font.color <| CS.guide shared.colorScheme
+                , Font.color <| CS.guideColor shared.colorScheme
                 ]
                 [ text "Zoff - Wim Hof Atmung mit dem Hauch von Zen" ]
 
             -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
-            , text "Version 0.3.49 \"Sunrise\""
+            , text "Version 0.4.4 \"Sunrise\""
             , Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
                 |> Components.Button.view shared.colorScheme
             , el [] <|
@@ -110,7 +110,7 @@ view shared model =
                             [ el
                                 [ Font.bold
                                 , Font.size 20
-                                , Font.color <| CS.guide shared.colorScheme
+                                , Font.color <| CS.guideColor shared.colorScheme
                                 ]
                               <|
                                 text "Aktuell gespeicherte Motivationsdaten"
@@ -119,5 +119,112 @@ view shared model =
                             , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
                             , text <| "Max Ret: " ++ String.fromInt data.maxRetention
                             ]
+            , paragraph []
+                [ text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                , text "Blah, schwall... "
+                ]
             ]
     }

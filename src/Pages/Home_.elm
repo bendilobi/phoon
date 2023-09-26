@@ -86,8 +86,6 @@ view shared model =
         column
             [ width fill
             , height fill
-
-            -- , BG.color <| rgb255 4 14 30 --8 25 54
             ]
             [ -- TODO: Die Titeldarstellung ins Layout auslagern?
               --   el
@@ -121,10 +119,10 @@ viewMotivationData today motData colorScheme =
 
         seriesColor =
             if seriesContinued then
-                CS.seriesGood colorScheme
+                CS.seriesGoodColor colorScheme
 
             else
-                CS.seriesBad colorScheme
+                CS.seriesBadColor colorScheme
     in
     column
         [ width fill

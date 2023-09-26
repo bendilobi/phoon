@@ -54,8 +54,6 @@ view colorScheme (Settings settings) =
         commonAttributes =
             [ width fill
             , padding 20
-
-            -- , Font.color <| rgb255 241 241 230
             , Font.center
             , Border.rounded 15
             , Border.width 1

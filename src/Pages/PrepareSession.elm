@@ -118,17 +118,11 @@ view shared model =
         column
             [ width fill
             , height fill
-
-            -- , BG.color <| rgb255 21 35 65 --57 68 101
             ]
             [ el
                 ([ width fill
-
-                 -- , Font.color <| rgb255 241 241 230
                  , Font.center
                  , Font.bold
-
-                 -- , BG.color <| rgb255 4 14 30
                  , padding 10
 
                  --  , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }

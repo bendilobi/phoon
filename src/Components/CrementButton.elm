@@ -67,8 +67,6 @@ view colorScheme (Settings settings) =
         commonAttributes =
             [ width <| px settings.size
             , height <| px settings.size
-
-            -- , Font.color <| rgb 1 1 1
             , Border.rounded <| settings.size // 2
             , Border.width 1
             , centerX

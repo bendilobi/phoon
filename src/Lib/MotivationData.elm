@@ -8,7 +8,7 @@ import Lib.SessionResults as SessionResults exposing (SessionResults)
 
 type
     MotivationData
-    -- TODO: Ist das zu umständliche mit NoData vs MotivationData?
+    -- TODO: Ist das zu umständlich mit NoData vs MotivationData?
     --       Alternative wäre: Den Fall, dass es keine Daten gibt, außerhalb
     --       handhaben. => Ist wohl besser. MotivationData ist eben Daten, nicht NoData...
     = NoData
