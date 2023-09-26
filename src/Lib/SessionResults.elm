@@ -87,12 +87,21 @@ meanRetentionTime results =
             Nothing
 
         Results retTimes currentRetTime ->
-            retTimes
-                |> List.sum
-                |> toFloat
-                |> (\sum -> sum / (toFloat <| List.length retTimes))
-                |> round
-                |> Just
+            let
+                n =
+                    List.length retTimes
+                        |> toFloat
+            in
+            if n == 0 then
+                Nothing
+
+            else
+                retTimes
+                    |> List.sum
+                    |> toFloat
+                    |> (\sum -> sum / n)
+                    |> round
+                    |> Just
 
 
 finishedCycles : SessionResults -> Int

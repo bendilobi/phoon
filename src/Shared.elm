@@ -144,10 +144,6 @@ update route msg model =
                 }
             )
 
-        -- TODO: Im Elm Land Discord fragen, wie man mit den Effekten ein Task.andThen macht
-        --       Oder die Untescheidung bzgl. SessionEnded einfach in NavigateTriggered machen?
-        -- Shared.Msg.SessionEndedX ->
-        --     ( model, Effect.sendCmd <| Task.perform Shared.Msg.SessionEnded Date.today )
         Shared.Msg.SessionEnded ->
             let
                 newMotData =
