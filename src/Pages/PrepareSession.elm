@@ -167,6 +167,12 @@ view shared model =
                             , crement =
                                 Components.CrementButton.In
                             }
+                            |> (if Session.remainingCycles shared.session == 10 then
+                                    Components.CrementButton.withDisabled True
+
+                                else
+                                    Components.CrementButton.withDisabled False
+                               )
                             |> Components.CrementButton.view shared.colorScheme
                         ]
                     , paragraph []
