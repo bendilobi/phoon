@@ -33,7 +33,7 @@ page shared route =
 
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
-    Layouts.MainNav {}
+    Layouts.MainNav { header = Just "Sitzung vorbereiten" }
 
 
 
@@ -109,56 +109,38 @@ view shared model =
     , element =
         column
             [ width fill
-            , height fill
+            , padding 20
+            , Font.center
+            , spacing 70
+            , centerY
             ]
-            [ el
-                ([ width fill
-                 , Font.center
-                 , Font.bold
-                 , padding 10
-
-                 --  , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                 --  , Border.color <| rgb255 34 33 31
-                 ]
-                    ++ CS.primaryMotivation shared.colorScheme
-                )
-              <|
-                text "Sitzung vorbereiten"
-            , column
-                [ width fill
-                , padding 20
-                , Font.center
-                , spacing 70
-                , centerY
-                ]
-                [ column [ centerX, spacing 30 ]
-                    [ IntCrementer.new
-                        { label =
-                            \n ->
-                                row []
-                                    [ el [ Font.bold ] <| text <| String.fromInt n
-                                    , text " Runde"
-                                    , el [ transparent <| n == 1 ] <| text "n"
-                                    ]
-                        , onCrement = CycleCountChanged
-                        }
-                        |> IntCrementer.withMin 1
-                        |> IntCrementer.withMax 9
-                        |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
-                    , paragraph []
-                        [ text "Geschätztes Ende: "
-                        , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared.session shared.zone model.time
-                        , text " Uhr"
-                        ]
+            [ column [ centerX, spacing 30 ]
+                [ IntCrementer.new
+                    { label =
+                        \n ->
+                            row []
+                                [ el [ Font.bold ] <| text <| String.fromInt n
+                                , text " Runde"
+                                , el [ transparent <| n == 1 ] <| text "n"
+                                ]
+                    , onCrement = CycleCountChanged
+                    }
+                    |> IntCrementer.withMin 1
+                    |> IntCrementer.withMax 9
+                    |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
+                , paragraph []
+                    [ text "Geschätztes Ende: "
+                    , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared.session shared.zone model.time
+                    , text " Uhr"
                     ]
-                , el [ width fill ]
-                    (Components.Button.new
-                        { onPress = Just SessionStartPressed
-                        , label = text "Los geht's!"
-                        }
-                        |> Components.Button.view shared.colorScheme
-                    )
                 ]
+            , el [ width fill ]
+                (Components.Button.new
+                    { onPress = Just SessionStartPressed
+                    , label = text "Los geht's!"
+                    }
+                    |> Components.Button.view shared.colorScheme
+                )
             ]
     }
 

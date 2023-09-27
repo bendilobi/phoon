@@ -232,7 +232,7 @@ view props shared route { toContentMsg, model, content } =
                         ([ width fill
                          , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
                          ]
-                            ++ CS.primary shared.colorScheme
+                            ++ CS.primary
                         )
                     <|
                         el

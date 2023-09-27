@@ -141,8 +141,8 @@ primaryColors =
     }
 
 
-primary : ColorScheme -> List (Attribute msg)
-primary (ColorScheme colors) =
+primary : List (Attribute msg)
+primary =
     [ BG.color primaryColors.primary
     , Font.color primaryColors.font
     , Border.color primaryColors.border

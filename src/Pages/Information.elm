@@ -7,6 +7,7 @@ import Date
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
+import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -31,7 +32,7 @@ page shared route =
 
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
-    Layouts.MainNav {}
+    Layouts.MainNav { header = Just "Übung optimieren" }
 
 
 
@@ -132,7 +133,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.12.3 \"Mr. Flexible\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.12.6 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }

@@ -16,7 +16,7 @@ import View exposing (View)
 
 
 type alias Props =
-    {}
+    { header : Maybe String }
 
 
 layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
@@ -24,7 +24,7 @@ layout props shared route =
     Layout.new
         { init = init
         , update = update
-        , view = view shared route
+        , view = view props shared route
         , subscriptions = subscriptions
         }
 
@@ -68,8 +68,8 @@ subscriptions model =
 -- VIEW
 
 
-view : Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
-view shared route { toContentMsg, model, content } =
+view : Props -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = [ Font.size 17 ]
     , element =
@@ -79,7 +79,13 @@ view shared route { toContentMsg, model, content } =
                    , height fill
                    ]
             )
-            [ el
+            [ case props.header of
+                Nothing ->
+                    none
+
+                Just headerText ->
+                    viewHeader headerText |> map toContentMsg
+            , el
                 [ height fill
                 , width fill
                 , scrollbarY
@@ -88,6 +94,21 @@ view shared route { toContentMsg, model, content } =
             , viewNavBar shared route |> map toContentMsg
             ]
     }
+
+
+viewHeader : String -> Element msg
+viewHeader headerText =
+    el
+        ([ width fill
+         , Font.center
+         , Font.bold
+         , padding 10
+         , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+         ]
+            ++ CS.primary
+        )
+    <|
+        text headerText
 
 
 viewNavBar : Shared.Model -> Route () -> Element Msg
