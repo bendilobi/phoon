@@ -10,6 +10,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
+import Element.Input exposing (button)
 import FeatherIcons
 import Lib.ColorScheme as CS exposing (ColorScheme)
 
@@ -28,7 +29,6 @@ type Button msg
         { crement : Crement
         , onPress : msg
         , isDisabled : Bool
-        , size : Int
         }
 
 
@@ -42,7 +42,6 @@ new props =
         { crement = props.crement
         , onPress = props.onPress
         , isDisabled = False
-        , size = 50
         }
 
 
@@ -64,10 +63,16 @@ withDisabled isDisabled (Settings settings) =
 view : ColorScheme -> Button msg -> Element msg
 view colorScheme (Settings settings) =
     let
+        size =
+            50
+
+        iconSize =
+            35
+
         commonAttributes =
-            [ width <| px settings.size
-            , height <| px settings.size
-            , Border.rounded <| settings.size // 2
+            [ width <| px size
+            , height <| px size
+            , Border.rounded <| size // 2
             , Border.width 1
             , centerX
             , centerY
@@ -80,17 +85,14 @@ view colorScheme (Settings settings) =
                 ++ commonAttributes
             )
         <|
-            viewIcon settings.crement settings.size
+            el [ centerX, centerY ] <|
+                viewIcon settings.crement iconSize
 
     else
-        el
-            ([ Events.onClick settings.onPress
-             ]
-                ++ commonAttributes
-                ++ CS.interactActive colorScheme
-            )
-        <|
-            viewIcon settings.crement settings.size
+        button (CS.interactActive colorScheme ++ commonAttributes)
+            { onPress = Just settings.onPress
+            , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
+            }
 
 
 viewIcon : Crement -> Int -> Element msg

@@ -110,11 +110,11 @@ viewIntroduction shared =
         -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
         , paragraph [] [ text """
         Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
-        Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheidest, wann es 
-        weitergeht (Beginn und Ende der Retention), tippst Du mit zwei Fingern irgendwo auf den Bildschirm.
+        Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
+        weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.11 \"Sunrise\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.12 \"Sunrise\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }

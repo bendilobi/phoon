@@ -2,6 +2,7 @@ module Pages.PrepareSession exposing (Model, Msg, page)
 
 import Components.Button
 import Components.CrementButton
+import Components.IntCrementer as IntCrementer
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -60,8 +61,7 @@ init () =
 type Msg
     = Tick Time.Posix
     | SessionStartPressed
-    | AddCyclePressed
-    | RemoveCyclePressed
+    | CycleCountChanged Int
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -82,17 +82,10 @@ update shared msg model =
                 ]
             )
 
-        AddCyclePressed ->
+        CycleCountChanged cycles ->
             ( model
             , shared.session
-                |> Session.withCycles (Session.remainingCycles shared.session + 1)
-                |> Effect.sessionUpdated
-            )
-
-        RemoveCyclePressed ->
-            ( model
-            , shared.session
-                |> Session.withCycles (Session.remainingCycles shared.session - 1)
+                |> Session.withCycles cycles
                 |> Effect.sessionUpdated
             )
 
@@ -140,29 +133,21 @@ view shared model =
                 , centerY
                 ]
                 [ column [ centerX, spacing 30 ]
-                    [ row
-                        [ centerX
-                        , spacing 20
-                        , Font.size 20
-                        ]
-                        [ Components.CrementButton.new
-                            { onPress = RemoveCyclePressed
-                            , crement = Components.CrementButton.De
+                    [ el [ centerX, Font.size 20 ]
+                        (IntCrementer.new
+                            { label =
+                                \n ->
+                                    row []
+                                        [ el [ Font.bold ] <| text <| String.fromInt n
+                                        , text " Runde"
+                                        , el [ transparent <| n == 1 ] <| text "n"
+                                        ]
+                            , onCrement = CycleCountChanged
                             }
-                            |> Components.CrementButton.withDisabled (Session.remainingCycles shared.session == 1)
-                            |> Components.CrementButton.view shared.colorScheme
-                        , row []
-                            [ el [ Font.bold ] <| text <| String.fromInt <| Session.remainingCycles shared.session
-                            , text " Runde"
-                            , el [ transparent <| Session.remainingCycles shared.session == 1 ] <| text "n"
-                            ]
-                        , Components.CrementButton.new
-                            { onPress = AddCyclePressed
-                            , crement = Components.CrementButton.In
-                            }
-                            |> Components.CrementButton.withDisabled (Session.remainingCycles shared.session == 10)
-                            |> Components.CrementButton.view shared.colorScheme
-                        ]
+                            |> IntCrementer.withMin 1
+                            |> IntCrementer.withMax 9
+                            |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
+                        )
                     , paragraph []
                         [ text "Geschätztes Ende: "
                         , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared.session shared.zone model.time
