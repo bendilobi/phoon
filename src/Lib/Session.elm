@@ -56,13 +56,17 @@ type Session
         }
 
 
-new : Session
-new =
+new :
+    { cycles : Int
+    , relaxRetDuration : Int
+    }
+    -> Session
+new props =
     Session
-        { state = createState 4
+        { state = createState props.cycles
         , breathCount = Forty
         , breathingSpeed = Normal
-        , relaxRetentionDuration = 15
+        , relaxRetentionDuration = props.relaxRetDuration
         }
 
 

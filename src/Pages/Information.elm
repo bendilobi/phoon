@@ -2,6 +2,7 @@ module Pages.Information exposing (Model, Msg, page)
 
 import Browser.Navigation
 import Components.Button
+import Components.IntCrementer as IntCrementer
 import Date
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -10,6 +11,7 @@ import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.Session as Session exposing (Session)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -20,7 +22,7 @@ page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
         { init = init
-        , update = update
+        , update = update shared
         , subscriptions = subscriptions
         , view = view shared
         }
@@ -53,15 +55,31 @@ init () =
 
 type Msg
     = ReloadApp
+    | DefaultCyclesChanged Int
+    | DefaultRelaxRetDurationChanged Int
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update shared msg model =
     case msg of
         ReloadApp ->
             ( model
             , Effect.sendCmd Browser.Navigation.reload
               --AndSkipCache
+            )
+
+        DefaultCyclesChanged cycles ->
+            ( model
+            , shared.session
+                |> Session.withCycles cycles
+                |> Effect.sessionUpdated
+            )
+
+        DefaultRelaxRetDurationChanged seconds ->
+            ( model
+            , shared.session
+                |> Session.withRelaxRetDuration seconds
+                |> Effect.sessionUpdated
             )
 
 
@@ -86,7 +104,7 @@ view shared model =
     , element =
         column
             [ width fill
-            , spacing 30
+            , spacing 60
             , paddingXY 20 30
             , Font.size 15
             ]
@@ -114,7 +132,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.12 \"Sunrise\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.12.3 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -127,7 +145,51 @@ viewIntroduction shared =
 
 viewSettings : Shared.Model -> Element Msg
 viewSettings shared =
-    text "TODO: Settings"
+    let
+        settingsHeading =
+            [ Font.size 15 ]
+    in
+    column [ width fill, spacing 20 ]
+        [ el
+            [ Font.bold
+            , Font.size 20
+            , Font.color <| CS.guideColor shared.colorScheme
+            ]
+          <|
+            text "Übung anpassen"
+        , el settingsHeading <| text "Anzahl Runden"
+        , IntCrementer.new
+            { label =
+                \n ->
+                    paragraph []
+                        [ el [ Font.bold ] <| text <| String.fromInt n
+                        , text " Runde"
+                        , el [ transparent <| n == 1 ] <| text "n"
+                        ]
+            , onCrement = DefaultCyclesChanged
+            }
+            |> IntCrementer.withMin 1
+            |> IntCrementer.withMax 9
+            |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
+        , el
+            ([ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
+                ++ settingsHeading
+            )
+          <|
+            text "Dauer der Entspannungsretention"
+        , IntCrementer.new
+            { label =
+                \n ->
+                    paragraph []
+                        [ el [ Font.bold ] <| text <| String.fromInt n
+                        , text " Sekunden"
+                        ]
+            , onCrement = DefaultRelaxRetDurationChanged
+            }
+            |> IntCrementer.withMin 5
+            |> IntCrementer.withMax 30
+            |> IntCrementer.view shared.colorScheme (Session.relaxRetDuration shared.session)
+        ]
 
 
 viewTechInfo : Shared.Model -> Element msg
@@ -138,10 +200,10 @@ viewTechInfo shared =
                 text "Noch keine Motivationsdaten vorhanden"
 
             Just data ->
-                column [ spacing 10 ]
+                column [ spacing 5, Font.size 13 ]
                     [ el
                         [ Font.bold
-                        , Font.size 17
+                        , Font.size 15
                         , Font.color <| CS.guideColor shared.colorScheme
                         ]
                       <|

@@ -48,20 +48,23 @@ withMax max (Settings settings) =
 
 view : ColorScheme -> Int -> IntCrementer msg -> Element msg
 view colorScheme currentInt (Settings settings) =
-    row
-        [ spacing 20
-        ]
-        [ CrementButton.new
-            { onPress = settings.onCrement <| currentInt - 1
-            , crement = CrementButton.De
-            }
-            |> CrementButton.withDisabled (Just currentInt == settings.min)
-            |> CrementButton.view colorScheme
-        , settings.label currentInt
-        , CrementButton.new
-            { onPress = settings.onCrement <| currentInt + 1
-            , crement = CrementButton.In
-            }
-            |> CrementButton.withDisabled (Just currentInt == settings.max)
-            |> CrementButton.view colorScheme
-        ]
+    el [ width fill ] <|
+        row
+            [ spacing 20
+            , Font.size 20
+            , centerX
+            ]
+            [ CrementButton.new
+                { onPress = settings.onCrement <| currentInt - 1
+                , crement = CrementButton.De
+                }
+                |> CrementButton.withDisabled (Just currentInt == settings.min)
+                |> CrementButton.view colorScheme
+            , settings.label currentInt
+            , CrementButton.new
+                { onPress = settings.onCrement <| currentInt + 1
+                , crement = CrementButton.In
+                }
+                |> CrementButton.withDisabled (Just currentInt == settings.max)
+                |> CrementButton.view colorScheme
+            ]

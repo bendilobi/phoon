@@ -66,7 +66,9 @@ init flagsResult route =
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
-      , session = Session.new
+
+      --TODO: Settings von localStorage kommen lassen
+      , session = Session.new { cycles = 4, relaxRetDuration = 15 }
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
       , motivationData = motData
@@ -150,7 +152,8 @@ update route msg model =
                     MotivationData.update model.results model.today model.motivationData
             in
             ( { model
-                | session = Session.new
+                --TODO: Settings verwenden
+                | session = Session.new { cycles = 4, relaxRetDuration = 15 }
                 , motivationData = newMotData
               }
             , Effect.batch

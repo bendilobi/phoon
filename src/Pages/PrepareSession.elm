@@ -1,7 +1,6 @@
 module Pages.PrepareSession exposing (Model, Msg, page)
 
 import Components.Button
-import Components.CrementButton
 import Components.IntCrementer as IntCrementer
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -133,21 +132,19 @@ view shared model =
                 , centerY
                 ]
                 [ column [ centerX, spacing 30 ]
-                    [ el [ centerX, Font.size 20 ]
-                        (IntCrementer.new
-                            { label =
-                                \n ->
-                                    row []
-                                        [ el [ Font.bold ] <| text <| String.fromInt n
-                                        , text " Runde"
-                                        , el [ transparent <| n == 1 ] <| text "n"
-                                        ]
-                            , onCrement = CycleCountChanged
-                            }
-                            |> IntCrementer.withMin 1
-                            |> IntCrementer.withMax 9
-                            |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
-                        )
+                    [ IntCrementer.new
+                        { label =
+                            \n ->
+                                row []
+                                    [ el [ Font.bold ] <| text <| String.fromInt n
+                                    , text " Runde"
+                                    , el [ transparent <| n == 1 ] <| text "n"
+                                    ]
+                        , onCrement = CycleCountChanged
+                        }
+                        |> IntCrementer.withMin 1
+                        |> IntCrementer.withMax 9
+                        |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
                     , paragraph []
                         [ text "Geschätztes Ende: "
                         , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared.session shared.zone model.time
