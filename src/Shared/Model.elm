@@ -3,7 +3,7 @@ module Shared.Model exposing (Model)
 import Date
 import Lib.ColorScheme as CS
 import Lib.MotivationData exposing (MotivationData)
-import Lib.Session exposing (Session)
+import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
 import Time
@@ -24,4 +24,5 @@ type alias Model =
     , previousPath : Route.Path.Path
     , motivationData : MotivationData
     , colorScheme : CS.ColorScheme
+    , sessionSettings : Session.Settings
     }

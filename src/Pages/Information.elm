@@ -70,17 +70,21 @@ update shared msg model =
             )
 
         DefaultCyclesChanged cycles ->
+            let
+                settings =
+                    shared.sessionSettings
+            in
             ( model
-            , shared.session
-                |> Session.withCycles cycles
-                |> Effect.sessionUpdated
+            , Effect.updateSessionSettings { settings | cycles = cycles }
             )
 
         DefaultRelaxRetDurationChanged seconds ->
+            let
+                settings =
+                    shared.sessionSettings
+            in
             ( model
-            , shared.session
-                |> Session.withRelaxRetDuration seconds
-                |> Effect.sessionUpdated
+            , Effect.updateSessionSettings { settings | relaxRetDuration = seconds }
             )
 
 
@@ -133,7 +137,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.12.6 \"Mr. Flexible\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.12.7 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -171,10 +175,10 @@ viewSettings shared =
             }
             |> IntCrementer.withMin 1
             |> IntCrementer.withMax 9
-            |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
+            |> IntCrementer.view shared.colorScheme shared.sessionSettings.cycles
         , el
-            ([ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-                ++ settingsHeading
+            (paddingEach { top = 15, bottom = 0, left = 0, right = 0 }
+                :: settingsHeading
             )
           <|
             text "Dauer der Entspannungsretention"
@@ -189,7 +193,7 @@ viewSettings shared =
             }
             |> IntCrementer.withMin 5
             |> IntCrementer.withMax 30
-            |> IntCrementer.view shared.colorScheme (Session.relaxRetDuration shared.session)
+            |> IntCrementer.view shared.colorScheme shared.sessionSettings.relaxRetDuration
         ]
 
 

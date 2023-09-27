@@ -3,7 +3,7 @@ module Shared.Msg exposing (Msg(..))
 {-| -}
 
 import Date
-import Lib.Session exposing (Session)
+import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
 import Time
@@ -23,3 +23,4 @@ type Msg
     | ResultsUpdated SessionResults
     | NavigateTriggered Route.Path.Path
     | SessionEnded
+    | SessionSettingsUpdated Session.Settings

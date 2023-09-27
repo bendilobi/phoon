@@ -63,16 +63,19 @@ init flagsResult route =
 
                 Ok data ->
                     MotivationData.fromFields data.storedMotivationData
+
+        --TODO: Settings von localStorage kommen lassen
+        sessionSettings =
+            { cycles = 4, relaxRetDuration = 15 }
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
-
-      --TODO: Settings von localStorage kommen lassen
-      , session = Session.new { cycles = 4, relaxRetDuration = 15 }
+      , session = Session.new sessionSettings
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
       , motivationData = motData
       , colorScheme = CS.newSunrise
+      , sessionSettings = sessionSettings
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -152,14 +155,22 @@ update route msg model =
                     MotivationData.update model.results model.today model.motivationData
             in
             ( { model
-                --TODO: Settings verwenden
-                | session = Session.new { cycles = 4, relaxRetDuration = 15 }
+                | session = Session.new model.sessionSettings
                 , motivationData = newMotData
               }
             , Effect.batch
                 [ Effect.saveMotivationData newMotData
                 , Effect.navigate Route.Path.Home_
                 ]
+            )
+
+        Shared.Msg.SessionSettingsUpdated newSettings ->
+            --TODO: speichern per localStorage
+            ( { model
+                | sessionSettings = newSettings
+                , session = Session.new newSettings
+              }
+            , Effect.none
             )
 
 

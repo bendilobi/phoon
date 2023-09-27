@@ -1,6 +1,7 @@
 module Lib.Session exposing
     ( Phase(..)
     , Session
+    , Settings
     , breathCount
     , currentPath
     , currentPhase
@@ -56,10 +57,14 @@ type Session
         }
 
 
-new :
+type alias Settings =
     { cycles : Int
     , relaxRetDuration : Int
     }
+
+
+new :
+    Settings
     -> Session
 new props =
     Session
