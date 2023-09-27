@@ -1,4 +1,4 @@
-module Components.Button exposing (new, view, withDisabled)
+module Components.Button exposing (new, view, withDisabled, withInline)
 
 import Element exposing (..)
 import Element.Background as BG
@@ -17,6 +17,7 @@ type Button msg
         { label : Element msg
         , onPress : Maybe msg
         , isDisabled : Bool
+        , isInline : Bool
         }
 
 
@@ -30,6 +31,7 @@ new props =
         { label = props.label
         , onPress = props.onPress
         , isDisabled = False
+        , isInline = False
         }
 
 
@@ -40,6 +42,11 @@ new props =
 withDisabled : Bool -> Button msg -> Button msg
 withDisabled isDisabled (Settings settings) =
     Settings { settings | isDisabled = isDisabled }
+
+
+withInline : Bool -> Button msg -> Button msg
+withInline isInline (Settings settings) =
+    Settings { settings | isInline = isInline }
 
 
 
@@ -59,7 +66,24 @@ view colorScheme (Settings settings) =
             , Border.width 1
             ]
     in
-    if settings.isDisabled then
+    if settings.isInline then
+        if settings.isDisabled then
+            el [ Font.color <| CS.interactInactiveColor colorScheme ] settings.label
+
+        else
+            button
+                [ Font.color <| CS.interactActiveColor colorScheme
+                ]
+                { onPress =
+                    if settings.isDisabled then
+                        Nothing
+
+                    else
+                        settings.onPress
+                , label = settings.label
+                }
+
+    else if settings.isDisabled then
         el
             (commonAttributes ++ CS.interactInactive colorScheme)
         <|

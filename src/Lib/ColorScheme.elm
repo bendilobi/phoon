@@ -3,7 +3,9 @@ module Lib.ColorScheme exposing
     , breathingInverted
     , guideColor
     , interactActive
+    , interactActiveColor
     , interactInactive
+    , interactInactiveColor
     , navbar
     , newDaylight
     , newSunrise
@@ -189,6 +191,16 @@ seriesGoodColor (ColorScheme colors) =
 seriesBadColor : ColorScheme -> Color
 seriesBadColor (ColorScheme colors) =
     colors.seriesBad
+
+
+interactActiveColor : ColorScheme -> Color
+interactActiveColor (ColorScheme colors) =
+    colors.interactActive
+
+
+interactInactiveColor : ColorScheme -> Color
+interactInactiveColor (ColorScheme colors) =
+    colors.interactInactive
 
 
 interactActive : ColorScheme -> List (Attribute msg)

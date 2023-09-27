@@ -84,147 +84,70 @@ view shared model =
     , attributes =
         CS.primaryInformation shared.colorScheme
     , element =
-        textColumn
+        column
             [ width fill
-            , spacing 50
-            , paddingXY 30 50
+            , spacing 30
+            , paddingXY 20 30
+            , Font.size 15
             ]
-            [ paragraph
-                [ Font.size 30
-                , Font.bold
-                , Font.color <| CS.guideColor shared.colorScheme
-                ]
-                [ text "Zoff - Wim Hof Atmung mit dem Hauch von Zen" ]
-
-            -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
-            , text "Version 0.4.4 \"Sunrise\""
-            , Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
-                |> Components.Button.view shared.colorScheme
-            , el [] <|
-                case MotivationData.getMotivationData shared.motivationData of
-                    Nothing ->
-                        text "Noch keine Motivationsdaten vorhanden"
-
-                    Just data ->
-                        column [ spacing 10 ]
-                            [ el
-                                [ Font.bold
-                                , Font.size 20
-                                , Font.color <| CS.guideColor shared.colorScheme
-                                ]
-                              <|
-                                text "Aktuell gespeicherte Motivationsdaten"
-                            , text <| "Serie: " ++ String.fromInt data.series
-                            , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
-                            , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
-                            , text <| "Max Ret: " ++ String.fromInt data.maxRetention
-                            ]
-            , paragraph []
-                [ text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                , text "Blah, schwall... "
-                ]
+            [ viewIntroduction shared
+            , viewSettings shared
+            , viewTechInfo shared
             ]
     }
+
+
+viewIntroduction : Shared.Model -> Element Msg
+viewIntroduction shared =
+    column [ width fill, spacing 10 ]
+        [ paragraph
+            [ Font.size 25
+            , Font.bold
+            , Font.color <| CS.guideColor shared.colorScheme
+            ]
+            [ text "Zoff - Wim Hof Atmung mit dem Hauch von Zen" ]
+
+        -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
+        , paragraph [] [ text """
+        Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
+        Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheidest, wann es 
+        weitergeht (Beginn und Ende der Retention), tippst Du mit zwei Fingern irgendwo auf den Bildschirm.
+        """ ]
+        , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.11 \"Sunrise\""
+            , el [ width fill ] <|
+                el [ alignRight ] <|
+                    (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
+                        |> Components.Button.withInline True
+                        |> Components.Button.view shared.colorScheme
+                    )
+            ]
+        ]
+
+
+viewSettings : Shared.Model -> Element Msg
+viewSettings shared =
+    text "TODO: Settings"
+
+
+viewTechInfo : Shared.Model -> Element msg
+viewTechInfo shared =
+    el [] <|
+        case MotivationData.getMotivationData shared.motivationData of
+            Nothing ->
+                text "Noch keine Motivationsdaten vorhanden"
+
+            Just data ->
+                column [ spacing 10 ]
+                    [ el
+                        [ Font.bold
+                        , Font.size 17
+                        , Font.color <| CS.guideColor shared.colorScheme
+                        ]
+                      <|
+                        text "Aktuell gespeicherte Motivationsdaten"
+                    , text <| "Serie: " ++ String.fromInt data.series
+                    , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
+                    , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
+                    , text <| "Max Ret: " ++ String.fromInt data.maxRetention
+                    ]

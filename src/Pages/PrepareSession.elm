@@ -147,15 +147,9 @@ view shared model =
                         ]
                         [ Components.CrementButton.new
                             { onPress = RemoveCyclePressed
-                            , crement =
-                                Components.CrementButton.De
+                            , crement = Components.CrementButton.De
                             }
-                            |> (if Session.remainingCycles shared.session == 1 then
-                                    Components.CrementButton.withDisabled True
-
-                                else
-                                    Components.CrementButton.withDisabled False
-                               )
+                            |> Components.CrementButton.withDisabled (Session.remainingCycles shared.session == 1)
                             |> Components.CrementButton.view shared.colorScheme
                         , row []
                             [ el [ Font.bold ] <| text <| String.fromInt <| Session.remainingCycles shared.session
@@ -164,15 +158,9 @@ view shared model =
                             ]
                         , Components.CrementButton.new
                             { onPress = AddCyclePressed
-                            , crement =
-                                Components.CrementButton.In
+                            , crement = Components.CrementButton.In
                             }
-                            |> (if Session.remainingCycles shared.session == 10 then
-                                    Components.CrementButton.withDisabled True
-
-                                else
-                                    Components.CrementButton.withDisabled False
-                               )
+                            |> Components.CrementButton.withDisabled (Session.remainingCycles shared.session == 10)
                             |> Components.CrementButton.view shared.colorScheme
                         ]
                     , paragraph []
