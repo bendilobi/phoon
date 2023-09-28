@@ -137,7 +137,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.12.7 \"Mr. Flexible\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.13 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }

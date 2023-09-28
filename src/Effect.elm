@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, navigate, playSound, resultsUpdated, saveMotivationData, sessionEnded, sessionUpdated, setWakeLock, soundEncoder, updateSessionSettings
+    , adjustToday, navigate, playSound, resultsUpdated, saveMotivationData, saveSessionSettings, sessionEnded, sessionUpdated, setWakeLock, soundEncoder, updateSessionSettings
     )
 
 {-|
@@ -173,6 +173,14 @@ saveMotivationData motData =
     SendMessageToJavaScript
         { tag = "STORE_MOTIVATION_DATA"
         , data = MotivationData.encoder motData
+        }
+
+
+saveSessionSettings : Session.Settings -> Effect msg
+saveSessionSettings settings =
+    SendMessageToJavaScript
+        { tag = "STORE_SESSION_SETTINGS"
+        , data = Session.settingsEncoder settings
         }
 
 

@@ -34,13 +34,16 @@ import Time
 
 
 type alias Flags =
-    { storedMotivationData : MotivationData.Fields }
+    { storedMotivationData : MotivationData.Fields
+    , storedSessionSettings : Session.Settings
+    }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.field "storedMotivationData" MotivationData.fieldsDecoder
-        |> Json.Decode.map Flags
+    Json.Decode.map2 Flags
+        (Json.Decode.field "storedMotivationData" MotivationData.fieldsDecoder)
+        (Json.Decode.field "storedSessionSettings" Session.settingsDecoder)
 
 
 
@@ -54,19 +57,22 @@ type alias Model =
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     let
-        motData =
+        ( motData, sessionSettings ) =
             case flagsResult of
                 Err e ->
                     --TODO: Styling und Methode für Fehlermeldungen implementieren und
                     --      hier eine Meldung zeigen
-                    MotivationData.empty
+                    --TODO: Wie können die Fehler in einzelnen Flags erkannt und behandelt werden?
+                    ( MotivationData.empty, { cycles = 4, relaxRetDuration = 15 } )
 
                 Ok data ->
-                    MotivationData.fromFields data.storedMotivationData
+                    ( MotivationData.fromFields data.storedMotivationData
+                    , data.storedSessionSettings
+                    )
 
         --TODO: Settings von localStorage kommen lassen
-        sessionSettings =
-            { cycles = 4, relaxRetDuration = 15 }
+        -- sessionSettings =
+        --     { cycles = 4, relaxRetDuration = 15 }
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
@@ -165,12 +171,11 @@ update route msg model =
             )
 
         Shared.Msg.SessionSettingsUpdated newSettings ->
-            --TODO: speichern per localStorage
             ( { model
                 | sessionSettings = newSettings
                 , session = Session.new newSettings
               }
-            , Effect.none
+            , Effect.saveSessionSettings newSettings
             )
 
 

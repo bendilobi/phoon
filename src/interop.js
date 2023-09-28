@@ -1,11 +1,17 @@
 
 const MOTIVATION_DATA_KEY = 'motivationData'
+const SESSION_SETTINGS_KEY = 'sessionSettings'
 
 export const flags = ({ env }) => {
     const motivationStored = localStorage.getItem(MOTIVATION_DATA_KEY)
     const motivationJson = motivationStored ? JSON.parse(motivationStored) : null
+
+    const sessionSettingsStored = localStorage.getItem(SESSION_SETTINGS_KEY)
+    const sessionSettingsJson = sessionSettingsStored ? JSON.parse(sessionSettingsStored) : null
+
     return {
-      storedMotivationData: motivationJson
+      storedMotivationData: motivationJson,
+      storedSessionSettings: sessionSettingsJson
     }
   }
 
@@ -17,6 +23,10 @@ export const onReady = ({app, env}) => {
                 case 'STORE_MOTIVATION_DATA':
                     console.log('Saving data to localStorage: ' + data)
                     localStorage.setItem(MOTIVATION_DATA_KEY, JSON.stringify(data))
+                    return
+
+                case 'STORE_SESSION_SETTINGS':
+                    localStorage.setItem(SESSION_SETTINGS_KEY, JSON.stringify(data))
                     return
 
 

@@ -12,6 +12,8 @@ module Lib.Session exposing
     , phasePath
     , relaxRetDuration
     , remainingCycles
+    , settingsDecoder
+    , settingsEncoder
     , speedMillis
     , withCycles
     , withFiftyBreaths
@@ -21,6 +23,8 @@ module Lib.Session exposing
     , withThirtyBreaths
     )
 
+import Json.Decode
+import Json.Encode
 import Route.Path
 
 
@@ -254,3 +258,33 @@ estimatedDuration (Session session) =
     (curPhase :: remainingPhases)
         |> List.map (phaseDuration <| Session session)
         |> List.sum
+
+
+
+-- CONVERSION
+
+
+fieldnames :
+    { cycles : String
+    , relaxRetDuration : String
+    }
+fieldnames =
+    { cycles = "cycles"
+    , relaxRetDuration = "relaxRetDur"
+    }
+
+
+settingsEncoder : Settings -> Json.Encode.Value
+settingsEncoder settings =
+    Json.Encode.object
+        [ ( fieldnames.cycles, Json.Encode.int settings.cycles )
+        , ( fieldnames.relaxRetDuration, Json.Encode.int settings.relaxRetDuration )
+        ]
+
+
+settingsDecoder : Json.Decode.Decoder Settings
+settingsDecoder =
+    Json.Decode.map2
+        Settings
+        (Json.Decode.field fieldnames.cycles Json.Decode.int)
+        (Json.Decode.field fieldnames.relaxRetDuration Json.Decode.int)
