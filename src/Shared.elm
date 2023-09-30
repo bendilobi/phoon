@@ -63,16 +63,18 @@ init flagsResult route =
                     --TODO: Styling und Methode für Fehlermeldungen implementieren und
                     --      hier eine Meldung zeigen
                     --TODO: Wie können die Fehler in einzelnen Flags erkannt und behandelt werden?
-                    ( MotivationData.empty, { cycles = 4, relaxRetDuration = 15 } )
+                    ( MotivationData.empty
+                    , { cycles = 4
+                      , relaxRetDuration = 15
+                      , breathingSpeed = Session.Medium
+                      , breathCount = Session.Forty
+                      }
+                    )
 
                 Ok data ->
                     ( MotivationData.fromFields data.storedMotivationData
                     , data.storedSessionSettings
                     )
-
-        --TODO: Settings von localStorage kommen lassen
-        -- sessionSettings =
-        --     { cycles = 4, relaxRetDuration = 15 }
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0

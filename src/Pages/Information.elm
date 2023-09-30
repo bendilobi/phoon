@@ -3,6 +3,7 @@ module Pages.Information exposing (Model, Msg, page)
 import Browser.Navigation
 import Components.Button
 import Components.IntCrementer as IntCrementer
+import Components.RadioGroup as RadioGroup
 import Date
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -12,7 +13,7 @@ import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
-import Lib.Session as Session exposing (Session)
+import Lib.Session as Session exposing (BreathCount, BreathingSpeed, Session)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -58,6 +59,8 @@ type Msg
     = ReloadApp
     | DefaultCyclesChanged Int
     | DefaultRelaxRetDurationChanged Int
+    | DefaultBreathingSpeedChanged BreathingSpeed
+    | DefaultBreathCountChanged BreathCount
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -85,6 +88,24 @@ update shared msg model =
             in
             ( model
             , Effect.updateSessionSettings { settings | relaxRetDuration = seconds }
+            )
+
+        DefaultBreathingSpeedChanged speed ->
+            let
+                settings =
+                    shared.sessionSettings
+            in
+            ( model
+            , Effect.updateSessionSettings { settings | breathingSpeed = speed }
+            )
+
+        DefaultBreathCountChanged breathCount ->
+            let
+                settings =
+                    shared.sessionSettings
+            in
+            ( model
+            , Effect.updateSessionSettings { settings | breathCount = breathCount }
             )
 
 
@@ -137,7 +158,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.13 \"Mr. Flexible\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.15 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -151,8 +172,24 @@ viewIntroduction shared =
 viewSettings : Shared.Model -> Element Msg
 viewSettings shared =
     let
+        setHead withPadding =
+            let
+                pad =
+                    if withPadding then
+                        15
+
+                    else
+                        0
+            in
+            [ paddingEach { top = pad, bottom = 0, left = 0, right = 0 }
+            , Font.size 15
+            ]
+
+        settingsHeadingTop =
+            setHead False
+
         settingsHeading =
-            [ Font.size 15 ]
+            setHead True
     in
     column [ width fill, spacing 20 ]
         [ el
@@ -162,7 +199,7 @@ viewSettings shared =
             ]
           <|
             text "Übung anpassen"
-        , el settingsHeading <| text "Anzahl Runden"
+        , el settingsHeadingTop <| text "Anzahl Runden"
         , IntCrementer.new
             { label =
                 \n ->
@@ -176,11 +213,23 @@ viewSettings shared =
             |> IntCrementer.withMin 1
             |> IntCrementer.withMax 9
             |> IntCrementer.view shared.colorScheme shared.sessionSettings.cycles
-        , el
-            (paddingEach { top = 15, bottom = 0, left = 0, right = 0 }
-                :: settingsHeading
-            )
-          <|
+        , el settingsHeading <| text "Atemgeschwindigkeit"
+        , RadioGroup.new
+            { choices = Session.breathingSpeeds
+            , toString = Session.breathingSpeedDE
+            , onSelect = DefaultBreathingSpeedChanged
+            }
+            |> RadioGroup.withSelected shared.sessionSettings.breathingSpeed
+            |> RadioGroup.view shared.colorScheme
+        , el settingsHeading <| text "Anzahl Atemzüge"
+        , RadioGroup.new
+            { choices = Session.breathCountChoices
+            , toString = Session.breathCountInt >> String.fromInt
+            , onSelect = DefaultBreathCountChanged
+            }
+            |> RadioGroup.withSelected shared.sessionSettings.breathCount
+            |> RadioGroup.view shared.colorScheme
+        , el settingsHeading <|
             text "Dauer der Entspannungsretention"
         , IntCrementer.new
             { label =

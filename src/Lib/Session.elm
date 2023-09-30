@@ -1,8 +1,14 @@
 module Lib.Session exposing
-    ( Phase(..)
+    ( BreathCount(..)
+    , BreathingSpeed(..)
+    , Phase(..)
     , Session
     , Settings
     , breathCount
+    , breathCountChoices
+    , breathCountInt
+    , breathingSpeedDE
+    , breathingSpeeds
     , currentPath
     , currentPhase
     , estimatedDuration
@@ -30,14 +36,97 @@ import Route.Path
 
 type BreathingSpeed
     = Slow
-    | Normal
-    | Quick
+    | Medium
+    | Fast
+
+
+breathingSpeeds : List BreathingSpeed
+breathingSpeeds =
+    let
+        ignored thing =
+            case thing of
+                Slow ->
+                    ()
+
+                Medium ->
+                    ()
+
+                Fast ->
+                    ()
+
+        -- If the compiler complains, maybe add the missing thing here?
+    in
+    [ Slow, Medium, Fast ]
+
+
+breathingSpeedDE : BreathingSpeed -> String
+breathingSpeedDE speed =
+    case speed of
+        Slow ->
+            "Langsam"
+
+        Medium ->
+            "Mittel"
+
+        Fast ->
+            "Schnell"
+
+
+breathingSpeedEN : BreathingSpeed -> String
+breathingSpeedEN speed =
+    case speed of
+        Slow ->
+            "Slow"
+
+        Medium ->
+            "Medium"
+
+        Fast ->
+            "Fast"
 
 
 type BreathCount
     = Thirty
     | Forty
     | Fifty
+
+
+breathCountChoices : List BreathCount
+breathCountChoices =
+    let
+        ignored thing =
+            case thing of
+                Thirty ->
+                    ()
+
+                Forty ->
+                    ()
+
+                Fifty ->
+                    ()
+    in
+    [ Thirty, Forty, Fifty ]
+
+
+
+--TODO: Brauche ich das oder kann ich unten die session-bezogene Funktion umbauen?
+-- breathCountDE : BreathCount -> String
+-- breathCountDE bc =
+--     case bc of
+--         Thirty ->
+
+
+breathCountInt : BreathCount -> Int
+breathCountInt bc =
+    case bc of
+        Thirty ->
+            30
+
+        Forty ->
+            40
+
+        Fifty ->
+            50
 
 
 type Phase
@@ -64,6 +153,8 @@ type Session
 type alias Settings =
     { cycles : Int
     , relaxRetDuration : Int
+    , breathingSpeed : BreathingSpeed
+    , breathCount : BreathCount
     }
 
 
@@ -73,8 +164,8 @@ new :
 new props =
     Session
         { state = createState props.cycles
-        , breathCount = Forty
-        , breathingSpeed = Normal
+        , breathCount = props.breathCount
+        , breathingSpeed = props.breathingSpeed
         , relaxRetentionDuration = props.relaxRetDuration
         }
 
@@ -136,7 +227,7 @@ withSpeedSlow (Session session) =
 
 withSpeedQuick : Session -> Session
 withSpeedQuick (Session session) =
-    Session { session | breathingSpeed = Quick }
+    Session { session | breathingSpeed = Fast }
 
 
 withRelaxRetDuration : Int -> Session -> Session
@@ -184,24 +275,26 @@ speedMillis (Session session) =
         Slow ->
             2500
 
-        Normal ->
+        Medium ->
             1750
 
-        Quick ->
+        Fast ->
             1375
 
 
 breathCount : Session -> Int
 breathCount (Session session) =
-    case session.breathCount of
-        Thirty ->
-            30
+    breathCountInt session.breathCount
 
-        Forty ->
-            40
 
-        Fifty ->
-            50
+
+-- case session.breathCount of
+--     Thirty ->
+--         30
+--     Forty ->
+--         40
+--     Fifty ->
+--         50
 
 
 relaxRetDuration : Session -> Int
@@ -267,10 +360,21 @@ estimatedDuration (Session session) =
 fieldnames :
     { cycles : String
     , relaxRetDuration : String
+    , breathingSpeed : String
+    , breathCount : String
     }
 fieldnames =
     { cycles = "cycles"
     , relaxRetDuration = "relaxRetDur"
+    , breathingSpeed = "breathSpeed"
+    , breathCount = "breathCount"
+    }
+
+
+breathingSpeedStrings =
+    { slow = "slow"
+    , medium = "medium"
+    , fast = "fast"
     }
 
 
@@ -279,12 +383,70 @@ settingsEncoder settings =
     Json.Encode.object
         [ ( fieldnames.cycles, Json.Encode.int settings.cycles )
         , ( fieldnames.relaxRetDuration, Json.Encode.int settings.relaxRetDuration )
+        , ( fieldnames.breathingSpeed, Json.Encode.string <| breathingSpeedToString settings.breathingSpeed )
+        , ( fieldnames.breathCount, Json.Encode.int <| breathCountInt settings.breathCount )
         ]
+
+
+breathingSpeedToString : BreathingSpeed -> String
+breathingSpeedToString speed =
+    case speed of
+        Slow ->
+            breathingSpeedStrings.slow
+
+        Medium ->
+            breathingSpeedStrings.medium
+
+        Fast ->
+            breathingSpeedStrings.fast
+
+
+breathingSpeedFromString : String -> Json.Decode.Decoder BreathingSpeed
+breathingSpeedFromString string =
+    if string == breathingSpeedStrings.slow then
+        Json.Decode.succeed Slow
+
+    else if string == breathingSpeedStrings.medium then
+        Json.Decode.succeed Medium
+
+    else if string == breathingSpeedStrings.fast then
+        Json.Decode.succeed Fast
+
+    else
+        Json.Decode.fail ("Invalid breathing speed value: " ++ string)
+
+
+breathingSpeedDecoder : Json.Decode.Decoder BreathingSpeed
+breathingSpeedDecoder =
+    Json.Decode.string
+        |> Json.Decode.andThen breathingSpeedFromString
+
+
+breathCountDecoder : Json.Decode.Decoder BreathCount
+breathCountDecoder =
+    Json.Decode.int
+        |> Json.Decode.andThen
+            (\count ->
+                case count of
+                    30 ->
+                        Json.Decode.succeed Thirty
+
+                    40 ->
+                        Json.Decode.succeed Forty
+
+                    50 ->
+                        Json.Decode.succeed Fifty
+
+                    _ ->
+                        Json.Decode.fail ("Invalid breath count value: " ++ String.fromInt count)
+            )
 
 
 settingsDecoder : Json.Decode.Decoder Settings
 settingsDecoder =
-    Json.Decode.map2
+    Json.Decode.map4
         Settings
         (Json.Decode.field fieldnames.cycles Json.Decode.int)
         (Json.Decode.field fieldnames.relaxRetDuration Json.Decode.int)
+        (Json.Decode.field fieldnames.breathingSpeed breathingSpeedDecoder)
+        (Json.Decode.field fieldnames.breathCount breathCountDecoder)
