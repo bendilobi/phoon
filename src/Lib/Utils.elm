@@ -10,8 +10,9 @@ formatSeconds sec =
         pad =
             String.padLeft 2 '0'
 
-        -- hours =
-        --     sec // 60 // 60
+        hours =
+            sec // 60 // 60
+
         minutes =
             remainderBy 60 (sec // 60)
 
@@ -19,7 +20,13 @@ formatSeconds sec =
             remainderBy 60 sec
 
         pos =
-            if minutes > 0 then
+            if hours > 0 then
+                [ String.fromInt hours
+                , pad <| String.fromInt minutes
+                , pad <| String.fromInt seconds
+                ]
+
+            else if minutes > 0 then
                 [ String.fromInt minutes
                 , pad <| String.fromInt seconds
                 ]

@@ -11,7 +11,7 @@ module Lib.Session exposing
     , breathingSpeeds
     , currentPath
     , currentPhase
-    , estimatedDuration
+    , estimatedDurationMillis
     , goNext
     , jumpToEnd
     , new
@@ -21,6 +21,7 @@ module Lib.Session exposing
     , settingsDecoder
     , settingsEncoder
     , speedMillis
+    , speedToMillis
     , withCycles
     , withFiftyBreaths
     , withRelaxRetDuration
@@ -270,8 +271,13 @@ remainingCycles (Session session) =
 
 speedMillis : Session -> Int
 speedMillis (Session session) =
+    speedToMillis session.breathingSpeed
+
+
+speedToMillis : BreathingSpeed -> Int
+speedToMillis speed =
     -- These are the speeds of the official WHM App (as of August 2023)
-    case session.breathingSpeed of
+    case speed of
         Slow ->
             2500
 
@@ -285,16 +291,6 @@ speedMillis (Session session) =
 breathCount : Session -> Int
 breathCount (Session session) =
     breathCountInt session.breathCount
-
-
-
--- case session.breathCount of
---     Thirty ->
---         30
---     Forty ->
---         40
---     Fifty ->
---         50
 
 
 relaxRetDuration : Session -> Int
@@ -342,8 +338,8 @@ phaseDuration session phase =
             2 * 60000
 
 
-estimatedDuration : Session -> Int
-estimatedDuration (Session session) =
+estimatedDurationMillis : Session -> Int
+estimatedDurationMillis (Session session) =
     let
         (State curPhase remainingPhases) =
             session.state

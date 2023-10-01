@@ -151,7 +151,7 @@ viewEstimatedTime session zone time =
         estimate =
             time
                 |> Time.posixToMillis
-                |> (+) (Session.estimatedDuration session)
+                |> (+) (Session.estimatedDurationMillis session)
                 |> Time.millisToPosix
 
         hour =

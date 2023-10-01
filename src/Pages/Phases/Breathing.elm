@@ -73,7 +73,11 @@ update shared msg model =
                             ( AtBreath 1 In, Effect.none )
 
                         AtBreath n In ->
-                            ( AtBreath n Out, Effect.none )
+                            if n == Session.breathCount shared.session then
+                                ( BreathingFinished, Effect.playSound Utils.Breathing )
+
+                            else
+                                ( AtBreath n Out, Effect.none )
 
                         AtBreath n Out ->
                             if n < Session.breathCount shared.session then

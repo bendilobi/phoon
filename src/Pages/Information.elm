@@ -14,6 +14,7 @@ import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (BreathCount, BreathingSpeed, Session)
+import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -158,7 +159,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.15 \"Mr. Flexible\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.17 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -243,6 +244,32 @@ viewSettings shared =
             |> IntCrementer.withMin 5
             |> IntCrementer.withMax 30
             |> IntCrementer.view shared.colorScheme shared.sessionSettings.relaxRetDuration
+        , paragraph settingsHeading
+            [ text "Dauer der Atemphase: "
+            , text <|
+                Utils.formatSeconds <|
+                    Session.breathCountInt shared.sessionSettings.breathCount
+                        * Session.speedToMillis shared.sessionSettings.breathingSpeed
+                        * 2
+                        // 1000
+            , text " Minuten"
+            ]
+        , let
+            duration =
+                Session.new shared.sessionSettings
+                    |> Session.estimatedDurationMillis
+                    |> (\millis -> millis // 1000)
+          in
+          paragraph settingsHeading
+            [ text "Geschätzte Dauer der Übung: "
+            , text <| Utils.formatSeconds duration --(Session.estimatedDurationMillis <| Session.new shared.sessionSettings) // 1000
+            , text <|
+                if duration < 3600 then
+                    " Minuten"
+
+                else
+                    " Stunden"
+            ]
         ]
 
 
