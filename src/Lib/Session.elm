@@ -88,7 +88,8 @@ breathingSpeedEN speed =
 
 
 type BreathCount
-    = Thirty
+    = Twenty
+    | Thirty
     | Forty
     | Fifty
 
@@ -98,6 +99,9 @@ breathCountChoices =
     let
         ignored thing =
             case thing of
+                Twenty ->
+                    ()
+
                 Thirty ->
                     ()
 
@@ -107,7 +111,7 @@ breathCountChoices =
                 Fifty ->
                     ()
     in
-    [ Thirty, Forty, Fifty ]
+    [ Twenty, Thirty, Forty, Fifty ]
 
 
 
@@ -121,6 +125,9 @@ breathCountChoices =
 breathCountInt : BreathCount -> Int
 breathCountInt bc =
     case bc of
+        Twenty ->
+            20
+
         Thirty ->
             30
 
@@ -430,10 +437,28 @@ breathingSpeedDecoder =
 
 breathCountDecoder : Json.Decode.Decoder BreathCount
 breathCountDecoder =
+    let
+        ignored thing =
+            case thing of
+                Twenty ->
+                    ()
+
+                Thirty ->
+                    ()
+
+                Forty ->
+                    ()
+
+                Fifty ->
+                    ()
+    in
     Json.Decode.int
         |> Json.Decode.andThen
             (\count ->
                 case count of
+                    20 ->
+                        Json.Decode.succeed Twenty
+
                     30 ->
                         Json.Decode.succeed Thirty
 

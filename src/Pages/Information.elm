@@ -331,7 +331,14 @@ viewSettings shared model =
                     , item = BreathCount
                     }
             ]
-        , paragraph
+        , let
+            seconds =
+                Session.breathCountInt shared.sessionSettings.breathCount
+                    * Session.speedToMillis shared.sessionSettings.breathingSpeed
+                    * 2
+                    // 1000
+          in
+          paragraph
             [ Font.size 13
             , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
             ]
@@ -342,12 +349,12 @@ viewSettings shared model =
                 ]
               <|
                 text <|
-                    Utils.formatSeconds <|
-                        Session.breathCountInt shared.sessionSettings.breathCount
-                            * Session.speedToMillis shared.sessionSettings.breathingSpeed
-                            * 2
-                            // 1000
-            , text " Minuten"
+                    Utils.formatSeconds seconds
+            , if seconds < 60 then
+                text " Sekunden"
+
+              else
+                text " Minuten"
             ]
         , column settingsAttrs
             [ if model.settingsItemShown == RelaxRetDuration then
