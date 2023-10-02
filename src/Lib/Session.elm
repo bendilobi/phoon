@@ -11,6 +11,7 @@ module Lib.Session exposing
     , breathingSpeeds
     , currentPath
     , currentPhase
+    , defaultSettings
     , estimatedDurationMillis
     , goNext
     , jumpToEnd
@@ -169,6 +170,15 @@ new props =
         , breathingSpeed = props.breathingSpeed
         , relaxRetentionDuration = props.relaxRetDuration
         }
+
+
+defaultSettings : Settings
+defaultSettings =
+    { cycles = 3
+    , relaxRetDuration = 15
+    , breathingSpeed = Medium
+    , breathCount = Thirty
+    }
 
 
 phasePath : Phase -> Route.Path.Path

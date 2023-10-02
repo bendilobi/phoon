@@ -64,11 +64,7 @@ init flagsResult route =
                     --      hier eine Meldung zeigen
                     --TODO: Wie können die Fehler in einzelnen Flags erkannt und behandelt werden?
                     ( MotivationData.empty
-                    , { cycles = 4
-                      , relaxRetDuration = 15
-                      , breathingSpeed = Session.Medium
-                      , breathCount = Session.Forty
-                      }
+                    , Session.defaultSettings
                     )
 
                 Ok data ->

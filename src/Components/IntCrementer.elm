@@ -51,7 +51,7 @@ view colorScheme currentInt (Settings settings) =
     el [ width fill ] <|
         row
             [ spacing 20
-            , Font.size 20
+            , Font.size 17
             , centerX
             ]
             [ CrementButton.new

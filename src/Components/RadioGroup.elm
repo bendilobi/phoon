@@ -9,6 +9,11 @@ import Element.Input exposing (button)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 
 
+
+--TODO: abchecken, ob ich lieber das von elm-ui verwenden sollte:
+--https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element-Input#radio
+
+
 type Layout
     = Horizontal
     | Vertical
@@ -58,7 +63,7 @@ view : ColorScheme -> RadioGroup c msg -> Element msg
 view colorScheme (Settings settings) =
     let
         separator =
-            el [] <| text " | "
+            el [] <| text "|"
 
         viewItem item =
             if Just item == settings.selected then
@@ -75,7 +80,8 @@ view colorScheme (Settings settings) =
     el [ width fill ] <|
         row
             [ centerX
-            , spacing 10
+            , spacing 15
+            , Font.size 17
             ]
         <|
             List.intersperse separator <|

@@ -9,7 +9,9 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
+import Element.Input exposing (button)
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -42,12 +44,12 @@ toLayout model =
 
 
 type alias Model =
-    {}
+    { settingsItemShown : SettingsItem }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( {}
+    ( { settingsItemShown = NoItem }
     , Effect.none
     )
 
@@ -56,12 +58,23 @@ init () =
 -- UPDATE
 
 
+type SettingsItem
+    = NoItem
+    | Cycles
+    | BreathingSpeed
+    | BreathCount
+    | RelaxRetDuration
+
+
 type Msg
     = ReloadApp
     | DefaultCyclesChanged Int
     | DefaultRelaxRetDurationChanged Int
     | DefaultBreathingSpeedChanged BreathingSpeed
     | DefaultBreathCountChanged BreathCount
+    | SettingsItemShown SettingsItem
+    | ResetSettingItemStatus
+    | ResetSettings
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -109,6 +122,21 @@ update shared msg model =
             , Effect.updateSessionSettings { settings | breathCount = breathCount }
             )
 
+        ResetSettings ->
+            ( model
+            , Effect.updateSessionSettings Session.defaultSettings
+            )
+
+        SettingsItemShown item ->
+            ( { model | settingsItemShown = item }
+            , Effect.none
+            )
+
+        ResetSettingItemStatus ->
+            ( { model | settingsItemShown = NoItem }
+            , Effect.none
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -136,7 +164,7 @@ view shared model =
             , Font.size 15
             ]
             [ viewIntroduction shared
-            , viewSettings shared
+            , viewSettings shared model
             , viewTechInfo shared
             ]
     }
@@ -144,7 +172,7 @@ view shared model =
 
 viewIntroduction : Shared.Model -> Element Msg
 viewIntroduction shared =
-    column [ width fill, spacing 10 ]
+    column [ width fill, spacing 10, Font.center ]
         [ paragraph
             [ Font.size 25
             , Font.bold
@@ -158,8 +186,8 @@ viewIntroduction shared =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
-        , row [ width fill, paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.4.17 \"Mr. Flexible\""
+        , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.0 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -170,89 +198,183 @@ viewIntroduction shared =
         ]
 
 
-viewSettings : Shared.Model -> Element Msg
-viewSettings shared =
+viewSettings : Shared.Model -> Model -> Element Msg
+viewSettings shared model =
     let
-        setHead withPadding =
-            let
-                pad =
-                    if withPadding then
-                        15
+        hPad =
+            20
 
-                    else
-                        0
+        lastItemAttrs =
+            let
+                vPad =
+                    15
             in
-            [ paddingEach { top = pad, bottom = 0, left = 0, right = 0 }
-            , Font.size 15
+            [ width fill
+            , paddingEach { top = vPad, bottom = vPad, right = hPad, left = 0 }
+            , alignBottom
             ]
 
-        settingsHeadingTop =
-            setHead False
+        --TODO: ColorScheme ergänzen und Farben von dort nehmen
+        itemAttrs =
+            lastItemAttrs
+                ++ [ Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                   , Border.color <| rgb 0.7 0.7 0.7
+                   ]
 
-        settingsHeading =
-            setHead True
+        settingsAttrs =
+            [ width fill
+            , Border.rounded 10
+            , BG.color <| rgb 0.9 0.9 0.9
+            , paddingEach { left = hPad, right = 0, top = 0, bottom = 0 }
+            ]
+
+        activeItemLabel : String -> Element Msg
+        activeItemLabel label =
+            button []
+                { onPress = Just ResetSettingItemStatus
+                , label = text label
+                }
     in
-    column [ width fill, spacing 20 ]
+    column [ width fill, spacing 10 ]
         [ el
-            [ Font.bold
+            [ width fill
+            , Font.bold
             , Font.size 20
             , Font.color <| CS.guideColor shared.colorScheme
+            , Font.center
             ]
           <|
             text "Übung anpassen"
-        , el settingsHeadingTop <| text "Anzahl Runden"
-        , IntCrementer.new
-            { label =
-                \n ->
-                    paragraph []
-                        [ el [ Font.bold ] <| text <| String.fromInt n
-                        , text " Runde"
-                        , el [ transparent <| n == 1 ] <| text "n"
+        , el [ width fill ] <|
+            el [ alignRight ] <|
+                (Components.Button.new { onPress = Just ResetSettings, label = text "Zurücksetzen" }
+                    |> Components.Button.withInline True
+                    |> Components.Button.view shared.colorScheme
+                )
+        , column settingsAttrs
+            [ if model.settingsItemShown == Cycles then
+                el lastItemAttrs <|
+                    column [ width fill, spacing 20 ]
+                        [ activeItemLabel "Gesamtablauf"
+                        , IntCrementer.new
+                            { label =
+                                \n ->
+                                    paragraph []
+                                        [ el [ Font.bold ] <| text <| String.fromInt n
+                                        , text " Runde"
+                                        , el [ transparent <| n == 1 ] <| text "n"
+                                        ]
+                            , onCrement = DefaultCyclesChanged
+                            }
+                            |> IntCrementer.withMin 1
+                            |> IntCrementer.withMax 9
+                            |> IntCrementer.view shared.colorScheme shared.sessionSettings.cycles
                         ]
-            , onCrement = DefaultCyclesChanged
-            }
-            |> IntCrementer.withMin 1
-            |> IntCrementer.withMax 9
-            |> IntCrementer.view shared.colorScheme shared.sessionSettings.cycles
-        , el settingsHeading <| text "Atemgeschwindigkeit"
-        , RadioGroup.new
-            { choices = Session.breathingSpeeds
-            , toString = Session.breathingSpeedDE
-            , onSelect = DefaultBreathingSpeedChanged
-            }
-            |> RadioGroup.withSelected shared.sessionSettings.breathingSpeed
-            |> RadioGroup.view shared.colorScheme
-        , el settingsHeading <| text "Anzahl Atemzüge"
-        , RadioGroup.new
-            { choices = Session.breathCountChoices
-            , toString = Session.breathCountInt >> String.fromInt
-            , onSelect = DefaultBreathCountChanged
-            }
-            |> RadioGroup.withSelected shared.sessionSettings.breathCount
-            |> RadioGroup.view shared.colorScheme
-        , el settingsHeading <|
-            text "Dauer der Entspannungsretention"
-        , IntCrementer.new
-            { label =
-                \n ->
-                    paragraph []
-                        [ el [ Font.bold ] <| text <| String.fromInt n
-                        , text " Sekunden"
+
+              else
+                let
+                    cycleString =
+                        if shared.sessionSettings.cycles == 1 then
+                            " Runde"
+
+                        else
+                            " Runden"
+                in
+                viewSettingsItem
+                    { attributes = lastItemAttrs
+                    , label = "Gesamtablauf"
+                    , value = (shared.sessionSettings.cycles |> String.fromInt) ++ cycleString
+                    , item = Cycles
+                    }
+            ]
+        , el [ height <| px 15 ] none
+        , column
+            settingsAttrs
+            [ if model.settingsItemShown == BreathingSpeed then
+                el itemAttrs <|
+                    column [ width fill, spacing 20 ]
+                        [ activeItemLabel "Atemgeschwindigkeit"
+                        , RadioGroup.new
+                            { choices = Session.breathingSpeeds
+                            , toString = Session.breathingSpeedDE
+                            , onSelect = DefaultBreathingSpeedChanged
+                            }
+                            |> RadioGroup.withSelected shared.sessionSettings.breathingSpeed
+                            |> RadioGroup.view shared.colorScheme
                         ]
-            , onCrement = DefaultRelaxRetDurationChanged
-            }
-            |> IntCrementer.withMin 5
-            |> IntCrementer.withMax 30
-            |> IntCrementer.view shared.colorScheme shared.sessionSettings.relaxRetDuration
-        , paragraph settingsHeading
+
+              else
+                viewSettingsItem
+                    { label = "Atemgeschwindigkeit"
+                    , value = Session.breathingSpeedDE shared.sessionSettings.breathingSpeed
+                    , attributes = itemAttrs
+                    , item = BreathingSpeed
+                    }
+            , if model.settingsItemShown == BreathCount then
+                el lastItemAttrs <|
+                    column [ width fill, spacing 20 ]
+                        [ activeItemLabel "Atemzüge"
+                        , RadioGroup.new
+                            { choices = Session.breathCountChoices
+                            , toString = Session.breathCountInt >> String.fromInt
+                            , onSelect = DefaultBreathCountChanged
+                            }
+                            |> RadioGroup.withSelected shared.sessionSettings.breathCount
+                            |> RadioGroup.view shared.colorScheme
+                        ]
+
+              else
+                viewSettingsItem
+                    { label = "Atemzüge"
+                    , value = shared.sessionSettings.breathCount |> Session.breathCountInt |> String.fromInt
+                    , attributes = lastItemAttrs
+                    , item = BreathCount
+                    }
+            ]
+        , paragraph
+            [ Font.size 13
+            , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
+            ]
             [ text "Dauer der Atemphase: "
-            , text <|
-                Utils.formatSeconds <|
-                    Session.breathCountInt shared.sessionSettings.breathCount
-                        * Session.speedToMillis shared.sessionSettings.breathingSpeed
-                        * 2
-                        // 1000
+            , el
+                [ Font.color <| CS.guideColor shared.colorScheme
+                , Font.bold
+                ]
+              <|
+                text <|
+                    Utils.formatSeconds <|
+                        Session.breathCountInt shared.sessionSettings.breathCount
+                            * Session.speedToMillis shared.sessionSettings.breathingSpeed
+                            * 2
+                            // 1000
             , text " Minuten"
+            ]
+        , column settingsAttrs
+            [ if model.settingsItemShown == RelaxRetDuration then
+                el lastItemAttrs <|
+                    column [ width fill, spacing 20 ]
+                        [ activeItemLabel "Erholungsretention"
+                        , IntCrementer.new
+                            { label =
+                                \n ->
+                                    paragraph []
+                                        [ el [ Font.bold ] <| text <| String.fromInt n
+                                        , text " Sekunden"
+                                        ]
+                            , onCrement = DefaultRelaxRetDurationChanged
+                            }
+                            |> IntCrementer.withMin 5
+                            |> IntCrementer.withMax 30
+                            |> IntCrementer.view shared.colorScheme shared.sessionSettings.relaxRetDuration
+                        ]
+
+              else
+                viewSettingsItem
+                    { label = "Erholungsretention"
+                    , value = (shared.sessionSettings.relaxRetDuration |> String.fromInt) ++ " Sekunden"
+                    , attributes = lastItemAttrs
+                    , item = RelaxRetDuration
+                    }
             ]
         , let
             duration =
@@ -260,9 +382,15 @@ viewSettings shared =
                     |> Session.estimatedDurationMillis
                     |> (\millis -> millis // 1000)
           in
-          paragraph settingsHeading
+          paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
             [ text "Geschätzte Dauer der Übung: "
-            , text <| Utils.formatSeconds duration --(Session.estimatedDurationMillis <| Session.new shared.sessionSettings) // 1000
+            , el
+                [ Font.color <| CS.guideColor shared.colorScheme
+                , Font.bold
+                ]
+              <|
+                text <|
+                    Utils.formatSeconds duration
             , text <|
                 if duration < 3600 then
                     " Minuten"
@@ -271,6 +399,24 @@ viewSettings shared =
                     " Stunden"
             ]
         ]
+
+
+viewSettingsItem :
+    { item : SettingsItem
+    , label : String
+    , value : String
+    , attributes : List (Attribute Msg)
+    }
+    -> Element Msg
+viewSettingsItem { item, label, value, attributes } =
+    button [ width fill ]
+        { onPress = Just <| SettingsItemShown item
+        , label =
+            row attributes
+                [ text label
+                , el [ alignRight, Font.color <| rgb 0.5 0.5 0.5 ] <| text value
+                ]
+        }
 
 
 viewTechInfo : Shared.Model -> Element msg
