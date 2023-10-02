@@ -83,26 +83,7 @@ view shared model =
     , attributes =
         CS.primaryMotivation shared.colorScheme
     , element =
-        column
-            [ width fill
-            , height fill
-            ]
-            [ -- TODO: Die Titeldarstellung ins Layout auslagern?
-              --   el
-              --     [ width fill
-              --     , Font.color <| rgb255 255 247 214
-              --     , Font.center
-              --     , Font.bold
-              --     , BG.color <| rgb255 8 25 54
-              --     , padding 10
-              --     , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-              --     , Border.color <| rgb255 34 33 31
-              --     ]
-              --   <|
-              --     text "Motivation finden"
-              -- ,
-              viewMotivationData shared.today shared.motivationData shared.colorScheme
-            ]
+        viewMotivationData shared.today shared.motivationData shared.colorScheme
     }
 
 

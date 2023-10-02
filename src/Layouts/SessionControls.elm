@@ -73,7 +73,6 @@ type Msg
     | AddCycle
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
-      -- | SoundCheck
       -- To simulate gestures via buttons for debugging in desktop browser:
       -- TODO: Herausfinden, ob der Mobile-Simulator von Chrome multitouch kann
     | MouseNavTap
@@ -120,9 +119,6 @@ update shared route msg model =
 
               else if singleTapRegistered && route.path == Session.phasePath Session.Start then
                 Effect.playSound Utils.SessionStart
-                --TODO: Brauche ich diese Sache mit Delay? Es scheint auszureichen, den Sound
-                --      nur zu spielen, wenn wir auf dem Start-Bildschirm sind
-                --     Effect.sendCmd <| Delay.after 70 SoundCheck
 
               else
                 Effect.none
@@ -136,13 +132,6 @@ update shared route msg model =
             , Effect.adjustToday today
             )
 
-        -- SoundCheck ->
-        --     ( model
-        --     , if model.debounceBlock then
-        --         Effect.none
-        --       else
-        --         Effect.playSound Utils.SessionStart
-        --     )
         Cancelled ->
             let
                 newSession =

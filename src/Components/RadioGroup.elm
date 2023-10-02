@@ -59,7 +59,7 @@ withSelected choice (Settings settings) =
         { settings | selected = Just choice }
 
 
-view : ColorScheme -> RadioGroup c msg -> Element msg
+view : ColorScheme -> RadioGroup choicesType msg -> Element msg
 view colorScheme (Settings settings) =
     let
         separator =

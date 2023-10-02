@@ -44,9 +44,9 @@ withDisabled isDisabled (Settings settings) =
     Settings { settings | isDisabled = isDisabled }
 
 
-withInline : Bool -> Button msg -> Button msg
-withInline isInline (Settings settings) =
-    Settings { settings | isInline = isInline }
+withInline : Button msg -> Button msg
+withInline (Settings settings) =
+    Settings { settings | isInline = True }
 
 
 

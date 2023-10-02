@@ -187,11 +187,11 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.0 \"Mr. Flexible\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.1 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
-                        |> Components.Button.withInline True
+                        |> Components.Button.withInline
                         |> Components.Button.view shared.colorScheme
                     )
             ]
@@ -228,29 +228,37 @@ viewSettings shared model =
             , paddingEach { left = hPad, right = 0, top = 0, bottom = 0 }
             ]
 
+        -- activeItemLabel : String -> Element Msg
+        -- activeItemLabel label =
+        --     button []
+        --         { onPress = Just ResetSettingItemStatus
+        --         , label = text label
+        --         }
         activeItemLabel : String -> Element Msg
         activeItemLabel label =
-            button []
+            Components.Button.new
                 { onPress = Just ResetSettingItemStatus
                 , label = text label
                 }
+                |> Components.Button.withInline
+                |> Components.Button.view shared.colorScheme
     in
     column [ width fill, spacing 10 ]
-        [ el
-            [ width fill
-            , Font.bold
-            , Font.size 20
-            , Font.color <| CS.guideColor shared.colorScheme
-            , Font.center
-            ]
-          <|
-            text "Übung anpassen"
-        , el [ width fill ] <|
-            el [ alignRight ] <|
+        [ row [ width fill, alignBottom ]
+            [ el
+                [ Font.bold
+                , Font.size 20
+                , Font.color <| CS.guideColor shared.colorScheme
+                ]
+              <|
+                text "Übung anpassen"
+            , el [ width fill ] none
+            , el [ alignBottom ] <|
                 (Components.Button.new { onPress = Just ResetSettings, label = text "Zurücksetzen" }
-                    |> Components.Button.withInline True
+                    |> Components.Button.withInline
                     |> Components.Button.view shared.colorScheme
                 )
+            ]
         , column settingsAttrs
             [ if model.settingsItemShown == Cycles then
                 el lastItemAttrs <|
