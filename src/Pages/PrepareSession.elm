@@ -23,7 +23,7 @@ import View exposing (View)
 page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
+        { init = init shared
         , update = update shared
         , subscriptions = subscriptions
         , view = view shared
@@ -45,11 +45,14 @@ type alias Model =
     }
 
 
-init : () -> ( Model, Effect Msg )
-init () =
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared () =
     ( { time = Time.millisToPosix 0
       }
-    , Effect.sendCmd <| Task.perform Tick Time.now
+    , Effect.batch
+        [ Effect.sendCmd <| Task.perform Tick Time.now
+        , Effect.sessionUpdated <| Session.new shared.sessionSettings
+        ]
     )
 
 
