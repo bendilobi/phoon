@@ -35,16 +35,18 @@ import Time
 
 
 type alias Flags =
-    { storedMotivationData : MotivationData.Fields
-    , storedSessionSettings : Session.Settings
+    { storedMotivationData : Json.Decode.Value
+    , storedSessionSettings : Json.Decode.Value
     }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
     Json.Decode.map2 Flags
-        (Json.Decode.field "storedMotivationData" MotivationData.fieldsDecoder)
-        (Json.Decode.field "storedSessionSettings" Session.settingsDecoder)
+        -- (Json.Decode.field "storedMotivationData" MotivationData.fieldsDecoder)
+        (Json.Decode.field "storedMotivationData" Json.Decode.value)
+        -- (Json.Decode.field "storedSessionSettings" Session.settingsDecoder)
+        (Json.Decode.field "storedSessionSettings" Json.Decode.value)
 
 
 
@@ -59,18 +61,37 @@ init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     let
         ( motData, sessionSettings ) =
+            --TODO: Konzept überlegen, wie mit Fehlern hier umgegangen werden soll
             case flagsResult of
                 Err e ->
-                    --TODO: Styling und Methode für Fehlermeldungen implementieren und
-                    --      hier eine Meldung zeigen
-                    --TODO: Wie können die Fehler in einzelnen Flags erkannt und behandelt werden?
+                    -- let
+                    --     blah =
+                    --         Debug.log "error" e
+                    -- in
                     ( MotivationData.empty
                     , Session.defaultSettings
                     )
 
                 Ok data ->
-                    ( MotivationData.fromFields data.storedMotivationData
-                    , data.storedSessionSettings
+                    let
+                        motDataDecoded =
+                            Json.Decode.decodeValue MotivationData.fieldsDecoder data.storedMotivationData
+
+                        sessionSettingsDecoded =
+                            Json.Decode.decodeValue Session.settingsDecoder data.storedSessionSettings
+                    in
+                    ( case motDataDecoded of
+                        Err e ->
+                            MotivationData.empty
+
+                        Ok fields ->
+                            MotivationData.fromFields fields
+                    , case sessionSettingsDecoded of
+                        Err e ->
+                            Session.defaultSettings
+
+                        Ok settings ->
+                            settings
                     )
     in
     ( { zone = Time.utc
