@@ -2,6 +2,7 @@ module Shared.Msg exposing (Msg(..))
 
 {-| -}
 
+import Browser.Events
 import Date
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
@@ -17,7 +18,8 @@ own file, so they can be imported by `Effect.elm`
 
 -}
 type Msg
-    = AdjustTimeZone Time.Zone
+    = VisibilityChanged Browser.Events.Visibility
+    | AdjustTimeZone Time.Zone
     | AdjustToday Date.Date
     | SessionUpdated Session
     | ResultsUpdated SessionResults

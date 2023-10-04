@@ -13,6 +13,7 @@ module Shared exposing
 
 -}
 
+import Browser.Events
 import Date
 import Dict
 import Effect exposing (Effect)
@@ -99,6 +100,16 @@ type alias Msg =
 update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
+        Shared.Msg.VisibilityChanged visibility ->
+            ( model
+            , case visibility of
+                Browser.Events.Hidden ->
+                    Effect.none
+
+                Browser.Events.Visible ->
+                    Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
+            )
+
         Shared.Msg.AdjustTimeZone newZone ->
             ( { model | zone = newZone }
             , Effect.none
@@ -197,4 +208,4 @@ navigateNext session =
 
 subscriptions : Route () -> Model -> Sub Msg
 subscriptions route model =
-    Sub.none
+    Browser.Events.onVisibilityChange Shared.Msg.VisibilityChanged

@@ -193,6 +193,14 @@ adjustToday today =
     SendSharedMsg <| Shared.Msg.AdjustToday today
 
 
+
+--TODO: Doch nochmal explorieren, ob ich das irgendwie in einen
+--      Schritt bekomme:
+-- adjustToday : Effect Shared.Msg.Msg
+-- adjustToday =
+--     SendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
+
+
 sessionUpdated : Session -> Effect msg
 sessionUpdated session =
     SendSharedMsg <| Shared.Msg.SessionUpdated session
