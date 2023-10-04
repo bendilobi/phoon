@@ -81,5 +81,9 @@ view shared model =
     , attributes =
         CS.phaseRetention shared.colorScheme
     , element =
-        el [ Font.size 30 ] <| text <| Utils.formatSeconds <| SessionResults.currentRetentionTime shared.results
+        el [ width fill, height fill ] <|
+            el [ Font.size 30, centerX, centerY ] <|
+                text <|
+                    Utils.formatSeconds <|
+                        SessionResults.currentRetentionTime shared.results
     }

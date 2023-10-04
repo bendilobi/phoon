@@ -1,12 +1,12 @@
 module Pages.Phases.SessionStart exposing (Model, Msg, page)
 
-import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import FeatherIcons
+import Html.Attributes
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session
@@ -104,50 +104,51 @@ view shared model =
     , attributes =
         CS.phaseSessionStart shared.colorScheme
     , element =
-        column [ width fill, spacing 100 ]
-            [ el
-                [ centerX
-                , inFront <|
-                    row [ spacing 100, centerX ]
-                        [ el
-                            [ centerX
-                            , centerY
-                            , transparent <| model.ticks < 2
-                            ]
-                          <|
-                            viewReminder shared FeatherIcons.volume2
-                        , el
-                            [ centerX
-                            , centerY
-                            , transparent <| model.ticks < 4
-                            ]
-                          <|
-                            viewReminder shared FeatherIcons.bellOff
-                        ]
+        column [ width fill, height fill, spacing 100 ]
+            [ row
+                [ spacing 100
+                , centerX
+                , paddingEach { top = 150, bottom = 0, left = 0, right = 0 }
                 ]
-                none
+                [ el
+                    [ centerX
+                    , centerY
+                    , transparent <| model.ticks < 2
+                    ]
+                  <|
+                    viewReminder shared FeatherIcons.volume2
+                , el
+                    [ centerX
+                    , centerY
+                    , transparent <| model.ticks < 4
+                    ]
+                  <|
+                    viewReminder shared FeatherIcons.bellOff
+                ]
 
             -- TODO: Das synchronisieren mit der Darstellung bei Breathing
             --       => Abwarten, bis die Visualisierung optimiert wird...
-            , el
-                ([ Font.bold
-                 , Font.size 40
-                 , width <| px 200
-                 , height <| px 200
-                 , Border.rounded 100
-                 , centerX
-                 ]
-                    ++ (case model.breathingPreview of
-                            In ->
-                                CS.sessionStartInverted shared.colorScheme
+            , el [ width fill, height fill ] <|
+                el
+                    ([ Font.bold
+                     , Font.size 40
+                     , width <| px 200
+                     , height <| px 200
+                     , Border.rounded 100
+                     , centerX
+                     , centerY
+                     ]
+                        ++ (case model.breathingPreview of
+                                In ->
+                                    CS.sessionStartInverted shared.colorScheme
 
-                            Out ->
-                                []
-                       )
-                )
-              <|
-                el [ centerX, centerY ] <|
-                    text "Start"
+                                Out ->
+                                    []
+                           )
+                    )
+                <|
+                    el [ centerX, centerY ] <|
+                        text "Start"
             , viewHints model
             ]
     }
@@ -160,26 +161,27 @@ viewHints model =
         bullet content =
             row [ spacing 8 ]
                 [ el [ alignTop, Font.bold ] <| text "•"
-                , paragraph [] [ text content ]
+                , paragraph
+                    [ --- This is a bugfix for (it seems) a bug in elm-ui...
+                      --- See https://github.com/mdgriffith/elm-ui/issues/124
+                      --- Without this, the button that is overlayed on swipe in the
+                      --- SessionControls is not clickable at first, only on the second
+                      --- tap...
+                      htmlAttribute <| Html.Attributes.style "pointer-events" "none"
+                    ]
+                    [ text content ]
                 ]
     in
-    el
-        [ centerX
-        , moveUp 50
-        , inFront <|
-            textColumn
-                [ spacing 20
-                , centerX
-                , paddingEach { left = 100, right = 100, top = 0, bottom = 0 }
-                , Font.size 15
-                , transparent <| model.ticks < 8
-                ]
-                [ bullet "Tippe mit zwei Fingern, um jeweils zur nächsten Übungsphase zu gehen"
-                , bullet "Wische mit einem Finger von links nach rechts, um Optionen anzuzeigen"
-                , bullet "Teste hier den Sound durch Tipp mit einem Finger"
-                ]
+    column
+        [ spacing 20
+        , paddingEach { left = 70, right = 70, top = 0, bottom = 100 }
+        , Font.size 15
+        , transparent <| model.ticks < 8
         ]
-        none
+        [ bullet "Tippe mit zwei Fingern, um jeweils zur nächsten Übungsphase zu gehen"
+        , bullet "Wische mit einem Finger von links nach rechts, um Optionen anzuzeigen"
+        , bullet "Teste hier den Sound durch Tipp mit einem Finger"
+        ]
 
 
 viewReminder : Shared.Model -> FeatherIcons.Icon -> Element msg

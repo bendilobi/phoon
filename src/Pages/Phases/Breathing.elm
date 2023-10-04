@@ -116,42 +116,45 @@ view shared model =
     , attributes =
         CS.phaseBreathing shared.colorScheme
     , element =
-        el
-            ([ Font.bold
-             , width <| px 300
-             , height <| px 300
-             , Border.rounded 150
-             ]
-                ++ (case model of
-                        AtBreath _ In ->
-                            CS.breathingInverted shared.colorScheme
+        el [ width fill, height fill ] <|
+            el
+                ([ Font.bold
+                 , width <| px 300
+                 , height <| px 300
+                 , Border.rounded 150
+                 , centerX
+                 , centerY
+                 ]
+                    ++ (case model of
+                            AtBreath _ In ->
+                                CS.breathingInverted shared.colorScheme
 
-                        _ ->
-                            []
-                   )
-            )
-        <|
-            case model of
-                Starting ->
-                    none
+                            _ ->
+                                []
+                       )
+                )
+            <|
+                case model of
+                    Starting ->
+                        none
 
-                AtBreath n _ ->
-                    el
-                        [ centerX
-                        , centerY
-                        , Font.size 120
-                        ]
-                    <|
-                        text <|
-                            String.fromInt n
+                    AtBreath n _ ->
+                        el
+                            [ centerX
+                            , centerY
+                            , Font.size 120
+                            ]
+                        <|
+                            text <|
+                                String.fromInt n
 
-                BreathingFinished ->
-                    el
-                        [ centerX
-                        , centerY
-                        , Font.size 40
-                        , Font.center
-                        ]
-                    <|
-                        text "Retention \nvorbereiten"
+                    BreathingFinished ->
+                        el
+                            [ centerX
+                            , centerY
+                            , Font.size 40
+                            , Font.center
+                            ]
+                        <|
+                            text "Retention \nvorbereiten"
     }

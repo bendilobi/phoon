@@ -134,7 +134,7 @@ update shared route msg model =
 
         Cancelled ->
             let
-                newSession =
+                sessionAtEnd =
                     Session.jumpToEnd shared.session
             in
             ( { model | controlsShown = False }
@@ -147,8 +147,8 @@ update shared route msg model =
 
               else
                 Effect.batch
-                    [ Effect.sessionUpdated newSession
-                    , Effect.navigate <| Session.currentPath newSession
+                    [ Effect.sessionUpdated sessionAtEnd
+                    , Effect.navigate <| Session.currentPath sessionAtEnd
                     ]
             )
 
@@ -239,7 +239,7 @@ view props shared route { toContentMsg, model, content } =
 
                   else
                     none
-                , el [ centerX, centerY ] content.element
+                , content.element
                 ]
     }
 

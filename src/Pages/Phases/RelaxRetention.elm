@@ -115,16 +115,19 @@ view shared model =
     , attributes =
         CS.phaseRelaxRetention shared.colorScheme
     , element =
-        el
-            [ Font.size 120
-            , Font.bold
-            ]
-        <|
-            text <|
-                case model of
-                    Starting ->
-                        ""
+        el [ width fill, height fill ] <|
+            el
+                [ Font.size 120
+                , Font.bold
+                , centerX
+                , centerY
+                ]
+            <|
+                text <|
+                    case model of
+                        Starting ->
+                            ""
 
-                    Counting sec ->
-                        String.fromInt sec
+                        Counting sec ->
+                            String.fromInt sec
     }

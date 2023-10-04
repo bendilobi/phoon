@@ -187,7 +187,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.8 \"Mr. Flexible\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.30 \"Mr. Flexible\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -373,7 +373,12 @@ viewSettings shared model =
                             { label =
                                 \n ->
                                     paragraph []
-                                        [ el [ Font.bold ] <| text <| String.fromInt n
+                                        [ if n < 10 then
+                                            el [ transparent True ] <| text "1"
+
+                                          else
+                                            none
+                                        , el [ Font.bold ] <| text <| String.fromInt n
                                         , text " Sekunden"
                                         ]
                             , onCrement = DefaultRelaxRetDurationChanged
