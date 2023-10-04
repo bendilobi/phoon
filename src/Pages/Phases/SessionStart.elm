@@ -46,18 +46,16 @@ type Breath
 
 type alias Model =
     { breathingPreview : Breath
-    , soundReminderShown : Bool
-    , notificationReminderShown : Bool
+    , ticks : Int
     }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
     ( { breathingPreview = In
-      , soundReminderShown = False
-      , notificationReminderShown = False
+      , ticks = 0
       }
-    , Effect.sendCmd <| Delay.after 1000 SoundReminderDelayOver
+    , Effect.none
     )
 
 
@@ -67,8 +65,6 @@ init () =
 
 type Msg
     = Tick Time.Posix
-    | SoundReminderDelayOver
-    | NotificationReminderDelayOver
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -83,17 +79,8 @@ update msg model =
 
                         Out ->
                             In
+                , ticks = model.ticks + 1
               }
-            , Effect.none
-            )
-
-        SoundReminderDelayOver ->
-            ( { model | soundReminderShown = True }
-            , Effect.sendCmd <| Delay.after 1000 NotificationReminderDelayOver
-            )
-
-        NotificationReminderDelayOver ->
-            ( { model | notificationReminderShown = True }
             , Effect.none
             )
 
@@ -120,11 +107,25 @@ view shared model =
         column [ width fill, spacing 100 ]
             [ el
                 [ centerX
-                , centerY
-                , transparent <| not model.soundReminderShown
+                , inFront <|
+                    row [ spacing 100, centerX ]
+                        [ el
+                            [ centerX
+                            , centerY
+                            , transparent <| model.ticks < 2
+                            ]
+                          <|
+                            viewReminder shared FeatherIcons.volume2
+                        , el
+                            [ centerX
+                            , centerY
+                            , transparent <| model.ticks < 4
+                            ]
+                          <|
+                            viewReminder shared FeatherIcons.bellOff
+                        ]
                 ]
-              <|
-                viewReminder shared FeatherIcons.volume2
+                none
 
             -- TODO: Das synchronisieren mit der Darstellung bei Breathing
             --       => Abwarten, bis die Visualisierung optimiert wird...
@@ -134,6 +135,7 @@ view shared model =
                  , width <| px 200
                  , height <| px 200
                  , Border.rounded 100
+                 , centerX
                  ]
                     ++ (case model.breathingPreview of
                             In ->
@@ -146,15 +148,38 @@ view shared model =
               <|
                 el [ centerX, centerY ] <|
                     text "Start"
-            , el
-                [ centerX
-                , centerY
-                , transparent <| not model.notificationReminderShown
-                ]
-              <|
-                viewReminder shared FeatherIcons.bellOff
+            , viewHints model
             ]
     }
+
+
+viewHints : Model -> Element msg
+viewHints model =
+    let
+        bullet : String -> Element msg
+        bullet content =
+            row [ spacing 8 ]
+                [ el [ alignTop, Font.bold ] <| text "•"
+                , paragraph [] [ text content ]
+                ]
+    in
+    el
+        [ centerX
+        , moveUp 50
+        , inFront <|
+            textColumn
+                [ spacing 20
+                , centerX
+                , paddingEach { left = 100, right = 100, top = 0, bottom = 0 }
+                , Font.size 15
+                , transparent <| model.ticks < 8
+                ]
+                [ bullet "Tippe mit zwei Fingern, um jeweils zur nächsten Übungsphase zu gehen"
+                , bullet "Wische mit einem Finger von links nach rechts, um Optionen anzuzeigen"
+                , bullet "Teste hier den Sound durch Tipp mit einem Finger"
+                ]
+        ]
+        none
 
 
 viewReminder : Shared.Model -> FeatherIcons.Icon -> Element msg
