@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, navigate, playSound, resultsUpdated, saveMotivationData, saveSessionSettings, sessionEnded, sessionUpdated, setWakeLock, soundEncoder, updateSessionSettings
+    , adjustToday, navigate, navigateNext, playSound, resultsUpdated, saveMotivationData, saveSessionSettings, sessionEnded, sessionUpdated, setWakeLock, soundEncoder, updateSessionSettings
     )
 
 {-|
@@ -214,6 +214,19 @@ resultsUpdated results =
 navigate : Route.Path.Path -> Effect msg
 navigate path =
     SendSharedMsg <| Shared.Msg.NavigateTriggered path
+
+
+navigateNext : Session -> Effect msg
+navigateNext session =
+    case Session.goNext session of
+        Just sess ->
+            batch
+                [ sessionUpdated sess
+                , navigate <| Session.phasePath <| Session.currentPhase sess
+                ]
+
+        Nothing ->
+            sessionEnded
 
 
 sessionEnded : Effect msg

@@ -95,6 +95,9 @@ update shared msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    --TODO: nur subscriben, wenn die App im Vordergrund ist? Zumindest
+    --      auf dem Desktop wird der Timer aber vom Browser angehalten,
+    --      wenn das Fenster minimiert ist...
     Time.every 1000 Tick
 
 

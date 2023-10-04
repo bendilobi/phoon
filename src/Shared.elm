@@ -2,7 +2,7 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
-    , navigateNext
+    -- , navigateNext
     )
 
 {-|
@@ -186,20 +186,6 @@ update route msg model =
               }
             , Effect.saveSessionSettings newSettings
             )
-
-
-navigateNext : Session -> Effect msg
-navigateNext session =
-    case Session.goNext session of
-        Just sess ->
-            Effect.batch
-                [ --TODO: kann ich hier in Shared auch direkt machen...
-                  Effect.sessionUpdated sess
-                , Effect.navigate <| Session.phasePath <| Session.currentPhase sess
-                ]
-
-        Nothing ->
-            Effect.sessionEnded
 
 
 

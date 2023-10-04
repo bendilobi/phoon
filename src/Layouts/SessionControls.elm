@@ -114,7 +114,7 @@ update shared route msg model =
             , if multitouchRegistered then
                 Effect.batch
                     [ Effect.sendCmd <| Delay.after 1000 ReleaseDebounceBlock
-                    , Shared.navigateNext shared.session
+                    , Effect.navigateNext shared.session
                     ]
 
               else if singleTapRegistered && route.path == Session.phasePath Session.Start then
@@ -170,7 +170,7 @@ update shared route msg model =
         MouseNavTap ->
             ( { model | controlsShown = False }
             , if not model.controlsShown then
-                Shared.navigateNext shared.session
+                Effect.navigateNext shared.session
 
               else
                 Effect.none
