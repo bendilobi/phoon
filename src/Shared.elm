@@ -43,9 +43,7 @@ type alias Flags =
 decoder : Json.Decode.Decoder Flags
 decoder =
     Json.Decode.map2 Flags
-        -- (Json.Decode.field "storedMotivationData" MotivationData.fieldsDecoder)
         (Json.Decode.field "storedMotivationData" Json.Decode.value)
-        -- (Json.Decode.field "storedSessionSettings" Session.settingsDecoder)
         (Json.Decode.field "storedSessionSettings" Json.Decode.value)
 
 
@@ -64,10 +62,6 @@ init flagsResult route =
             --TODO: Konzept überlegen, wie mit Fehlern hier umgegangen werden soll
             case flagsResult of
                 Err e ->
-                    -- let
-                    --     blah =
-                    --         Debug.log "error" e
-                    -- in
                     ( MotivationData.empty
                     , Session.defaultSettings
                     )
@@ -132,6 +126,7 @@ update route msg model =
             )
 
         Shared.Msg.AdjustTimeZone newZone ->
+            --- TODO: Das auch immer machen, wenn App visible wird?
             ( { model | zone = newZone }
             , Effect.none
             )
@@ -185,10 +180,14 @@ update route msg model =
                 }
             )
 
-        Shared.Msg.SessionEnded ->
+        Shared.Msg.SessionEnded cancelled ->
             let
                 newMotData =
-                    MotivationData.update model.results model.today model.motivationData
+                    if cancelled then
+                        model.motivationData
+
+                    else
+                        MotivationData.update model.results model.today model.motivationData
             in
             ( { model
                 | session = Session.new model.sessionSettings

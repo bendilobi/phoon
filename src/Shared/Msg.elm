@@ -24,5 +24,5 @@ type Msg
     | SessionUpdated Session
     | ResultsUpdated SessionResults
     | NavigateTriggered Route.Path.Path
-    | SessionEnded
+    | SessionEnded Bool
     | SessionSettingsUpdated Session.Settings

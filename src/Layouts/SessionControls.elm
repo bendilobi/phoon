@@ -145,6 +145,9 @@ update shared route msg model =
               then
                 Effect.navigate shared.previousPath
 
+              else if route.path == Session.phasePath Session.End then
+                Effect.sessionEnded True
+
               else
                 Effect.batch
                     [ Effect.sessionUpdated sessionAtEnd
@@ -283,17 +286,20 @@ viewDebugButton msg label =
 viewSessionControls : ColorScheme -> Route () -> Element Msg
 viewSessionControls colorScheme route =
     column [ centerX, centerY ]
-        [ Components.Button.new
-            (if route.path == Session.phasePath Session.End then
+        [ if route.path == Session.phasePath Session.End then
+            Components.Button.new
                 { onPress = Just AddCycle
                 , label = text "Noch 'ne Runde"
                 }
+                |> Components.Button.view colorScheme
 
-             else
-                { onPress = Just Cancelled
-                , label = text "Sitzung abbrechen"
-                }
-            )
+          else
+            none
+        , el [ height <| px 70 ] none
+        , Components.Button.new
+            { onPress = Just Cancelled
+            , label = text "Sitzung abbrechen"
+            }
             |> Components.Button.view colorScheme
         , el [ height <| px 100 ] none
         ]

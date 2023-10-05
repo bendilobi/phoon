@@ -187,7 +187,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.31 \"Mr. Flexible\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.33 \"MVP+\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -228,12 +228,6 @@ viewSettings shared model =
             , paddingEach { left = hPad, right = 0, top = 0, bottom = 0 }
             ]
 
-        -- activeItemLabel : String -> Element Msg
-        -- activeItemLabel label =
-        --     button []
-        --         { onPress = Just ResetSettingItemStatus
-        --         , label = text label
-        --         }
         activeItemLabel : String -> Element Msg
         activeItemLabel label =
             Components.Button.new
@@ -254,7 +248,10 @@ viewSettings shared model =
                 text "Übung anpassen"
             , el [ width fill ] none
             , el [ alignBottom ] <|
-                (Components.Button.new { onPress = Just ResetSettings, label = text "Zurücksetzen" }
+                (Components.Button.new
+                    { onPress = Just ResetSettings
+                    , label = text "Zurücksetzen"
+                    }
                     |> Components.Button.withInline
                     |> Components.Button.view shared.colorScheme
                 )
