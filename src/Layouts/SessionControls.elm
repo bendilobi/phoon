@@ -71,6 +71,7 @@ type Msg
     | SwipeEnd Swipe.Event
     | Cancelled
     | AddCycle
+    | EndSession
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
       -- To simulate gestures via buttons for debugging in desktop browser:
@@ -165,6 +166,11 @@ update shared route msg model =
                 [ Effect.sessionUpdated newSession
                 , Effect.navigate <| Session.currentPath newSession
                 ]
+            )
+
+        EndSession ->
+            ( model
+            , Effect.sessionEnded False
             )
 
         MouseNavSwipe ->
@@ -285,21 +291,38 @@ viewDebugButton msg label =
 
 viewSessionControls : ColorScheme -> Route () -> Element Msg
 viewSessionControls colorScheme route =
-    column [ centerX, centerY ]
-        [ if route.path == Session.phasePath Session.End then
-            Components.Button.new
+    column
+        [ width fill
+        , paddingEach { bottom = 100, top = 0, left = 50, right = 50 }
+        ]
+    <|
+        if route.path == Session.phasePath Session.End then
+            [ Components.Button.new
                 { onPress = Just AddCycle
                 , label = text "Noch 'ne Runde"
                 }
                 |> Components.Button.view colorScheme
+            , el [ height <| px 70 ] none
+            , Components.Button.new
+                { onPress = Just EndSession
+                , label = text "Speichern & beenden"
+                }
+                |> Components.Button.view colorScheme
+            , el [ height <| px 70 ] none
+            , el [ centerX ] <|
+                (Components.Button.new
+                    { onPress = Just Cancelled
+                    , label = text "Sitzung verwerfen"
+                    }
+                    |> Components.Button.withInline
+                    |> Components.Button.view colorScheme
+                )
+            ]
 
-          else
-            none
-        , el [ height <| px 70 ] none
-        , Components.Button.new
-            { onPress = Just Cancelled
-            , label = text "Sitzung abbrechen"
-            }
-            |> Components.Button.view colorScheme
-        , el [ height <| px 100 ] none
-        ]
+        else
+            [ Components.Button.new
+                { onPress = Just Cancelled
+                , label = text "Sitzung abbrechen"
+                }
+                |> Components.Button.view colorScheme
+            ]

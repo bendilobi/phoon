@@ -226,7 +226,11 @@ navigateNext session =
                 ]
 
         Nothing ->
-            sessionEnded False
+            none
+
+
+
+-- sessionEnded False
 
 
 sessionEnded : Bool -> Effect msg
