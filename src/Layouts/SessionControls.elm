@@ -314,8 +314,7 @@ viewSessionControls colorScheme route =
         ]
     <|
         if route.path == Session.phasePath Session.End then
-            [ -- , el [ height <| px 70 ] none
-              Components.Button.new
+            [ Components.Button.new
                 { onPress = Just EndSession
                 , label = text "Speichern & beenden"
                 }

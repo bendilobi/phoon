@@ -1,5 +1,6 @@
 module Layouts.MainNav exposing (Model, Msg, Props, layout)
 
+import Browser.Events
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -12,6 +13,8 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Route exposing (Route)
 import Route.Path
 import Shared
+import Task
+import Time
 import View exposing (View)
 
 
@@ -34,12 +37,13 @@ layout props shared route =
 
 
 type alias Model =
-    {}
+    { lastHide : Maybe Time.Posix }
 
 
 init : () -> ( Model, Effect Msg )
 init _ =
-    ( {}
+    ( { lastHide = Nothing
+      }
     , Effect.none
     )
 
@@ -50,6 +54,9 @@ init _ =
 
 type Msg
     = NavButtonClicked Route.Path.Path
+    | HiddenAt Time.Posix
+    | ShownAt Time.Posix
+    | VisibilityChanged Browser.Events.Visibility
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -58,10 +65,40 @@ update msg model =
         NavButtonClicked path ->
             ( model, Effect.navigate path )
 
+        VisibilityChanged visibility ->
+            ( model
+            , case visibility of
+                Browser.Events.Hidden ->
+                    Effect.sendCmd <| Task.perform HiddenAt Time.now
+
+                Browser.Events.Visible ->
+                    Effect.sendCmd <| Task.perform ShownAt Time.now
+            )
+
+        HiddenAt time ->
+            ( { model | lastHide = Just time }
+            , Effect.none
+            )
+
+        ShownAt time ->
+            let
+                lastHide =
+                    model.lastHide
+                        |> Maybe.map Time.posixToMillis
+                        |> Maybe.withDefault 0
+            in
+            ( model
+            , if Time.posixToMillis time - lastHide > 300000 then
+                Effect.navigate Route.Path.Home_
+
+              else
+                Effect.none
+            )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Browser.Events.onVisibilityChange VisibilityChanged
 
 
 

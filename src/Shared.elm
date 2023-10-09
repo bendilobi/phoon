@@ -96,7 +96,6 @@ init flagsResult route =
       , motivationData = motData
       , colorScheme = CS.newSunrise
       , sessionSettings = sessionSettings
-      , lastHide = Nothing
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -117,42 +116,21 @@ update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
         Shared.Msg.VisibilityChanged visibility ->
+            --TODO: Prüfen -> Brauche ich das eigentlich während der Sitzung?
+            --      Oder sollte ich das mit Today vielleicht ins MainNav bewegen?
             ( model
             , case visibility of
                 Browser.Events.Hidden ->
-                    Effect.sendCmd <| Task.perform Shared.Msg.HiddenAt Time.now
+                    Effect.none
 
                 Browser.Events.Visible ->
-                    Effect.batch
-                        [ Effect.sendCmd <| Task.perform Shared.Msg.ShownAt Time.now
-                        , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
-                        ]
+                    Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
             )
 
         Shared.Msg.AdjustTimeZone newZone ->
             --- TODO: Das auch immer machen, wenn App visible wird?
             ( { model | zone = newZone }
             , Effect.none
-            )
-
-        Shared.Msg.HiddenAt time ->
-            ( { model | lastHide = Just time }
-            , Effect.none
-            )
-
-        Shared.Msg.ShownAt time ->
-            let
-                lastHide =
-                    model.lastHide
-                        |> Maybe.map Time.posixToMillis
-                        |> Maybe.withDefault 0
-            in
-            ( model
-            , if Time.posixToMillis time - lastHide > 300000 then
-                Effect.navigate Route.Path.Home_
-
-              else
-                Effect.none
             )
 
         Shared.Msg.AdjustToday today ->
