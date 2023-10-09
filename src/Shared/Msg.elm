@@ -26,3 +26,5 @@ type Msg
     | NavigateTriggered Route.Path.Path
     | SessionEnded Bool
     | SessionSettingsUpdated Session.Settings
+    | HiddenAt Time.Posix
+    | ShownAt Time.Posix

@@ -31,6 +31,7 @@ import Route.Path
 import Shared.Model
 import Shared.Msg
 import Task
+import Time
 import Url exposing (Url)
 
 
@@ -229,10 +230,6 @@ navigateNext session =
             none
 
 
-
--- sessionEnded False
-
-
 sessionEnded : Bool -> Effect msg
 sessionEnded wasCancelled =
     --TODO: Statt Bool einen Typ in Session? type EndState = Successful | Cancelled
@@ -245,6 +242,9 @@ updateSessionSettings settings =
 
 
 
+-- hiddenAt : Time.Posix -> Effect msg
+-- hiddenAt time =
+--     SendSharedMsg <| Shared.Msg.HiddenAt time
 -- INTERNALS
 
 

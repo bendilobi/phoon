@@ -96,6 +96,7 @@ init flagsResult route =
       , motivationData = motData
       , colorScheme = CS.newSunrise
       , sessionSettings = sessionSettings
+      , lastHide = Nothing
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -119,16 +120,39 @@ update route msg model =
             ( model
             , case visibility of
                 Browser.Events.Hidden ->
-                    Effect.none
+                    Effect.sendCmd <| Task.perform Shared.Msg.HiddenAt Time.now
 
                 Browser.Events.Visible ->
-                    Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
+                    Effect.batch
+                        [ Effect.sendCmd <| Task.perform Shared.Msg.ShownAt Time.now
+                        , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
+                        ]
             )
 
         Shared.Msg.AdjustTimeZone newZone ->
             --- TODO: Das auch immer machen, wenn App visible wird?
             ( { model | zone = newZone }
             , Effect.none
+            )
+
+        Shared.Msg.HiddenAt time ->
+            ( { model | lastHide = Just time }
+            , Effect.none
+            )
+
+        Shared.Msg.ShownAt time ->
+            let
+                lastHide =
+                    model.lastHide
+                        |> Maybe.map Time.posixToMillis
+                        |> Maybe.withDefault 0
+            in
+            ( model
+            , if Time.posixToMillis time - lastHide > 300000 then
+                Effect.navigate Route.Path.Home_
+
+              else
+                Effect.none
             )
 
         Shared.Msg.AdjustToday today ->

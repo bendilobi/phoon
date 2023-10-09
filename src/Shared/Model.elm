@@ -25,4 +25,5 @@ type alias Model =
     , motivationData : MotivationData
     , colorScheme : CS.ColorScheme
     , sessionSettings : Session.Settings
+    , lastHide : Maybe Time.Posix
     }
