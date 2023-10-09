@@ -209,7 +209,13 @@ view props shared route { toContentMsg, model, content } =
                             [ width fill
                             , height fill
                             ]
-                            [ viewTouchOverlay model.debugButtonsShown
+                            [ if model.controlsShown && route.path == Session.phasePath Session.End then
+                                viewAddCycleControls shared.colorScheme
+                                    |> map toContentMsg
+
+                              else
+                                none
+                            , viewTouchOverlay model.debugButtonsShown
                                 |> map toContentMsg
                             , if model.controlsShown then
                                 viewSessionControls shared.colorScheme route
@@ -289,6 +295,17 @@ viewDebugButton msg label =
         }
 
 
+viewAddCycleControls : ColorScheme -> Element Msg
+viewAddCycleControls colorScheme =
+    el [ width fill, padding 50 ]
+        (Components.Button.new
+            { onPress = Just AddCycle
+            , label = text "Noch 'ne Runde"
+            }
+            |> Components.Button.view colorScheme
+        )
+
+
 viewSessionControls : ColorScheme -> Route () -> Element Msg
 viewSessionControls colorScheme route =
     column
@@ -297,13 +314,8 @@ viewSessionControls colorScheme route =
         ]
     <|
         if route.path == Session.phasePath Session.End then
-            [ Components.Button.new
-                { onPress = Just AddCycle
-                , label = text "Noch 'ne Runde"
-                }
-                |> Components.Button.view colorScheme
-            , el [ height <| px 70 ] none
-            , Components.Button.new
+            [ -- , el [ height <| px 70 ] none
+              Components.Button.new
                 { onPress = Just EndSession
                 , label = text "Speichern & beenden"
                 }
