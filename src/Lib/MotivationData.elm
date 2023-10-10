@@ -1,4 +1,4 @@
-module Lib.MotivationData exposing (Fields, MotivationData, empty, encoder, fieldsDecoder, fromFields, getMotivationData, lastSessionDate, series, update)
+module Lib.MotivationData exposing (Fields, MotivationData, empty, encoder, fieldsDecoder, fromFields, getMotivationData, lastSessionDate, maxRetention, meanRetentionTimes, series, update)
 
 import Date
 import Json.Decode
@@ -127,6 +127,26 @@ lastSessionDate motData =
 
         MotivationData data ->
             Just <| data.lastSessionDate
+
+
+meanRetentionTimes : MotivationData -> Maybe (List Int)
+meanRetentionTimes motData =
+    case motData of
+        NoData ->
+            Nothing
+
+        MotivationData data ->
+            Just <| data.meanRetentiontimes
+
+
+maxRetention : MotivationData -> Maybe Int
+maxRetention motData =
+    case motData of
+        NoData ->
+            Nothing
+
+        MotivationData data ->
+            Just <| data.maxRetention
 
 
 

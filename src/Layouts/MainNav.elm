@@ -88,7 +88,7 @@ update msg model =
                         |> Maybe.withDefault 0
             in
             ( model
-            , if Time.posixToMillis time - lastHide > 300000 then
+            , if Time.posixToMillis time - lastHide > 900000 then
                 Effect.navigate Route.Path.Home_
 
               else

@@ -1,6 +1,8 @@
 module Pages.Information exposing (Model, Msg, page)
 
 import Browser.Navigation
+import Chart
+import Chart.Attributes as ChartA
 import Components.Button
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
@@ -20,6 +22,7 @@ import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
+import Svg
 import View exposing (View)
 
 
@@ -164,6 +167,7 @@ view shared model =
             , Font.size 15
             ]
             [ viewIntroduction shared
+            , viewRetentionTrend shared
             , viewSettings shared model
             , viewTechInfo shared
             ]
@@ -187,7 +191,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.40 \"MVP+\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.54 \"MVP+\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -196,6 +200,89 @@ viewIntroduction shared =
                     )
             ]
         ]
+
+
+viewRetentionTrend : Shared.Model -> Element msg
+viewRetentionTrend shared =
+    --TODO: Chart in eigene Komponente und dann Imports wie bei den Beispielen benennen
+    case MotivationData.meanRetentionTimes shared.motivationData of
+        Nothing ->
+            none
+
+        Just meanTimes ->
+            let
+                data =
+                    meanTimes
+                        |> List.reverse
+                        |> List.indexedMap (\i d -> { x = toFloat i, y = toFloat d })
+
+                max =
+                    toFloat <| Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
+            in
+            column [ width fill, spacing 15 ]
+                [ el
+                    [ Font.bold
+                    , Font.size 20
+                    , Font.color <| CS.guideColor shared.colorScheme
+                    ]
+                  <|
+                    text "Retentionstrend"
+                , el
+                    [ centerX
+
+                    -- , paddingEach { top = 0, left = 50, right = 0, bottom = 0 }
+                    , width <| px 400
+                    , height <| px 200
+                    ]
+                    (Chart.chart
+                        [ ChartA.height 300
+                        , ChartA.width 450
+                        , ChartA.margin { top = 0, bottom = 60, left = 60, right = 60 }
+                        , ChartA.domain
+                            [ ChartA.lowest 0 ChartA.orLower
+                            , ChartA.highest (max + (max / 5)) ChartA.orHigher
+                            ]
+                        ]
+                        [ Chart.generate (List.length meanTimes)
+                            Chart.ints
+                            .x
+                            []
+                          <|
+                            \plane int ->
+                                [ Chart.xTick
+                                    [ ChartA.x (toFloat int)
+                                    , ChartA.color ChartA.darkGray
+                                    ]
+                                ]
+                        , Chart.series .x
+                            [ Chart.interpolated .y
+                                [ ChartA.opacity 0.6
+                                , ChartA.gradient []
+                                , ChartA.monotone
+                                , ChartA.color "#bb8800"
+                                ]
+                                []
+                            ]
+                            data
+                        , Chart.withPlane <|
+                            \p ->
+                                [ Chart.line
+                                    [ ChartA.x1 p.x.min
+                                    , ChartA.y1 max
+                                    , ChartA.x2 p.x.max
+                                    , ChartA.color ChartA.darkYellow
+                                    , ChartA.width 2
+                                    ]
+                                ]
+                        , Chart.yLabel
+                            [ ChartA.x 0
+                            , ChartA.y max
+                            ]
+                            [ Svg.text <| Utils.formatSeconds <| round max ]
+                        ]
+                        |> html
+                    )
+                ]
 
 
 viewSettings : Shared.Model -> Model -> Element Msg
