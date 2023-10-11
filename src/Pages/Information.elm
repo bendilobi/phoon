@@ -191,7 +191,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.60 \"MVP+\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.67 \"MVP+\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -199,6 +199,8 @@ viewIntroduction shared =
                         |> Components.Button.view shared.colorScheme
                     )
             ]
+
+        -- , text <| "sab: " ++ shared.safeAreaInsetBottom
         ]
 
 

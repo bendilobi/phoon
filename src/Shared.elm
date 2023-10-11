@@ -37,6 +37,8 @@ import Time
 type alias Flags =
     { storedMotivationData : Json.Decode.Value
     , storedSessionSettings : Json.Decode.Value
+
+    -- , safeAreaInsetBottom : String
     }
 
 
@@ -48,6 +50,7 @@ decoder =
 
 
 
+-- (Json.Decode.field "safeAreaInsetBottom" Json.Decode.string)
 -- INIT
 
 
@@ -64,6 +67,7 @@ init flagsResult route =
                 Err e ->
                     ( MotivationData.empty
                     , Session.defaultSettings
+                      -- , "0"
                     )
 
                 Ok data ->
@@ -73,6 +77,9 @@ init flagsResult route =
 
                         sessionSettingsDecoded =
                             Json.Decode.decodeValue Session.settingsDecoder data.storedSessionSettings
+
+                        -- sab =
+                        --     data.safeAreaInsetBottom
                     in
                     ( case motDataDecoded of
                         Err e ->
@@ -86,6 +93,7 @@ init flagsResult route =
 
                         Ok settings ->
                             settings
+                      -- , sab
                     )
     in
     ( { zone = Time.utc
@@ -96,6 +104,8 @@ init flagsResult route =
       , motivationData = motData
       , colorScheme = CS.newSunrise
       , sessionSettings = sessionSettings
+
+      --   , safeAreaInsetBottom = safeAreaInsetBottom
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here

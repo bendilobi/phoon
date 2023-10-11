@@ -9,9 +9,14 @@ export const flags = ({ env }) => {
     const sessionSettingsStored = localStorage.getItem(SESSION_SETTINGS_KEY)
     const sessionSettingsJson = sessionSettingsStored ? JSON.parse(sessionSettingsStored) : null
 
+    // const sab = getComputedStyle(document.documentElement).getPropertyValue("--sab")
+
+    // console.log("sab: " + sab)
+
     return {
       storedMotivationData: motivationJson,
-      storedSessionSettings: sessionSettingsJson
+      storedSessionSettings: sessionSettingsJson,
+    //   safeAreaInsetBottom: sab
     }
   }
 

@@ -25,4 +25,6 @@ type alias Model =
     , motivationData : MotivationData
     , colorScheme : CS.ColorScheme
     , sessionSettings : Session.Settings
+
+    -- , safeAreaInsetBottom : String
     }
