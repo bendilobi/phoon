@@ -2,10 +2,12 @@ module Lib.ColorScheme exposing
     ( ColorScheme
     , breathingInverted
     , guideColor
+    , guideColorHex
     , interactActive
     , interactActiveColor
     , interactInactive
-    , interactInactiveColor
+    , interactInactiveDarkerColor
+    , interactInactiveDarkerColorHex
     , navbar
     , newDaylight
     , newSunrise
@@ -20,9 +22,14 @@ module Lib.ColorScheme exposing
     , primaryPrepareSession
     , seriesBadColor
     , seriesGoodColor
+    , seriesGoodColorHex
     , sessionStartInverted
+    , settingsColor
+    , settingsDarkerColor
     )
 
+import Color
+import Color.Convert
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
@@ -36,6 +43,7 @@ type ColorScheme
         , primaryInformation : Color
         , primaryMotivationCopy : Color
         , interactActive : Color
+        , interactActiveLighter : Color
         , interactActiveDarker : Color
         , interactActiveCopy : Color
         , interactInactive : Color
@@ -60,6 +68,8 @@ type ColorScheme
         , navbar : Color
         , navbarBorder : Color
         , navbarCopy : Color
+        , settings : Color
+        , settingsDarker : Color
         }
 
 
@@ -71,6 +81,7 @@ newSunrise =
         , primaryInformation = rgb255 246 249 255 --229 238 255 --242 249 255 --241 241 230
         , primaryMotivationCopy = rgb255 241 241 230
         , interactActive = rgb255 132 110 141 --147 110 158 --255 180 93
+        , interactActiveLighter = rgb255 184 145 178
         , interactActiveDarker = rgb255 85 77 104 --98 80 124 --237 120 105
         , interactActiveCopy = rgb255 241 241 230
         , interactInactive = rgb255 167 170 189
@@ -95,6 +106,10 @@ newSunrise =
         , navbar = rgb255 0 15 8
         , navbarBorder = rgb255 24 37 68 --52 63 97
         , navbarCopy = rgb255 91 101 96
+
+        --- TODO: Diese Farben nicht einfach grau sondern passender?
+        , settings = rgb 0.9 0.9 0.9
+        , settingsDarker = rgb 0.7 0.7 0.7
         }
 
 
@@ -106,6 +121,7 @@ newDaylight =
         , primaryInformation = rgb255 243 249 255 --229 238 255 --242 249 255 --241 241 230
         , primaryMotivationCopy = rgb255 245 249 255
         , interactActive = rgb255 155 74 146 --243 91 136
+        , interactActiveLighter = rgb255 243 91 136
         , interactActiveDarker = rgb255 154 59 116 --182 26 87
         , interactActiveCopy = rgb255 245 249 255
         , interactInactive = rgb255 167 170 189
@@ -130,6 +146,8 @@ newDaylight =
         , navbar = rgb255 0 83 78
         , navbarBorder = rgb255 0 121 113 --8 32 30
         , navbarCopy = rgb255 120 139 138 --120 126 139 --101 106 117 --123 145 188 --141 149 168 --164 171 189
+        , settings = rgb 0.9 0.9 0.9
+        , settingsDarker = rgb 0.7 0.7 0.7
         }
 
 
@@ -183,9 +201,25 @@ guideColor (ColorScheme colors) =
     colors.guide
 
 
+guideColorHex : ColorScheme -> String
+guideColorHex (ColorScheme colors) =
+    colors.guide
+        |> toRgb
+        |> Color.fromRgba
+        |> Color.Convert.colorToHex
+
+
 seriesGoodColor : ColorScheme -> Color
 seriesGoodColor (ColorScheme colors) =
     colors.seriesGood
+
+
+seriesGoodColorHex : ColorScheme -> String
+seriesGoodColorHex (ColorScheme colors) =
+    colors.seriesGood
+        |> toRgb
+        |> Color.fromRgba
+        |> Color.Convert.colorToHex
 
 
 seriesBadColor : ColorScheme -> Color
@@ -195,19 +229,32 @@ seriesBadColor (ColorScheme colors) =
 
 interactActiveColor : ColorScheme -> Color
 interactActiveColor (ColorScheme colors) =
-    colors.interactActive
+    colors.interactActiveLighter
 
 
-interactInactiveColor : ColorScheme -> Color
-interactInactiveColor (ColorScheme colors) =
-    colors.interactInactive
+
+--- TODO: Wird jetzt auch für Settings etc. verwendet
+---         -> umbenennen?
+
+
+interactInactiveDarkerColor : ColorScheme -> Color
+interactInactiveDarkerColor (ColorScheme colors) =
+    colors.interactInactiveDarker
+
+
+interactInactiveDarkerColorHex : ColorScheme -> String
+interactInactiveDarkerColorHex (ColorScheme colors) =
+    colors.interactInactiveDarker
+        |> toRgb
+        |> Color.fromRgba
+        |> Color.Convert.colorToHex
 
 
 interactActive : ColorScheme -> List (Attribute msg)
 interactActive (ColorScheme colors) =
-    [ BG.color colors.interactActive
+    [ BG.color colors.interactActiveLighter
     , Font.color colors.interactActiveCopy
-    , Border.color colors.interactActiveDarker
+    , Border.color colors.interactActive
     ]
 
 
@@ -276,3 +323,13 @@ phaseSessionEnd (ColorScheme colors) =
     -- , Font.color colors.phaseSessionEndCopy
     , Font.color colors.phaseRelaxRetention
     ]
+
+
+settingsColor : ColorScheme -> Color
+settingsColor (ColorScheme colors) =
+    colors.settings
+
+
+settingsDarkerColor : ColorScheme -> Color
+settingsDarkerColor (ColorScheme colors) =
+    colors.settingsDarker

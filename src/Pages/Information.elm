@@ -191,7 +191,7 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.54 \"MVP+\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.60 \"MVP+\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
@@ -210,79 +210,91 @@ viewRetentionTrend shared =
             none
 
         Just meanTimes ->
-            let
-                data =
-                    meanTimes
-                        |> List.reverse
-                        |> List.indexedMap (\i d -> { x = toFloat i, y = toFloat d })
+            if List.length meanTimes < 2 then
+                none
 
-                max =
-                    toFloat <| Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
-            in
-            column [ width fill, spacing 15 ]
-                [ el
-                    [ Font.bold
-                    , Font.size 20
-                    , Font.color <| CS.guideColor shared.colorScheme
-                    ]
-                  <|
-                    text "Retentionstrend"
-                , el
-                    [ centerX
+            else
+                let
+                    data =
+                        meanTimes
+                            |> List.reverse
+                            |> List.indexedMap (\i d -> { x = toFloat i, y = toFloat d })
 
-                    -- , paddingEach { top = 0, left = 50, right = 0, bottom = 0 }
-                    , width <| px 400
-                    , height <| px 200
-                    ]
-                    (Chart.chart
-                        [ ChartA.height 300
-                        , ChartA.width 450
-                        , ChartA.margin { top = 0, bottom = 60, left = 60, right = 60 }
-                        , ChartA.domain
-                            [ ChartA.lowest 0 ChartA.orLower
-                            , ChartA.highest (max + (max / 5)) ChartA.orHigher
-                            ]
+                    max =
+                        toFloat <| Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
+                in
+                column [ width fill, spacing 15 ]
+                    [ el
+                        [ Font.bold
+                        , Font.size 20
+                        , Font.color <| CS.guideColor shared.colorScheme
                         ]
-                        [ Chart.generate (List.length meanTimes)
-                            Chart.ints
-                            .x
-                            []
-                          <|
-                            \plane int ->
-                                [ Chart.xTick
-                                    [ ChartA.x (toFloat int)
-                                    , ChartA.color ChartA.darkGray
-                                    ]
+                      <|
+                        text "Retentionstrend"
+                    , el
+                        [ centerX
+
+                        -- , paddingEach { top = 0, left = 50, right = 0, bottom = 0 }
+                        --- TODO: Die Darstellung funktioniert am besten, wenn hier und im Chart die
+                        ---         selben Dimensionen eingestellt werden -> Breite passend zur
+                        ---         Fensterbreite berechnen? Wie habe ich das bei AMTSUI gemacht?
+                        , width <| px 300
+                        , height <| px 200
+                        ]
+                        (Chart.chart
+                            [ ChartA.width 300
+                            , ChartA.height 200
+
+                            -- , ChartA.margin { top = 0, bottom = 0, left = 60, right = 60 }
+                            , ChartA.domain
+                                [ ChartA.lowest 0 ChartA.orLower
+                                , ChartA.highest (max + (max / 7)) ChartA.orHigher
                                 ]
-                        , Chart.series .x
-                            [ Chart.interpolated .y
-                                [ ChartA.opacity 0.6
-                                , ChartA.gradient []
-                                , ChartA.monotone
-                                , ChartA.color "#bb8800"
-                                ]
+                            ]
+                            [ Chart.generate (List.length meanTimes)
+                                Chart.ints
+                                .x
                                 []
-                            ]
-                            data
-                        , Chart.withPlane <|
-                            \p ->
-                                [ Chart.line
-                                    [ ChartA.x1 p.x.min
-                                    , ChartA.y1 max
-                                    , ChartA.x2 p.x.max
-                                    , ChartA.color ChartA.darkYellow
-                                    , ChartA.width 2
+                              <|
+                                \plane int ->
+                                    [ Chart.xTick
+                                        [ ChartA.x (toFloat int)
+                                        , ChartA.color <| CS.interactInactiveDarkerColorHex shared.colorScheme
+                                        , ChartA.noGrid
+                                        ]
                                     ]
+                            , Chart.series .x
+                                [ Chart.interpolated .y
+                                    [ ChartA.opacity 0.6
+                                    , ChartA.gradient []
+                                    , ChartA.monotone
+
+                                    -- , ChartA.color "#bb8800"
+                                    , ChartA.color <| CS.guideColorHex shared.colorScheme
+                                    ]
+                                    []
                                 ]
-                        , Chart.yLabel
-                            [ ChartA.x 0
-                            , ChartA.y max
+                                data
+                            , Chart.withPlane <|
+                                \p ->
+                                    [ Chart.line
+                                        [ ChartA.x1 p.x.min
+                                        , ChartA.y1 max
+                                        , ChartA.x2 p.x.max
+                                        , ChartA.color <| CS.seriesGoodColorHex shared.colorScheme
+                                        , ChartA.width 2
+                                        ]
+                                    ]
+                            , Chart.yLabel
+                                [ ChartA.x 0
+                                , ChartA.y max
+                                , ChartA.color <| CS.interactInactiveDarkerColorHex shared.colorScheme
+                                ]
+                                [ Svg.text <| Utils.formatSeconds <| round max ]
                             ]
-                            [ Svg.text <| Utils.formatSeconds <| round max ]
-                        ]
-                        |> html
-                    )
-                ]
+                            |> html
+                        )
+                    ]
 
 
 viewSettings : Shared.Model -> Model -> Element Msg
@@ -305,13 +317,13 @@ viewSettings shared model =
         itemAttrs =
             lastItemAttrs
                 ++ [ Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                   , Border.color <| rgb 0.7 0.7 0.7
+                   , Border.color <| CS.settingsDarkerColor shared.colorScheme
                    ]
 
         settingsAttrs =
             [ width fill
             , Border.rounded 10
-            , BG.color <| rgb 0.9 0.9 0.9
+            , BG.color <| CS.settingsColor shared.colorScheme
             , paddingEach { left = hPad, right = 0, top = 0, bottom = 0 }
             ]
 
@@ -378,6 +390,7 @@ viewSettings shared model =
                     , value = (shared.sessionSettings.cycles |> String.fromInt) ++ cycleString
                     , item = Cycles
                     }
+                    shared.colorScheme
             ]
         , el [ height <| px 15 ] none
         , column
@@ -402,6 +415,7 @@ viewSettings shared model =
                     , attributes = itemAttrs
                     , item = BreathingSpeed
                     }
+                    shared.colorScheme
             , if model.settingsItemShown == BreathCount then
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
@@ -422,6 +436,7 @@ viewSettings shared model =
                     , attributes = lastItemAttrs
                     , item = BreathCount
                     }
+                    shared.colorScheme
             ]
         , let
             seconds =
@@ -479,6 +494,7 @@ viewSettings shared model =
                     , attributes = lastItemAttrs
                     , item = RelaxRetDuration
                     }
+                    shared.colorScheme
             ]
         , let
             duration =
@@ -511,14 +527,17 @@ viewSettingsItem :
     , value : String
     , attributes : List (Attribute Msg)
     }
+    -> ColorScheme
     -> Element Msg
-viewSettingsItem { item, label, value, attributes } =
+viewSettingsItem { item, label, value, attributes } colorScheme =
     button [ width fill ]
         { onPress = Just <| SettingsItemShown item
         , label =
             row attributes
                 [ text label
-                , el [ alignRight, Font.color <| rgb 0.5 0.5 0.5 ] <| text value
+
+                -- , el [ alignRight, Font.color <| rgb 0.5 0.5 0.5 ] <| text value
+                , el [ alignRight, Font.color <| CS.interactInactiveDarkerColor colorScheme ] <| text value
                 ]
         }
 

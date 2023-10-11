@@ -67,7 +67,7 @@ view colorScheme (Settings settings) =
 
         viewItem item =
             if Just item == settings.selected then
-                el [ Font.color <| CS.interactInactiveColor colorScheme ] <|
+                el [ Font.color <| CS.interactInactiveDarkerColor colorScheme ] <|
                     text <|
                         settings.toString item
 

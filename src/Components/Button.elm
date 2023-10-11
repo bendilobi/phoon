@@ -68,7 +68,7 @@ view colorScheme (Settings settings) =
     in
     if settings.isInline then
         if settings.isDisabled then
-            el [ Font.color <| CS.interactInactiveColor colorScheme ] settings.label
+            el [ Font.color <| CS.interactInactiveDarkerColor colorScheme ] settings.label
 
         else
             button
