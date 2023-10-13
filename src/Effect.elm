@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, navigate, navigateNext, playSound, resultsUpdated, saveMotivationData, saveSessionSettings, sessionEnded, sessionUpdated, setWakeLock, soundEncoder, updateSessionSettings
+    , adjustToday, navigate, navigateNext, playSound, resultsUpdated, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setUpdating, setWakeLock, soundEncoder, updateSessionSettings
     )
 
 {-|
@@ -185,8 +185,21 @@ saveSessionSettings settings =
         }
 
 
+saveUpdatingState : Bool -> Effect msg
+saveUpdatingState isUpdating =
+    SendMessageToJavaScript
+        { tag = "SET_UPDATING"
+        , data = Json.Encode.bool isUpdating
+        }
+
+
 
 -- SHARED
+
+
+setUpdating : Bool -> Effect msg
+setUpdating isUpdating =
+    SendSharedMsg <| Shared.Msg.SetUpdating isUpdating
 
 
 adjustToday : Date.Date -> Effect msg

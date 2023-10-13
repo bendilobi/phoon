@@ -37,6 +37,7 @@ import Time
 type alias Flags =
     { storedMotivationData : Json.Decode.Value
     , storedSessionSettings : Json.Decode.Value
+    , storedUpdatingState : Json.Decode.Value
 
     -- , safeAreaInsetBottom : String
     }
@@ -44,9 +45,10 @@ type alias Flags =
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map2 Flags
+    Json.Decode.map3 Flags
         (Json.Decode.field "storedMotivationData" Json.Decode.value)
         (Json.Decode.field "storedSessionSettings" Json.Decode.value)
+        (Json.Decode.field "storedUpdatingState" Json.Decode.value)
 
 
 
@@ -61,12 +63,13 @@ type alias Model =
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     let
-        ( motData, sessionSettings ) =
+        ( motData, sessionSettings, isUpdating ) =
             --TODO: Konzept überlegen, wie mit Fehlern hier umgegangen werden soll
             case flagsResult of
                 Err e ->
                     ( MotivationData.empty
                     , Session.defaultSettings
+                    , False
                       -- , "0"
                     )
 
@@ -77,6 +80,9 @@ init flagsResult route =
 
                         sessionSettingsDecoded =
                             Json.Decode.decodeValue Session.settingsDecoder data.storedSessionSettings
+
+                        isUpdatingDecoded =
+                            Json.Decode.decodeValue Json.Decode.bool data.storedUpdatingState
 
                         -- sab =
                         --     data.safeAreaInsetBottom
@@ -93,6 +99,12 @@ init flagsResult route =
 
                         Ok settings ->
                             settings
+                    , case isUpdatingDecoded of
+                        Err e ->
+                            False
+
+                        Ok updating ->
+                            updating
                       -- , sab
                     )
     in
@@ -104,6 +116,8 @@ init flagsResult route =
       , motivationData = motData
       , colorScheme = CS.newSunrise
       , sessionSettings = sessionSettings
+      , appIsUpdating = isUpdating
+      , justUpdated = False
 
       --   , safeAreaInsetBottom = safeAreaInsetBottom
       }
@@ -217,6 +231,14 @@ update route msg model =
                 , session = Session.new newSettings
               }
             , Effect.saveSessionSettings newSettings
+            )
+
+        Shared.Msg.SetUpdating updating ->
+            ( { model
+                | appIsUpdating = updating
+                , justUpdated = model.appIsUpdating && not updating
+              }
+            , Effect.saveUpdatingState updating
             )
 
 

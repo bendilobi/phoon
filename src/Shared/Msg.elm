@@ -26,3 +26,4 @@ type Msg
     | NavigateTriggered Route.Path.Path
     | SessionEnded Bool
     | SessionSettingsUpdated Session.Settings
+    | SetUpdating Bool

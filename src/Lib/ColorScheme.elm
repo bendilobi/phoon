@@ -28,6 +28,7 @@ module Lib.ColorScheme exposing
     , sessionStartInverted
     , settingsColor
     , settingsDarkerColor
+    , successColor
     )
 
 import Color
@@ -348,3 +349,8 @@ settingsColor (ColorScheme colors) =
 settingsDarkerColor : ColorScheme -> Color
 settingsDarkerColor (ColorScheme colors) =
     colors.settingsDarker
+
+
+successColor : ColorScheme -> Color
+successColor (ColorScheme colors) =
+    colors.success

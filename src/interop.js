@@ -1,6 +1,7 @@
 
 const MOTIVATION_DATA_KEY = 'motivationData'
 const SESSION_SETTINGS_KEY = 'sessionSettings'
+const UPDATING_KEY = 'updating'
 
 export const flags = ({ env }) => {
     const motivationStored = localStorage.getItem(MOTIVATION_DATA_KEY)
@@ -9,6 +10,9 @@ export const flags = ({ env }) => {
     const sessionSettingsStored = localStorage.getItem(SESSION_SETTINGS_KEY)
     const sessionSettingsJson = sessionSettingsStored ? JSON.parse(sessionSettingsStored) : null
 
+    const updatingStateStored = localStorage.getItem(UPDATING_KEY)
+    const updatingStateJson = updatingStateStored ? JSON.parse(updatingStateStored) : null 
+
     // const sab = getComputedStyle(document.documentElement).getPropertyValue("--sab")
 
     // console.log("sab: " + sab)
@@ -16,6 +20,7 @@ export const flags = ({ env }) => {
     return {
       storedMotivationData: motivationJson,
       storedSessionSettings: sessionSettingsJson,
+      storedUpdatingState : updatingStateJson
     //   safeAreaInsetBottom: sab
     }
   }
@@ -32,6 +37,10 @@ export const onReady = ({app, env}) => {
 
                 case 'STORE_SESSION_SETTINGS':
                     localStorage.setItem(SESSION_SETTINGS_KEY, JSON.stringify(data))
+                    return
+
+                case 'SET_UPDATING':
+                    localStorage.setItem(UPDATING_KEY, JSON.stringify(data))
                     return
 
 

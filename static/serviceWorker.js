@@ -1,6 +1,6 @@
 // Increment version when you update any of the local resources, which will
 // in turn trigger the install event again.
-const PRECACHE = "precache-v0.3.21";
+const PRECACHE = "precache-v0.6.0";
 
 // A list of local resources we always want to be cached.
 const PRECACHE_URLS = [ 
@@ -68,7 +68,8 @@ self.addEventListener("fetch", (event) => {
 
   // Skip cross-origin requests, like those for Google Analytics.
   if (event.request.url.startsWith(self.location.origin) 
-      && !event.request.url.includes("serviceWorker.js")) {
+      && !event.request.url.includes("serviceWorker.js") 
+      && !event.request.url.includes("version.json")) {
 
       event.respondWith(
         caches.match(event.request).then(cachedResponse => {

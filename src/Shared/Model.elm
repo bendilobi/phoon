@@ -25,6 +25,8 @@ type alias Model =
     , motivationData : MotivationData
     , colorScheme : CS.ColorScheme
     , sessionSettings : Session.Settings
+    , appIsUpdating : Bool
+    , justUpdated : Bool
 
     -- , safeAreaInsetBottom : String
     }

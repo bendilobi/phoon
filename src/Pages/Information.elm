@@ -1,5 +1,8 @@
 module Pages.Information exposing (Model, Msg, page)
 
+import Api
+import Api.Version
+import Browser.Events
 import Browser.Navigation
 import Chart
 import Chart.Attributes as ChartA
@@ -14,6 +17,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input exposing (button)
+import Http
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -47,13 +51,22 @@ toLayout model =
 
 
 type alias Model =
-    { settingsItemShown : SettingsItem }
+    { settingsItemShown : SettingsItem
+    , currentVersion : String
+    , newestVersion : Api.Data String
+    }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { settingsItemShown = NoItem }
-    , Effect.none
+    ( { settingsItemShown = NoItem
+      , currentVersion = "0.6.0"
+      , newestVersion = Api.Loading
+      }
+    , Effect.sendCmd <|
+        Api.Version.getNewest
+            { onResponse = ReceivedNewestVersionString
+            }
     )
 
 
@@ -71,6 +84,7 @@ type SettingsItem
 
 type Msg
     = ReloadApp
+    | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int
     | DefaultRelaxRetDurationChanged Int
     | DefaultBreathingSpeedChanged BreathingSpeed
@@ -78,14 +92,50 @@ type Msg
     | SettingsItemShown SettingsItem
     | ResetSettingItemStatus
     | ResetSettings
+    | ReceivedNewestVersionString (Result Http.Error String)
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
+        VisibilityChanged visibility ->
+            ( model
+            , case visibility of
+                Browser.Events.Hidden ->
+                    Effect.none
+
+                Browser.Events.Visible ->
+                    Effect.sendCmd <|
+                        Api.Version.getNewest
+                            { onResponse = ReceivedNewestVersionString
+                            }
+            )
+
+        ReceivedNewestVersionString (Ok versionString) ->
+            ( { model
+                | newestVersion = Api.Success versionString
+              }
+            , if versionString == model.currentVersion then
+                Effect.setUpdating False
+
+              else if shared.appIsUpdating then
+                Effect.sendCmd Browser.Navigation.reload
+
+              else
+                Effect.none
+            )
+
+        ReceivedNewestVersionString (Err httpError) ->
+            ( { model | newestVersion = Api.Failure httpError }
+            , Effect.setUpdating False
+            )
+
         ReloadApp ->
             ( model
-            , Effect.sendCmd Browser.Navigation.reload
+            , Effect.batch
+                [ Effect.setUpdating True
+                , Effect.sendCmd Browser.Navigation.reload
+                ]
               --AndSkipCache
             )
 
@@ -147,7 +197,7 @@ update shared msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Browser.Events.onVisibilityChange VisibilityChanged
 
 
 
@@ -166,17 +216,17 @@ view shared model =
             , paddingXY 20 30
             , Font.size 15
             ]
-            [ viewIntroduction shared
+            [ viewIntroduction shared model
+            , viewUpdate shared model
             , viewRetentionTrend shared
             , viewSettings shared model
-
-            -- , viewTechInfo shared
+            , viewTechInfo shared model
             ]
     }
 
 
-viewIntroduction : Shared.Model -> Element Msg
-viewIntroduction shared =
+viewIntroduction : Shared.Model -> Model -> Element Msg
+viewIntroduction shared model =
     column [ width fill, spacing 10, Font.center ]
         [ paragraph
             [ Font.size 25
@@ -191,19 +241,69 @@ viewIntroduction shared =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
-        , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.70 \"MVP+\""
-            , el [ width fill ] <|
-                el [ alignRight ] <|
-                    (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
-                        |> Components.Button.withInline
-                        |> Components.Button.withLightColor
-                        |> Components.Button.view shared.colorScheme
-                    )
+
+        -- , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
+        --     [ el [ Font.size 13, alignBottom ] <| text model.currentVersion
+        --     , el [ width fill ] <|
+        --         el [ alignRight ] <|
+        --             (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
+        --                 |> Components.Button.withInline
+        --                 |> Components.Button.withLightColor
+        --                 |> Components.Button.view shared.colorScheme
+        --             )
+        --     ]
+        -- , text <|
+        --     case model.newestVersion of
+        --         Api.Loading ->
+        --             "VersionString noch nicht geladen"
+        --         Api.Success version ->
+        --             "Version auf dem Server: " ++ version
+        --         Api.Failure httpError ->
+        --             "Versions-Ladefehler"
+        ]
+
+
+viewUpdate : Shared.Model -> Model -> Element Msg
+viewUpdate shared model =
+    let
+        versionOnServer =
+            case model.newestVersion of
+                Api.Success versionString ->
+                    versionString
+
+                _ ->
+                    model.currentVersion
+    in
+    if shared.justUpdated then
+        el
+            [ centerX
+            , Font.color <| CS.successColor shared.colorScheme
+            , Font.bold
+            ]
+        <|
+            text <|
+                "Update auf Version "
+                    ++ model.currentVersion
+                    ++ " erfolgreich!"
+
+    else if model.currentVersion /= versionOnServer then
+        column [ width fill, spacing 10 ]
+            [ text <|
+                "Ein Update ist verfügbar von Version "
+                    ++ model.currentVersion
+                    ++ " auf "
+                    ++ versionOnServer
+            , Components.Button.new { onPress = Just ReloadApp, label = text "Update jetzt laden" }
+                |> Components.Button.withLightColor
+                |> Components.Button.view shared.colorScheme
             ]
 
-        -- , text <| "sab: " ++ shared.safeAreaInsetBottom
-        ]
+    else
+        none
+
+
+
+-- , text <| "sab: " ++ shared.safeAreaInsetBottom
 
 
 viewRetentionTrend : Shared.Model -> Element msg
@@ -552,24 +652,36 @@ viewSettingsItem { item, label, value, attributes } colorScheme =
         }
 
 
-viewTechInfo : Shared.Model -> Element msg
-viewTechInfo shared =
-    el [] <|
-        case MotivationData.getMotivationData shared.motivationData of
-            Nothing ->
-                text "Noch keine Motivationsdaten vorhanden"
+viewTechInfo : Shared.Model -> Model -> Element Msg
+viewTechInfo shared model =
+    el [ width fill ] <|
+        el
+            [ alignRight
+            , Font.size 13
+            , Events.onClick ReloadApp
+            ]
+        <|
+            text <|
+                "Zoff Version "
+                    ++ model.currentVersion
 
-            Just data ->
-                column [ spacing 5, Font.size 13 ]
-                    [ el
-                        [ Font.bold
-                        , Font.size 15
-                        , Font.color <| CS.guideColor shared.colorScheme
-                        ]
-                      <|
-                        text "Aktuell gespeicherte Motivationsdaten"
-                    , text <| "Serie: " ++ String.fromInt data.series
-                    , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
-                    , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
-                    , text <| "Max Ret: " ++ String.fromInt data.maxRetention
-                    ]
+
+
+-- el [] <|
+--     case MotivationData.getMotivationData shared.motivationData of
+--         Nothing ->
+--             text "Noch keine Motivationsdaten vorhanden"
+--         Just data ->
+--             column [ spacing 5, Font.size 13 ]
+--                 [ el
+--                     [ Font.bold
+--                     , Font.size 15
+--                     , Font.color <| CS.guideColor shared.colorScheme
+--                     ]
+--                   <|
+--                     text "Aktuell gespeicherte Motivationsdaten"
+--                 , text <| "Serie: " ++ String.fromInt data.series
+--                 , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
+--                 , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
+--                 , text <| "Max Ret: " ++ String.fromInt data.maxRetention
+--                 ]
