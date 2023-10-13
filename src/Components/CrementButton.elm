@@ -3,6 +3,7 @@ module Components.CrementButton exposing
     , new
     , view
     , withDisabled
+    , withLightColor
     )
 
 import Element exposing (..)
@@ -13,6 +14,7 @@ import Element.Font as Font
 import Element.Input exposing (button)
 import FeatherIcons
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Set exposing (Set)
 
 
 
@@ -29,6 +31,7 @@ type Button msg
         { crement : Crement
         , onPress : msg
         , isDisabled : Bool
+        , isLightColored : Bool
         }
 
 
@@ -42,6 +45,7 @@ new props =
         { crement = props.crement
         , onPress = props.onPress
         , isDisabled = False
+        , isLightColored = False
         }
 
 
@@ -52,6 +56,11 @@ new props =
 withDisabled : Bool -> Button msg -> Button msg
 withDisabled isDisabled (Settings settings) =
     Settings { settings | isDisabled = isDisabled }
+
+
+withLightColor : Bool -> Button msg -> Button msg
+withLightColor light (Settings settings) =
+    Settings { settings | isLightColored = light }
 
 
 
@@ -89,7 +98,15 @@ view colorScheme (Settings settings) =
                 viewIcon settings.crement iconSize
 
     else
-        button (CS.interactActive colorScheme ++ commonAttributes)
+        button
+            ((if settings.isLightColored then
+                CS.interactActiveLighter colorScheme
+
+              else
+                CS.interactActive colorScheme
+             )
+                ++ commonAttributes
+            )
             { onPress = Just settings.onPress
             , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
             }

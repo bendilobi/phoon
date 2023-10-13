@@ -1,4 +1,4 @@
-module Components.RadioGroup exposing (Layout, new, view, withLayout, withSelected)
+module Components.RadioGroup exposing (Layout, new, view, withLayout, withLightColor, withSelected)
 
 import Element exposing (..)
 import Element.Background as BG
@@ -26,6 +26,7 @@ type RadioGroup choicesType msg
         , onSelect : choicesType -> msg
         , toString : choicesType -> String
         , selected : Maybe choicesType
+        , isLightColored : Bool
         }
 
 
@@ -44,6 +45,7 @@ new { choices, toString, onSelect } =
         , toString = toString
         , onSelect = onSelect
         , selected = Nothing
+        , isLightColored = False
         }
 
 
@@ -59,6 +61,11 @@ withSelected choice (Settings settings) =
         { settings | selected = Just choice }
 
 
+withLightColor : Bool -> RadioGroup choicesType msg -> RadioGroup choicesType msg
+withLightColor light (Settings settings) =
+    Settings { settings | isLightColored = light }
+
+
 view : ColorScheme -> RadioGroup choicesType msg -> Element msg
 view colorScheme (Settings settings) =
     let
@@ -72,7 +79,14 @@ view colorScheme (Settings settings) =
                         settings.toString item
 
             else
-                button [ Font.color <| CS.interactActiveColor colorScheme ]
+                button
+                    [ Font.color <|
+                        if settings.isLightColored then
+                            CS.interactActiveLighterColor colorScheme
+
+                        else
+                            CS.interactActiveColor colorScheme
+                    ]
                     { onPress = Just <| settings.onSelect item
                     , label = text <| settings.toString item
                     }

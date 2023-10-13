@@ -169,7 +169,8 @@ view shared model =
             [ viewIntroduction shared
             , viewRetentionTrend shared
             , viewSettings shared model
-            , viewTechInfo shared
+
+            -- , viewTechInfo shared
             ]
     }
 
@@ -191,11 +192,12 @@ viewIntroduction shared =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
         , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.67 \"MVP+\""
+            [ el [ Font.size 13, alignBottom ] <| text "Version 0.5.70 \"MVP+\""
             , el [ width fill ] <|
                 el [ alignRight ] <|
                     (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
                         |> Components.Button.withInline
+                        |> Components.Button.withLightColor
                         |> Components.Button.view shared.colorScheme
                     )
             ]
@@ -336,6 +338,7 @@ viewSettings shared model =
                 , label = text label
                 }
                 |> Components.Button.withInline
+                |> Components.Button.withLightColor
                 |> Components.Button.view shared.colorScheme
     in
     column [ width fill, spacing 10 ]
@@ -354,6 +357,7 @@ viewSettings shared model =
                     , label = text "Zurücksetzen"
                     }
                     |> Components.Button.withInline
+                    |> Components.Button.withLightColor
                     |> Components.Button.view shared.colorScheme
                 )
             ]
@@ -374,6 +378,7 @@ viewSettings shared model =
                             }
                             |> IntCrementer.withMin 1
                             |> IntCrementer.withMax 9
+                            |> IntCrementer.withLightColor
                             |> IntCrementer.view shared.colorScheme shared.sessionSettings.cycles
                         ]
 
@@ -407,6 +412,7 @@ viewSettings shared model =
                             , onSelect = DefaultBreathingSpeedChanged
                             }
                             |> RadioGroup.withSelected shared.sessionSettings.breathingSpeed
+                            |> RadioGroup.withLightColor True
                             |> RadioGroup.view shared.colorScheme
                         ]
 
@@ -428,6 +434,7 @@ viewSettings shared model =
                             , onSelect = DefaultBreathCountChanged
                             }
                             |> RadioGroup.withSelected shared.sessionSettings.breathCount
+                            |> RadioGroup.withLightColor True
                             |> RadioGroup.view shared.colorScheme
                         ]
 
@@ -486,6 +493,7 @@ viewSettings shared model =
                             }
                             |> IntCrementer.withMin 5
                             |> IntCrementer.withMax 30
+                            |> IntCrementer.withLightColor
                             |> IntCrementer.view shared.colorScheme shared.sessionSettings.relaxRetDuration
                         ]
 

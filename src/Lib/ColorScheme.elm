@@ -5,6 +5,8 @@ module Lib.ColorScheme exposing
     , guideColorHex
     , interactActive
     , interactActiveColor
+    , interactActiveLighter
+    , interactActiveLighterColor
     , interactInactive
     , interactInactiveDarkerColor
     , interactInactiveDarkerColorHex
@@ -81,7 +83,7 @@ newSunrise =
         , primaryInformation = rgb255 246 249 255 --229 238 255 --242 249 255 --241 241 230
         , primaryMotivationCopy = rgb255 241 241 230
         , interactActive = rgb255 132 110 141 --147 110 158 --255 180 93
-        , interactActiveLighter = rgb255 184 145 178
+        , interactActiveLighter = rgb255 243 91 136
         , interactActiveDarker = rgb255 85 77 104 --98 80 124 --237 120 105
         , interactActiveCopy = rgb255 241 241 230
         , interactInactive = rgb255 167 170 189
@@ -229,6 +231,11 @@ seriesBadColor (ColorScheme colors) =
 
 interactActiveColor : ColorScheme -> Color
 interactActiveColor (ColorScheme colors) =
+    colors.interactActive
+
+
+interactActiveLighterColor : ColorScheme -> Color
+interactActiveLighterColor (ColorScheme colors) =
     colors.interactActiveLighter
 
 
@@ -252,6 +259,14 @@ interactInactiveDarkerColorHex (ColorScheme colors) =
 
 interactActive : ColorScheme -> List (Attribute msg)
 interactActive (ColorScheme colors) =
+    [ BG.color colors.interactActive
+    , Font.color colors.interactActiveCopy
+    , Border.color colors.interactActiveDarker
+    ]
+
+
+interactActiveLighter : ColorScheme -> List (Attribute msg)
+interactActiveLighter (ColorScheme colors) =
     [ BG.color colors.interactActiveLighter
     , Font.color colors.interactActiveCopy
     , Border.color colors.interactActive

@@ -1,4 +1,4 @@
-module Components.IntCrementer exposing (new, view, withMax, withMin)
+module Components.IntCrementer exposing (new, view, withLightColor, withMax, withMin)
 
 import Components.CrementButton as CrementButton
 import Element exposing (..)
@@ -19,6 +19,7 @@ type IntCrementer msg
         , onCrement : Int -> msg
         , min : Maybe Int
         , max : Maybe Int
+        , isLightColored : Bool
         }
 
 
@@ -33,6 +34,7 @@ new props =
         , onCrement = props.onCrement
         , min = Nothing
         , max = Nothing
+        , isLightColored = False
         }
 
 
@@ -44,6 +46,11 @@ withMin min (Settings settings) =
 withMax : Int -> IntCrementer msg -> IntCrementer msg
 withMax max (Settings settings) =
     Settings { settings | max = Just max }
+
+
+withLightColor : IntCrementer msg -> IntCrementer msg
+withLightColor (Settings settings) =
+    Settings { settings | isLightColored = True }
 
 
 view : ColorScheme -> Int -> IntCrementer msg -> Element msg
@@ -59,6 +66,7 @@ view colorScheme currentInt (Settings settings) =
                 , crement = CrementButton.De
                 }
                 |> CrementButton.withDisabled (Just currentInt == settings.min)
+                |> CrementButton.withLightColor settings.isLightColored
                 |> CrementButton.view colorScheme
             , settings.label currentInt
             , CrementButton.new
@@ -66,5 +74,6 @@ view colorScheme currentInt (Settings settings) =
                 , crement = CrementButton.In
                 }
                 |> CrementButton.withDisabled (Just currentInt == settings.max)
+                |> CrementButton.withLightColor settings.isLightColored
                 |> CrementButton.view colorScheme
             ]
