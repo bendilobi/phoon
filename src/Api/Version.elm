@@ -7,8 +7,7 @@ import Json.Decode
 getNewest : { onResponse : Result Http.Error String -> msg } -> Cmd msg
 getNewest options =
     Http.get
-        --- TODO: URL deployment-unabhängig erzeugen
-        { url = "https://zoff.benno-dielmann.de/version.json"
+        { url = "/version.json"
         , expect = Http.expectJson options.onResponse decoder
         }
 
