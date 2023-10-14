@@ -7,6 +7,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "PaackEng/elm-ui-dialog": "1.0.1",
             "andrewMacmurray/elm-delay": "4.0.0",
             "avh4/elm-color": "1.0.0",
             "driebit/elm-swipe-events": "1.0.0",

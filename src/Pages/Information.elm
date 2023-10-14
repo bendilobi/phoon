@@ -9,7 +9,6 @@ import Chart.Attributes as ChartA
 import Components.Button
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
-import Date
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -60,7 +59,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.1"
+      , currentVersion = "0.6.5"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
@@ -215,6 +214,36 @@ view shared model =
             , spacing 60
             , paddingXY 20 30
             , Font.size 15
+
+            -- , inFront <|
+            --     Dialog.view <|
+            --         Just
+            --             { closeMessage = Nothing --Just CloseDialog
+            --             , maskAttributes = []
+            --             , containerAttributes =
+            --                 [ padding 10
+            --                 , BG.color <| rgb 1 1 1
+            --                 , centerX
+            --                 , centerY
+            --                 , Border.rounded 10
+            --                 ]
+            --             , headerAttributes =
+            --                 [ Border.color <| rgb 0.9 0.9 0.9
+            --                 , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+            --                 ]
+            --             , bodyAttributes = [ padding 30 ]
+            --             , footerAttributes = []
+            --             , header = Just <| text "Blah"
+            --             , body = Just <| text "Sülz, laber..."
+            --             , footer =
+            --                 Just <|
+            --                     (Components.Button.new
+            --                         { onPress = Nothing
+            --                         , label = text "OK..."
+            --                         }
+            --                         |> Components.Button.view shared.colorScheme
+            --                     )
+            --             }
             ]
             [ viewIntroduction shared model
             , viewUpdate shared model
