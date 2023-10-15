@@ -13,6 +13,7 @@ export const flags = ({ env }) => {
     const updatingStateStored = localStorage.getItem(UPDATING_KEY)
     const updatingStateJson = updatingStateStored ? JSON.parse(updatingStateStored) : null 
     // TODO: Macht nicht arg viel Sinn hier, weils im Portrait Mode "0px" ist...
+    //       Und womöglich ists 0px auch, weil zu diesem Zeitpunkt noch keine Werte belegt?
     const sal = getComputedStyle(document.documentElement).getPropertyValue("--sal")
 
     // console.log("sal: " + sal)
@@ -44,7 +45,12 @@ export const onReady = ({app, env}) => {
                     return
 
                 case 'GET_SAFE_AREA':
-                    app.ports.safeAreaReceiver.send(getComputedStyle(document.documentElement).getPropertyValue("--sal"))
+                    app.ports.safeAreaReceiver.send({
+                          sat: getComputedStyle(document.documentElement).getPropertyValue("--sat")
+                          , sab: getComputedStyle(document.documentElement).getPropertyValue("--sab")
+                          , sal: getComputedStyle(document.documentElement).getPropertyValue("--sal")
+                          , sar: getComputedStyle(document.documentElement).getPropertyValue("--sar")
+                        })
                     return
 
 

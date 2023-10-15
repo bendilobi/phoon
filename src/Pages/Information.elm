@@ -20,6 +20,7 @@ import Http
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.SafeArea as SafeArea
 import Lib.Session as Session exposing (BreathCount, BreathingSpeed, Session)
 import Lib.Utils as Utils
 import Page exposing (Page)
@@ -59,7 +60,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.23"
+      , currentVersion = "0.6.27"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
@@ -272,8 +273,11 @@ viewIntroduction shared model =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
+        , text <| "sal: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .left |> String.fromInt)
+        , text <| "sar: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .right |> String.fromInt)
+        , text <| "sat: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .top |> String.fromInt)
+        , text <| "sab: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .bottom |> String.fromInt)
 
-        -- , text <| "sal: " ++ (shared.safeAreaInsetLeft |> String.fromInt)
         -- , text <|
         --     "Breite: "
         --         ++ String.fromInt shared.windowSize.width
@@ -347,7 +351,7 @@ viewRetentionTrend shared =
                         toFloat <| Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
 
                     paddingX =
-                        115 + shared.safeAreaInsetLeft
+                        115 + SafeArea.maxX shared.safeAreaInset
                 in
                 column [ width fill, spacing 15 ]
                     [ el

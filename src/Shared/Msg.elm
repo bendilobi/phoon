@@ -5,6 +5,7 @@ module Shared.Msg exposing (Msg(..))
 import Browser.Dom
 import Browser.Events
 import Date
+import Json.Decode
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
@@ -21,7 +22,7 @@ own file, so they can be imported by `Effect.elm`
 type Msg
     = InitialViewport Browser.Dom.Viewport
     | Resized Int Int
-    | ReceivedSafeArea String
+    | ReceivedSafeArea Json.Decode.Value
     | VisibilityChanged Browser.Events.Visibility
     | AdjustTimeZone Time.Zone
     | AdjustToday Date.Date

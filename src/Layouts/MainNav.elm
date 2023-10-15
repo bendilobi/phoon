@@ -12,6 +12,7 @@ import Html.Attributes as HtmlA
 import Html.Events as HEvents
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.SafeArea as SafeArea
 import Route exposing (Route)
 import Route.Path
 import Shared
@@ -130,7 +131,8 @@ view props shared route { toContentMsg, model, content } =
                 , scrollbarY
 
                 --- TODO: Oder doch den einzelnen Seiten individuell überlassen?
-                , paddingEach { left = shared.safeAreaInsetLeft, right = 0, top = 0, bottom = 0 }
+                -- , paddingEach { left = shared.safeAreaInsetLeft, right = 0, top = 0, bottom = 0 }
+                , paddingEach <| SafeArea.paddingX shared.safeAreaInset
                 ]
                 content.element
             , if shared.windowSize.height - shared.windowSize.width > 0 then

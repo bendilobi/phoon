@@ -3,6 +3,7 @@ module Shared.Model exposing (Model)
 import Date
 import Lib.ColorScheme as CS
 import Lib.MotivationData exposing (MotivationData)
+import Lib.SafeArea exposing (SafeArea)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
@@ -28,5 +29,5 @@ type alias Model =
     , sessionSettings : Session.Settings
     , appIsUpdating : Bool
     , justUpdated : Bool
-    , safeAreaInsetLeft : Int
+    , safeAreaInset : SafeArea
     }

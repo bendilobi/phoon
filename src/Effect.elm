@@ -21,6 +21,7 @@ port module Effect exposing
 import Browser.Navigation
 import Date
 import Dict exposing (Dict)
+import Json.Decode
 import Json.Encode
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
@@ -134,7 +135,7 @@ port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
 --- TODO: In der elm land Doku wird ein "incoming"-port empfohlen... Aber wie?
 
 
-port safeAreaReceiver : (String -> msg) -> Sub msg
+port safeAreaReceiver : (Json.Decode.Value -> msg) -> Sub msg
 
 
 playSound : Utils.SessionSound -> Effect msg

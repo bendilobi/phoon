@@ -21,6 +21,7 @@ import Effect exposing (Effect)
 import Json.Decode
 import Lib.ColorScheme as CS
 import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.SafeArea as SafeArea
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Route exposing (Route)
@@ -32,7 +33,7 @@ import Time
 
 
 
--- FLAGS
+--- FLAGS ---
 
 
 type alias Flags =
@@ -53,7 +54,7 @@ decoder =
 
 
 
--- INIT
+--- INIT ---
 
 
 type alias Model =
@@ -129,7 +130,9 @@ init flagsResult route =
       , sessionSettings = decodedFlags.sessionSettings
       , appIsUpdating = decodedFlags.isUpdating
       , justUpdated = False
-      , safeAreaInsetLeft = decodedFlags.sal
+      , safeAreaInset = SafeArea.new { left = decodedFlags.sal, right = 0, top = 0, bottom = 0 }
+
+      --   , safeAreaInsetLeft = decodedFlags.sal
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -147,6 +150,7 @@ extractSafeAreaSize string =
         |> Maybe.andThen String.toInt
         --- It seems Apple adds 15 pixels to the actual size of the notch (iPhone XR...)
         |> Maybe.map (\sal -> sal - 15)
+        |> Maybe.map (max 0)
 
 
 
@@ -170,15 +174,9 @@ update route msg model =
             , Effect.getSafeArea
             )
 
-        Shared.Msg.ReceivedSafeArea string ->
+        Shared.Msg.ReceivedSafeArea value ->
             ( { model
-                | safeAreaInsetLeft =
-                    case extractSafeAreaSize string of
-                        Nothing ->
-                            0
-
-                        Just px ->
-                            px
+                | safeAreaInset = SafeArea.decode value
               }
             , Effect.none
             )
