@@ -128,9 +128,17 @@ view props shared route { toContentMsg, model, content } =
                 [ height fill
                 , width fill
                 , scrollbarY
+
+                --- TODO: Oder doch den einzelnen Seiten individuell überlassen?
+                , paddingEach { left = shared.safeAreaInsetLeft, right = 0, top = 0, bottom = 0 }
                 ]
                 content.element
-            , viewNavBar shared route |> map toContentMsg
+            , if shared.windowSize.height - shared.windowSize.width > 0 then
+                --- Only show nav bar in portrait mode
+                viewNavBar shared route |> map toContentMsg
+
+              else
+                none
             ]
     }
 

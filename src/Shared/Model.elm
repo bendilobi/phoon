@@ -28,6 +28,5 @@ type alias Model =
     , sessionSettings : Session.Settings
     , appIsUpdating : Bool
     , justUpdated : Bool
-
-    -- , safeAreaInsetBottom : String
+    , safeAreaInsetLeft : Int
     }

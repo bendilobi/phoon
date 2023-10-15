@@ -59,7 +59,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.10"
+      , currentVersion = "0.6.23"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
@@ -213,6 +213,8 @@ view shared model =
             [ width fill
             , spacing 60
             , paddingXY 20 30
+
+            -- , paddingEach { left = shared.safeAreaInsetLeft + 20, right = 20, top = 30, bottom = 20 }
             , Font.size 15
 
             -- , inFront <|
@@ -271,6 +273,7 @@ viewIntroduction shared model =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
 
+        -- , text <| "sal: " ++ (shared.safeAreaInsetLeft |> String.fromInt)
         -- , text <|
         --     "Breite: "
         --         ++ String.fromInt shared.windowSize.width
@@ -342,6 +345,9 @@ viewRetentionTrend shared =
 
                     max =
                         toFloat <| Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
+
+                    paddingX =
+                        115 + shared.safeAreaInsetLeft
                 in
                 column [ width fill, spacing 15 ]
                     [ el
@@ -359,11 +365,11 @@ viewRetentionTrend shared =
                         ---         selben Dimensionen eingestellt werden -> Breite passend zur
                         ---         Fensterbreite berechnen? Wie habe ich das bei AMTSUI gemacht?
                         -- , width <| px 300
-                        , width <| px <| shared.windowSize.width - 115
+                        , width <| px <| shared.windowSize.width - paddingX
                         , height <| px 200
                         ]
                         (Chart.chart
-                            [ ChartA.width <| toFloat shared.windowSize.width - 115
+                            [ ChartA.width <| toFloat <| shared.windowSize.width - paddingX
                             , ChartA.height 200
 
                             -- , ChartA.margin { top = 0, bottom = 0, left = 60, right = 60 }

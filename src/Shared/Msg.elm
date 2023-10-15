@@ -20,8 +20,9 @@ own file, so they can be imported by `Effect.elm`
 -}
 type Msg
     = InitialViewport Browser.Dom.Viewport
-    | VisibilityChanged Browser.Events.Visibility
     | Resized Int Int
+    | ReceivedSafeArea String
+    | VisibilityChanged Browser.Events.Visibility
     | AdjustTimeZone Time.Zone
     | AdjustToday Date.Date
     | SessionUpdated Session

@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, navigate, navigateNext, playSound, resultsUpdated, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setUpdating, setWakeLock, soundEncoder, updateSessionSettings
+    , adjustToday, getSafeArea, navigate, navigateNext, playSound, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setUpdating, setWakeLock, soundEncoder, updateSessionSettings
     )
 
 {-|
@@ -130,6 +130,13 @@ loadExternalUrl =
 port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
 
 
+
+--- TODO: In der elm land Doku wird ein "incoming"-port empfohlen... Aber wie?
+
+
+port safeAreaReceiver : (String -> msg) -> Sub msg
+
+
 playSound : Utils.SessionSound -> Effect msg
 playSound sound =
     SendMessageToJavaScript
@@ -190,6 +197,14 @@ saveUpdatingState isUpdating =
     SendMessageToJavaScript
         { tag = "SET_UPDATING"
         , data = Json.Encode.bool isUpdating
+        }
+
+
+getSafeArea : Effect msg
+getSafeArea =
+    SendMessageToJavaScript
+        { tag = "GET_SAFE_AREA"
+        , data = Json.Encode.string ""
         }
 
 

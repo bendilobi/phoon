@@ -12,16 +12,16 @@ export const flags = ({ env }) => {
 
     const updatingStateStored = localStorage.getItem(UPDATING_KEY)
     const updatingStateJson = updatingStateStored ? JSON.parse(updatingStateStored) : null 
+    // TODO: Macht nicht arg viel Sinn hier, weils im Portrait Mode "0px" ist...
+    const sal = getComputedStyle(document.documentElement).getPropertyValue("--sal")
 
-    // const sab = getComputedStyle(document.documentElement).getPropertyValue("--sab")
-
-    // console.log("sab: " + sab)
+    // console.log("sal: " + sal)
 
     return {
       storedMotivationData: motivationJson,
       storedSessionSettings: sessionSettingsJson,
-      storedUpdatingState : updatingStateJson
-    //   safeAreaInsetBottom: sab
+      storedUpdatingState : updatingStateJson,
+      safeAreaInsetLeft: sal
     }
   }
 
@@ -41,6 +41,10 @@ export const onReady = ({app, env}) => {
 
                 case 'SET_UPDATING':
                     localStorage.setItem(UPDATING_KEY, JSON.stringify(data))
+                    return
+
+                case 'GET_SAFE_AREA':
+                    app.ports.safeAreaReceiver.send(getComputedStyle(document.documentElement).getPropertyValue("--sal"))
                     return
 
 

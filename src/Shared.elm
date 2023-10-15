@@ -39,21 +39,20 @@ type alias Flags =
     { storedMotivationData : Json.Decode.Value
     , storedSessionSettings : Json.Decode.Value
     , storedUpdatingState : Json.Decode.Value
-
-    -- , safeAreaInsetBottom : String
+    , safeAreaInsetLeft : String
     }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map3 Flags
+    Json.Decode.map4 Flags
         (Json.Decode.field "storedMotivationData" Json.Decode.value)
         (Json.Decode.field "storedSessionSettings" Json.Decode.value)
         (Json.Decode.field "storedUpdatingState" Json.Decode.value)
+        (Json.Decode.field "safeAreaInsetLeft" Json.Decode.string)
 
 
 
--- (Json.Decode.field "safeAreaInsetBottom" Json.Decode.string)
 -- INIT
 
 
@@ -64,15 +63,15 @@ type alias Model =
 init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     let
-        ( motData, sessionSettings, isUpdating ) =
+        decodedFlags =
             --TODO: Konzept überlegen, wie mit Fehlern hier umgegangen werden soll
             case flagsResult of
                 Err e ->
-                    ( MotivationData.empty
-                    , Session.defaultSettings
-                    , False
-                      -- , "0"
-                    )
+                    { motData = MotivationData.empty
+                    , sessionSettings = Session.defaultSettings
+                    , isUpdating = False
+                    , sal = 0
+                    }
 
                 Ok data ->
                     let
@@ -85,43 +84,52 @@ init flagsResult route =
                         isUpdatingDecoded =
                             Json.Decode.decodeValue Json.Decode.bool data.storedUpdatingState
 
-                        -- sab =
-                        --     data.safeAreaInsetBottom
+                        salDecoded =
+                            data.safeAreaInsetLeft
+                                |> extractSafeAreaSize
                     in
-                    ( case motDataDecoded of
-                        Err e ->
-                            MotivationData.empty
+                    { motData =
+                        case motDataDecoded of
+                            Err e ->
+                                MotivationData.empty
 
-                        Ok fields ->
-                            MotivationData.fromFields fields
-                    , case sessionSettingsDecoded of
-                        Err e ->
-                            Session.defaultSettings
+                            Ok fields ->
+                                MotivationData.fromFields fields
+                    , sessionSettings =
+                        case sessionSettingsDecoded of
+                            Err e ->
+                                Session.defaultSettings
 
-                        Ok settings ->
-                            settings
-                    , case isUpdatingDecoded of
-                        Err e ->
-                            False
+                            Ok settings ->
+                                settings
+                    , isUpdating =
+                        case isUpdatingDecoded of
+                            Err e ->
+                                False
 
-                        Ok updating ->
-                            updating
-                      -- , sab
-                    )
+                            Ok updating ->
+                                updating
+                    , sal =
+                        case salDecoded of
+                            Nothing ->
+                                0
+
+                            Just px ->
+                                px
+                    }
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
       , windowSize = { width = 0, height = 0 }
-      , session = Session.new sessionSettings
+      , session = Session.new decodedFlags.sessionSettings
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
-      , motivationData = motData
+      , motivationData = decodedFlags.motData
       , colorScheme = CS.newSunrise
-      , sessionSettings = sessionSettings
-      , appIsUpdating = isUpdating
+      , sessionSettings = decodedFlags.sessionSettings
+      , appIsUpdating = decodedFlags.isUpdating
       , justUpdated = False
-
-      --   , safeAreaInsetBottom = safeAreaInsetBottom
+      , safeAreaInsetLeft = decodedFlags.sal
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -129,6 +137,16 @@ init flagsResult route =
         , Effect.sendCmd <| Task.perform Shared.Msg.InitialViewport Browser.Dom.getViewport
         ]
     )
+
+
+extractSafeAreaSize : String -> Maybe Int
+extractSafeAreaSize string =
+    string
+        |> String.split "px"
+        |> List.head
+        |> Maybe.andThen String.toInt
+        --- It seems Apple adds 15 pixels to the actual size of the notch (iPhone XR...)
+        |> Maybe.map (\sal -> sal - 15)
 
 
 
@@ -149,6 +167,19 @@ update route msg model =
 
         Shared.Msg.Resized width height ->
             ( { model | windowSize = { width = width, height = height } }
+            , Effect.getSafeArea
+            )
+
+        Shared.Msg.ReceivedSafeArea string ->
+            ( { model
+                | safeAreaInsetLeft =
+                    case extractSafeAreaSize string of
+                        Nothing ->
+                            0
+
+                        Just px ->
+                            px
+              }
             , Effect.none
             )
 
@@ -262,4 +293,5 @@ subscriptions route model =
     Sub.batch
         [ Browser.Events.onVisibilityChange Shared.Msg.VisibilityChanged
         , Browser.Events.onResize Shared.Msg.Resized
+        , Effect.safeAreaReceiver Shared.Msg.ReceivedSafeArea
         ]

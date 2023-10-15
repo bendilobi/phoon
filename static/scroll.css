@@ -9,11 +9,11 @@ body {
     /* Disable text selection on long press */
     -webkit-user-select: none;
 }
-/*
-:root{
-    --sab: env(safe-area-inset-bottom);
-}
 
+:root{
+    --sal: env(safe-area-inset-left);
+}
+/*
 .safeArea {
     padding: 0 0 env(safe-area-inset-bottom) 0;
 }
