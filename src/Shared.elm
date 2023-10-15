@@ -155,14 +155,12 @@ update route msg model =
         Shared.Msg.VisibilityChanged visibility ->
             --TODO: Prüfen -> Brauche ich das eigentlich während der Sitzung?
             --      Oder sollte ich das mit Today vielleicht ins MainNav bewegen?
-            ( model
-            , case visibility of
+            case visibility of
                 Browser.Events.Hidden ->
-                    Effect.none
+                    ( { model | justUpdated = False }, Effect.none )
 
                 Browser.Events.Visible ->
-                    Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
-            )
+                    ( model, Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today )
 
         Shared.Msg.AdjustTimeZone newZone ->
             --- TODO: Das auch immer machen, wenn App visible wird?

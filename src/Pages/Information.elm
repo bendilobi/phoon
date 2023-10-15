@@ -59,7 +59,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.8"
+      , currentVersion = "0.6.10"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
