@@ -19,6 +19,7 @@ own file, so they can be imported by `Effect.elm`
 type alias Model =
     { zone : Time.Zone
     , today : Date.Date
+    , windowSize : { width : Int, height : Int }
     , session : Session
     , results : SessionResults
     , previousPath : Route.Path.Path

@@ -59,7 +59,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.5"
+      , currentVersion = "0.6.8"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
@@ -271,24 +271,11 @@ viewIntroduction shared model =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
 
-        -- , row [ width fill, paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-        --     [ el [ Font.size 13, alignBottom ] <| text model.currentVersion
-        --     , el [ width fill ] <|
-        --         el [ alignRight ] <|
-        --             (Components.Button.new { onPress = Just ReloadApp, label = text "App neu laden" }
-        --                 |> Components.Button.withInline
-        --                 |> Components.Button.withLightColor
-        --                 |> Components.Button.view shared.colorScheme
-        --             )
-        --     ]
         -- , text <|
-        --     case model.newestVersion of
-        --         Api.Loading ->
-        --             "VersionString noch nicht geladen"
-        --         Api.Success version ->
-        --             "Version auf dem Server: " ++ version
-        --         Api.Failure httpError ->
-        --             "Versions-Ladefehler"
+        --     "Breite: "
+        --         ++ String.fromInt shared.windowSize.width
+        --         ++ ", Höhe: "
+        --         ++ String.fromInt shared.windowSize.height
         ]
 
 
@@ -371,11 +358,12 @@ viewRetentionTrend shared =
                         --- TODO: Die Darstellung funktioniert am besten, wenn hier und im Chart die
                         ---         selben Dimensionen eingestellt werden -> Breite passend zur
                         ---         Fensterbreite berechnen? Wie habe ich das bei AMTSUI gemacht?
-                        , width <| px 300
+                        -- , width <| px 300
+                        , width <| px <| shared.windowSize.width - 115
                         , height <| px 200
                         ]
                         (Chart.chart
-                            [ ChartA.width 300
+                            [ ChartA.width <| toFloat shared.windowSize.width - 115
                             , ChartA.height 200
 
                             -- , ChartA.margin { top = 0, bottom = 0, left = 60, right = 60 }

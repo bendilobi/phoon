@@ -13,6 +13,7 @@ module Shared exposing
 
 -}
 
+import Browser.Dom
 import Browser.Events
 import Date
 import Dict
@@ -110,6 +111,7 @@ init flagsResult route =
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
+      , windowSize = { width = 0, height = 0 }
       , session = Session.new sessionSettings
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
@@ -124,6 +126,7 @@ init flagsResult route =
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
         , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
+        , Effect.sendCmd <| Task.perform Shared.Msg.InitialViewport Browser.Dom.getViewport
         ]
     )
 
@@ -139,6 +142,16 @@ type alias Msg =
 update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
+        Shared.Msg.InitialViewport { viewport } ->
+            ( { model | windowSize = { width = round viewport.width, height = round viewport.height } }
+            , Effect.none
+            )
+
+        Shared.Msg.Resized width height ->
+            ( { model | windowSize = { width = width, height = height } }
+            , Effect.none
+            )
+
         Shared.Msg.VisibilityChanged visibility ->
             --TODO: Prüfen -> Brauche ich das eigentlich während der Sitzung?
             --      Oder sollte ich das mit Today vielleicht ins MainNav bewegen?
@@ -248,4 +261,7 @@ update route msg model =
 
 subscriptions : Route () -> Model -> Sub Msg
 subscriptions route model =
-    Browser.Events.onVisibilityChange Shared.Msg.VisibilityChanged
+    Sub.batch
+        [ Browser.Events.onVisibilityChange Shared.Msg.VisibilityChanged
+        , Browser.Events.onResize Shared.Msg.Resized
+        ]
