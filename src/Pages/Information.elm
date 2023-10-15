@@ -60,7 +60,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.31"
+      , currentVersion = "0.6.37"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
@@ -325,10 +325,6 @@ viewUpdate shared model =
         none
 
 
-
--- , text <| "sab: " ++ shared.safeAreaInsetBottom
-
-
 viewRetentionTrend : Shared.Model -> Element msg
 viewRetentionTrend shared =
     --TODO: Chart in eigene Komponente und dann Imports wie bei den Beispielen benennen
@@ -351,7 +347,7 @@ viewRetentionTrend shared =
                         toFloat <| Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
 
                     paddingX =
-                        115 + SafeArea.maxX shared.safeAreaInset
+                        115 + (SafeArea.maxX shared.safeAreaInset * 2)
                 in
                 column [ width fill, spacing 15 ]
                     [ el

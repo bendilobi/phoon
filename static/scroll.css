@@ -8,6 +8,10 @@ body {
     overflow-y: scroll;
     /* Disable text selection on long press */
     -webkit-user-select: none;
+    /*Prevent text size inflation on landscape mode:*/
+    text-size-adjust: none;
+    -webkit-text-size-adjust: none;
+    -moz-text-size-adjust: none;
 }
 
 :root{
@@ -16,8 +20,3 @@ body {
     --sal: env(safe-area-inset-left);
     --sar: env(safe-area-inset-right);
 }
-/*
-.safeArea {
-    padding: 0 0 env(safe-area-inset-bottom) 0;
-}
-*/

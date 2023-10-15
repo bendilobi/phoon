@@ -41,16 +41,18 @@ type alias Flags =
     , storedSessionSettings : Json.Decode.Value
     , storedUpdatingState : Json.Decode.Value
     , safeAreaInsetLeft : String
+    , sar : String
     }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map4 Flags
+    Json.Decode.map5 Flags
         (Json.Decode.field "storedMotivationData" Json.Decode.value)
         (Json.Decode.field "storedSessionSettings" Json.Decode.value)
         (Json.Decode.field "storedUpdatingState" Json.Decode.value)
         (Json.Decode.field "safeAreaInsetLeft" Json.Decode.string)
+        (Json.Decode.field "sar" Json.Decode.string)
 
 
 
@@ -72,6 +74,7 @@ init flagsResult route =
                     , sessionSettings = Session.defaultSettings
                     , isUpdating = False
                     , sal = 0
+                    , sar = 0
                     }
 
                 Ok data ->
@@ -88,6 +91,9 @@ init flagsResult route =
                         salDecoded =
                             data.safeAreaInsetLeft
                                 |> extractSafeAreaSize
+
+                        sarDecoded =
+                            data.sar |> extractSafeAreaSize
                     in
                     { motData =
                         case motDataDecoded of
@@ -117,6 +123,13 @@ init flagsResult route =
 
                             Just px ->
                                 px
+                    , sar =
+                        case sarDecoded of
+                            Nothing ->
+                                0
+
+                            Just px ->
+                                px
                     }
     in
     ( { zone = Time.utc
@@ -130,9 +143,7 @@ init flagsResult route =
       , sessionSettings = decodedFlags.sessionSettings
       , appIsUpdating = decodedFlags.isUpdating
       , justUpdated = False
-      , safeAreaInset = SafeArea.new { left = decodedFlags.sal, right = 0, top = 0, bottom = 0 }
-
-      --   , safeAreaInsetLeft = decodedFlags.sal
+      , safeAreaInset = SafeArea.new { left = decodedFlags.sal, right = decodedFlags.sar, top = 0, bottom = 0 }
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here

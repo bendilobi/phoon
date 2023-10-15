@@ -1,4 +1,4 @@
-module Lib.SafeArea exposing (SafeArea, decode, maxX, new, paddingEach, paddingX, withBottom, withLeft, withRight, withTop)
+module Lib.SafeArea exposing (SafeArea, decode, maxX, new, paddingEach, paddingX)
 
 import Json.Decode
 
@@ -14,30 +14,6 @@ type SafeArea
 new : Edges -> SafeArea
 new edges =
     Settings edges
-
-
-
---- TODO: Brauche ich diese with* Funktionen?
-
-
-withTop : Int -> SafeArea -> SafeArea
-withTop px (Settings settings) =
-    Settings { settings | top = px }
-
-
-withBottom : Int -> SafeArea -> SafeArea
-withBottom px (Settings settings) =
-    Settings { settings | bottom = px }
-
-
-withLeft : Int -> SafeArea -> SafeArea
-withLeft px (Settings settings) =
-    Settings { settings | left = px }
-
-
-withRight : Int -> SafeArea -> SafeArea
-withRight px (Settings settings) =
-    Settings { settings | right = px }
 
 
 
