@@ -60,7 +60,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.27"
+      , currentVersion = "0.6.31"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
@@ -213,9 +213,9 @@ view shared model =
         column
             [ width fill
             , spacing 60
-            , paddingXY 20 30
 
-            -- , paddingEach { left = shared.safeAreaInsetLeft + 20, right = 20, top = 30, bottom = 20 }
+            -- , paddingXY 20 30
+            , paddingEach { left = 20, right = 20, top = 30, bottom = 20 }
             , Font.size 15
 
             -- , inFront <|
@@ -273,11 +273,11 @@ viewIntroduction shared model =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
-        , text <| "sal: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .left |> String.fromInt)
-        , text <| "sar: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .right |> String.fromInt)
-        , text <| "sat: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .top |> String.fromInt)
-        , text <| "sab: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .bottom |> String.fromInt)
 
+        -- , text <| "sal: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .left |> String.fromInt)
+        -- , text <| "sar: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .right |> String.fromInt)
+        -- , text <| "sat: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .top |> String.fromInt)
+        -- , text <| "sab: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .bottom |> String.fromInt)
         -- , text <|
         --     "Breite: "
         --         ++ String.fromInt shared.windowSize.width

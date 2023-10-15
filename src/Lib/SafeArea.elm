@@ -46,7 +46,9 @@ withRight px (Settings settings) =
 
 paddingX : SafeArea -> Edges
 paddingX (Settings settings) =
-    { settings | top = 0, bottom = 0 }
+    -- { settings | top = 0, bottom = 0 }
+    --TODO: es hat immer nur maximal "left" einen Wert... Bug bei mir oder iOS?
+    { settings | top = 0, bottom = 0, right = settings.left }
 
 
 maxX : SafeArea -> Int
