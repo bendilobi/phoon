@@ -32,6 +32,10 @@ import Task
 import Time
 
 
+version =
+    "0.6.45"
+
+
 
 --- FLAGS ---
 
@@ -134,6 +138,7 @@ init flagsResult route =
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
+      , currentVersion = version
       , windowSize = { width = 0, height = 0 }
       , session = Session.new decodedFlags.sessionSettings
       , results = SessionResults.empty

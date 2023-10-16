@@ -52,7 +52,8 @@ toLayout model =
 
 type alias Model =
     { settingsItemShown : SettingsItem
-    , currentVersion : String
+
+    -- , currentVersion : String
     , newestVersion : Api.Data String
     }
 
@@ -60,7 +61,8 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.40"
+
+      --   , currentVersion = "0.6.43"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
@@ -115,7 +117,7 @@ update shared msg model =
             ( { model
                 | newestVersion = Api.Success versionString
               }
-            , if versionString == model.currentVersion then
+            , if versionString == shared.currentVersion then
                 Effect.setUpdating False
 
               else if shared.appIsUpdating then
@@ -282,11 +284,11 @@ viewIntroduction shared model =
         -- , text <| "sar: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .right |> String.fromInt)
         -- , text <| "sat: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .top |> String.fromInt)
         -- , text <| "sab: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .bottom |> String.fromInt)
-        , text <|
-            "Breite: "
-                ++ String.fromInt shared.windowSize.width
-                ++ ", Höhe: "
-                ++ String.fromInt shared.windowSize.height
+        -- , text <|
+        --     "Breite: "
+        --         ++ String.fromInt shared.windowSize.width
+        --         ++ ", Höhe: "
+        --         ++ String.fromInt shared.windowSize.height
         ]
 
 
@@ -299,7 +301,7 @@ viewUpdate shared model =
                     versionString
 
                 _ ->
-                    model.currentVersion
+                    shared.currentVersion
     in
     if shared.justUpdated then
         el
@@ -310,14 +312,14 @@ viewUpdate shared model =
         <|
             text <|
                 "Update auf Version "
-                    ++ model.currentVersion
+                    ++ shared.currentVersion
                     ++ " erfolgreich!"
 
-    else if model.currentVersion /= versionOnServer then
+    else if shared.currentVersion /= versionOnServer then
         column [ width fill, spacing 10 ]
             [ text <|
                 "Ein Update ist verfügbar von Version "
-                    ++ model.currentVersion
+                    ++ shared.currentVersion
                     ++ " auf "
                     ++ versionOnServer
             , Components.Button.new { onPress = Just <| ReloadApp False, label = text "Update jetzt laden" }
@@ -690,7 +692,7 @@ viewTechInfo shared model =
         <|
             text <|
                 "Zoff Version "
-                    ++ model.currentVersion
+                    ++ shared.currentVersion
 
 
 

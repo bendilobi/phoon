@@ -1,6 +1,7 @@
 module Layouts.MainNav exposing (Model, Msg, Props, layout)
 
 import Browser.Events
+import Components.Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -60,6 +61,7 @@ type Msg
     | HiddenAt Time.Posix
     | ShownAt Time.Posix
     | VisibilityChanged Browser.Events.Visibility
+    | CloseUpdate
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -98,6 +100,9 @@ update msg model =
                 Effect.none
             )
 
+        CloseUpdate ->
+            ( model, Effect.setUpdating False )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -113,35 +118,54 @@ view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = [ Font.size 17 ]
     , element =
-        column
-            (content.attributes
-                ++ [ width fill
-                   , height fill
-                   ]
+        if shared.appIsUpdating then
+            el [ width fill, height fill ] <| el [ centerX, centerY ] <| text "Updating..."
+
+        else if shared.justUpdated then
+            (el [ width fill, height fill ] <|
+                column [ centerX, centerY, spacing 20 ]
+                    [ el [ Font.color <| CS.successColor shared.colorScheme, Font.bold ] <|
+                        text <|
+                            "Update auf Version "
+                                ++ shared.currentVersion
+                                ++ " erfolgreich!"
+                    , Components.Button.new { onPress = Just CloseUpdate, label = text "Fertig" }
+                        |> Components.Button.withLightColor
+                        |> Components.Button.view shared.colorScheme
+                    ]
             )
-            [ case props.header of
-                Nothing ->
+                |> map toContentMsg
+
+        else
+            column
+                (content.attributes
+                    ++ [ width fill
+                       , height fill
+                       ]
+                )
+                [ case props.header of
+                    Nothing ->
+                        none
+
+                    Just headerText ->
+                        viewHeader headerText |> map toContentMsg
+                , el
+                    [ height fill
+                    , width fill
+                    , scrollbarY
+
+                    --- TODO: Oder doch den einzelnen Seiten individuell überlassen?
+                    -- , paddingEach { left = shared.safeAreaInsetLeft, right = 0, top = 0, bottom = 0 }
+                    , paddingEach <| SafeArea.paddingX shared.safeAreaInset
+                    ]
+                    content.element
+                , if shared.windowSize.height - shared.windowSize.width > 0 then
+                    --- Only show nav bar in portrait mode
+                    viewNavBar shared route |> map toContentMsg
+
+                  else
                     none
-
-                Just headerText ->
-                    viewHeader headerText |> map toContentMsg
-            , el
-                [ height fill
-                , width fill
-                , scrollbarY
-
-                --- TODO: Oder doch den einzelnen Seiten individuell überlassen?
-                -- , paddingEach { left = shared.safeAreaInsetLeft, right = 0, top = 0, bottom = 0 }
-                , paddingEach <| SafeArea.paddingX shared.safeAreaInset
                 ]
-                content.element
-            , if shared.windowSize.height - shared.windowSize.width > 0 then
-                --- Only show nav bar in portrait mode
-                viewNavBar shared route |> map toContentMsg
-
-              else
-                none
-            ]
     }
 
 
