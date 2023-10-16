@@ -6,6 +6,7 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons
 import Html
@@ -119,11 +120,23 @@ view props shared route { toContentMsg, model, content } =
     , attributes = [ Font.size 17 ]
     , element =
         if shared.appIsUpdating then
-            el [ width fill, height fill ] <| el [ centerX, centerY ] <| text "Updating..."
+            (el [ width fill, height fill ] <|
+                el
+                    [ centerX
+                    , centerY
+
+                    --Todo: stattdessen ordentlich abbrechen
+                    , Events.onClick CloseUpdate
+                    ]
+                <|
+                    text "Aktualisiere..."
+            )
+                |> map toContentMsg
 
         else if shared.justUpdated then
             (el [ width fill, height fill ] <|
                 column [ centerX, centerY, spacing 20 ]
+                    --TODO: nur Erfolg melden, wenns wirklich erfolgreich war
                     [ el [ Font.color <| CS.successColor shared.colorScheme, Font.bold ] <|
                         text <|
                             "Update auf Version "

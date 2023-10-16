@@ -1,5 +1,6 @@
 module Layouts.SessionControls exposing (Model, Msg, Props, layout)
 
+import Browser.Navigation
 import Components.Button
 import Date
 import Delay
@@ -52,7 +53,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = True
+      , debugButtonsShown = False
       , debounceBlock = False
       }
     , Effect.batch
@@ -74,6 +75,7 @@ type Msg
     | EndSession
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
+    | ReloadApp
       -- To simulate gestures via buttons for debugging in desktop browser:
       -- TODO: Herausfinden, ob der Mobile-Simulator von Chrome multitouch kann
     | MouseNavTap
@@ -185,6 +187,11 @@ update shared route msg model =
                 Effect.none
             )
 
+        ReloadApp ->
+            ( model
+            , Effect.sendCmd Browser.Navigation.reload
+            )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -211,6 +218,10 @@ view props shared route { toContentMsg, model, content } =
                             ]
                             [ if model.controlsShown && route.path == Session.phasePath Session.End then
                                 viewAddCycleControls shared.colorScheme
+                                    |> map toContentMsg
+
+                              else if model.controlsShown && route.path == Session.phasePath Session.Start then
+                                viewReload shared.colorScheme
                                     |> map toContentMsg
 
                               else
@@ -302,6 +313,18 @@ viewAddCycleControls colorScheme =
             { onPress = Just AddCycle
             , label = text "Noch 'ne Runde"
             }
+            |> Components.Button.view colorScheme
+        )
+
+
+viewReload : ColorScheme -> Element Msg
+viewReload colorScheme =
+    el [ padding 50, centerX ]
+        (Components.Button.new
+            { onPress = Just ReloadApp
+            , label = text "Reload (Sound fix)"
+            }
+            |> Components.Button.withInline
             |> Components.Button.view colorScheme
         )
 
