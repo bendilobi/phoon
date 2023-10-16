@@ -9,6 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
@@ -136,7 +137,7 @@ view shared model =
                     |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
                 , paragraph []
                     [ text "Geschätztes Ende: "
-                    , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared.session shared.zone model.time
+                    , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared model.time
                     , text " Uhr"
                     ]
                 ]
@@ -151,20 +152,26 @@ view shared model =
     }
 
 
-viewEstimatedTime : Session -> Time.Zone -> Time.Posix -> Element msg
-viewEstimatedTime session zone time =
+viewEstimatedTime : Shared.Model -> Time.Posix -> Element msg
+viewEstimatedTime shared time =
     let
         estimate =
             time
                 |> Time.posixToMillis
-                |> (+) (Session.estimatedDurationMillis session)
+                |> (+)
+                    (Session.estimatedDurationMillis
+                        (MotivationData.meanRetentionTimes shared.motivationData
+                            |> Maybe.withDefault []
+                        )
+                        shared.session
+                    )
                 |> Time.millisToPosix
 
         hour =
-            String.fromInt <| Time.toHour zone estimate
+            String.fromInt <| Time.toHour shared.zone estimate
 
         minute =
-            Time.toMinute zone estimate
+            Time.toMinute shared.zone estimate
                 |> String.fromInt
                 |> String.padLeft 2 '0'
     in

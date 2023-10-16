@@ -52,7 +52,7 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = False
+      , debugButtonsShown = True
       , debounceBlock = False
       }
     , Effect.batch

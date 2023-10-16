@@ -639,6 +639,9 @@ viewSettings shared model =
             duration =
                 Session.new shared.sessionSettings
                     |> Session.estimatedDurationMillis
+                        (MotivationData.meanRetentionTimes shared.motivationData
+                            |> Maybe.withDefault []
+                        )
                     |> (\millis -> millis // 1000)
           in
           paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]

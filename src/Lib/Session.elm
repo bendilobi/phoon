@@ -335,8 +335,8 @@ currentPhase (Session session) =
 -- https://package.elm-lang.org/packages/jxxcarlson/elm-typed-time/latest/
 
 
-phaseDuration : Session -> Phase -> Int
-phaseDuration session phase =
+phaseDuration : Session -> Maybe Int -> Phase -> Int
+phaseDuration session retentionEstimate phase =
     case phase of
         Start ->
             5000
@@ -345,8 +345,13 @@ phaseDuration session phase =
             speedMillis session * 2 * breathCount session
 
         Retention ->
-            -- TODO: Stattdessen aus vergangenen Sessions ermitteln
-            2 * 60000 + 15000
+            case retentionEstimate of
+                Nothing ->
+                    -- TODO: Stattdessen aus vergangenen Sessions ermitteln
+                    2 * 60000 + 15000
+
+                Just estimate ->
+                    estimate
 
         RelaxRetention ->
             relaxRetDuration session * 1000
@@ -355,14 +360,21 @@ phaseDuration session phase =
             2 * 60000
 
 
-estimatedDurationMillis : Session -> Int
-estimatedDurationMillis (Session session) =
+estimatedDurationMillis : List Int -> Session -> Int
+estimatedDurationMillis meanRetTimes (Session session) =
     let
         (State curPhase remainingPhases) =
             session.state
+
+        retentionEstimate =
+            if List.length meanRetTimes == 0 then
+                Nothing
+
+            else
+                Just <| (List.sum meanRetTimes // List.length meanRetTimes) * 1000
     in
     (curPhase :: remainingPhases)
-        |> List.map (phaseDuration <| Session session)
+        |> List.map (phaseDuration (Session session) retentionEstimate)
         |> List.sum
 
 
