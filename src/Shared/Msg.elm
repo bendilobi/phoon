@@ -20,7 +20,7 @@ own file, so they can be imported by `Effect.elm`
 
 -}
 type Msg
-    = InitialViewport Browser.Dom.Viewport
+    = ReceivedViewport Browser.Dom.Viewport
     | Resized Int Int
     | ReceivedSafeArea Json.Decode.Value
     | VisibilityChanged Browser.Events.Visibility

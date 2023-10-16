@@ -148,7 +148,7 @@ init flagsResult route =
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
         , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
-        , Effect.sendCmd <| Task.perform Shared.Msg.InitialViewport Browser.Dom.getViewport
+        , Effect.sendCmd <| Task.perform Shared.Msg.ReceivedViewport Browser.Dom.getViewport
         ]
     )
 
@@ -175,14 +175,21 @@ type alias Msg =
 update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
-        Shared.Msg.InitialViewport { viewport } ->
+        Shared.Msg.ReceivedViewport { viewport } ->
             ( { model | windowSize = { width = round viewport.width, height = round viewport.height } }
             , Effect.none
             )
 
         Shared.Msg.Resized width height ->
-            ( { model | windowSize = { width = width, height = height } }
-            , Effect.getSafeArea
+            --- There seems to be a timing issue: "sometimes" the width or height received
+            --- here after a change between portrait and landscape mode is wrong. Therefore,
+            --- we get the viewport size in an additional step:
+            ( model
+              --{ model | windowSize = { width = width, height = height } }
+            , Effect.batch
+                [ Effect.getSafeArea
+                , Effect.sendCmd <| Task.perform Shared.Msg.ReceivedViewport Browser.Dom.getViewport
+                ]
             )
 
         Shared.Msg.ReceivedSafeArea value ->

@@ -60,7 +60,7 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( { settingsItemShown = NoItem
-      , currentVersion = "0.6.37"
+      , currentVersion = "0.6.40"
       , newestVersion = Api.Loading
       }
     , Effect.sendCmd <|
@@ -83,7 +83,7 @@ type SettingsItem
 
 
 type Msg
-    = ReloadApp
+    = ReloadApp Bool
     | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int
     | DefaultRelaxRetDurationChanged Int
@@ -130,10 +130,14 @@ update shared msg model =
             , Effect.setUpdating False
             )
 
-        ReloadApp ->
+        ReloadApp once ->
             ( model
             , Effect.batch
-                [ Effect.setUpdating True
+                [ if once then
+                    Effect.none
+
+                  else
+                    Effect.setUpdating True
                 , Effect.sendCmd Browser.Navigation.reload
                 ]
               --AndSkipCache
@@ -278,11 +282,11 @@ viewIntroduction shared model =
         -- , text <| "sar: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .right |> String.fromInt)
         -- , text <| "sat: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .top |> String.fromInt)
         -- , text <| "sab: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .bottom |> String.fromInt)
-        -- , text <|
-        --     "Breite: "
-        --         ++ String.fromInt shared.windowSize.width
-        --         ++ ", Höhe: "
-        --         ++ String.fromInt shared.windowSize.height
+        , text <|
+            "Breite: "
+                ++ String.fromInt shared.windowSize.width
+                ++ ", Höhe: "
+                ++ String.fromInt shared.windowSize.height
         ]
 
 
@@ -316,7 +320,7 @@ viewUpdate shared model =
                     ++ model.currentVersion
                     ++ " auf "
                     ++ versionOnServer
-            , Components.Button.new { onPress = Just ReloadApp, label = text "Update jetzt laden" }
+            , Components.Button.new { onPress = Just <| ReloadApp False, label = text "Update jetzt laden" }
                 |> Components.Button.withLightColor
                 |> Components.Button.view shared.colorScheme
             ]
@@ -681,7 +685,7 @@ viewTechInfo shared model =
         el
             [ alignRight
             , Font.size 13
-            , Events.onClick ReloadApp
+            , Events.onClick <| ReloadApp True
             ]
         <|
             text <|
