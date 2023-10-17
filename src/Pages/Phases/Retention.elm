@@ -2,7 +2,7 @@ module Pages.Phases.Retention exposing (Model, Msg, page)
 
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Background as Background
+import Element.Background as BG
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)

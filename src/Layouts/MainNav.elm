@@ -9,8 +9,6 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons
-import Html
-import Html.Attributes as HtmlA
 import Html.Events as HEvents
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -223,17 +221,8 @@ viewNavBar shared route =
             -- TODO: Das portabler machen wie in Tip 5 beschrieben:
             -- https://samselikoff.com/blog/8-tips-to-make-your-website-feel-like-an-ios-app
             , height <| px 41
-
-            -- , htmlAttribute <| HtmlA.style "padding" " 0 0 41px 0" --"env(safe-area-inset-bottom)"
-            -- , htmlAttribute <| HtmlA.class "safeArea"
             ]
             none
-
-        --   <|
-        -- html <|
-        --     Html.div
-        --         [ HtmlA.class "safeArea" ]
-        --         []
         ]
 
 

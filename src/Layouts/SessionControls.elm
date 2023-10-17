@@ -18,7 +18,6 @@ import Lib.Swipe as Swipe
 import Lib.Utils as Utils
 import Route exposing (Route)
 import Shared
-import Shared.Msg
 import Task
 import View exposing (View)
 

@@ -243,23 +243,11 @@ viewIntroduction shared model =
             , Font.color <| CS.guideColor shared.colorScheme
             ]
             [ text "Zoff - Wim Hof Atmung mit dem Hauch von Zen" ]
-
-        -- TODO: Version im service-worker setzen und irgendwie per Javascript über Flags hierher bringen
         , paragraph [] [ text """
         Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
-
-        -- , text <| "sal: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .left |> String.fromInt)
-        -- , text <| "sar: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .right |> String.fromInt)
-        -- , text <| "sat: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .top |> String.fromInt)
-        -- , text <| "sab: " ++ (SafeArea.paddingEach shared.safeAreaInset |> .bottom |> String.fromInt)
-        -- , text <|
-        --     "Breite: "
-        --         ++ String.fromInt shared.windowSize.width
-        --         ++ ", Höhe: "
-        --         ++ String.fromInt shared.windowSize.height
         ]
 
 
@@ -274,20 +262,7 @@ viewUpdate shared model =
                 _ ->
                     shared.currentVersion
     in
-    if shared.justUpdated then
-        --TODO: wird nicht mehr gebraucht (oder?)
-        el
-            [ centerX
-            , Font.color <| CS.successColor shared.colorScheme
-            , Font.bold
-            ]
-        <|
-            text <|
-                "Update auf Version "
-                    ++ shared.currentVersion
-                    ++ " erfolgreich!"
-
-    else if shared.currentVersion /= versionOnServer then
+    if shared.currentVersion /= versionOnServer then
         column [ width fill, spacing 10 ]
             [ text <|
                 "Ein Update ist verfügbar von Version "
@@ -337,20 +312,12 @@ viewRetentionTrend shared =
                         text "Retentionstrend"
                     , el
                         [ centerX
-
-                        -- , paddingEach { top = 0, left = 50, right = 0, bottom = 0 }
-                        --- TODO: Die Darstellung funktioniert am besten, wenn hier und im Chart die
-                        ---         selben Dimensionen eingestellt werden -> Breite passend zur
-                        ---         Fensterbreite berechnen? Wie habe ich das bei AMTSUI gemacht?
-                        -- , width <| px 300
                         , width <| px <| shared.windowSize.width - paddingX
                         , height <| px 200
                         ]
                         (Chart.chart
                             [ ChartA.width <| toFloat <| shared.windowSize.width - paddingX
                             , ChartA.height 200
-
-                            -- , ChartA.margin { top = 0, bottom = 0, left = 60, right = 60 }
                             , ChartA.domain
                                 [ ChartA.lowest 0 ChartA.orLower
                                 , ChartA.highest (max + (max / 7)) ChartA.orHigher
@@ -373,8 +340,6 @@ viewRetentionTrend shared =
                                     [ ChartA.opacity 0.6
                                     , ChartA.gradient []
                                     , ChartA.monotone
-
-                                    -- , ChartA.color "#bb8800"
                                     , ChartA.color <| CS.guideColorHex shared.colorScheme
                                     ]
                                     []
@@ -418,7 +383,6 @@ viewSettings shared model =
             , alignBottom
             ]
 
-        --TODO: ColorScheme ergänzen und Farben von dort nehmen
         itemAttrs =
             lastItemAttrs
                 ++ [ Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
@@ -649,8 +613,6 @@ viewSettingsItem { item, label, value, attributes } colorScheme =
         , label =
             row attributes
                 [ text label
-
-                -- , el [ alignRight, Font.color <| rgb 0.5 0.5 0.5 ] <| text value
                 , el [ alignRight, Font.color <| CS.interactInactiveDarkerColor colorScheme ] <| text value
                 ]
         }

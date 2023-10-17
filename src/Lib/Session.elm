@@ -114,14 +114,6 @@ breathCountChoices =
     [ Twenty, Thirty, Forty, Fifty ]
 
 
-
---TODO: Brauche ich das oder kann ich unten die session-bezogene Funktion umbauen?
--- breathCountDE : BreathCount -> String
--- breathCountDE bc =
---     case bc of
---         Thirty ->
-
-
 breathCountInt : BreathCount -> Int
 breathCountInt bc =
     case bc of
@@ -347,7 +339,7 @@ phaseDuration session retentionEstimate phase =
         Retention ->
             case retentionEstimate of
                 Nothing ->
-                    -- TODO: Stattdessen aus vergangenen Sessions ermitteln
+                    --- Two minutes and 15 seconds...
                     2 * 60000 + 15000
 
                 Just estimate ->
@@ -463,6 +455,9 @@ breathCountDecoder =
 
                 Fifty ->
                     ()
+
+        --- If the compiler complains here, adjust the pattern matched below
+        --- to include all cases!
     in
     Json.Decode.int
         |> Json.Decode.andThen
