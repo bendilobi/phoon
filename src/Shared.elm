@@ -2,7 +2,6 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
-    -- , navigateNext
     )
 
 {-|
@@ -13,6 +12,7 @@ module Shared exposing
 
 -}
 
+import Api
 import Browser.Dom
 import Browser.Events
 import Date
@@ -33,7 +33,7 @@ import Time
 
 
 version =
-    "0.6.51"
+    "0.6.77"
 
 
 
@@ -139,6 +139,7 @@ init flagsResult route =
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
       , currentVersion = version
+      , versionOnServer = Api.Loading
       , windowSize = { width = 0, height = 0 }
       , session = Session.new decodedFlags.sessionSettings
       , results = SessionResults.empty
@@ -148,12 +149,14 @@ init flagsResult route =
       , sessionSettings = decodedFlags.sessionSettings
       , appIsUpdating = decodedFlags.isUpdating
       , justUpdated = False
+      , baseApiUrl = "/"
       , safeAreaInset = SafeArea.new { left = decodedFlags.sal, right = decodedFlags.sar, top = 0, bottom = 0 }
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
         , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
         , Effect.sendCmd <| Task.perform Shared.Msg.ReceivedViewport Browser.Dom.getViewport
+        , Effect.checkVersion Shared.Msg.ReceivedVersionOnServer
         ]
     )
 
@@ -302,6 +305,25 @@ update route msg model =
                 , justUpdated = model.appIsUpdating && not updating
               }
             , Effect.saveUpdatingState updating
+            )
+
+        Shared.Msg.ReceivedVersionOnServer (Ok versionString) ->
+            ( { model
+                | versionOnServer = Api.Success versionString
+              }
+            , if versionString == model.currentVersion then
+                Effect.setUpdating False
+
+              else if model.appIsUpdating then
+                Effect.reload
+
+              else
+                Effect.none
+            )
+
+        Shared.Msg.ReceivedVersionOnServer (Err httpError) ->
+            ( { model | versionOnServer = Api.Failure httpError }
+            , Effect.setUpdating False
             )
 
 

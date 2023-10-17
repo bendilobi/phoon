@@ -5,6 +5,7 @@ module Shared.Msg exposing (Msg(..))
 import Browser.Dom
 import Browser.Events
 import Date
+import Http
 import Json.Decode
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
@@ -32,3 +33,4 @@ type Msg
     | SessionEnded Bool
     | SessionSettingsUpdated Session.Settings
     | SetUpdating Bool
+    | ReceivedVersionOnServer (Result Http.Error String)

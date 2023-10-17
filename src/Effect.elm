@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, getSafeArea, navigate, navigateNext, playSound, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setUpdating, setWakeLock, soundEncoder, updateSessionSettings
+    , adjustToday, checkVersion, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setUpdating, setWakeLock, soundEncoder, updateApp, updateSessionSettings
     )
 
 {-|
@@ -21,6 +21,7 @@ port module Effect exposing
 import Browser.Navigation
 import Date
 import Dict exposing (Dict)
+import Http
 import Json.Decode
 import Json.Encode
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -44,12 +45,18 @@ type Effect msg
     | PushUrl String
     | ReplaceUrl String
     | LoadExternalUrl String
+    | Reload
       -- SHARED
     | SendSharedMsg Shared.Msg.Msg
       -- PORTS
     | SendMessageToJavaScript
         { tag : String
         , data : Json.Encode.Value
+        }
+    | SendApiRequest
+        { endpoint : String
+        , decoder : Json.Decode.Decoder msg
+        , onHttpError : Http.Error -> msg
         }
 
 
@@ -121,6 +128,11 @@ replaceRoute route =
 loadExternalUrl : String -> Effect msg
 loadExternalUrl =
     LoadExternalUrl
+
+
+reload : Effect msg
+reload =
+    Reload
 
 
 
@@ -269,10 +281,67 @@ updateSessionSettings settings =
     SendSharedMsg <| Shared.Msg.SessionSettingsUpdated settings
 
 
+receivedVersionOnServer : Result Http.Error String -> Effect msg
+receivedVersionOnServer result =
+    SendSharedMsg <| Shared.Msg.ReceivedVersionOnServer result
 
--- hiddenAt : Time.Posix -> Effect msg
--- hiddenAt time =
---     SendSharedMsg <| Shared.Msg.HiddenAt time
+
+
+--- Commands ---
+
+
+updateApp : Effect msg
+updateApp =
+    batch
+        [ setUpdating True
+        , Reload
+        ]
+
+
+
+--- API ---
+
+
+checkVersion : (Result Http.Error String -> msg) -> Effect msg
+checkVersion msg =
+    sendApiRequest
+        { endpoint = "version.json"
+        , decoder = versionDecoder
+        , onResponse = msg
+        }
+
+
+versionDecoder : Json.Decode.Decoder String
+versionDecoder =
+    Json.Decode.field "version" <| Json.Decode.string
+
+
+sendApiRequest :
+    { endpoint : String
+    , decoder : Json.Decode.Decoder value
+    , onResponse : Result Http.Error value -> msg
+    }
+    -> Effect msg
+sendApiRequest options =
+    let
+        decoder : Json.Decode.Decoder msg
+        decoder =
+            options.decoder
+                |> Json.Decode.map Ok
+                |> Json.Decode.map options.onResponse
+
+        onHttpError : Http.Error -> msg
+        onHttpError httpError =
+            options.onResponse (Err httpError)
+    in
+    SendApiRequest
+        { endpoint = options.endpoint
+        , decoder = decoder
+        , onHttpError = onHttpError
+        }
+
+
+
 -- INTERNALS
 
 
@@ -300,11 +369,21 @@ map fn effect =
         LoadExternalUrl url ->
             LoadExternalUrl url
 
+        Reload ->
+            Reload
+
         SendSharedMsg sharedMsg ->
             SendSharedMsg sharedMsg
 
         SendMessageToJavaScript msg ->
             SendMessageToJavaScript msg
+
+        SendApiRequest data ->
+            SendApiRequest
+                { endpoint = data.endpoint
+                , decoder = Json.Decode.map fn data.decoder
+                , onHttpError = \err -> fn (data.onHttpError err)
+                }
 
 
 {-| Elm Land depends on this function to perform your effects.
@@ -339,9 +418,41 @@ toCmd options effect =
         LoadExternalUrl url ->
             Browser.Navigation.load url
 
+        Reload ->
+            Browser.Navigation.reload
+
         SendSharedMsg sharedMsg ->
             Task.succeed sharedMsg
                 |> Task.perform options.fromSharedMsg
 
         SendMessageToJavaScript msg ->
             outgoing msg
+
+        SendApiRequest data ->
+            Http.request
+                { method = "GET"
+                , url = options.shared.baseApiUrl ++ data.endpoint
+                , headers =
+                    -- case options.shared.user of
+                    --     Just user ->
+                    --         [ Http.header
+                    --             "Authorization"
+                    --             ("Bearer " ++ user.token)
+                    --         ]
+                    --     Nothing ->
+                    []
+                , body = Http.emptyBody
+                , expect =
+                    Http.expectJson
+                        (\httpResult ->
+                            case httpResult of
+                                Ok msg ->
+                                    msg
+
+                                Err httpError ->
+                                    data.onHttpError httpError
+                        )
+                        data.decoder
+                , timeout = Just 15000
+                , tracker = Nothing
+                }

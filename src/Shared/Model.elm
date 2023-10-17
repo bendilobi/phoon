@@ -1,5 +1,6 @@
 module Shared.Model exposing (Model)
 
+import Api
 import Date
 import Lib.ColorScheme as CS
 import Lib.MotivationData exposing (MotivationData)
@@ -21,6 +22,7 @@ type alias Model =
     { zone : Time.Zone
     , today : Date.Date
     , currentVersion : String
+    , versionOnServer : Api.Data String
     , windowSize : { width : Int, height : Int }
     , session : Session
     , results : SessionResults
@@ -30,5 +32,6 @@ type alias Model =
     , sessionSettings : Session.Settings
     , appIsUpdating : Bool
     , justUpdated : Bool
+    , baseApiUrl : String
     , safeAreaInset : SafeArea
     }

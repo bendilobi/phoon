@@ -1,9 +1,7 @@
 module Pages.Information exposing (Model, Msg, page)
 
 import Api
-import Api.Version
 import Browser.Events
-import Browser.Navigation
 import Chart
 import Chart.Attributes as ChartA
 import Components.Button
@@ -33,7 +31,7 @@ import View exposing (View)
 page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
+        { init = init shared
         , update = update shared
         , subscriptions = subscriptions
         , view = view shared
@@ -51,24 +49,17 @@ toLayout model =
 
 
 type alias Model =
-    { settingsItemShown : SettingsItem
-
-    -- , currentVersion : String
-    , newestVersion : Api.Data String
-    }
+    { settingsItemShown : SettingsItem }
 
 
-init : () -> ( Model, Effect Msg )
-init () =
-    ( { settingsItemShown = NoItem
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared () =
+    ( { settingsItemShown = NoItem }
+    , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
+        Effect.checkVersion ReceivedNewestVersionString
 
-      --   , currentVersion = "0.6.43"
-      , newestVersion = Api.Loading
-      }
-    , Effect.sendCmd <|
-        Api.Version.getNewest
-            { onResponse = ReceivedNewestVersionString
-            }
+      else
+        Effect.none
     )
 
 
@@ -107,42 +98,22 @@ update shared msg model =
                     Effect.none
 
                 Browser.Events.Visible ->
-                    Effect.sendCmd <|
-                        Api.Version.getNewest
-                            { onResponse = ReceivedNewestVersionString
-                            }
+                    -- if shared.justUpdated then
+                    --     Effect.none
+                    -- else
+                    Effect.checkVersion ReceivedNewestVersionString
             )
 
-        ReceivedNewestVersionString (Ok versionString) ->
-            ( { model
-                | newestVersion = Api.Success versionString
-              }
-            , if versionString == shared.currentVersion then
-                Effect.setUpdating False
-
-              else if shared.appIsUpdating then
-                Effect.sendCmd Browser.Navigation.reload
-
-              else
-                Effect.none
-            )
-
-        ReceivedNewestVersionString (Err httpError) ->
-            ( { model | newestVersion = Api.Failure httpError }
-            , Effect.setUpdating False
-            )
+        ReceivedNewestVersionString response ->
+            ( model, Effect.receivedVersionOnServer response )
 
         ReloadApp once ->
             ( model
-            , Effect.batch
-                [ if once then
-                    Effect.none
+            , if once then
+                Effect.reload
 
-                  else
-                    Effect.setUpdating True
-                , Effect.sendCmd Browser.Navigation.reload
-                ]
-              --AndSkipCache
+              else
+                Effect.updateApp
             )
 
         DefaultCyclesChanged cycles ->
@@ -296,7 +267,7 @@ viewUpdate : Shared.Model -> Model -> Element Msg
 viewUpdate shared model =
     let
         versionOnServer =
-            case model.newestVersion of
+            case shared.versionOnServer of
                 Api.Success versionString ->
                     versionString
 
@@ -304,6 +275,7 @@ viewUpdate shared model =
                     shared.currentVersion
     in
     if shared.justUpdated then
+        --TODO: wird nicht mehr gebraucht (oder?)
         el
             [ centerX
             , Font.color <| CS.successColor shared.colorScheme
