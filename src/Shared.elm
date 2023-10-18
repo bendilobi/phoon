@@ -33,7 +33,7 @@ import Time
 
 
 version =
-    "0.6.77"
+    "0.6.79"
 
 
 

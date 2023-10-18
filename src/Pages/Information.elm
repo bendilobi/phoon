@@ -248,34 +248,50 @@ viewIntroduction shared model =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
+
+        -- , text <|
+        --     "Version on Server: "
+        --         ++ (case shared.versionOnServer of
+        --                 Api.Loading ->
+        --                     "Loading..."
+        --                 Api.Success version ->
+        --                     version
+        --                 Api.Failure err ->
+        --                     Api.failureToString err
+        --            )
         ]
 
 
 viewUpdate : Shared.Model -> Model -> Element Msg
 viewUpdate shared model =
     let
-        versionOnServer =
+        serverResponse =
             case shared.versionOnServer of
                 Api.Success versionString ->
-                    versionString
+                    Just versionString
 
                 _ ->
-                    shared.currentVersion
+                    Nothing
     in
-    if shared.currentVersion /= versionOnServer then
-        column [ width fill, spacing 10 ]
-            [ text <|
-                "Ein Update ist verfügbar von Version "
-                    ++ shared.currentVersion
-                    ++ " auf "
-                    ++ versionOnServer
-            , Components.Button.new { onPress = Just <| ReloadApp False, label = text "Update jetzt laden" }
-                |> Components.Button.withLightColor
-                |> Components.Button.view shared.colorScheme
-            ]
+    case serverResponse of
+        Nothing ->
+            none
 
-    else
-        none
+        Just versionOnServer ->
+            if shared.currentVersion /= versionOnServer then
+                column [ width fill, spacing 10 ]
+                    [ text <|
+                        "Ein Update ist verfügbar von Version "
+                            ++ shared.currentVersion
+                            ++ " auf "
+                            ++ versionOnServer
+                    , Components.Button.new { onPress = Just <| ReloadApp False, label = text "Update jetzt laden" }
+                        |> Components.Button.withLightColor
+                        |> Components.Button.view shared.colorScheme
+                    ]
+
+            else
+                none
 
 
 viewRetentionTrend : Shared.Model -> Element msg
