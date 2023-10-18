@@ -135,9 +135,12 @@ view shared model =
                     (Bubble.new
                         { model = model.bubble
                         , size = 200
+                        , bubbleColor = CS.phaseSessionStartCopyColor shared.colorScheme
+                        , bgColor = CS.phaseSessionStartColor shared.colorScheme
                         }
                         |> Bubble.withLabel "Start"
-                        |> Bubble.view shared.colorScheme
+                        |> Bubble.withFontSize 50
+                        |> Bubble.view
                     )
             , viewHints model
             ]

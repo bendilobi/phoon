@@ -529,13 +529,15 @@ viewSettings shared model =
                             (Bubble.new
                                 { model = model.bubble
                                 , size = 70
+                                , bubbleColor = CS.guideColor shared.colorScheme
+                                , bgColor = CS.settingsColor shared.colorScheme
                                 }
                                 |> Bubble.withLabel
                                     (shared.sessionSettings.breathCount
                                         |> Session.breathCountInt
                                         |> String.fromInt
                                     )
-                                |> Bubble.view shared.colorScheme
+                                |> Bubble.view
                             )
                         , RadioGroup.new
                             { choices = Session.breathingSpeeds

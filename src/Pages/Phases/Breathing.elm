@@ -111,6 +111,11 @@ view shared model =
                     text "Retention \nvorbereiten"
 
             else
-                Bubble.new { model = model.bubble, size = 300 }
-                    |> Bubble.view shared.colorScheme
+                Bubble.new
+                    { model = model.bubble
+                    , size = 300
+                    , bubbleColor = CS.phaseSessionStartColor shared.colorScheme
+                    , bgColor = CS.phaseBreathingColor shared.colorScheme
+                    }
+                    |> Bubble.view
     }

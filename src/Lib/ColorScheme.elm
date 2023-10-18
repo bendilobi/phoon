@@ -1,6 +1,5 @@
 module Lib.ColorScheme exposing
     ( ColorScheme
-    , breathingInverted
     , guideColor
     , guideColorHex
     , interactActive
@@ -14,10 +13,13 @@ module Lib.ColorScheme exposing
     , newDaylight
     , newSunrise
     , phaseBreathing
+    , phaseBreathingColor
     , phaseRelaxRetention
     , phaseRetention
     , phaseSessionEnd
     , phaseSessionStart
+    , phaseSessionStartColor
+    , phaseSessionStartCopyColor
     , primary
     , primaryInformation
     , primaryMotivation
@@ -25,7 +27,6 @@ module Lib.ColorScheme exposing
     , seriesBadColor
     , seriesGoodColor
     , seriesGoodColorHex
-    , sessionStartInverted
     , settingsColor
     , settingsDarkerColor
     , successColor
@@ -289,11 +290,14 @@ phaseSessionStart (ColorScheme colors) =
     ]
 
 
-sessionStartInverted : ColorScheme -> List (Attribute msg)
-sessionStartInverted (ColorScheme colors) =
-    [ Font.color colors.phaseSessionStart
-    , BG.color colors.phaseSessionStartCopy
-    ]
+phaseSessionStartCopyColor : ColorScheme -> Color
+phaseSessionStartCopyColor (ColorScheme colors) =
+    colors.phaseSessionStartCopy
+
+
+phaseSessionStartColor : ColorScheme -> Color
+phaseSessionStartColor (ColorScheme colors) =
+    colors.phaseSessionStart
 
 
 phaseBreathing : ColorScheme -> List (Attribute msg)
@@ -305,13 +309,9 @@ phaseBreathing (ColorScheme colors) =
     ]
 
 
-breathingInverted : ColorScheme -> List (Attribute msg)
-breathingInverted (ColorScheme colors) =
-    [ Font.color colors.phaseBreathing
-
-    -- , BG.color colors.phaseBreathingCopy
-    , BG.color colors.phaseSessionStart
-    ]
+phaseBreathingColor : ColorScheme -> Color
+phaseBreathingColor (ColorScheme colors) =
+    colors.phaseBreathing
 
 
 phaseRetention : ColorScheme -> List (Attribute msg)

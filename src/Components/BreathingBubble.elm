@@ -7,6 +7,7 @@ module Components.BreathingBubble exposing
     , new
     , update
     , view
+    , withFontSize
     , withLabel
     )
 
@@ -27,12 +28,17 @@ type BreathingBubble msg
         { model : Model msg
         , size : Int
         , label : Maybe String
+        , fontSize : Maybe Int
+        , bubbleColor : Color
+        , bgColor : Color
         }
 
 
 new :
     { model : Model msg
     , size : Int
+    , bubbleColor : Color
+    , bgColor : Color
     }
     -> BreathingBubble msg
 new props =
@@ -40,6 +46,9 @@ new props =
         { model = props.model
         , size = props.size
         , label = Nothing
+        , fontSize = Nothing
+        , bubbleColor = props.bubbleColor
+        , bgColor = props.bgColor
         }
 
 
@@ -50,6 +59,11 @@ new props =
 withLabel : String -> BreathingBubble msg -> BreathingBubble msg
 withLabel label (Settings settings) =
     Settings { settings | label = Just label }
+
+
+withFontSize : Int -> BreathingBubble msg -> BreathingBubble msg
+withFontSize size (Settings settings) =
+    Settings { settings | fontSize = Just size }
 
 
 
@@ -181,8 +195,8 @@ update props =
 --- View ---
 
 
-view : ColorScheme -> BreathingBubble msg -> Element msg
-view colorScheme (Settings settings) =
+view : BreathingBubble msg -> Element msg
+view (Settings settings) =
     let
         (Model model) =
             settings.model
@@ -192,16 +206,19 @@ view colorScheme (Settings settings) =
          , width <| px settings.size
          , height <| px settings.size
          , Border.rounded <| settings.size // 2
-         , Border.width 1
          , centerX
          , centerY
          ]
             ++ (case model.breathingState of
                     AtBreath _ In ->
-                        CS.breathingInverted colorScheme
+                        [ Font.color settings.bgColor
+                        , BG.color settings.bubbleColor
+                        ]
 
                     _ ->
-                        []
+                        [ Font.color settings.bubbleColor
+                        , BG.color settings.bgColor
+                        ]
                )
         )
     <|
@@ -210,7 +227,13 @@ view colorScheme (Settings settings) =
                 el
                     [ centerX
                     , centerY
-                    , Font.size <| settings.size // 3
+                    , Font.size <|
+                        case settings.fontSize of
+                            Nothing ->
+                                settings.size // 2
+
+                            Just size ->
+                                size
                     ]
                 <|
                     text <|
