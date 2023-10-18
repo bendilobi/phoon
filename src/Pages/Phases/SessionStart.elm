@@ -1,5 +1,6 @@
 module Pages.Phases.SessionStart exposing (Model, Msg, page)
 
+import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -39,21 +40,20 @@ toLayout model =
 -- INIT
 
 
-type Breath
-    = In
-    | Out
-
-
 type alias Model =
-    { breathingPreview : Breath
+    { bubble : Bubble.Model Msg
     , ticks : Int
     }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { breathingPreview = In
-      , ticks = 0
+    ( { ticks = 0
+      , bubble =
+            Bubble.init
+                { bubbleType = Bubble.Static
+                , onFinished = Nothing
+                }
       }
     , Effect.none
     )
@@ -71,15 +71,17 @@ update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         Tick _ ->
+            let
+                ( bModel, _ ) =
+                    Bubble.update
+                        { msg = Bubble.Tick
+                        , model = model.bubble
+                        , toModel = \bubble -> { model | bubble = bubble }
+                        }
+            in
             ( { model
-                | breathingPreview =
-                    case model.breathingPreview of
-                        In ->
-                            Out
-
-                        Out ->
-                            In
-                , ticks = model.ticks + 1
+                | ticks = model.ticks + 1
+                , bubble = bModel.bubble
               }
             , Effect.none
             )
@@ -129,26 +131,14 @@ view shared model =
             -- TODO: Das synchronisieren mit der Darstellung bei Breathing
             --       => Abwarten, bis die Visualisierung optimiert wird...
             , el [ width fill, height fill ] <|
-                el
-                    ([ Font.bold
-                     , Font.size 40
-                     , width <| px 200
-                     , height <| px 200
-                     , Border.rounded 100
-                     , centerX
-                     , centerY
-                     ]
-                        ++ (case model.breathingPreview of
-                                In ->
-                                    CS.sessionStartInverted shared.colorScheme
-
-                                Out ->
-                                    []
-                           )
+                el [ centerX ] <|
+                    (Bubble.new
+                        { model = model.bubble
+                        , size = 200
+                        }
+                        |> Bubble.withLabel "Start"
+                        |> Bubble.view shared.colorScheme
                     )
-                <|
-                    el [ centerX, centerY ] <|
-                        text "Start"
             , viewHints model
             ]
     }

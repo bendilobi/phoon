@@ -1,5 +1,6 @@
 module Pages.Phases.Breathing exposing (Model, Msg, page)
 
+import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -19,7 +20,7 @@ import View exposing (View)
 page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
+        { init = init shared
         , update = update shared
         , subscriptions = subscriptions shared
         , view = view shared
@@ -33,23 +34,23 @@ toLayout model =
         { showSessionProgress = True }
 
 
-type Breath
-    = In
-    | Out
+type alias Model =
+    { bubble : Bubble.Model Msg
+    , breathingFinished : Bool
+    }
 
 
-type Model
-    = Starting
-    | AtBreath Int Breath
-    | BreathingFinished
-
-
-init : () -> ( Model, Effect Msg )
-init () =
-    ( Starting
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared () =
+    ( { bubble =
+            Bubble.init
+                { bubbleType = Bubble.Counting <| Session.breathCount shared.session
+                , onFinished = Just BubbleFinished
+                }
+      , breathingFinished = False
+      }
     , Effect.batch
         [ Effect.playSound Utils.Breathing
-        , Effect.sendMsg <| Tick <| Time.millisToPosix 0
         ]
     )
 
@@ -60,36 +61,23 @@ init () =
 
 type Msg
     = Tick Time.Posix
+    | BubbleFinished
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
         Tick _ ->
-            let
-                ( newBreathingState, effect ) =
-                    case model of
-                        Starting ->
-                            ( AtBreath 1 In, Effect.none )
+            Bubble.update
+                { msg = Bubble.Tick
+                , model = model.bubble
+                , toModel = \bubble -> { model | bubble = bubble }
+                }
 
-                        AtBreath n In ->
-                            if n == Session.breathCount shared.session then
-                                ( BreathingFinished, Effect.playSound Utils.Breathing )
-
-                            else
-                                ( AtBreath n Out, Effect.none )
-
-                        AtBreath n Out ->
-                            if n < Session.breathCount shared.session then
-                                ( AtBreath (n + 1) In, Effect.none )
-
-                            else
-                                ( BreathingFinished, Effect.playSound Utils.Breathing )
-
-                        BreathingFinished ->
-                            ( BreathingFinished, Effect.none )
-            in
-            ( newBreathingState, effect )
+        BubbleFinished ->
+            ( { model | breathingFinished = True }
+            , Effect.playSound Utils.Breathing
+            )
 
 
 
@@ -98,12 +86,7 @@ update shared msg model =
 
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
-    case model of
-        AtBreath _ _ ->
-            Time.every (Session.speedMillis shared.session |> toFloat) Tick
-
-        _ ->
-            Sub.none
+    Time.every (Session.speedMillis shared.session |> toFloat) Tick
 
 
 
@@ -117,44 +100,17 @@ view shared model =
         CS.phaseBreathing shared.colorScheme
     , element =
         el [ width fill, height fill ] <|
-            el
-                ([ Font.bold
-                 , width <| px 300
-                 , height <| px 300
-                 , Border.rounded 150
-                 , centerX
-                 , centerY
-                 ]
-                    ++ (case model of
-                            AtBreath _ In ->
-                                CS.breathingInverted shared.colorScheme
+            if model.breathingFinished then
+                el
+                    [ centerX
+                    , centerY
+                    , Font.size 40
+                    , Font.center
+                    ]
+                <|
+                    text "Retention \nvorbereiten"
 
-                            _ ->
-                                []
-                       )
-                )
-            <|
-                case model of
-                    Starting ->
-                        none
-
-                    AtBreath n _ ->
-                        el
-                            [ centerX
-                            , centerY
-                            , Font.size 120
-                            ]
-                        <|
-                            text <|
-                                String.fromInt n
-
-                    BreathingFinished ->
-                        el
-                            [ centerX
-                            , centerY
-                            , Font.size 40
-                            , Font.center
-                            ]
-                        <|
-                            text "Retention \nvorbereiten"
+            else
+                Bubble.new { model = model.bubble, size = 300 }
+                    |> Bubble.view shared.colorScheme
     }

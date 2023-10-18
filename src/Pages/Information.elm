@@ -4,6 +4,7 @@ import Api
 import Browser.Events
 import Chart
 import Chart.Attributes as ChartA
+import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.Button
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
@@ -25,6 +26,7 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Svg
+import Time
 import View exposing (View)
 
 
@@ -33,7 +35,7 @@ page shared route =
     Page.new
         { init = init shared
         , update = update shared
-        , subscriptions = subscriptions
+        , subscriptions = subscriptions shared
         , view = view shared
         }
         |> Page.withLayout toLayout
@@ -49,12 +51,20 @@ toLayout model =
 
 
 type alias Model =
-    { settingsItemShown : SettingsItem }
+    { settingsItemShown : SettingsItem
+    , bubble : Bubble.Model Msg
+    }
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
-    ( { settingsItemShown = NoItem }
+    ( { settingsItemShown = NoItem
+      , bubble =
+            Bubble.init
+                { bubbleType = Bubble.Static
+                , onFinished = Nothing
+                }
+      }
     , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
         Effect.checkVersion ReceivedNewestVersionString
 
@@ -76,7 +86,8 @@ type SettingsItem
 
 
 type Msg
-    = ReloadApp Bool
+    = Tick Time.Posix
+    | ReloadApp Bool
     | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int
     | DefaultRelaxRetDurationChanged Int
@@ -91,6 +102,13 @@ type Msg
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
+        Tick _ ->
+            Bubble.update
+                { msg = Bubble.Tick
+                , model = model.bubble
+                , toModel = \bubble -> { model | bubble = bubble }
+                }
+
         VisibilityChanged visibility ->
             ( model
             , case visibility of
@@ -98,9 +116,6 @@ update shared msg model =
                     Effect.none
 
                 Browser.Events.Visible ->
-                    -- if shared.justUpdated then
-                    --     Effect.none
-                    -- else
                     Effect.checkVersion ReceivedNewestVersionString
             )
 
@@ -158,7 +173,23 @@ update shared msg model =
             )
 
         SettingsItemShown item ->
-            ( { model | settingsItemShown = item }
+            let
+                ( bModel, _ ) =
+                    Bubble.update
+                        { msg = Bubble.Reset
+                        , model = model.bubble
+                        , toModel = \bubble -> { model | bubble = bubble }
+                        }
+            in
+            ( { model
+                | settingsItemShown = item
+                , bubble =
+                    if item == BreathingSpeed then
+                        bModel.bubble
+
+                    else
+                        model.bubble
+              }
             , Effect.none
             )
 
@@ -172,9 +203,16 @@ update shared msg model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Browser.Events.onVisibilityChange VisibilityChanged
+subscriptions : Shared.Model -> Model -> Sub Msg
+subscriptions shared model =
+    Sub.batch
+        [ Browser.Events.onVisibilityChange VisibilityChanged
+        , if model.settingsItemShown == BreathingSpeed then
+            Time.every (Session.speedToMillis shared.sessionSettings.breathingSpeed |> toFloat) Tick
+
+          else
+            Sub.none
+        ]
 
 
 
@@ -487,6 +525,18 @@ viewSettings shared model =
                 el itemAttrs <|
                     column [ width fill, spacing 20 ]
                         [ activeItemLabel "Atemgeschwindigkeit"
+                        , el [ centerX ] <|
+                            (Bubble.new
+                                { model = model.bubble
+                                , size = 70
+                                }
+                                |> Bubble.withLabel
+                                    (shared.sessionSettings.breathCount
+                                        |> Session.breathCountInt
+                                        |> String.fromInt
+                                    )
+                                |> Bubble.view shared.colorScheme
+                            )
                         , RadioGroup.new
                             { choices = Session.breathingSpeeds
                             , toString = Session.breathingSpeedDE
