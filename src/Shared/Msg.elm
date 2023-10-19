@@ -7,6 +7,7 @@ import Browser.Events
 import Date
 import Http
 import Json.Decode
+import Lib.MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
@@ -34,3 +35,4 @@ type Msg
     | SessionSettingsUpdated Session.Settings
     | SetUpdating Bool
     | ReceivedVersionOnServer (Result Http.Error String)
+    | SetMotivationData MotivationData

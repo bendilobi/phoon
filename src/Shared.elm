@@ -33,7 +33,7 @@ import Time
 
 
 version =
-    "0.6.90"
+    "0.6.96"
 
 
 
@@ -286,6 +286,7 @@ update route msg model =
                 , motivationData = newMotData
               }
             , Effect.batch
+                --Todo: Effect.sendMsg Shared.Msg.SetMotivationData
                 [ Effect.saveMotivationData newMotData
                 , Effect.navigate Route.Path.Home_
                 ]
@@ -324,6 +325,11 @@ update route msg model =
         Shared.Msg.ReceivedVersionOnServer (Err httpError) ->
             ( { model | versionOnServer = Api.Failure httpError }
             , Effect.setUpdating False
+            )
+
+        Shared.Msg.SetMotivationData motData ->
+            ( { model | motivationData = motData }
+            , Effect.saveMotivationData motData
             )
 
 

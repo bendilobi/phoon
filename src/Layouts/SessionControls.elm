@@ -115,7 +115,7 @@ update shared route msg model =
               --       ein zweites End Event...
             , if multitouchRegistered then
                 Effect.batch
-                    [ Effect.sendCmd <| Delay.after 1000 ReleaseDebounceBlock
+                    [ Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock
                     , Effect.navigateNext shared.session
                     ]
 

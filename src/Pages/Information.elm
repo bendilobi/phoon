@@ -8,14 +8,17 @@ import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.Button
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
+import Date
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
-import Element.Input exposing (button)
+import Element.Input as Input
 import Http
+import Json.Decode
+import Json.Encode
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -53,6 +56,7 @@ toLayout model =
 type alias Model =
     { settingsItemShown : SettingsItem
     , bubble : Bubble.Model Msg
+    , pastedText : String
     }
 
 
@@ -64,6 +68,7 @@ init shared () =
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
                 }
+      , pastedText = ""
       }
     , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
         Effect.checkVersion ReceivedNewestVersionString
@@ -97,6 +102,9 @@ type Msg
     | ResetSettingItemStatus
     | ResetSettings
     | ReceivedNewestVersionString (Result Http.Error String)
+    | NoOp String
+    | OnPasted String
+    | SetMotivationData MotivationData
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -198,6 +206,17 @@ update shared msg model =
             , Effect.none
             )
 
+        NoOp _ ->
+            ( model, Effect.none )
+
+        OnPasted text ->
+            ( { model | pastedText = text }
+            , Effect.none
+            )
+
+        SetMotivationData motData ->
+            ( model, Effect.setMotivationData motData )
+
 
 
 -- SUBSCRIPTIONS
@@ -286,6 +305,52 @@ viewIntroduction shared model =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
+        , Input.text [ width fill, Font.alignLeft ]
+            { onChange = NoOp
+            , text =
+                shared.motivationData
+                    |> MotivationData.encoder
+                    |> Json.Encode.encode 0
+            , placeholder = Nothing
+            , label = Input.labelAbove [ Font.alignLeft ] <| text "Kopiertest"
+            }
+        , Input.text [ width fill, Font.alignLeft ]
+            { onChange = OnPasted
+            , text = model.pastedText
+            , placeholder = Just <| Input.placeholder [] <| text "Hier einfügen"
+            , label = Input.labelAbove [ Font.alignLeft ] <| text "Einfügetest"
+            }
+        , case Json.Decode.decodeString MotivationData.fieldsDecoder model.pastedText of
+            Err e ->
+                text "..."
+
+            Ok fields ->
+                let
+                    newMotData =
+                        MotivationData.fromFields fields
+                in
+                el [] <|
+                    case MotivationData.getMotivationData newMotData of
+                        Nothing ->
+                            text "Noch keine Motivationsdaten vorhanden"
+
+                        Just data ->
+                            column [ spacing 5, Font.size 13 ]
+                                [ el
+                                    [ Font.bold
+                                    , Font.size 15
+                                    , Font.color <| CS.guideColor shared.colorScheme
+                                    ]
+                                  <|
+                                    text "Eingefügte Motivationsdaten"
+                                , text <| "Serie: " ++ String.fromInt data.series
+                                , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
+                                , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
+                                , text <| "Max Ret: " ++ String.fromInt data.maxRetention
+                                , Components.Button.new { onPress = Just <| SetMotivationData newMotData, label = text "Daten übernehmen" }
+                                    |> Components.Button.withLightColor
+                                    |> Components.Button.view shared.colorScheme
+                                ]
 
         -- , text <|
         --     "Version on Server: "
@@ -649,7 +714,7 @@ viewSettings shared model =
                     |> (\millis -> millis // 1000)
           in
           paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ text "Geschätzte Dauer der Übung: "
+            [ text "Geschätzte Gesamtdauer der Übung: "
             , el
                 [ Font.color <| CS.guideColor shared.colorScheme
                 , Font.bold
@@ -676,7 +741,7 @@ viewSettingsItem :
     -> ColorScheme
     -> Element Msg
 viewSettingsItem { item, label, value, attributes } colorScheme =
-    button [ width fill ]
+    Input.button [ width fill ]
         { onPress = Just <| SettingsItemShown item
         , label =
             row attributes
@@ -698,24 +763,3 @@ viewTechInfo shared model =
             text <|
                 "Zoff Version "
                     ++ shared.currentVersion
-
-
-
--- el [] <|
---     case MotivationData.getMotivationData shared.motivationData of
---         Nothing ->
---             text "Noch keine Motivationsdaten vorhanden"
---         Just data ->
---             column [ spacing 5, Font.size 13 ]
---                 [ el
---                     [ Font.bold
---                     , Font.size 15
---                     , Font.color <| CS.guideColor shared.colorScheme
---                     ]
---                   <|
---                     text "Aktuell gespeicherte Motivationsdaten"
---                 , text <| "Serie: " ++ String.fromInt data.series
---                 , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
---                 , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
---                 , text <| "Max Ret: " ++ String.fromInt data.maxRetention
---                 ]

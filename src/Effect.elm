@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, checkVersion, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setUpdating, setWakeLock, soundEncoder, updateApp, updateSessionSettings
+    , adjustToday, checkVersion, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setMotivationData, setUpdating, setWakeLock, soundEncoder, updateApp, updateSessionSettings
     )
 
 {-|
@@ -284,6 +284,11 @@ updateSessionSettings settings =
 receivedVersionOnServer : Result Http.Error String -> Effect msg
 receivedVersionOnServer result =
     SendSharedMsg <| Shared.Msg.ReceivedVersionOnServer result
+
+
+setMotivationData : MotivationData -> Effect msg
+setMotivationData motData =
+    SendSharedMsg <| Shared.Msg.SetMotivationData motData
 
 
 
