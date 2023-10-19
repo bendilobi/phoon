@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, checkVersion, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setMotivationData, setUpdating, setWakeLock, soundEncoder, updateApp, updateSessionSettings
+    , adjustToday, checkVersion, clipboardReceiver, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setMotivationData, setUpdating, setWakeLock, soundEncoder, updateApp, updateSessionSettings, writeToClipboard
     )
 
 {-|
@@ -147,6 +147,25 @@ port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
 
 
 port safeAreaReceiver : (Json.Decode.Value -> msg) -> Sub msg
+
+
+port clipboardReceiver : (Json.Decode.Value -> msg) -> Sub msg
+
+
+writeToClipboard : String -> Effect msg
+writeToClipboard text =
+    SendMessageToJavaScript
+        { tag = "CLIPBOARD_WRITE"
+        , data = Json.Encode.string text
+        }
+
+
+requestClipboardContent : Effect msg
+requestClipboardContent =
+    SendMessageToJavaScript
+        { tag = "REQUEST_CLIPBOARD"
+        , data = Json.Encode.string ""
+        }
 
 
 playSound : Utils.SessionSound -> Effect msg

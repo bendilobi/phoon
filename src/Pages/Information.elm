@@ -105,6 +105,9 @@ type Msg
     | NoOp String
     | OnPasted String
     | SetMotivationData MotivationData
+    | WriteToClipboard String
+    | RequestClipboard
+    | ReceivedClipboard Json.Decode.Value
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -217,6 +220,26 @@ update shared msg model =
         SetMotivationData motData ->
             ( model, Effect.setMotivationData motData )
 
+        WriteToClipboard text ->
+            ( model, Effect.writeToClipboard text )
+
+        RequestClipboard ->
+            ( model, Effect.requestClipboardContent )
+
+        ReceivedClipboard value ->
+            let
+                clipContent =
+                    case Json.Decode.decodeValue Json.Decode.string value of
+                        Err e ->
+                            "Decode failed"
+
+                        Ok string ->
+                            string
+            in
+            ( { model | pastedText = clipContent }
+            , Effect.none
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -226,6 +249,7 @@ subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
     Sub.batch
         [ Browser.Events.onVisibilityChange VisibilityChanged
+        , Effect.clipboardReceiver ReceivedClipboard
         , if model.settingsItemShown == BreathingSpeed then
             Time.every (Session.speedToMillis shared.sessionSettings.breathingSpeed |> toFloat) Tick
 
@@ -305,21 +329,40 @@ viewIntroduction shared model =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
-        , Input.text [ width fill, Font.alignLeft ]
-            { onChange = NoOp
-            , text =
+
+        -- , Input.text [ width fill, Font.alignLeft ]
+        --     { onChange = NoOp
+        --     , text =
+        --         shared.motivationData
+        --             |> MotivationData.encoder
+        --             |> Json.Encode.encode 0
+        --     , placeholder = Nothing
+        --     , label = Input.labelAbove [ Font.alignLeft ] <| text "Kopiertest"
+        --     }
+        , Components.Button.new
+            { onPress =
                 shared.motivationData
                     |> MotivationData.encoder
                     |> Json.Encode.encode 0
-            , placeholder = Nothing
-            , label = Input.labelAbove [ Font.alignLeft ] <| text "Kopiertest"
+                    |> WriteToClipboard
+                    |> Just
+            , label = text "Kopieren"
             }
-        , Input.text [ width fill, Font.alignLeft ]
-            { onChange = OnPasted
-            , text = model.pastedText
-            , placeholder = Just <| Input.placeholder [] <| text "Hier einfügen"
-            , label = Input.labelAbove [ Font.alignLeft ] <| text "Einfügetest"
+            |> Components.Button.withLightColor
+            |> Components.Button.view shared.colorScheme
+
+        -- , Input.text [ width fill, Font.alignLeft ]
+        --     { onChange = OnPasted
+        --     , text = model.pastedText
+        --     , placeholder = Just <| Input.placeholder [] <| text "Hier einfügen"
+        --     , label = Input.labelAbove [ Font.alignLeft ] <| text "Einfügetest"
+        --     }
+        , Components.Button.new
+            { onPress = Just RequestClipboard
+            , label = text "Einfügen"
             }
+            |> Components.Button.withLightColor
+            |> Components.Button.view shared.colorScheme
         , case Json.Decode.decodeString MotivationData.fieldsDecoder model.pastedText of
             Err e ->
                 text "..."

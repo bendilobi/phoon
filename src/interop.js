@@ -89,6 +89,22 @@ export const onReady = ({app, env}) => {
                     return
 
 
+                case 'CLIPBOARD_WRITE':
+                    navigator.clipboard.writeText(data).then(
+                        () =>{
+                            console.log('Writing to clipboard successful.')
+                        },
+                        () => {
+                            console.log('Writing to clipboard failed...')
+                        },
+                    );
+                    return
+
+                case 'REQUEST_CLIPBOARD':
+                    navigator.clipboard.readText()
+                        .then((clipText) => app.ports.clipboardReceiver.send(clipText))
+                    return
+
 
                 default:
                     console.warn(`Unhandled outgoing port: "${tag}"`)
