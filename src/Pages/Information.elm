@@ -88,6 +88,7 @@ type SettingsItem
     | BreathingSpeed
     | BreathCount
     | RelaxRetDuration
+    | AppControls
 
 
 type Msg
@@ -102,8 +103,6 @@ type Msg
     | ResetSettingItemStatus
     | ResetSettings
     | ReceivedNewestVersionString (Result Http.Error String)
-    | NoOp String
-    | OnPasted String
     | SetMotivationData MotivationData
     | WriteToClipboard String
     | RequestClipboard
@@ -209,18 +208,11 @@ update shared msg model =
             , Effect.none
             )
 
-        NoOp _ ->
-            ( model, Effect.none )
-
-        OnPasted text ->
-            ( { model | pastedText = text }
-            , Effect.none
-            )
-
         SetMotivationData motData ->
             ( model, Effect.setMotivationData motData )
 
         WriteToClipboard text ->
+            --TODO: Hier das Encoding machen
             ( model, Effect.writeToClipboard text )
 
         RequestClipboard ->
@@ -229,6 +221,7 @@ update shared msg model =
         ReceivedClipboard value ->
             let
                 clipContent =
+                    --Todo: Hier komplett decoden
                     case Json.Decode.decodeValue Json.Decode.string value of
                         Err e ->
                             "Decode failed"
@@ -339,62 +332,12 @@ viewIntroduction shared model =
         --     , placeholder = Nothing
         --     , label = Input.labelAbove [ Font.alignLeft ] <| text "Kopiertest"
         --     }
-        , Components.Button.new
-            { onPress =
-                shared.motivationData
-                    |> MotivationData.encoder
-                    |> Json.Encode.encode 0
-                    |> WriteToClipboard
-                    |> Just
-            , label = text "Kopieren"
-            }
-            |> Components.Button.withLightColor
-            |> Components.Button.view shared.colorScheme
-
         -- , Input.text [ width fill, Font.alignLeft ]
         --     { onChange = OnPasted
         --     , text = model.pastedText
         --     , placeholder = Just <| Input.placeholder [] <| text "Hier einfügen"
         --     , label = Input.labelAbove [ Font.alignLeft ] <| text "Einfügetest"
         --     }
-        , Components.Button.new
-            { onPress = Just RequestClipboard
-            , label = text "Einfügen"
-            }
-            |> Components.Button.withLightColor
-            |> Components.Button.view shared.colorScheme
-        , case Json.Decode.decodeString MotivationData.fieldsDecoder model.pastedText of
-            Err e ->
-                text "..."
-
-            Ok fields ->
-                let
-                    newMotData =
-                        MotivationData.fromFields fields
-                in
-                el [] <|
-                    case MotivationData.getMotivationData newMotData of
-                        Nothing ->
-                            text "Noch keine Motivationsdaten vorhanden"
-
-                        Just data ->
-                            column [ spacing 5, Font.size 13 ]
-                                [ el
-                                    [ Font.bold
-                                    , Font.size 15
-                                    , Font.color <| CS.guideColor shared.colorScheme
-                                    ]
-                                  <|
-                                    text "Eingefügte Motivationsdaten"
-                                , text <| "Serie: " ++ String.fromInt data.series
-                                , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
-                                , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
-                                , text <| "Max Ret: " ++ String.fromInt data.maxRetention
-                                , Components.Button.new { onPress = Just <| SetMotivationData newMotData, label = text "Daten übernehmen" }
-                                    |> Components.Button.withLightColor
-                                    |> Components.Button.view shared.colorScheme
-                                ]
-
         -- , text <|
         --     "Version on Server: "
         --         ++ (case shared.versionOnServer of
@@ -772,6 +715,78 @@ viewSettings shared model =
                 else
                     " Stunden"
             ]
+        , if model.settingsItemShown == AppControls then
+            --TODO: Jeweils Feedback geben, was passiert ist...
+            el [ width fill, paddingEach { top = 50, bottom = 0, left = 0, right = 0 } ] <|
+                column settingsAttrs
+                    [ el itemAttrs <|
+                        column [ width fill, spacing 20 ]
+                            [ activeItemLabel "Spezialwerkzeuge..."
+                            , Components.Button.new
+                                { onPress =
+                                    shared.motivationData
+                                        |> MotivationData.encoder
+                                        |> Json.Encode.encode 0
+                                        |> WriteToClipboard
+                                        |> Just
+                                , label = text "Übungsergebnisse kopieren"
+                                }
+                                |> Components.Button.withLightColor
+                                |> Components.Button.view shared.colorScheme
+                            , Components.Button.new
+                                { onPress = Just RequestClipboard
+                                , label = text "Übungsergebnisse einfügen"
+                                }
+                                |> Components.Button.withLightColor
+                                |> Components.Button.view shared.colorScheme
+                            , case Json.Decode.decodeString MotivationData.fieldsDecoder model.pastedText of
+                                Err e ->
+                                    none
+
+                                Ok fields ->
+                                    let
+                                        newMotData =
+                                            MotivationData.fromFields fields
+                                    in
+                                    el [ width fill ] <|
+                                        case MotivationData.getMotivationData newMotData of
+                                            Nothing ->
+                                                text "Noch keine Motivationsdaten vorhanden"
+
+                                            Just data ->
+                                                column [ width fill, spacing 5, Font.size 13 ]
+                                                    [ el
+                                                        [ width fill
+                                                        , Font.bold
+                                                        , Font.size 15
+                                                        , Font.color <| CS.guideColor shared.colorScheme
+                                                        ]
+                                                      <|
+                                                        text "Eingefügte Übungsergebnisse"
+                                                    , text <| "Serie: " ++ String.fromInt data.series
+                                                    , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
+                                                    , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
+                                                    , text <| "Max Ret: " ++ String.fromInt data.maxRetention
+                                                    , el [ width fill, Font.size 15 ] <|
+                                                        (Components.Button.new
+                                                            { onPress = Just <| SetMotivationData newMotData
+                                                            , label = text "Eingefügte Ergebnisse übernehmen"
+                                                            }
+                                                            |> Components.Button.withLightColor
+                                                            |> Components.Button.withInline
+                                                            |> Components.Button.view shared.colorScheme
+                                                        )
+                                                    ]
+                            ]
+                    , el lastItemAttrs <|
+                        (Components.Button.new { onPress = Just <| ReloadApp True, label = text "App neu laden" }
+                            |> Components.Button.withLightColor
+                            |> Components.Button.view shared.colorScheme
+                        )
+                    ]
+
+          else
+            none
         ]
 
 
@@ -800,7 +815,7 @@ viewTechInfo shared model =
         el
             [ alignRight
             , Font.size 13
-            , Events.onClick <| ReloadApp True
+            , Events.onClick <| SettingsItemShown AppControls
             ]
         <|
             text <|
