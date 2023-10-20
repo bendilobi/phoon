@@ -1,5 +1,6 @@
 module Lib.ColorScheme exposing
     ( ColorScheme
+    , actionNeededColor
     , guideColor
     , guideColorHex
     , interactActive
@@ -352,3 +353,8 @@ settingsDarkerColor (ColorScheme colors) =
 successColor : ColorScheme -> Color
 successColor (ColorScheme colors) =
     colors.success
+
+
+actionNeededColor : ColorScheme -> Color
+actionNeededColor (ColorScheme colors) =
+    colors.actionNeeded

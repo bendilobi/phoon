@@ -8,6 +8,7 @@ import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.Button
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
+import Components.RetentionChart as RetentionChart
 import Date
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -376,7 +377,6 @@ viewUpdate shared model =
 
 viewRetentionTrend : Shared.Model -> Element msg
 viewRetentionTrend shared =
-    --TODO: Chart in eigene Komponente und dann Imports wie bei den Beispielen benennen
     case MotivationData.meanRetentionTimes shared.motivationData of
         Nothing ->
             none
@@ -390,13 +390,9 @@ viewRetentionTrend shared =
                     data =
                         meanTimes
                             |> List.reverse
-                            |> List.indexedMap (\i d -> { x = toFloat i, y = toFloat d })
 
                     max =
-                        toFloat <| Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
-
-                    paddingX =
-                        115 + (SafeArea.maxX shared.safeAreaInset * 2)
+                        Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
                 in
                 column [ width fill, spacing 15 ]
                     [ el
@@ -406,60 +402,14 @@ viewRetentionTrend shared =
                         ]
                       <|
                         text "Retentionstrend"
-                    , el
-                        [ centerX
-                        , width <| px <| shared.windowSize.width - paddingX
-                        , height <| px 200
-                        ]
-                        (Chart.chart
-                            [ ChartA.width <| toFloat <| shared.windowSize.width - paddingX
-                            , ChartA.height 200
-                            , ChartA.domain
-                                [ ChartA.lowest 0 ChartA.orLower
-                                , ChartA.highest (max + (max / 7)) ChartA.orHigher
-                                ]
-                            ]
-                            [ Chart.generate (List.length meanTimes)
-                                Chart.ints
-                                .x
-                                []
-                              <|
-                                \plane int ->
-                                    [ Chart.xTick
-                                        [ ChartA.x (toFloat int)
-                                        , ChartA.color <| CS.interactInactiveDarkerColorHex shared.colorScheme
-                                        , ChartA.noGrid
-                                        ]
-                                    ]
-                            , Chart.series .x
-                                [ Chart.interpolated .y
-                                    [ ChartA.opacity 0.6
-                                    , ChartA.gradient []
-                                    , ChartA.monotone
-                                    , ChartA.color <| CS.guideColorHex shared.colorScheme
-                                    ]
-                                    []
-                                ]
-                                data
-                            , Chart.withPlane <|
-                                \p ->
-                                    [ Chart.line
-                                        [ ChartA.x1 p.x.min
-                                        , ChartA.y1 max
-                                        , ChartA.x2 p.x.max
-                                        , ChartA.color <| CS.seriesGoodColorHex shared.colorScheme
-                                        , ChartA.width 2
-                                        ]
-                                    ]
-                            , Chart.yLabel
-                                [ ChartA.x 0
-                                , ChartA.y max
-                                , ChartA.color <| CS.interactInactiveDarkerColorHex shared.colorScheme
-                                ]
-                                [ Svg.text <| Utils.formatSeconds <| round max ]
-                            ]
-                            |> html
-                        )
+                    , RetentionChart.new
+                        --TODO: "-40", aus padding in der top-level column -> aus Variable berechnen...
+                        { width = shared.windowSize.width - (SafeArea.maxX shared.safeAreaInset * 2) - 40
+                        , height = 200
+                        , meanRetentionTimes = data
+                        , maxRetention = max
+                        }
+                        |> RetentionChart.view shared.colorScheme
                     ]
 
 
@@ -707,7 +657,8 @@ viewSettings shared model =
                     " Stunden"
             ]
         , if model.settingsItemShown == AppControls then
-            --TODO: Jeweils Feedback geben, was passiert ist...
+            --TODO: Was, wenn noch keine Motivationsdaten vorhanden?
+            --      Buttons deaktivieren oder gar nicht anzeigen?
             el [ width fill, paddingEach { top = 50, bottom = 0, left = 0, right = 0 } ] <|
                 column settingsAttrs
                     [ el itemAttrs <|
@@ -730,44 +681,99 @@ viewSettings shared model =
                                     none
 
                                 Failure err ->
-                                    --TODO: Fehler anzeigen
-                                    none
+                                    paragraph [ Font.color <| CS.actionNeededColor shared.colorScheme ]
+                                        [ text "Das scheinen leider keine validen Ergebnisdaten zu sein..."
+                                        ]
 
                                 Success motData ->
-                                    el [ width fill ] <|
-                                        case MotivationData.getMotivationData motData of
-                                            Nothing ->
-                                                text "Noch keine Motivationsdaten vorhanden"
+                                    column [ width fill, spacing 20 ]
+                                        [ el
+                                            [ Font.color <| CS.successColor shared.colorScheme
+                                            , Font.bold
+                                            ]
+                                          <|
+                                            text "Daten erfolgreich importiert!"
 
-                                            Just data ->
-                                                column [ width fill, spacing 5, Font.size 13 ]
-                                                    [ el
-                                                        [ width fill
-                                                        , Font.bold
-                                                        , Font.size 15
-                                                        , Font.color <| CS.guideColor shared.colorScheme
+                                        --TODO: Was sonst noch über die Daten zeigen?
+                                        , case MotivationData.meanRetentionTimes motData of
+                                            Nothing ->
+                                                none
+
+                                            Just meanTimes ->
+                                                if List.length meanTimes < 2 then
+                                                    none
+
+                                                else
+                                                    let
+                                                        data =
+                                                            meanTimes
+                                                                |> List.reverse
+
+                                                        max =
+                                                            Maybe.withDefault 0 <| MotivationData.maxRetention motData
+                                                    in
+                                                    column [ width fill, spacing 10 ]
+                                                        [ text "Retentionstrend:"
+                                                        , column [ centerX ]
+                                                            [ RetentionChart.new
+                                                                --TODO: "-80" ist padding, das oben definiert wurde -> berechnen
+                                                                { width = shared.windowSize.width - (SafeArea.maxX shared.safeAreaInset * 2) - 80
+                                                                , height = 200
+                                                                , meanRetentionTimes = data
+                                                                , maxRetention = max
+                                                                }
+                                                                |> RetentionChart.view shared.colorScheme
+                                                            , el
+                                                                [ Font.size 15
+                                                                , centerX
+                                                                , paddingXY 0 50
+                                                                ]
+                                                              <|
+                                                                (Components.Button.new
+                                                                    { onPress = Just <| SetMotivationData motData
+                                                                    , label = text "Eingefügte Ergebnisse übernehmen"
+                                                                    }
+                                                                    |> Components.Button.withLightColor
+                                                                    |> Components.Button.withInline
+                                                                    |> Components.Button.view shared.colorScheme
+                                                                )
+                                                            ]
                                                         ]
-                                                      <|
-                                                        text "Eingefügte Übungsergebnisse"
-                                                    , text <| "Serie: " ++ String.fromInt data.series
-                                                    , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
-                                                    , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
-                                                    , text <| "Max Ret: " ++ String.fromInt data.maxRetention
-                                                    , el
-                                                        [ Font.size 15
-                                                        , centerX
-                                                        , paddingXY 0 20
-                                                        ]
-                                                      <|
-                                                        (Components.Button.new
-                                                            { onPress = Just <| SetMotivationData motData
-                                                            , label = text "Eingefügte Ergebnisse übernehmen"
-                                                            }
-                                                            |> Components.Button.withLightColor
-                                                            |> Components.Button.withInline
-                                                            |> Components.Button.view shared.colorScheme
-                                                        )
-                                                    ]
+                                        ]
+
+                            -- el [ width fill ] <|
+                            --     case MotivationData.getMotivationData motData of
+                            --         Nothing ->
+                            --             text "Noch keine Motivationsdaten vorhanden"
+                            --         Just data ->
+                            --             column [ width fill, spacing 5, Font.size 13 ]
+                            --                 [ el
+                            --                     [ width fill
+                            --                     , Font.bold
+                            --                     , Font.size 15
+                            --                     , Font.color <| CS.guideColor shared.colorScheme
+                            --                     ]
+                            --                   <|
+                            --                     text "Eingefügte Übungsergebnisse"
+                            --                 , text <| "Serie: " ++ String.fromInt data.series
+                            --                 , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
+                            --                 , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
+                            --                 , text <| "Max Ret: " ++ String.fromInt data.maxRetention
+                            --                 , el
+                            --                     [ Font.size 15
+                            --                     , centerX
+                            --                     , paddingXY 0 20
+                            --                     ]
+                            --                   <|
+                            --                     (Components.Button.new
+                            --                         { onPress = Just <| SetMotivationData motData
+                            --                         , label = text "Eingefügte Ergebnisse übernehmen"
+                            --                         }
+                            --                         |> Components.Button.withLightColor
+                            --                         |> Components.Button.withInline
+                            --                         |> Components.Button.view shared.colorScheme
+                            --                     )
+                            --                 ]
                             ]
                     , el lastItemAttrs <|
                         (Components.Button.new { onPress = Just <| ReloadApp True, label = text "App neu laden" }
