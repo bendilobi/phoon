@@ -53,10 +53,16 @@ toLayout model =
 -- INIT
 
 
+type ClipboardData value
+    = NoData
+    | Success value
+    | Failure Json.Decode.Error
+
+
 type alias Model =
     { settingsItemShown : SettingsItem
     , bubble : Bubble.Model Msg
-    , pastedText : String
+    , pastedMotivationData : ClipboardData MotivationData
     }
 
 
@@ -68,7 +74,7 @@ init shared () =
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
                 }
-      , pastedText = ""
+      , pastedMotivationData = NoData
       }
     , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
         Effect.checkVersion ReceivedNewestVersionString
@@ -104,7 +110,7 @@ type Msg
     | ResetSettings
     | ReceivedNewestVersionString (Result Http.Error String)
     | SetMotivationData MotivationData
-    | WriteToClipboard String
+    | WriteMotDataToClipboard
     | RequestClipboard
     | ReceivedClipboard Json.Decode.Value
 
@@ -211,9 +217,13 @@ update shared msg model =
         SetMotivationData motData ->
             ( model, Effect.setMotivationData motData )
 
-        WriteToClipboard text ->
-            --TODO: Hier das Encoding machen
-            ( model, Effect.writeToClipboard text )
+        WriteMotDataToClipboard ->
+            ( model
+            , shared.motivationData
+                |> MotivationData.encoder
+                |> Json.Encode.encode 0
+                |> Effect.writeToClipboard
+            )
 
         RequestClipboard ->
             ( model, Effect.requestClipboardContent )
@@ -221,15 +231,22 @@ update shared msg model =
         ReceivedClipboard value ->
             let
                 clipContent =
-                    --Todo: Hier komplett decoden
                     case Json.Decode.decodeValue Json.Decode.string value of
                         Err e ->
                             "Decode failed"
 
                         Ok string ->
                             string
+
+                pastedMotivationData =
+                    case Json.Decode.decodeString MotivationData.fieldsDecoder clipContent of
+                        Err e ->
+                            Failure e
+
+                        Ok fields ->
+                            Success <| MotivationData.fromFields fields
             in
-            ( { model | pastedText = clipContent }
+            ( { model | pastedMotivationData = pastedMotivationData }
             , Effect.none
             )
 
@@ -322,32 +339,6 @@ viewIntroduction shared model =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
-
-        -- , Input.text [ width fill, Font.alignLeft ]
-        --     { onChange = NoOp
-        --     , text =
-        --         shared.motivationData
-        --             |> MotivationData.encoder
-        --             |> Json.Encode.encode 0
-        --     , placeholder = Nothing
-        --     , label = Input.labelAbove [ Font.alignLeft ] <| text "Kopiertest"
-        --     }
-        -- , Input.text [ width fill, Font.alignLeft ]
-        --     { onChange = OnPasted
-        --     , text = model.pastedText
-        --     , placeholder = Just <| Input.placeholder [] <| text "Hier einfügen"
-        --     , label = Input.labelAbove [ Font.alignLeft ] <| text "Einfügetest"
-        --     }
-        -- , text <|
-        --     "Version on Server: "
-        --         ++ (case shared.versionOnServer of
-        --                 Api.Loading ->
-        --                     "Loading..."
-        --                 Api.Success version ->
-        --                     version
-        --                 Api.Failure err ->
-        --                     Api.failureToString err
-        --            )
         ]
 
 
@@ -723,12 +714,7 @@ viewSettings shared model =
                         column [ width fill, spacing 20 ]
                             [ activeItemLabel "Spezialwerkzeuge..."
                             , Components.Button.new
-                                { onPress =
-                                    shared.motivationData
-                                        |> MotivationData.encoder
-                                        |> Json.Encode.encode 0
-                                        |> WriteToClipboard
-                                        |> Just
+                                { onPress = Just WriteMotDataToClipboard
                                 , label = text "Übungsergebnisse kopieren"
                                 }
                                 |> Components.Button.withLightColor
@@ -739,17 +725,17 @@ viewSettings shared model =
                                 }
                                 |> Components.Button.withLightColor
                                 |> Components.Button.view shared.colorScheme
-                            , case Json.Decode.decodeString MotivationData.fieldsDecoder model.pastedText of
-                                Err e ->
+                            , case model.pastedMotivationData of
+                                NoData ->
                                     none
 
-                                Ok fields ->
-                                    let
-                                        newMotData =
-                                            MotivationData.fromFields fields
-                                    in
+                                Failure err ->
+                                    --TODO: Fehler anzeigen
+                                    none
+
+                                Success motData ->
                                     el [ width fill ] <|
-                                        case MotivationData.getMotivationData newMotData of
+                                        case MotivationData.getMotivationData motData of
                                             Nothing ->
                                                 text "Noch keine Motivationsdaten vorhanden"
 
@@ -767,9 +753,14 @@ viewSettings shared model =
                                                     , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
                                                     , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
                                                     , text <| "Max Ret: " ++ String.fromInt data.maxRetention
-                                                    , el [ width fill, Font.size 15 ] <|
+                                                    , el
+                                                        [ Font.size 15
+                                                        , centerX
+                                                        , paddingXY 0 20
+                                                        ]
+                                                      <|
                                                         (Components.Button.new
-                                                            { onPress = Just <| SetMotivationData newMotData
+                                                            { onPress = Just <| SetMotivationData motData
                                                             , label = text "Eingefügte Ergebnisse übernehmen"
                                                             }
                                                             |> Components.Button.withLightColor

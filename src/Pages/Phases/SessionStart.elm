@@ -127,9 +127,6 @@ view shared model =
                   <|
                     viewReminder shared FeatherIcons.bellOff
                 ]
-
-            -- TODO: Das synchronisieren mit der Darstellung bei Breathing
-            --       => Abwarten, bis die Visualisierung optimiert wird...
             , el [ width fill, height fill ] <|
                 el [ centerX ] <|
                     (Bubble.new

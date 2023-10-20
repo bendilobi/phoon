@@ -55,7 +55,7 @@ init : () -> ( Model, Effect Msg )
 init () =
     ( Starting
     , Effect.batch
-        [ Effect.playSound Utils.RelaxRetention
+        [ Effect.playSound Session.RelaxRetentionSound
         , Effect.sendMsg <| Tick <| Time.millisToPosix 0
         ]
     )

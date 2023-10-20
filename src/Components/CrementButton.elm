@@ -65,8 +65,6 @@ withLightColor light (Settings settings) =
 
 
 -- VIEW
--- TODO: Anzeige ändern, wenn der Nutzer den Button drückt, ohne loszulassen...
---       Mit Swipe? Oder doch mit :on-hover CSS + ontouchstart... Siehe Internet irgendwo...
 
 
 view : ColorScheme -> Button msg -> Element msg

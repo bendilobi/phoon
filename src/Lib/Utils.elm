@@ -1,7 +1,4 @@
-module Lib.Utils exposing
-    ( SessionSound(..)
-    , formatSeconds
-    )
+module Lib.Utils exposing (formatSeconds)
 
 
 formatSeconds : Int -> String
@@ -35,15 +32,3 @@ formatSeconds sec =
                 [ String.fromInt seconds ]
     in
     String.join ":" pos
-
-
-
--- TODO: das vielleicht in Session integrieren?
-
-
-type SessionSound
-    = SessionStart
-    | Breathing
-    | Retention
-    | RelaxRetention
-    | SessionEnd

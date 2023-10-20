@@ -79,7 +79,7 @@ update shared msg model =
             ( model
             , Effect.batch
                 [ Effect.resultsUpdated SessionResults.empty
-                , Effect.playSound Utils.SessionStart
+                , Effect.playSound Session.StartSound
                 , Effect.navigate <|
                     Session.currentPath shared.session
                 ]

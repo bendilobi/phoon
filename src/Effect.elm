@@ -168,7 +168,7 @@ requestClipboardContent =
         }
 
 
-playSound : Utils.SessionSound -> Effect msg
+playSound : Session.SessionSound -> Effect msg
 playSound sound =
     SendMessageToJavaScript
         { tag = "PLAY_SOUND"
@@ -176,26 +176,26 @@ playSound sound =
         }
 
 
-soundEncoder : Utils.SessionSound -> Json.Encode.Value
+soundEncoder : Session.SessionSound -> Json.Encode.Value
 soundEncoder sound =
     let
         audioPath =
             "/audio/"
     in
     case sound of
-        Utils.SessionStart ->
+        Session.StartSound ->
             Json.Encode.string <| audioPath ++ "ding.mp3"
 
-        Utils.Breathing ->
+        Session.BreathingSound ->
             Json.Encode.string <| audioPath ++ "breathing.mp3"
 
-        Utils.Retention ->
+        Session.RetentionSound ->
             Json.Encode.string <| audioPath ++ "retention.mp3"
 
-        Utils.RelaxRetention ->
+        Session.RelaxRetentionSound ->
             Json.Encode.string <| audioPath ++ "relaxRetention.mp3"
 
-        Utils.SessionEnd ->
+        Session.EndSound ->
             Json.Encode.string <| audioPath ++ "sessionEnd.mp3"
 
 

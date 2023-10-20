@@ -212,7 +212,9 @@ viewNavBar shared route =
             , el [ centerX ] <|
                 viewNavButton shared.colorScheme route FeatherIcons.play Route.Path.PrepareSession
             , el [ alignRight ] <|
-                viewNavButton shared.colorScheme route FeatherIcons.settings Route.Path.Information
+                viewNavButton shared.colorScheme route FeatherIcons.user Route.Path.Information
+
+            -- FeatherIcons.settings Route.Path.Information
             ]
         , el
             [ width fill

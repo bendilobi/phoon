@@ -33,7 +33,7 @@ import Time
 
 
 version =
-    "0.6.99"
+    "0.6.103"
 
 
 
@@ -283,11 +283,13 @@ update route msg model =
             in
             ( { model
                 | session = Session.new model.sessionSettings
-                , motivationData = newMotData
+
+                -- , motivationData = newMotData
               }
             , Effect.batch
-                --Todo: Effect.sendMsg Shared.Msg.SetMotivationData
-                [ Effect.saveMotivationData newMotData
+                [ Effect.sendMsg <| Shared.Msg.SetMotivationData newMotData
+
+                -- Effect.saveMotivationData newMotData
                 , Effect.navigate Route.Path.Home_
                 ]
             )

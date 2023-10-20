@@ -6,6 +6,7 @@ import Element.Background as BG
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Lib.Utils as Utils
 import Page exposing (Page)
@@ -43,7 +44,7 @@ type alias Model =
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( {}
-    , Effect.playSound Utils.Retention
+    , Effect.playSound Session.RetentionSound
     )
 
 

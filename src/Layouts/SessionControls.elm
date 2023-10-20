@@ -76,7 +76,6 @@ type Msg
     | AdjustToday Date.Date
     | ReloadApp
       -- To simulate gestures via buttons for debugging in desktop browser:
-      -- TODO: Herausfinden, ob der Mobile-Simulator von Chrome multitouch kann
     | MouseNavTap
     | MouseNavSwipe
 
@@ -120,7 +119,7 @@ update shared route msg model =
                     ]
 
               else if singleTapRegistered && route.path == Session.phasePath Session.Start then
-                Effect.playSound Utils.SessionStart
+                Effect.playSound Session.StartSound
 
               else
                 Effect.none

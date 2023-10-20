@@ -50,7 +50,7 @@ init shared () =
       , breathingFinished = False
       }
     , Effect.batch
-        [ Effect.playSound Utils.Breathing
+        [ Effect.playSound Session.BreathingSound
         ]
     )
 
@@ -76,7 +76,7 @@ update shared msg model =
 
         BubbleFinished ->
             ( { model | breathingFinished = True }
-            , Effect.playSound Utils.Breathing
+            , Effect.playSound Session.BreathingSound
             )
 
 

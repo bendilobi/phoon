@@ -110,9 +110,7 @@ newSunrise =
         , navbar = rgb255 0 15 8
         , navbarBorder = rgb255 24 37 68 --52 63 97
         , navbarCopy = rgb255 91 101 96
-
-        --- TODO: Diese Farben nicht einfach grau sondern passender?
-        , settings = rgb 0.9 0.9 0.9
+        , settings = rgb 1 1 1 --rgb 0.9 0.9 0.9
         , settingsDarker = rgb 0.7 0.7 0.7
         }
 
@@ -150,7 +148,7 @@ newDaylight =
         , navbar = rgb255 0 83 78
         , navbarBorder = rgb255 0 121 113 --8 32 30
         , navbarCopy = rgb255 120 139 138 --120 126 139 --101 106 117 --123 145 188 --141 149 168 --164 171 189
-        , settings = rgb 0.9 0.9 0.9
+        , settings = rgb 1 1 1 --rgb 0.9 0.9 0.9
         , settingsDarker = rgb 0.7 0.7 0.7
         }
 

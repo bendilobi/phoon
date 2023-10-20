@@ -3,6 +3,7 @@ module Lib.Session exposing
     , BreathingSpeed(..)
     , Phase(..)
     , Session
+    , SessionSound(..)
     , Settings
     , breathCount
     , breathCountChoices
@@ -136,6 +137,14 @@ type Phase
     | Retention
     | RelaxRetention
     | End
+
+
+type SessionSound
+    = StartSound
+    | BreathingSound
+    | RetentionSound
+    | RelaxRetentionSound
+    | EndSound
 
 
 type SessionState
