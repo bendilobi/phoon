@@ -27,7 +27,6 @@ import Json.Encode
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
-import Lib.Utils as Utils
 import Route exposing (Route)
 import Route.Path
 import Shared.Model

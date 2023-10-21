@@ -380,10 +380,6 @@ viewUpdate shared model =
 
 viewRetentionTrend : Shared.Model -> Int -> Element msg
 viewRetentionTrend shared parentPadding =
-    -- case MotivationData.meanRetentionTimes shared.motivationData of
-    --     Nothing ->
-    --         none
-    --     Just meanTimes ->
     case shared.motivationData of
         Nothing ->
             none
@@ -642,9 +638,6 @@ viewSettings shared model pagePadding =
             duration =
                 Session.new shared.sessionSettings
                     |> Session.estimatedDurationMillis
-                        -- (MotivationData.meanRetentionTimes shared.motivationData
-                        --     |> Maybe.withDefault []
-                        -- )
                         (shared.motivationData
                             |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
@@ -706,20 +699,6 @@ viewSettings shared model pagePadding =
                                             text "Daten erfolgreich importiert!"
 
                                         --TODO: Was sonst noch über die Daten zeigen?
-                                        -- , case MotivationData.meanRetentionTimes motData of
-                                        --     Nothing ->
-                                        --         none
-                                        --     Just meanTimes ->
-                                        --         if List.length meanTimes < 2 then
-                                        --             none
-                                        --         else
-                                        --             let
-                                        --                 data =
-                                        --                     meanTimes
-                                        --                         |> List.reverse
-                                        --                 max =
-                                        --                     Maybe.withDefault 0 <| MotivationData.maxRetention motData
-                                        --             in
                                         , let
                                             meanTimes =
                                                 MotivationData.meanRetentionTimes motData
@@ -761,40 +740,6 @@ viewSettings shared model pagePadding =
                                                     ]
                                                 ]
                                         ]
-
-                            -- el [ width fill ] <|
-                            --     case MotivationData.getMotivationData motData of
-                            --         Nothing ->
-                            --             text "Noch keine Motivationsdaten vorhanden"
-                            --         Just data ->
-                            --             column [ width fill, spacing 5, Font.size 13 ]
-                            --                 [ el
-                            --                     [ width fill
-                            --                     , Font.bold
-                            --                     , Font.size 15
-                            --                     , Font.color <| CS.guideColor shared.colorScheme
-                            --                     ]
-                            --                   <|
-                            --                     text "Eingefügte Übungsergebnisse"
-                            --                 , text <| "Serie: " ++ String.fromInt data.series
-                            --                 , text <| "Letzte Sitzung: " ++ Date.toIsoString data.lastSessionDate
-                            --                 , text <| "Mittlere Ret: " ++ (String.join "," <| List.map String.fromInt data.meanRetentiontimes)
-                            --                 , text <| "Max Ret: " ++ String.fromInt data.maxRetention
-                            --                 , el
-                            --                     [ Font.size 15
-                            --                     , centerX
-                            --                     , paddingXY 0 20
-                            --                     ]
-                            --                   <|
-                            --                     (Components.Button.new
-                            --                         { onPress = Just <| SetMotivationData motData
-                            --                         , label = text "Eingefügte Ergebnisse übernehmen"
-                            --                         }
-                            --                         |> Components.Button.withLightColor
-                            --                         |> Components.Button.withInline
-                            --                         |> Components.Button.view shared.colorScheme
-                            --                     )
-                            --                 ]
                             ]
                     , el lastItemAttrs <|
                         (Components.Button.new { onPress = Just <| ReloadApp True, label = text "App neu laden" }

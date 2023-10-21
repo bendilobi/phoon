@@ -9,10 +9,6 @@ module Lib.SessionResults exposing
     , meanRetentionTime
     )
 
--- TODO: Sollte ich das umbauen, sodass es besser mit currentCycle im Session harmoniert?
---       Oder dort integrieren und dann dafür sorgen, dass Session.new auch gleich die
---       Results leert?
-
 
 type SessionResults
     = NoResults

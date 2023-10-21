@@ -1,6 +1,5 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
-import Api exposing (Data)
 import Date
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -92,9 +91,6 @@ viewMotivationData : Date.Date -> Maybe MotivationData -> ColorScheme -> Element
 viewMotivationData today motData colorScheme =
     let
         daysSinceLastSession =
-            -- MotivationData.lastSessionDate motData
-            --     |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date today)
-            --     |> Maybe.withDefault 0
             motData
                 |> Maybe.map MotivationData.lastSessionDate
                 |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date today)

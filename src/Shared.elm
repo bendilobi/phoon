@@ -34,7 +34,7 @@ import Time
 
 
 version =
-    "0.6.113"
+    "0.6.115"
 
 
 
@@ -45,8 +45,7 @@ type alias Flags =
     { storedMotivationData : Json.Decode.Value
     , storedSessionSettings : Json.Decode.Value
     , storedUpdatingState : Json.Decode.Value
-    , safeAreaInsetLeft : String
-    , sar : String
+    , safeAreaInsets : Json.Decode.Value
     , width : Json.Decode.Value
     , height : Json.Decode.Value
     }
@@ -54,12 +53,11 @@ type alias Flags =
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map7 Flags
+    Json.Decode.map6 Flags
         (Json.Decode.field "storedMotivationData" Json.Decode.value)
         (Json.Decode.field "storedSessionSettings" Json.Decode.value)
         (Json.Decode.field "storedUpdatingState" Json.Decode.value)
-        (Json.Decode.field "safeAreaInsetLeft" Json.Decode.string)
-        (Json.Decode.field "sar" Json.Decode.string)
+        (Json.Decode.field "safeAreaInsets" Json.Decode.value)
         (Json.Decode.field "width" Json.Decode.value)
         (Json.Decode.field "height" Json.Decode.value)
 
@@ -78,12 +76,10 @@ init flagsResult route =
         decodedFlags =
             case flagsResult of
                 Err e ->
-                    -- { motData = MotivationData.empty
                     { motData = Nothing
                     , sessionSettings = Session.defaultSettings
                     , isUpdating = False
-                    , sal = 0
-                    , sar = 0
+                    , safeAreaInsets = SafeArea.new { top = 0, bottom = 0, left = 0, right = 0 }
                     , width = 0
                     , height = 0
                     }
@@ -99,12 +95,8 @@ init flagsResult route =
                         isUpdatingDecoded =
                             Json.Decode.decodeValue Json.Decode.bool data.storedUpdatingState
 
-                        salDecoded =
-                            data.safeAreaInsetLeft
-                                |> extractSafeAreaSize
-
-                        sarDecoded =
-                            data.sar |> extractSafeAreaSize
+                        safeAreasDecoded =
+                            SafeArea.decode data.safeAreaInsets
 
                         widthDecoded =
                             Json.Decode.decodeValue Json.Decode.int data.width
@@ -115,7 +107,6 @@ init flagsResult route =
                     { motData =
                         case motDataDecoded of
                             Err e ->
-                                -- MotivationData.empty
                                 Nothing
 
                             Ok fields ->
@@ -134,20 +125,7 @@ init flagsResult route =
 
                             Ok updating ->
                                 updating
-                    , sal =
-                        case salDecoded of
-                            Nothing ->
-                                0
-
-                            Just px ->
-                                px
-                    , sar =
-                        case sarDecoded of
-                            Nothing ->
-                                0
-
-                            Just px ->
-                                px
+                    , safeAreaInsets = safeAreasDecoded
                     , width =
                         case widthDecoded of
                             Err e ->
@@ -169,8 +147,6 @@ init flagsResult route =
       , currentVersion = version
       , appVisible = True
       , versionOnServer = Api.Loading
-
-      --   , windowSize = { width = decodedFlags.width, height = decodedFlags.height }
       , deviceInfo = Utils.classifyDevice { width = decodedFlags.width, height = decodedFlags.height }
       , session = Session.new decodedFlags.sessionSettings
       , results = SessionResults.empty
@@ -181,29 +157,14 @@ init flagsResult route =
       , appIsUpdating = decodedFlags.isUpdating
       , justUpdated = False
       , baseApiUrl = "/"
-
-      --TODO: in deviceInfo integrieren...
-      , safeAreaInset = SafeArea.new { left = decodedFlags.sal, right = decodedFlags.sar, top = 0, bottom = 0 }
+      , safeAreaInset = decodedFlags.safeAreaInsets
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
         , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
-
-        -- , Effect.sendCmd <| Task.perform Shared.Msg.ReceivedViewport Browser.Dom.getViewport
         , Effect.checkVersion Shared.Msg.ReceivedVersionOnServer
         ]
     )
-
-
-extractSafeAreaSize : String -> Maybe Int
-extractSafeAreaSize string =
-    string
-        |> String.split "px"
-        |> List.head
-        |> Maybe.andThen String.toInt
-        --- It seems Apple adds 15 pixels to the actual size of the notch (iPhone XR...)
-        |> Maybe.map (\sal -> sal - 15)
-        |> Maybe.map (max 0)
 
 
 
@@ -218,7 +179,6 @@ update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
         Shared.Msg.ReceivedViewport { viewport } ->
-            -- ( { model | windowSize = { width = round viewport.width, height = round viewport.height } }
             ( { model | deviceInfo = Utils.classifyDevice { width = round viewport.width, height = round viewport.height } }
             , Effect.none
             )
@@ -269,13 +229,10 @@ update route msg model =
         Shared.Msg.AdjustToday today ->
             let
                 practicedToday =
-                    -- case MotivationData.lastSessionDate model.motivationData of
                     case model.motivationData of
                         Nothing ->
                             False
 
-                        -- Just date ->
-                        --     date == today
                         Just motData ->
                             MotivationData.lastSessionDate motData == today
             in
@@ -319,14 +276,6 @@ update route msg model =
             )
 
         Shared.Msg.SessionEnded endType ->
-            -- let
-            --     newMotData =
-            --         case endType of
-            --             Session.Cancelled ->
-            --                 model.motivationData
-            --             Session.Finished ->
-            --                 MotivationData.update model.results model.today model.motivationData
-            -- in
             ( { model
                 | session = Session.new model.sessionSettings
               }

@@ -14,7 +14,6 @@ import Element.Font as Font
 import Element.Input exposing (button)
 import FeatherIcons
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Set exposing (Set)
 
 
 

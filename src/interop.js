@@ -12,14 +12,13 @@ export const flags = ({ env }) => {
 
     const updatingStateStored = localStorage.getItem(UPDATING_KEY)
     const updatingStateJson = updatingStateStored ? JSON.parse(updatingStateStored) : null 
-    // TODO: Macht nicht arg viel Sinn hier, weils im Portrait Mode "0px" ist...
-    //       Und womöglich ists 0px auch, weil zu diesem Zeitpunkt noch keine Werte belegt?
-    //       Sinn machts aber wohl, wenn man im Landscape-Mode startet. Daher
-    // TODO: Hier alle Werte übergeben
-    const sal = getComputedStyle(document.documentElement).getPropertyValue("--sal")
-    const sar = getComputedStyle(document.documentElement).getPropertyValue("--sar")
 
-    // console.log("sal: " + sal)
+    const sa = {
+        sat: getComputedStyle(document.documentElement).getPropertyValue("--sat")
+        , sab: getComputedStyle(document.documentElement).getPropertyValue("--sab")
+        , sal: getComputedStyle(document.documentElement).getPropertyValue("--sal")
+        , sar: getComputedStyle(document.documentElement).getPropertyValue("--sar")
+      }
 
     const width = window.innerWidth
     const height = window.innerHeight
@@ -28,8 +27,7 @@ export const flags = ({ env }) => {
       storedMotivationData: motivationJson,
       storedSessionSettings: sessionSettingsJson,
       storedUpdatingState : updatingStateJson,
-      safeAreaInsetLeft: sal,
-      sar : sar,
+      safeAreaInsets : sa,
       width : width,
       height : height
     }

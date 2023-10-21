@@ -8,8 +8,7 @@ import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session
-import Lib.SessionResults as SessionResults
-import Lib.Utils as Utils
+import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -97,58 +96,51 @@ view shared model =
                 ]
               <|
                 text "Sitzung beendet!"
-
-            -- , if SessionResults.finishedCycles shared.results > 0 then
-            --     viewRetentionTimes <| SessionResults.getRetentionTimes shared.results
-            --   else
-            --     none
-            , case SessionResults.getRetentionTimes shared.results of
-                Nothing ->
-                    none
-
-                Just times ->
-                    viewRetentionTimes times
+            , viewRetentionTimes shared.results
             ]
     }
 
 
-viewRetentionTimes : List Int -> Element msg
-viewRetentionTimes times =
-    let
-        meanTime =
-            -- TODO: Die entsprechende Funktion aus SessionResults verwenden
-            List.sum times // List.length times
-    in
-    column
-        [ spacing 10
-        , centerX
-        , centerY
-        , Font.alignRight
-        ]
-    <|
-        List.map2
-            (\i t ->
-                row [ width fill ]
-                    [ el [ width fill ] <| text <| "Runde " ++ String.fromInt i ++ ": "
-                    , el [ Font.bold ] <| text <| formatRetentionTime t
-                    ]
-            )
-            (List.range 1 (List.length times))
-            times
-            ++ [ row
-                    [ width fill
-                    , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
-                    , paddingXY 0 7
-                    ]
-                    [ el [ width fill ] <| text "Durchschnitt: "
-                    , el
-                        [ Font.bold
-                        ]
-                      <|
-                        text <|
-                            formatRetentionTime meanTime
-                    ]
-               ]
+viewRetentionTimes : SessionResults -> Element msg
+viewRetentionTimes results =
+    case SessionResults.getRetentionTimes results of
+        Nothing ->
+            none
+
+        Just times ->
+            column
+                [ spacing 10
+                , centerX
+                , centerY
+                , Font.alignRight
+                ]
+            <|
+                List.map2
+                    (\i t ->
+                        row [ width fill ]
+                            [ el [ width fill ] <| text <| "Runde " ++ String.fromInt i ++ ": "
+                            , el [ Font.bold ] <| text <| formatRetentionTime t
+                            ]
+                    )
+                    (List.range 1 (List.length times))
+                    times
+                    ++ [ row
+                            [ width fill
+                            , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
+                            , paddingXY 0 7
+                            ]
+                            [ el [ width fill ] <| text "Durchschnitt: "
+                            , el
+                                [ Font.bold
+                                ]
+                              <|
+                                text <|
+                                    (SessionResults.meanRetentionTime results
+                                        |> Maybe.withDefault 0
+                                        |> formatRetentionTime
+                                    )
+                            ]
+                       ]
 
 
 formatRetentionTime : Int -> String

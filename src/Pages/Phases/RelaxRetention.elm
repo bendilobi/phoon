@@ -7,7 +7,6 @@ import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session
-import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared

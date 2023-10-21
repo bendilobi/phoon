@@ -12,7 +12,6 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
-import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -161,9 +160,6 @@ viewEstimatedTime shared time =
                 |> Time.posixToMillis
                 |> (+)
                     (Session.estimatedDurationMillis
-                        -- (MotivationData.meanRetentionTimes shared.motivationData
-                        --     |> Maybe.withDefault []
-                        -- )
                         (shared.motivationData
                             |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
