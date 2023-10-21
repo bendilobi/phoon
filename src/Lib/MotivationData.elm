@@ -14,6 +14,7 @@ module Lib.MotivationData exposing
 import Date
 import Json.Decode
 import Json.Encode
+import Lib.Millis exposing (Milliseconds)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 
 

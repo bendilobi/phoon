@@ -6,6 +6,7 @@ import Element.Background as BG
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Millis as Millis
 import Lib.Session as Session
 import Page exposing (Page)
 import Route exposing (Route)
@@ -77,6 +78,7 @@ update shared msg model =
                     case model of
                         Starting ->
                             Session.relaxRetDuration shared.session
+                                |> Millis.toSeconds
 
                         Counting sec ->
                             sec - 1

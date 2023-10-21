@@ -5,6 +5,10 @@ import Color.Convert
 import Element exposing (..)
 
 
+
+--TODO: In TypedTime übernehmen
+
+
 formatSeconds : Int -> String
 formatSeconds sec =
     let

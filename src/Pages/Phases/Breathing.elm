@@ -8,6 +8,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Millis as Millis
 import Lib.Session as Session
 import Page exposing (Page)
 import Route exposing (Route)
@@ -85,7 +86,7 @@ update shared msg model =
 
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
-    Time.every (Session.speedMillis shared.session |> toFloat) Tick
+    Time.every (Session.speedMillis shared.session |> Millis.toInt |> toFloat) Tick
 
 
 

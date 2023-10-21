@@ -9,6 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
@@ -165,6 +166,7 @@ viewEstimatedTime shared time =
                             |> Maybe.withDefault []
                         )
                         shared.session
+                        |> Millis.toInt
                     )
                 |> Time.millisToPosix
 

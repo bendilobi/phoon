@@ -19,6 +19,7 @@ import Json.Decode
 import Json.Encode
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session exposing (BreathCount, BreathingSpeed, Session)
@@ -159,7 +160,7 @@ update shared msg model =
                     shared.sessionSettings
             in
             ( model
-            , Effect.updateSessionSettings { settings | relaxRetDuration = seconds }
+            , Effect.updateSessionSettings { settings | relaxRetDuration = Millis.fromSeconds seconds }
             )
 
         DefaultBreathingSpeedChanged speed ->
@@ -263,7 +264,7 @@ subscriptions shared model =
         [ Browser.Events.onVisibilityChange VisibilityChanged
         , Effect.clipboardReceiver ReceivedClipboard
         , if model.settingsItemShown == BreathingSpeed then
-            Time.every (Session.speedToMillis shared.sessionSettings.breathingSpeed |> toFloat) Tick
+            Time.every (Session.speedToMillis shared.sessionSettings.breathingSpeed |> Millis.toInt |> toFloat) Tick
 
           else
             Sub.none
@@ -578,9 +579,10 @@ viewSettings shared model pagePadding =
         , let
             seconds =
                 Session.breathCountInt shared.sessionSettings.breathCount
-                    * Session.speedToMillis shared.sessionSettings.breathingSpeed
-                    * 2
-                    // 1000
+                    * (Session.speedToMillis shared.sessionSettings.breathingSpeed
+                        |> Millis.multiplyBy 2
+                        |> Millis.toSeconds
+                      )
           in
           paragraph
             [ Font.size 13
@@ -622,13 +624,21 @@ viewSettings shared model pagePadding =
                             |> IntCrementer.withMin 5
                             |> IntCrementer.withMax 30
                             |> IntCrementer.withLightColor
-                            |> IntCrementer.view shared.colorScheme shared.sessionSettings.relaxRetDuration
+                            |> IntCrementer.view shared.colorScheme
+                                (shared.sessionSettings.relaxRetDuration
+                                    |> Millis.toSeconds
+                                )
                         ]
 
               else
                 viewSettingsItem
                     { label = "Erholungsretention"
-                    , value = (shared.sessionSettings.relaxRetDuration |> String.fromInt) ++ " Sekunden"
+                    , value =
+                        (shared.sessionSettings.relaxRetDuration
+                            |> Millis.toSeconds
+                            |> String.fromInt
+                        )
+                            ++ " Sekunden"
                     , attributes = lastItemAttrs
                     , item = RelaxRetDuration
                     }
@@ -642,7 +652,8 @@ viewSettings shared model pagePadding =
                             |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
                         )
-                    |> (\millis -> millis // 1000)
+                    -- |> (\millis -> millis // 1000)
+                    |> Millis.toSeconds
           in
           paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
             [ text "Geschätzte Gesamtdauer der Übung: "

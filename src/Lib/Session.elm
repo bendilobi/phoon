@@ -35,6 +35,7 @@ module Lib.Session exposing
 
 import Json.Decode
 import Json.Encode
+import Lib.Millis as Millis exposing (Milliseconds)
 import Route.Path
 
 
@@ -162,13 +163,13 @@ type Session
         { state : SessionState
         , breathCount : BreathCount
         , breathingSpeed : BreathingSpeed
-        , relaxRetentionDuration : Int
+        , relaxRetentionDuration : Milliseconds
         }
 
 
 type alias Settings =
     { cycles : Int
-    , relaxRetDuration : Int
+    , relaxRetDuration : Milliseconds
     , breathingSpeed : BreathingSpeed
     , breathCount : BreathCount
     }
@@ -189,7 +190,7 @@ new props =
 defaultSettings : Settings
 defaultSettings =
     { cycles = 3
-    , relaxRetDuration = 15
+    , relaxRetDuration = Millis.fromSeconds 15
     , breathingSpeed = Medium
     , breathCount = Thirty
     }
@@ -255,7 +256,7 @@ withSpeedQuick (Session session) =
     Session { session | breathingSpeed = Fast }
 
 
-withRelaxRetDuration : Int -> Session -> Session
+withRelaxRetDuration : Milliseconds -> Session -> Session
 withRelaxRetDuration dur (Session session) =
     Session { session | relaxRetentionDuration = dur }
 
@@ -293,23 +294,23 @@ remainingCycles (Session session) =
     (List.length upcomingPhases - 1) // 3
 
 
-speedMillis : Session -> Int
+speedMillis : Session -> Milliseconds
 speedMillis (Session session) =
     speedToMillis session.breathingSpeed
 
 
-speedToMillis : BreathingSpeed -> Int
+speedToMillis : BreathingSpeed -> Milliseconds
 speedToMillis speed =
     -- These are the speeds of the official WHM App (as of August 2023)
     case speed of
         Slow ->
-            2500
+            Millis.fromInt 2500
 
         Medium ->
-            1750
+            Millis.fromInt 1750
 
         Fast ->
-            1375
+            Millis.fromInt 1375
 
 
 breathCount : Session -> Int
@@ -317,7 +318,7 @@ breathCount (Session session) =
     breathCountInt session.breathCount
 
 
-relaxRetDuration : Session -> Int
+relaxRetDuration : Session -> Milliseconds
 relaxRetDuration (Session session) =
     session.relaxRetentionDuration
 
@@ -336,39 +337,34 @@ currentPhase (Session session) =
     current
 
 
-
--- TODO: Eigenen Typ für Zeit definieren? type Duration = Seconds | Millis?
---       Sodass in Signaturen klar ist, um welche Einheit es geht?
--- https://package.elm-lang.org/packages/jxxcarlson/elm-typed-time/latest/
-
-
-phaseDuration : Session -> Maybe Int -> Phase -> Int
+phaseDuration : Session -> Maybe Milliseconds -> Phase -> Milliseconds
 phaseDuration session retentionEstimate phase =
     case phase of
         Start ->
-            5000
+            Millis.fromSeconds 5
 
         Breathing ->
-            speedMillis session * 2 * breathCount session
+            speedMillis session
+                |> Millis.multiplyBy (2 * breathCount session)
 
         Retention ->
             case retentionEstimate of
                 Nothing ->
-                    --- Two minutes and 15 seconds...
-                    2 * 60000 + 15000
+                    Millis.fromSeconds <| 2 * 60 + 15
 
                 Just estimate ->
                     estimate
 
         RelaxRetention ->
-            relaxRetDuration session * 1000
+            relaxRetDuration session
 
         End ->
-            2 * 60000
+            Millis.fromSeconds <| 2 * 60
 
 
-estimatedDurationMillis : List Int -> Session -> Int
+estimatedDurationMillis : List Int -> Session -> Milliseconds
 estimatedDurationMillis meanRetTimes (Session session) =
+    --Todo: meanRetTimes auch als Milliseconds
     let
         (State curPhase remainingPhases) =
             session.state
@@ -378,11 +374,12 @@ estimatedDurationMillis meanRetTimes (Session session) =
                 Nothing
 
             else
-                Just <| (List.sum meanRetTimes // List.length meanRetTimes) * 1000
+                Just <| Millis.fromSeconds (List.sum meanRetTimes // List.length meanRetTimes)
     in
     (curPhase :: remainingPhases)
-        |> List.map (phaseDuration (Session session) retentionEstimate)
+        |> List.map (phaseDuration (Session session) retentionEstimate >> Millis.toInt)
         |> List.sum
+        |> Millis.fromInt
 
 
 
@@ -414,7 +411,7 @@ settingsEncoder : Settings -> Json.Encode.Value
 settingsEncoder settings =
     Json.Encode.object
         [ ( fieldnames.cycles, Json.Encode.int settings.cycles )
-        , ( fieldnames.relaxRetDuration, Json.Encode.int settings.relaxRetDuration )
+        , ( fieldnames.relaxRetDuration, Json.Encode.int (Millis.toSeconds settings.relaxRetDuration) )
         , ( fieldnames.breathingSpeed, Json.Encode.string <| breathingSpeedToString settings.breathingSpeed )
         , ( fieldnames.breathCount, Json.Encode.int <| breathCountInt settings.breathCount )
         ]
@@ -495,11 +492,17 @@ breathCountDecoder =
             )
 
 
+relaxRetDecoder : Json.Decode.Decoder Milliseconds
+relaxRetDecoder =
+    Json.Decode.int
+        |> Json.Decode.map Millis.fromSeconds
+
+
 settingsDecoder : Json.Decode.Decoder Settings
 settingsDecoder =
     Json.Decode.map4
         Settings
         (Json.Decode.field fieldnames.cycles Json.Decode.int)
-        (Json.Decode.field fieldnames.relaxRetDuration Json.Decode.int)
+        (Json.Decode.field fieldnames.relaxRetDuration relaxRetDecoder)
         (Json.Decode.field fieldnames.breathingSpeed breathingSpeedDecoder)
         (Json.Decode.field fieldnames.breathCount breathCountDecoder)
