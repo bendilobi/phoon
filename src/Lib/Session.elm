@@ -362,9 +362,8 @@ phaseDuration session retentionEstimate phase =
             Millis.fromSeconds <| 2 * 60
 
 
-estimatedDurationMillis : List Int -> Session -> Milliseconds
+estimatedDurationMillis : List Milliseconds -> Session -> Milliseconds
 estimatedDurationMillis meanRetTimes (Session session) =
-    --Todo: meanRetTimes auch als Milliseconds
     let
         (State curPhase remainingPhases) =
             session.state
@@ -374,12 +373,13 @@ estimatedDurationMillis meanRetTimes (Session session) =
                 Nothing
 
             else
-                Just <| Millis.fromSeconds (List.sum meanRetTimes // List.length meanRetTimes)
+                ((Millis.sum meanRetTimes |> Millis.toInt) // List.length meanRetTimes)
+                    |> Millis.fromInt
+                    |> Just
     in
     (curPhase :: remainingPhases)
-        |> List.map (phaseDuration (Session session) retentionEstimate >> Millis.toInt)
-        |> List.sum
-        |> Millis.fromInt
+        |> List.map (phaseDuration (Session session) retentionEstimate)
+        |> Millis.sum
 
 
 

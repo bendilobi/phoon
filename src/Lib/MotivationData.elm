@@ -14,7 +14,7 @@ module Lib.MotivationData exposing
 import Date
 import Json.Decode
 import Json.Encode
-import Lib.Millis exposing (Milliseconds)
+import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 
 
@@ -25,8 +25,8 @@ type MotivationData
 type alias Fields =
     { series : Int
     , lastSessionDate : Date.Date
-    , meanRetentiontimes : List Int
-    , maxRetention : Int
+    , meanRetentiontimes : List Milliseconds
+    , maxRetention : Milliseconds
     }
 
 
@@ -46,22 +46,31 @@ fromFields fields =
 update : SessionResults -> Date.Date -> Maybe MotivationData -> Maybe MotivationData
 update results today motivationData =
     let
-        meanRetTime : Maybe Int
+        meanRetTime : Maybe Milliseconds
         meanRetTime =
             SessionResults.meanRetentionTime results
+                |> Maybe.map Millis.fromSeconds
 
-        maxRetTime : Int
+        maxRetTime : Milliseconds
         maxRetTime =
             SessionResults.getRetentionTimes results
                 |> Maybe.andThen List.maximum
                 |> Maybe.withDefault 0
+                |> Millis.fromSeconds
     in
     case meanRetTime of
         Nothing ->
             --- No results to add
             motivationData
 
-        Just mean ->
+        Just meanTime ->
+            let
+                mean =
+                    meanTime
+
+                maxTime =
+                    maxRetTime
+            in
             case motivationData of
                 Nothing ->
                     Just <|
@@ -69,7 +78,7 @@ update results today motivationData =
                             { series = 1
                             , lastSessionDate = today
                             , meanRetentiontimes = [ mean ]
-                            , maxRetention = maxRetTime
+                            , maxRetention = maxTime
                             }
 
                 -- )
@@ -89,7 +98,7 @@ update results today motivationData =
                                         motData.series + 1
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
-                                , maxRetention = max maxRetTime motData.maxRetention
+                                , maxRetention = Millis.max maxTime motData.maxRetention
                             }
 
 
@@ -107,12 +116,12 @@ lastSessionDate (MotivationData motData) =
     motData.lastSessionDate
 
 
-meanRetentionTimes : MotivationData -> List Int
+meanRetentionTimes : MotivationData -> List Milliseconds
 meanRetentionTimes (MotivationData motData) =
     motData.meanRetentiontimes
 
 
-maxRetention : MotivationData -> Int
+maxRetention : MotivationData -> Milliseconds
 maxRetention (MotivationData motData) =
     motData.maxRetention
 
@@ -140,8 +149,13 @@ encoder (MotivationData motData) =
     Json.Encode.object
         [ ( fieldnames.series, Json.Encode.int motData.series )
         , ( fieldnames.lastSessionDate, Json.Encode.int <| Date.toRataDie motData.lastSessionDate )
-        , ( fieldnames.meanRetentiontimes, Json.Encode.list Json.Encode.int motData.meanRetentiontimes )
-        , ( fieldnames.maxRetention, Json.Encode.int motData.maxRetention )
+        , ( fieldnames.meanRetentiontimes
+          , Json.Encode.list Json.Encode.int
+                (motData.meanRetentiontimes
+                    |> List.map Millis.toSeconds
+                )
+          )
+        , ( fieldnames.maxRetention, Json.Encode.int (motData.maxRetention |> Millis.toSeconds) )
         ]
 
 
@@ -158,5 +172,11 @@ fieldsDecoder =
         Fields
         (Json.Decode.field fieldnames.series Json.Decode.int)
         (Json.Decode.field fieldnames.lastSessionDate dateDecoder)
-        (Json.Decode.field fieldnames.meanRetentiontimes (Json.Decode.list Json.Decode.int))
-        (Json.Decode.field fieldnames.maxRetention Json.Decode.int)
+        (Json.Decode.field fieldnames.meanRetentiontimes
+            (Json.Decode.list
+                (Json.Decode.int
+                    |> Json.Decode.map Millis.fromSeconds
+                )
+            )
+        )
+        (Json.Decode.field fieldnames.maxRetention (Json.Decode.int |> Json.Decode.map Millis.fromSeconds))

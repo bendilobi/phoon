@@ -1,4 +1,4 @@
-module Lib.Millis exposing (Milliseconds, fromInt, fromSeconds, multiplyBy, toInt, toSeconds)
+module Lib.Millis exposing (Milliseconds, fromInt, fromSeconds, max, multiplyBy, sum, toInt, toSeconds)
 
 
 type Milliseconds
@@ -30,7 +30,12 @@ toSeconds (Amount millis) =
     round ((millis |> toFloat) / 1000)
 
 
+max : Milliseconds -> Milliseconds -> Milliseconds
+max (Amount millis1) (Amount millis2) =
+    Basics.max millis1 millis2
+        |> fromInt
 
--- encoder : Milliseconds -> Json.Encode.Value
--- encoder (Amount millis) =
---     Json.Encode.int millis
+
+sum : List Milliseconds -> Milliseconds
+sum list =
+    list |> List.map toInt |> List.sum |> fromInt

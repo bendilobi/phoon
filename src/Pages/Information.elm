@@ -406,8 +406,8 @@ viewRetentionTrend shared parentPadding =
                         (RetentionChart.new
                             { width = shared.deviceInfo.window.width - (SafeArea.maxX shared.safeAreaInset * 2) - parentPadding
                             , height = 200
-                            , meanRetentionTimes = meanTimes |> List.reverse
-                            , maxRetention = MotivationData.maxRetention motData
+                            , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
+                            , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
                             , meanRetentionColor = CS.guideColor shared.colorScheme
                             , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
                             , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
@@ -652,7 +652,6 @@ viewSettings shared model pagePadding =
                             |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
                         )
-                    -- |> (\millis -> millis // 1000)
                     |> Millis.toSeconds
           in
           paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
@@ -727,8 +726,8 @@ viewSettings shared model pagePadding =
                                                                 - (SafeArea.maxX shared.safeAreaInset * 2)
                                                                 - (pagePadding + (hPad * 2))
                                                         , height = 200
-                                                        , meanRetentionTimes = meanTimes |> List.reverse
-                                                        , maxRetention = MotivationData.maxRetention motData
+                                                        , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
+                                                        , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
                                                         , meanRetentionColor = CS.guideColor shared.colorScheme
                                                         , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
                                                         , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
