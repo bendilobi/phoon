@@ -1,6 +1,7 @@
 module Lib.Session exposing
     ( BreathCount(..)
     , BreathingSpeed(..)
+    , EndType(..)
     , Phase(..)
     , Session
     , SessionSound(..)
@@ -137,6 +138,11 @@ type Phase
     | Retention
     | RelaxRetention
     | End
+
+
+type EndType
+    = Finished
+    | Cancelled
 
 
 type SessionSound

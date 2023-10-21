@@ -24,6 +24,7 @@ import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
+import Lib.Utils as Utils
 import Route exposing (Route)
 import Route.Path
 import Shared.Model
@@ -33,7 +34,7 @@ import Time
 
 
 version =
-    "0.6.110"
+    "0.6.113"
 
 
 
@@ -75,7 +76,6 @@ init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     let
         decodedFlags =
-            --TODO: Konzept überlegen, wie mit Fehlern hier umgegangen werden soll
             case flagsResult of
                 Err e ->
                     { motData = MotivationData.empty
@@ -165,8 +165,11 @@ init flagsResult route =
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
       , currentVersion = version
+      , appVisible = True
       , versionOnServer = Api.Loading
-      , windowSize = { width = decodedFlags.width, height = decodedFlags.height }
+
+      --   , windowSize = { width = decodedFlags.width, height = decodedFlags.height }
+      , deviceInfo = Utils.classifyDevice { width = decodedFlags.width, height = decodedFlags.height }
       , session = Session.new decodedFlags.sessionSettings
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
@@ -176,6 +179,8 @@ init flagsResult route =
       , appIsUpdating = decodedFlags.isUpdating
       , justUpdated = False
       , baseApiUrl = "/"
+
+      --TODO: in deviceInfo integrieren...
       , safeAreaInset = SafeArea.new { left = decodedFlags.sal, right = decodedFlags.sar, top = 0, bottom = 0 }
       }
     , Effect.batch
@@ -211,7 +216,8 @@ update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
         Shared.Msg.ReceivedViewport { viewport } ->
-            ( { model | windowSize = { width = round viewport.width, height = round viewport.height } }
+            -- ( { model | windowSize = { width = round viewport.width, height = round viewport.height } }
+            ( { model | deviceInfo = Utils.classifyDevice { width = round viewport.width, height = round viewport.height } }
             , Effect.none
             )
 
@@ -220,7 +226,6 @@ update route msg model =
             --- here after a change between portrait and landscape mode is wrong. Therefore,
             --- we get the viewport size in an additional step:
             ( model
-              --{ model | windowSize = { width = width, height = height } }
             , Effect.batch
                 [ Effect.getSafeArea
                 , Effect.sendCmd <| Task.perform Shared.Msg.ReceivedViewport Browser.Dom.getViewport
@@ -235,17 +240,26 @@ update route msg model =
             )
 
         Shared.Msg.VisibilityChanged visibility ->
-            --TODO: Prüfen -> Brauche ich das eigentlich während der Sitzung?
-            --      Oder sollte ich das mit Today vielleicht ins MainNav bewegen?
             case visibility of
                 Browser.Events.Hidden ->
-                    ( { model | justUpdated = False }, Effect.none )
+                    ( { model
+                        | justUpdated = False
+                        , appVisible = False
+                      }
+                    , Effect.none
+                    )
 
                 Browser.Events.Visible ->
-                    ( model, Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today )
+                    ( { model | appVisible = True }
+                    , Effect.batch
+                        --- In case the next day came or the user changed time zones while
+                        --- the app was suspended...
+                        [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
+                        , Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
+                        ]
+                    )
 
         Shared.Msg.AdjustTimeZone newZone ->
-            --- TODO: Das auch immer machen, wenn App visible wird?
             ( { model | zone = newZone }
             , Effect.none
             )
@@ -299,14 +313,15 @@ update route msg model =
                 }
             )
 
-        Shared.Msg.SessionEnded cancelled ->
+        Shared.Msg.SessionEnded endType ->
             let
                 newMotData =
-                    if cancelled then
-                        model.motivationData
+                    case endType of
+                        Session.Cancelled ->
+                            model.motivationData
 
-                    else
-                        MotivationData.update model.results model.today model.motivationData
+                        Session.Finished ->
+                            MotivationData.update model.results model.today model.motivationData
             in
             ( { model
                 | session = Session.new model.sessionSettings

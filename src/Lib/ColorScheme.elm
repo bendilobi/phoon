@@ -2,14 +2,14 @@ module Lib.ColorScheme exposing
     ( ColorScheme
     , actionNeededColor
     , guideColor
-    , guideColorHex
+      -- , guideColorHex
     , interactActive
     , interactActiveColor
     , interactActiveLighter
     , interactActiveLighterColor
     , interactInactive
     , interactInactiveDarkerColor
-    , interactInactiveDarkerColorHex
+      -- , interactInactiveDarkerColorHex
     , navbar
     , newDaylight
     , newSunrise
@@ -27,7 +27,7 @@ module Lib.ColorScheme exposing
     , primaryPrepareSession
     , seriesBadColor
     , seriesGoodColor
-    , seriesGoodColorHex
+      -- , seriesGoodColorHex
     , settingsColor
     , settingsDarkerColor
     , successColor
@@ -204,12 +204,13 @@ guideColor (ColorScheme colors) =
     colors.guide
 
 
-guideColorHex : ColorScheme -> String
-guideColorHex (ColorScheme colors) =
-    colors.guide
-        |> toRgb
-        |> Color.fromRgba
-        |> Color.Convert.colorToHex
+
+-- guideColorHex : ColorScheme -> String
+-- guideColorHex (ColorScheme colors) =
+--     colors.guide
+--         |> toRgb
+--         |> Color.fromRgba
+--         |> Color.Convert.colorToHex
 
 
 seriesGoodColor : ColorScheme -> Color
@@ -217,12 +218,13 @@ seriesGoodColor (ColorScheme colors) =
     colors.seriesGood
 
 
-seriesGoodColorHex : ColorScheme -> String
-seriesGoodColorHex (ColorScheme colors) =
-    colors.seriesGood
-        |> toRgb
-        |> Color.fromRgba
-        |> Color.Convert.colorToHex
+
+-- seriesGoodColorHex : ColorScheme -> String
+-- seriesGoodColorHex (ColorScheme colors) =
+--     colors.seriesGood
+--         |> toRgb
+--         |> Color.fromRgba
+--         |> Color.Convert.colorToHex
 
 
 seriesBadColor : ColorScheme -> Color
@@ -250,12 +252,13 @@ interactInactiveDarkerColor (ColorScheme colors) =
     colors.interactInactiveDarker
 
 
-interactInactiveDarkerColorHex : ColorScheme -> String
-interactInactiveDarkerColorHex (ColorScheme colors) =
-    colors.interactInactiveDarker
-        |> toRgb
-        |> Color.fromRgba
-        |> Color.Convert.colorToHex
+
+-- interactInactiveDarkerColorHex : ColorScheme -> String
+-- interactInactiveDarkerColorHex (ColorScheme colors) =
+--     colors.interactInactiveDarker
+--         |> toRgb
+--         |> Color.fromRgba
+--         |> Color.Convert.colorToHex
 
 
 interactActive : ColorScheme -> List (Attribute msg)

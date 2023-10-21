@@ -1,4 +1,8 @@
-module Lib.Utils exposing (formatSeconds)
+module Lib.Utils exposing (Device, classifyDevice, colorToHex, formatSeconds)
+
+import Color
+import Color.Convert
+import Element exposing (..)
 
 
 formatSeconds : Int -> String
@@ -32,3 +36,49 @@ formatSeconds sec =
                 [ String.fromInt seconds ]
     in
     String.join ":" pos
+
+
+type alias Device =
+    { class : DeviceClass
+    , orientation : Orientation
+    , window : { height : Int, width : Int }
+    }
+
+
+classifyDevice : { height : Int, width : Int } -> Device
+classifyDevice window =
+    { class =
+        let
+            longSide =
+                max window.width window.height
+
+            shortSide =
+                min window.width window.height
+        in
+        if shortSide < 600 then
+            Phone
+
+        else if longSide <= 1200 then
+            Tablet
+
+        else if longSide > 1200 && longSide <= 1920 then
+            Desktop
+
+        else
+            BigDesktop
+    , orientation =
+        if window.width < window.height then
+            Portrait
+
+        else
+            Landscape
+    , window = window
+    }
+
+
+colorToHex : Element.Color -> String
+colorToHex color =
+    color
+        |> toRgb
+        |> Color.fromRgba
+        |> Color.Convert.colorToHex

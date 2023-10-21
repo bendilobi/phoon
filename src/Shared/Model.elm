@@ -7,6 +7,7 @@ import Lib.MotivationData exposing (MotivationData)
 import Lib.SafeArea exposing (SafeArea)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
+import Lib.Utils as Utils
 import Route.Path
 import Time
 
@@ -21,9 +22,12 @@ own file, so they can be imported by `Effect.elm`
 type alias Model =
     { zone : Time.Zone
     , today : Date.Date
+    , appVisible : Bool
     , currentVersion : String
     , versionOnServer : Api.Data String
-    , windowSize : { width : Int, height : Int }
+
+    -- , windowSize : { width : Int, height : Int }
+    , deviceInfo : Utils.Device
     , session : Session
     , results : SessionResults
     , previousPath : Route.Path.Path

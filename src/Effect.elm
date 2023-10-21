@@ -289,10 +289,9 @@ navigateNext session =
             none
 
 
-sessionEnded : Bool -> Effect msg
-sessionEnded wasCancelled =
-    --TODO: Statt Bool einen Typ in Session? type EndState = Successful | Cancelled
-    SendSharedMsg <| Shared.Msg.SessionEnded wasCancelled
+sessionEnded : Session.EndType -> Effect msg
+sessionEnded endType =
+    SendSharedMsg <| Shared.Msg.SessionEnded endType
 
 
 updateSessionSettings : Session.Settings -> Effect msg

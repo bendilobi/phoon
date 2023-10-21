@@ -147,7 +147,7 @@ update shared route msg model =
                 Effect.navigate shared.previousPath
 
               else if route.path == Session.phasePath Session.End then
-                Effect.sessionEnded True
+                Effect.sessionEnded Session.Cancelled
 
               else
                 Effect.batch
@@ -170,7 +170,7 @@ update shared route msg model =
 
         EndSession ->
             ( model
-            , Effect.sessionEnded False
+            , Effect.sessionEnded Session.Finished
             )
 
         MouseNavSwipe ->

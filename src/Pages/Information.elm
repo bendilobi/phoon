@@ -2,14 +2,11 @@ module Pages.Information exposing (Model, Msg, page)
 
 import Api
 import Browser.Events
-import Chart
-import Chart.Attributes as ChartA
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.Button
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
 import Components.RetentionChart as RetentionChart
-import Date
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -29,7 +26,6 @@ import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
-import Svg
 import Time
 import View exposing (View)
 
@@ -279,12 +275,14 @@ view shared model =
     , attributes =
         CS.primaryInformation shared.colorScheme
     , element =
+        let
+            pagePadding =
+                20
+        in
         column
             [ width fill
             , spacing 60
-
-            -- , paddingXY 20 30
-            , paddingEach { left = 20, right = 20, top = 30, bottom = 20 }
+            , paddingEach { left = pagePadding, right = pagePadding, top = 30, bottom = pagePadding }
             , Font.size 15
 
             -- , inFront <|
@@ -319,8 +317,8 @@ view shared model =
             ]
             [ viewIntroduction shared model
             , viewUpdate shared model
-            , viewRetentionTrend shared
-            , viewSettings shared model
+            , viewRetentionTrend shared <| pagePadding * 2
+            , viewSettings shared model <| pagePadding * 2
             , viewTechInfo shared model
             ]
     }
@@ -375,8 +373,8 @@ viewUpdate shared model =
                 none
 
 
-viewRetentionTrend : Shared.Model -> Element msg
-viewRetentionTrend shared =
+viewRetentionTrend : Shared.Model -> Int -> Element msg
+viewRetentionTrend shared parentPadding =
     case MotivationData.meanRetentionTimes shared.motivationData of
         Nothing ->
             none
@@ -402,19 +400,23 @@ viewRetentionTrend shared =
                         ]
                       <|
                         text "Retentionstrend"
-                    , RetentionChart.new
-                        --TODO: "-40", aus padding in der top-level column -> aus Variable berechnen...
-                        { width = shared.windowSize.width - (SafeArea.maxX shared.safeAreaInset * 2) - 40
-                        , height = 200
-                        , meanRetentionTimes = data
-                        , maxRetention = max
-                        }
-                        |> RetentionChart.view shared.colorScheme
+                    , el [ centerX ] <|
+                        (RetentionChart.new
+                            { width = shared.deviceInfo.window.width - (SafeArea.maxX shared.safeAreaInset * 2) - parentPadding
+                            , height = 200
+                            , meanRetentionTimes = data
+                            , maxRetention = max
+                            , meanRetentionColor = CS.guideColor shared.colorScheme
+                            , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
+                            , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
+                            }
+                            |> RetentionChart.view
+                        )
                     ]
 
 
-viewSettings : Shared.Model -> Model -> Element Msg
-viewSettings shared model =
+viewSettings : Shared.Model -> Model -> Int -> Element Msg
+viewSettings shared model pagePadding =
     let
         hPad =
             20
@@ -716,13 +718,18 @@ viewSettings shared model =
                                                         [ text "Retentionstrend:"
                                                         , column [ centerX ]
                                                             [ RetentionChart.new
-                                                                --TODO: "-80" ist padding, das oben definiert wurde -> berechnen
-                                                                { width = shared.windowSize.width - (SafeArea.maxX shared.safeAreaInset * 2) - 80
+                                                                { width =
+                                                                    shared.deviceInfo.window.width
+                                                                        - (SafeArea.maxX shared.safeAreaInset * 2)
+                                                                        - (pagePadding + (hPad * 2))
                                                                 , height = 200
                                                                 , meanRetentionTimes = data
                                                                 , maxRetention = max
+                                                                , meanRetentionColor = CS.guideColor shared.colorScheme
+                                                                , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
+                                                                , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
                                                                 }
-                                                                |> RetentionChart.view shared.colorScheme
+                                                                |> RetentionChart.view
                                                             , el
                                                                 [ Font.size 15
                                                                 , centerX

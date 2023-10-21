@@ -31,7 +31,7 @@ type Msg
     | SessionUpdated Session
     | ResultsUpdated SessionResults
     | NavigateTriggered Route.Path.Path
-    | SessionEnded Bool
+    | SessionEnded Session.EndType
     | SessionSettingsUpdated Session.Settings
     | SetUpdating Bool
     | ReceivedVersionOnServer (Result Http.Error String)

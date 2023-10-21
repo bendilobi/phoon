@@ -26,7 +26,7 @@ page shared route =
     Page.new
         { init = init shared
         , update = update shared
-        , subscriptions = subscriptions
+        , subscriptions = subscriptions shared
         , view = view shared
         }
         |> Page.withLayout toLayout
@@ -97,12 +97,13 @@ update shared msg model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    --TODO: nur subscriben, wenn die App im Vordergrund ist? Zumindest
-    --      auf dem Desktop wird der Timer aber vom Browser angehalten,
-    --      wenn das Fenster minimiert ist...
-    Time.every 1000 Tick
+subscriptions : Shared.Model -> Model -> Sub Msg
+subscriptions shared model =
+    if shared.appVisible then
+        Time.every 1000 Tick
+
+    else
+        Sub.none
 
 
 
