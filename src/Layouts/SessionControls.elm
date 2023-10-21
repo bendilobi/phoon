@@ -15,7 +15,6 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
-import Lib.Utils as Utils
 import Route exposing (Route)
 import Shared
 import Task

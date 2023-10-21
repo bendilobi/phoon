@@ -97,11 +97,17 @@ view shared model =
                 ]
               <|
                 text "Sitzung beendet!"
-            , if SessionResults.finishedCycles shared.results > 0 then
-                viewRetentionTimes <| SessionResults.getRetentionTimes shared.results
 
-              else
-                none
+            -- , if SessionResults.finishedCycles shared.results > 0 then
+            --     viewRetentionTimes <| SessionResults.getRetentionTimes shared.results
+            --   else
+            --     none
+            , case SessionResults.getRetentionTimes shared.results of
+                Nothing ->
+                    none
+
+                Just times ->
+                    viewRetentionTimes times
             ]
     }
 

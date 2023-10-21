@@ -2,14 +2,12 @@ module Lib.ColorScheme exposing
     ( ColorScheme
     , actionNeededColor
     , guideColor
-      -- , guideColorHex
     , interactActive
     , interactActiveColor
     , interactActiveLighter
     , interactActiveLighterColor
     , interactInactive
     , interactInactiveDarkerColor
-      -- , interactInactiveDarkerColorHex
     , navbar
     , newDaylight
     , newSunrise
@@ -27,14 +25,11 @@ module Lib.ColorScheme exposing
     , primaryPrepareSession
     , seriesBadColor
     , seriesGoodColor
-      -- , seriesGoodColorHex
     , settingsColor
     , settingsDarkerColor
     , successColor
     )
 
-import Color
-import Color.Convert
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
@@ -204,27 +199,9 @@ guideColor (ColorScheme colors) =
     colors.guide
 
 
-
--- guideColorHex : ColorScheme -> String
--- guideColorHex (ColorScheme colors) =
---     colors.guide
---         |> toRgb
---         |> Color.fromRgba
---         |> Color.Convert.colorToHex
-
-
 seriesGoodColor : ColorScheme -> Color
 seriesGoodColor (ColorScheme colors) =
     colors.seriesGood
-
-
-
--- seriesGoodColorHex : ColorScheme -> String
--- seriesGoodColorHex (ColorScheme colors) =
---     colors.seriesGood
---         |> toRgb
---         |> Color.fromRgba
---         |> Color.Convert.colorToHex
 
 
 seriesBadColor : ColorScheme -> Color
@@ -250,15 +227,6 @@ interactActiveLighterColor (ColorScheme colors) =
 interactInactiveDarkerColor : ColorScheme -> Color
 interactInactiveDarkerColor (ColorScheme colors) =
     colors.interactInactiveDarker
-
-
-
--- interactInactiveDarkerColorHex : ColorScheme -> String
--- interactInactiveDarkerColorHex (ColorScheme colors) =
---     colors.interactInactiveDarker
---         |> toRgb
---         |> Color.fromRgba
---         |> Color.Convert.colorToHex
 
 
 interactActive : ColorScheme -> List (Attribute msg)

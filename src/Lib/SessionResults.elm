@@ -9,16 +9,14 @@ module Lib.SessionResults exposing
     , meanRetentionTime
     )
 
--- TODO: Sollte ich das umbauen, sodass es besser mit currentCycle im BreathingSession harmoniert?
---       Oder dort integrieren und dann dafür sorgen, dass BreathingSession.new auch gleich die
+-- TODO: Sollte ich das umbauen, sodass es besser mit currentCycle im Session harmoniert?
+--       Oder dort integrieren und dann dafür sorgen, dass Session.new auch gleich die
 --       Results leert?
---TODO: Nochmal durchdenken, wie ich das hier handhabe... eigentlich ists ja NoResults
---      auch wenn die Liste leer ist, der Zähler aber läuft. Vielleicht so umbauen?
---      Oder will ich eine angefangene Retention doch als Ergebnis zählen?
 
 
 type SessionResults
     = NoResults
+    | StartedCounting Int
     | Results (List Int) Int
 
 
@@ -39,8 +37,10 @@ addRetention : SessionResults -> SessionResults
 addRetention results =
     case results of
         NoResults ->
-            -- We add a retention that hasn't been incremented...
-            Results [ 0 ] 0
+            StartedCounting 0
+
+        StartedCounting n ->
+            Results [ n ] 0
 
         Results list current ->
             Results (list ++ [ current ]) 0
@@ -50,7 +50,10 @@ incrementCurrentRetention : SessionResults -> SessionResults
 incrementCurrentRetention results =
     case results of
         NoResults ->
-            Results [] 1
+            StartedCounting 1
+
+        StartedCounting n ->
+            StartedCounting (n + 1)
 
         Results list current ->
             Results list (current + 1)
@@ -66,27 +69,27 @@ currentRetentionTime results =
         NoResults ->
             0
 
+        StartedCounting n ->
+            n
+
         Results _ current ->
             current
 
 
-getRetentionTimes : SessionResults -> List Int
+getRetentionTimes : SessionResults -> Maybe (List Int)
 getRetentionTimes results =
     case results of
-        NoResults ->
-            []
-
         Results list _ ->
-            list
+            Just list
+
+        _ ->
+            Nothing
 
 
 meanRetentionTime : SessionResults -> Maybe Int
 meanRetentionTime results =
     case results of
-        NoResults ->
-            Nothing
-
-        Results retTimes currentRetTime ->
+        Results retTimes _ ->
             let
                 n =
                     List.length retTimes
@@ -103,8 +106,12 @@ meanRetentionTime results =
                     |> round
                     |> Just
 
+        _ ->
+            Nothing
+
 
 finishedCycles : SessionResults -> Int
 finishedCycles results =
     getRetentionTimes results
-        |> List.length
+        |> Maybe.map List.length
+        |> Maybe.withDefault 0

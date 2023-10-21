@@ -167,10 +167,7 @@ view props shared route { toContentMsg, model, content } =
                     , paddingEach <| SafeArea.paddingX shared.safeAreaInset
                     ]
                     content.element
-
-                -- , if shared.windowSize.height - shared.windowSize.width > 0 then
                 , if shared.deviceInfo.orientation == Portrait then
-                    --- Only show nav bar in portrait mode
                     viewNavBar shared route |> map toContentMsg
 
                   else
@@ -212,8 +209,6 @@ viewNavBar shared route =
                 viewNavButton shared.colorScheme route FeatherIcons.play Route.Path.PrepareSession
             , el [ alignRight ] <|
                 viewNavButton shared.colorScheme route FeatherIcons.user Route.Path.Information
-
-            -- FeatherIcons.settings Route.Path.Information
             ]
         , el
             [ width fill

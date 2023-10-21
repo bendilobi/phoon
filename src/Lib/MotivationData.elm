@@ -1,11 +1,9 @@
 module Lib.MotivationData exposing
     ( Fields
     , MotivationData
-      -- , empty
     , encoder
     , fieldsDecoder
     , fromFields
-      -- , getMotivationData
     , lastSessionDate
     , maxRetention
     , meanRetentionTimes
@@ -19,14 +17,8 @@ import Json.Encode
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 
 
-type
-    MotivationData
-    -- TODO: Ist das zu umständlich mit NoData vs MotivationData?
-    --       Alternative wäre: Den Fall, dass es keine Daten gibt, außerhalb
-    --       handhaben. => Ist wohl besser. MotivationData ist eben Daten, nicht NoData...
-    = -- NoData
-      -- |
-      MotivationData Fields
+type MotivationData
+    = MotivationData Fields
 
 
 type alias Fields =
@@ -39,9 +31,6 @@ type alias Fields =
 
 
 -- CREATION
--- empty : MotivationData
--- empty =
---     NoData
 
 
 fromFields : Fields -> MotivationData
@@ -50,41 +39,30 @@ fromFields fields =
 
 
 
--- new : SessionResults -> Date.Date -> MotivationData
--- new results today =
---     case meanRetTime of
---         Nothing ->
---             NoData
---         Just mean ->
---             -- If there are results, but no preexisting motivation data, initialize the latter
---             MotivationData
---                 { series = 1
---                 , lastSessionDate = today
---                 , meanRetentiontimes = [ mean ]
---                 , maxRetention = maxRetTime
---                 }
 -- MODIFICATION
 
 
 update : SessionResults -> Date.Date -> Maybe MotivationData -> Maybe MotivationData
 update results today motivationData =
     let
+        meanRetTime : Maybe Int
         meanRetTime =
             SessionResults.meanRetentionTime results
 
+        maxRetTime : Int
         maxRetTime =
             SessionResults.getRetentionTimes results
-                |> List.maximum
+                |> Maybe.andThen List.maximum
                 |> Maybe.withDefault 0
     in
-    case motivationData of
+    case meanRetTime of
         Nothing ->
-            case meanRetTime of
-                Nothing ->
-                    Nothing
+            --- No results to add
+            motivationData
 
-                Just mean ->
-                    -- If there are results, but no preexisting motivation data, initialize the latter
+        Just mean ->
+            case motivationData of
+                Nothing ->
                     Just <|
                         MotivationData
                             { series = 1
@@ -93,12 +71,8 @@ update results today motivationData =
                             , maxRetention = maxRetTime
                             }
 
-        Just (MotivationData motData) ->
-            case meanRetTime of
-                Nothing ->
-                    Just <| MotivationData motData
-
-                Just mean ->
+                -- )
+                Just (MotivationData motData) ->
                     Just <|
                         MotivationData
                             { motData
@@ -120,15 +94,6 @@ update results today motivationData =
 
 
 -- ACCESS
--- getMotivationData : MotivationData -> Maybe Fields
--- getMotivationData motData =
---     -- TODO: benutze ich gerade zum debuggen. Wenns nicht mehr benötigt ist, löschen und durch einzelne
---     --       access funktionen ersetzen
---     case motData of
---         NoData ->
---             Nothing
---         MotivationData data ->
---             Just data
 
 
 series : MotivationData -> Int
