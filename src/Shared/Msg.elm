@@ -35,4 +35,4 @@ type Msg
     | SessionSettingsUpdated Session.Settings
     | SetUpdating Bool
     | ReceivedVersionOnServer (Result Http.Error String)
-    | SetMotivationData MotivationData
+    | SetMotivationData (Maybe MotivationData)

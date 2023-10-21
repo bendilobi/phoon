@@ -216,10 +216,15 @@ update shared msg model =
 
         WriteMotDataToClipboard ->
             ( model
-            , shared.motivationData
-                |> MotivationData.encoder
-                |> Json.Encode.encode 0
-                |> Effect.writeToClipboard
+            , case shared.motivationData of
+                Nothing ->
+                    Effect.none
+
+                Just motData ->
+                    motData
+                        |> MotivationData.encoder
+                        |> Json.Encode.encode 0
+                        |> Effect.writeToClipboard
             )
 
         RequestClipboard ->
@@ -375,23 +380,23 @@ viewUpdate shared model =
 
 viewRetentionTrend : Shared.Model -> Int -> Element msg
 viewRetentionTrend shared parentPadding =
-    case MotivationData.meanRetentionTimes shared.motivationData of
+    -- case MotivationData.meanRetentionTimes shared.motivationData of
+    --     Nothing ->
+    --         none
+    --     Just meanTimes ->
+    case shared.motivationData of
         Nothing ->
             none
 
-        Just meanTimes ->
+        Just motData ->
+            let
+                meanTimes =
+                    MotivationData.meanRetentionTimes motData
+            in
             if List.length meanTimes < 2 then
                 none
 
             else
-                let
-                    data =
-                        meanTimes
-                            |> List.reverse
-
-                    max =
-                        Maybe.withDefault 0 <| MotivationData.maxRetention shared.motivationData
-                in
                 column [ width fill, spacing 15 ]
                     [ el
                         [ Font.bold
@@ -404,8 +409,8 @@ viewRetentionTrend shared parentPadding =
                         (RetentionChart.new
                             { width = shared.deviceInfo.window.width - (SafeArea.maxX shared.safeAreaInset * 2) - parentPadding
                             , height = 200
-                            , meanRetentionTimes = data
-                            , maxRetention = max
+                            , meanRetentionTimes = meanTimes |> List.reverse
+                            , maxRetention = MotivationData.maxRetention motData
                             , meanRetentionColor = CS.guideColor shared.colorScheme
                             , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
                             , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
@@ -637,7 +642,11 @@ viewSettings shared model pagePadding =
             duration =
                 Session.new shared.sessionSettings
                     |> Session.estimatedDurationMillis
-                        (MotivationData.meanRetentionTimes shared.motivationData
+                        -- (MotivationData.meanRetentionTimes shared.motivationData
+                        --     |> Maybe.withDefault []
+                        -- )
+                        (shared.motivationData
+                            |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
                         )
                     |> (\millis -> millis // 1000)
@@ -697,55 +706,60 @@ viewSettings shared model pagePadding =
                                             text "Daten erfolgreich importiert!"
 
                                         --TODO: Was sonst noch über die Daten zeigen?
-                                        , case MotivationData.meanRetentionTimes motData of
-                                            Nothing ->
-                                                none
+                                        -- , case MotivationData.meanRetentionTimes motData of
+                                        --     Nothing ->
+                                        --         none
+                                        --     Just meanTimes ->
+                                        --         if List.length meanTimes < 2 then
+                                        --             none
+                                        --         else
+                                        --             let
+                                        --                 data =
+                                        --                     meanTimes
+                                        --                         |> List.reverse
+                                        --                 max =
+                                        --                     Maybe.withDefault 0 <| MotivationData.maxRetention motData
+                                        --             in
+                                        , let
+                                            meanTimes =
+                                                MotivationData.meanRetentionTimes motData
+                                          in
+                                          if List.length meanTimes < 2 then
+                                            none
 
-                                            Just meanTimes ->
-                                                if List.length meanTimes < 2 then
-                                                    none
-
-                                                else
-                                                    let
-                                                        data =
-                                                            meanTimes
-                                                                |> List.reverse
-
-                                                        max =
-                                                            Maybe.withDefault 0 <| MotivationData.maxRetention motData
-                                                    in
-                                                    column [ width fill, spacing 10 ]
-                                                        [ text "Retentionstrend:"
-                                                        , column [ centerX ]
-                                                            [ RetentionChart.new
-                                                                { width =
-                                                                    shared.deviceInfo.window.width
-                                                                        - (SafeArea.maxX shared.safeAreaInset * 2)
-                                                                        - (pagePadding + (hPad * 2))
-                                                                , height = 200
-                                                                , meanRetentionTimes = data
-                                                                , maxRetention = max
-                                                                , meanRetentionColor = CS.guideColor shared.colorScheme
-                                                                , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
-                                                                , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
-                                                                }
-                                                                |> RetentionChart.view
-                                                            , el
-                                                                [ Font.size 15
-                                                                , centerX
-                                                                , paddingXY 0 50
-                                                                ]
-                                                              <|
-                                                                (Components.Button.new
-                                                                    { onPress = Just <| SetMotivationData motData
-                                                                    , label = text "Eingefügte Ergebnisse übernehmen"
-                                                                    }
-                                                                    |> Components.Button.withLightColor
-                                                                    |> Components.Button.withInline
-                                                                    |> Components.Button.view shared.colorScheme
-                                                                )
-                                                            ]
+                                          else
+                                            column [ width fill, spacing 10 ]
+                                                [ text "Retentionstrend:"
+                                                , column [ centerX ]
+                                                    [ RetentionChart.new
+                                                        { width =
+                                                            shared.deviceInfo.window.width
+                                                                - (SafeArea.maxX shared.safeAreaInset * 2)
+                                                                - (pagePadding + (hPad * 2))
+                                                        , height = 200
+                                                        , meanRetentionTimes = meanTimes |> List.reverse
+                                                        , maxRetention = MotivationData.maxRetention motData
+                                                        , meanRetentionColor = CS.guideColor shared.colorScheme
+                                                        , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
+                                                        , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
+                                                        }
+                                                        |> RetentionChart.view
+                                                    , el
+                                                        [ Font.size 15
+                                                        , centerX
+                                                        , paddingXY 0 50
                                                         ]
+                                                      <|
+                                                        (Components.Button.new
+                                                            { onPress = Just <| SetMotivationData motData
+                                                            , label = text "Eingefügte Ergebnisse übernehmen"
+                                                            }
+                                                            |> Components.Button.withLightColor
+                                                            |> Components.Button.withInline
+                                                            |> Components.Button.view shared.colorScheme
+                                                        )
+                                                    ]
+                                                ]
                                         ]
 
                             -- el [ width fill ] <|

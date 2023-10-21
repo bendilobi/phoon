@@ -78,7 +78,8 @@ init flagsResult route =
         decodedFlags =
             case flagsResult of
                 Err e ->
-                    { motData = MotivationData.empty
+                    -- { motData = MotivationData.empty
+                    { motData = Nothing
                     , sessionSettings = Session.defaultSettings
                     , isUpdating = False
                     , sal = 0
@@ -114,10 +115,11 @@ init flagsResult route =
                     { motData =
                         case motDataDecoded of
                             Err e ->
-                                MotivationData.empty
+                                -- MotivationData.empty
+                                Nothing
 
                             Ok fields ->
-                                MotivationData.fromFields fields
+                                Just <| MotivationData.fromFields fields
                     , sessionSettings =
                         case sessionSettingsDecoded of
                             Err e ->
@@ -267,12 +269,15 @@ update route msg model =
         Shared.Msg.AdjustToday today ->
             let
                 practicedToday =
-                    case MotivationData.lastSessionDate model.motivationData of
+                    -- case MotivationData.lastSessionDate model.motivationData of
+                    case model.motivationData of
                         Nothing ->
                             False
 
-                        Just date ->
-                            date == today
+                        -- Just date ->
+                        --     date == today
+                        Just motData ->
+                            MotivationData.lastSessionDate motData == today
             in
             ( { model
                 | today = today
@@ -314,24 +319,26 @@ update route msg model =
             )
 
         Shared.Msg.SessionEnded endType ->
-            let
-                newMotData =
-                    case endType of
-                        Session.Cancelled ->
-                            model.motivationData
-
-                        Session.Finished ->
-                            MotivationData.update model.results model.today model.motivationData
-            in
+            -- let
+            --     newMotData =
+            --         case endType of
+            --             Session.Cancelled ->
+            --                 model.motivationData
+            --             Session.Finished ->
+            --                 MotivationData.update model.results model.today model.motivationData
+            -- in
             ( { model
                 | session = Session.new model.sessionSettings
-
-                -- , motivationData = newMotData
               }
             , Effect.batch
-                [ Effect.sendMsg <| Shared.Msg.SetMotivationData newMotData
+                [ case endType of
+                    Session.Cancelled ->
+                        Effect.none
 
-                -- Effect.saveMotivationData newMotData
+                    Session.Finished ->
+                        MotivationData.update model.results model.today model.motivationData
+                            |> Shared.Msg.SetMotivationData
+                            |> Effect.sendMsg
                 , Effect.navigate Route.Path.Home_
                 ]
             )
@@ -373,7 +380,12 @@ update route msg model =
 
         Shared.Msg.SetMotivationData motData ->
             ( { model | motivationData = motData }
-            , Effect.saveMotivationData motData
+            , case motData of
+                Nothing ->
+                    Effect.none
+
+                Just data ->
+                    Effect.saveMotivationData data
             )
 
 

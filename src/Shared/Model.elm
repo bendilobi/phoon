@@ -25,13 +25,11 @@ type alias Model =
     , appVisible : Bool
     , currentVersion : String
     , versionOnServer : Api.Data String
-
-    -- , windowSize : { width : Int, height : Int }
     , deviceInfo : Utils.Device
     , session : Session
     , results : SessionResults
     , previousPath : Route.Path.Path
-    , motivationData : MotivationData
+    , motivationData : Maybe MotivationData
     , colorScheme : CS.ColorScheme
     , sessionSettings : Session.Settings
     , appIsUpdating : Bool

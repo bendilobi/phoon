@@ -306,7 +306,7 @@ receivedVersionOnServer result =
 
 setMotivationData : MotivationData -> Effect msg
 setMotivationData motData =
-    SendSharedMsg <| Shared.Msg.SetMotivationData motData
+    SendSharedMsg <| Shared.Msg.SetMotivationData <| Just motData
 
 
 

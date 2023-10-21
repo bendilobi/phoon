@@ -161,7 +161,11 @@ viewEstimatedTime shared time =
                 |> Time.posixToMillis
                 |> (+)
                     (Session.estimatedDurationMillis
-                        (MotivationData.meanRetentionTimes shared.motivationData
+                        -- (MotivationData.meanRetentionTimes shared.motivationData
+                        --     |> Maybe.withDefault []
+                        -- )
+                        (shared.motivationData
+                            |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
                         )
                         shared.session

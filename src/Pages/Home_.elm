@@ -1,5 +1,6 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
+import Api exposing (Data)
 import Date
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -87,11 +88,15 @@ view shared model =
     }
 
 
-viewMotivationData : Date.Date -> MotivationData -> ColorScheme -> Element msg
+viewMotivationData : Date.Date -> Maybe MotivationData -> ColorScheme -> Element msg
 viewMotivationData today motData colorScheme =
     let
         daysSinceLastSession =
-            MotivationData.lastSessionDate motData
+            -- MotivationData.lastSessionDate motData
+            --     |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date today)
+            --     |> Maybe.withDefault 0
+            motData
+                |> Maybe.map MotivationData.lastSessionDate
                 |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date today)
                 |> Maybe.withDefault 0
 
@@ -111,11 +116,11 @@ viewMotivationData today motData colorScheme =
         , spacing 70
         , centerY
         ]
-        [ case MotivationData.series motData of
+        [ case motData of
             Nothing ->
                 none
 
-            Just series ->
+            Just data ->
                 el
                     [ width fill
                     , Font.center
@@ -126,7 +131,7 @@ viewMotivationData today motData colorScheme =
                 <|
                     text <|
                         if seriesContinued then
-                            String.fromInt series
+                            String.fromInt <| MotivationData.series data
 
                         else
                             String.fromInt <| daysSinceLastSession - 1
@@ -137,15 +142,13 @@ viewMotivationData today motData colorScheme =
             ]
           <|
             text <|
-                case MotivationData.series motData of
-                    -- TODO: MotivationData so umbauen, dass nicht so viel mit Maybes hantiert
-                    --       werden muss
+                case motData of
                     Nothing ->
                         "Keine Motivationsdaten gespeichert"
 
-                    Just series ->
+                    Just data ->
                         if seriesContinued then
-                            if series == 1 then
+                            if MotivationData.series data == 1 then
                                 "...Tag praktiziert!"
 
                             else
