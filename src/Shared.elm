@@ -33,7 +33,7 @@ import Time
 
 
 version =
-    "0.6.109"
+    "0.6.110"
 
 
 
@@ -46,17 +46,21 @@ type alias Flags =
     , storedUpdatingState : Json.Decode.Value
     , safeAreaInsetLeft : String
     , sar : String
+    , width : Json.Decode.Value
+    , height : Json.Decode.Value
     }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map5 Flags
+    Json.Decode.map7 Flags
         (Json.Decode.field "storedMotivationData" Json.Decode.value)
         (Json.Decode.field "storedSessionSettings" Json.Decode.value)
         (Json.Decode.field "storedUpdatingState" Json.Decode.value)
         (Json.Decode.field "safeAreaInsetLeft" Json.Decode.string)
         (Json.Decode.field "sar" Json.Decode.string)
+        (Json.Decode.field "width" Json.Decode.value)
+        (Json.Decode.field "height" Json.Decode.value)
 
 
 
@@ -79,6 +83,8 @@ init flagsResult route =
                     , isUpdating = False
                     , sal = 0
                     , sar = 0
+                    , width = 0
+                    , height = 0
                     }
 
                 Ok data ->
@@ -98,6 +104,12 @@ init flagsResult route =
 
                         sarDecoded =
                             data.sar |> extractSafeAreaSize
+
+                        widthDecoded =
+                            Json.Decode.decodeValue Json.Decode.int data.width
+
+                        heightDecoded =
+                            Json.Decode.decodeValue Json.Decode.int data.height
                     in
                     { motData =
                         case motDataDecoded of
@@ -134,13 +146,27 @@ init flagsResult route =
 
                             Just px ->
                                 px
+                    , width =
+                        case widthDecoded of
+                            Err e ->
+                                0
+
+                            Ok px ->
+                                px
+                    , height =
+                        case heightDecoded of
+                            Err e ->
+                                0
+
+                            Ok px ->
+                                px
                     }
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
       , currentVersion = version
       , versionOnServer = Api.Loading
-      , windowSize = { width = 0, height = 0 }
+      , windowSize = { width = decodedFlags.width, height = decodedFlags.height }
       , session = Session.new decodedFlags.sessionSettings
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
@@ -155,7 +181,8 @@ init flagsResult route =
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
         , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
-        , Effect.sendCmd <| Task.perform Shared.Msg.ReceivedViewport Browser.Dom.getViewport
+
+        -- , Effect.sendCmd <| Task.perform Shared.Msg.ReceivedViewport Browser.Dom.getViewport
         , Effect.checkVersion Shared.Msg.ReceivedVersionOnServer
         ]
     )

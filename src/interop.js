@@ -21,12 +21,17 @@ export const flags = ({ env }) => {
 
     // console.log("sal: " + sal)
 
+    const width = window.innerWidth
+    const height = window.innerHeight
+
     return {
       storedMotivationData: motivationJson,
       storedSessionSettings: sessionSettingsJson,
       storedUpdatingState : updatingStateJson,
       safeAreaInsetLeft: sal,
-      sar : sar
+      sar : sar,
+      width : width,
+      height : height
     }
   }
 
