@@ -107,6 +107,8 @@ init props =
     Model
         { buttonStates =
             Animator.init <|
+                --TODO: Das mit Dict brauche ich nicht wirklich, oder?
+                --      Vielleicht brauche ich das Pattern für den IntCrementer?
                 Dict.fromList
                     [ ( props.id, Default )
                     ]
@@ -179,7 +181,7 @@ update props =
                 ( Model
                     { model
                         | buttonStates =
-                            Animator.go Animator.quickly (setButtonState id Pressed) model.buttonStates
+                            Animator.go Animator.veryQuickly (setButtonState id Pressed) model.buttonStates
                     }
                 , Effect.none
                 )

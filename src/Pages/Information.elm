@@ -1,7 +1,9 @@
 module Pages.Information exposing (Model, Msg, page)
 
+import Animator
 import Api
 import Browser.Events
+import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.Button
 import Components.IntCrementer as IntCrementer
@@ -60,6 +62,8 @@ type ClipboardData value
 type alias Model =
     { settingsItemShown : SettingsItem
     , bubble : Bubble.Model Msg
+    , copyButton : Button.Model Msg
+    , pasteButton : Button.Model Msg
     , pastedMotivationData : ClipboardData MotivationData
     }
 
@@ -71,6 +75,16 @@ init shared () =
             Bubble.init
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
+                }
+      , copyButton =
+            Button.init
+                { id = "copy"
+                , onPress = Just WriteMotDataToClipboard
+                }
+      , pasteButton =
+            Button.init
+                { id = "paste"
+                , onPress = Just RequestClipboard
                 }
       , pastedMotivationData = NoData
       }
@@ -97,6 +111,8 @@ type SettingsItem
 
 type Msg
     = Tick Time.Posix
+    | CopyButtonAnimation Time.Posix
+    | PasteButtonAnimation Time.Posix
     | ReloadApp Bool
     | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int
@@ -109,7 +125,9 @@ type Msg
     | ReceivedNewestVersionString (Result Http.Error String)
     | SetMotivationData MotivationData
     | WriteMotDataToClipboard
+    | CopyButtonSent Button.Msg
     | RequestClipboard
+    | PasteButtonSent Button.Msg
     | ReceivedClipboard Json.Decode.Value
 
 
@@ -121,6 +139,34 @@ update shared msg model =
                 { msg = Bubble.Tick
                 , model = model.bubble
                 , toModel = \bubble -> { model | bubble = bubble }
+                }
+
+        CopyButtonAnimation newTime ->
+            Button.update
+                { msg = Button.AnimationTick newTime
+                , model = model.copyButton
+                , toModel = \button -> { model | copyButton = button }
+                }
+
+        CopyButtonSent innerMsg ->
+            Button.update
+                { msg = innerMsg
+                , model = model.copyButton
+                , toModel = \button -> { model | copyButton = button }
+                }
+
+        PasteButtonAnimation newTime ->
+            Button.update
+                { msg = Button.AnimationTick newTime
+                , model = model.pasteButton
+                , toModel = \button -> { model | pasteButton = button }
+                }
+
+        PasteButtonSent innerMsg ->
+            Button.update
+                { msg = innerMsg
+                , model = model.pasteButton
+                , toModel = \button -> { model | pasteButton = button }
                 }
 
         VisibilityChanged visibility ->
@@ -263,6 +309,8 @@ subscriptions shared model =
     Sub.batch
         [ Browser.Events.onVisibilityChange VisibilityChanged
         , Effect.clipboardReceiver ReceivedClipboard
+        , Animator.toSubscription CopyButtonAnimation model.copyButton Button.animator
+        , Animator.toSubscription PasteButtonAnimation model.pasteButton Button.animator
         , if model.settingsItemShown == BreathingSpeed then
             Time.every (Session.speedToMillis shared.sessionSettings.breathingSpeed |> Millis.toInt |> toFloat) Tick
 
@@ -678,18 +726,30 @@ viewSettings shared model pagePadding =
                     [ el itemAttrs <|
                         column [ width fill, spacing 20 ]
                             [ activeItemLabel "Spezialwerkzeuge..."
-                            , Components.Button.new
-                                { onPress = Just WriteMotDataToClipboard
+
+                            -- , Components.Button.new
+                            --     { onPress = Just WriteMotDataToClipboard
+                            --     , label = text "Übungsergebnisse kopieren"
+                            --     }
+                            , Button.new
+                                { model = model.copyButton
                                 , label = text "Übungsergebnisse kopieren"
+                                , toMsg = CopyButtonSent
                                 }
-                                |> Components.Button.withLightColor
-                                |> Components.Button.view shared.colorScheme
-                            , Components.Button.new
-                                { onPress = Just RequestClipboard
+                                |> Button.withLightColor
+                                |> Button.view shared.colorScheme
+
+                            -- , Components.Button.new
+                            --     { onPress = Just RequestClipboard
+                            --     , label = text "Übungsergebnisse einfügen"
+                            --     }
+                            , Button.new
+                                { model = model.pasteButton
                                 , label = text "Übungsergebnisse einfügen"
+                                , toMsg = PasteButtonSent
                                 }
-                                |> Components.Button.withLightColor
-                                |> Components.Button.view shared.colorScheme
+                                |> Button.withLightColor
+                                |> Button.view shared.colorScheme
                             , case model.pastedMotivationData of
                                 NoData ->
                                     none
