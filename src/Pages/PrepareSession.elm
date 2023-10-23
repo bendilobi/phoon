@@ -1,6 +1,7 @@
 module Pages.PrepareSession exposing (Model, Msg, page)
 
-import Components.Button
+import Animator
+import Components.AnimatedButton as Button
 import Components.IntCrementer as IntCrementer
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -43,12 +44,17 @@ toLayout model =
 
 type alias Model =
     { time : Time.Posix
+    , startButton : Button.Model
     }
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( { time = Time.millisToPosix 0
+      , startButton =
+            Button.init
+                { id = "start"
+                }
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Tick Time.now
@@ -63,8 +69,10 @@ init shared () =
 
 type Msg
     = Tick Time.Posix
+    | AnimationTick Time.Posix
     | SessionStartPressed
     | CycleCountChanged Int
+    | ButtonSent Button.Msg
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -74,6 +82,20 @@ update shared msg model =
             ( { model | time = newTime }
             , Effect.none
             )
+
+        AnimationTick newTime ->
+            Button.update
+                { msg = Button.AnimationTick newTime
+                , model = model.startButton
+                , toModel = \button -> { model | startButton = button }
+                }
+
+        ButtonSent innerMsg ->
+            Button.update
+                { msg = innerMsg
+                , model = model.startButton
+                , toModel = \button -> { model | startButton = button }
+                }
 
         SessionStartPressed ->
             ( model
@@ -100,7 +122,10 @@ update shared msg model =
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
     if shared.appVisible then
-        Time.every 1000 Tick
+        Sub.batch
+            [ Time.every 1000 Tick
+            , Animator.toSubscription AnimationTick model.startButton Button.animator
+            ]
 
     else
         Sub.none
@@ -143,11 +168,13 @@ view shared model =
                     ]
                 ]
             , el [ width fill ]
-                (Components.Button.new
-                    { onPress = Just SessionStartPressed
+                (Button.new
+                    { model = model.startButton
+                    , onPress = Just SessionStartPressed
                     , label = text "Los geht's!"
+                    , toMsg = ButtonSent
                     }
-                    |> Components.Button.view shared.colorScheme
+                    |> Button.view shared.colorScheme
                 )
             ]
     }
