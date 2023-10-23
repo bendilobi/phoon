@@ -27,14 +27,16 @@ import Time
 
 
 
+--TODO: Disabled State ordentlich handhaben...
 -- SETTINGS
 
 
 type Button msg
     = Settings
-        { model : Model
+        { model : Model msg
         , label : Element msg
-        , onPress : Maybe msg
+
+        -- , onPress : Maybe msg
         , toMsg : Msg -> msg
         , isDisabled : Bool
         , isInline : Bool
@@ -43,8 +45,9 @@ type Button msg
 
 
 new :
-    { model : Model
-    , onPress : Maybe msg
+    { model : Model msg
+
+    -- , onPress : Maybe msg
     , label : Element msg
     , toMsg : Msg -> msg
     }
@@ -53,7 +56,8 @@ new props =
     Settings
         { model = props.model
         , label = props.label
-        , onPress = props.onPress
+
+        -- , onPress = props.onPress
         , toMsg = props.toMsg
         , isDisabled = False
         , isInline = False
@@ -90,14 +94,15 @@ type State
     | Disabled
 
 
-type Model
+type Model msg
     = Model
         { buttonStates : Animator.Timeline (Dict Id State)
         , id : String
+        , onPress : Maybe msg
         }
 
 
-init : { id : String } -> Model
+init : { id : String, onPress : Maybe msg } -> Model msg
 init props =
     Model
         { buttonStates =
@@ -106,6 +111,7 @@ init props =
                     [ ( props.id, Default )
                     ]
         , id = props.id
+        , onPress = props.onPress
         }
 
 
@@ -113,7 +119,7 @@ init props =
 --- Animator ---
 
 
-animator : Animator.Animator Model
+animator : Animator.Animator (Model msg)
 animator =
     Animator.animator
         |> Animator.watchingWith
@@ -142,8 +148,8 @@ type Msg
 
 update :
     { msg : Msg
-    , model : Model
-    , toModel : Model -> model
+    , model : Model msg
+    , toModel : Model msg -> model
     }
     -> ( model, Effect msg )
 update props =
@@ -151,7 +157,7 @@ update props =
         (Model model) =
             props.model
 
-        toParentModel : ( Model, Effect msg ) -> ( model, Effect msg )
+        toParentModel : ( Model msg, Effect msg ) -> ( model, Effect msg )
         toParentModel ( innerModel, effect ) =
             ( props.toModel innerModel, effect )
 
@@ -184,7 +190,12 @@ update props =
                         | buttonStates =
                             Animator.go Animator.slowly (setButtonState id Default) model.buttonStates
                     }
-                , Effect.none
+                , case model.onPress of
+                    Nothing ->
+                        Effect.none
+
+                    Just msg ->
+                        Effect.sendMsg msg
                 )
 
 
@@ -241,7 +252,7 @@ view colorScheme (Settings settings) =
                         Nothing
 
                     else
-                        settings.onPress
+                        model.onPress
                 , label = settings.label
                 }
 
@@ -275,6 +286,6 @@ view colorScheme (Settings settings) =
                     Nothing
 
                 else
-                    settings.onPress
+                    model.onPress
             , label = settings.label
             }

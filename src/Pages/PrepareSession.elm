@@ -44,7 +44,7 @@ toLayout model =
 
 type alias Model =
     { time : Time.Posix
-    , startButton : Button.Model
+    , startButton : Button.Model Msg
     }
 
 
@@ -54,6 +54,7 @@ init shared () =
       , startButton =
             Button.init
                 { id = "start"
+                , onPress = Just SessionStartPressed
                 }
       }
     , Effect.batch
@@ -170,7 +171,8 @@ view shared model =
             , el [ width fill ]
                 (Button.new
                     { model = model.startButton
-                    , onPress = Just SessionStartPressed
+
+                    -- , onPress = Just SessionStartPressed
                     , label = text "Los geht's!"
                     , toMsg = ButtonSent
                     }
