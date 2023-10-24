@@ -1,8 +1,10 @@
 module Pages.PrepareSession exposing (Model, Msg, page)
 
-import Animator
-import Components.AnimatedButton as Button
+-- import Components.AnimatedButton as Button
+-- import Animator
+
 import Components.IntCrementer as IntCrementer
+import Components.SimpleAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -51,11 +53,7 @@ type alias Model =
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( { time = Time.millisToPosix 0
-      , startButton =
-            Button.init
-                { id = "start"
-                , onPress = Just SessionStartPressed
-                }
+      , startButton = Button.init { onPress = Just SessionStartPressed }
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Tick Time.now
@@ -70,7 +68,6 @@ init shared () =
 
 type Msg
     = Tick Time.Posix
-    | AnimationTick Time.Posix
     | SessionStartPressed
     | CycleCountChanged Int
     | ButtonSent Button.Msg
@@ -83,13 +80,6 @@ update shared msg model =
             ( { model | time = newTime }
             , Effect.none
             )
-
-        AnimationTick newTime ->
-            Button.update
-                { msg = Button.AnimationTick newTime
-                , model = model.startButton
-                , toModel = \button -> { model | startButton = button }
-                }
 
         ButtonSent innerMsg ->
             Button.update
@@ -123,10 +113,7 @@ update shared msg model =
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
     if shared.appVisible then
-        Sub.batch
-            [ Time.every 1000 Tick
-            , Animator.toSubscription AnimationTick model.startButton Button.animator
-            ]
+        Time.every 1000 Tick
 
     else
         Sub.none
@@ -171,8 +158,6 @@ view shared model =
             , el [ width fill ]
                 (Button.new
                     { model = model.startButton
-
-                    -- , onPress = Just SessionStartPressed
                     , label = text "Los geht's!"
                     , toMsg = ButtonSent
                     }

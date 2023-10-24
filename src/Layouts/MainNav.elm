@@ -1,7 +1,7 @@
 module Layouts.MainNav exposing (Model, Msg, Props, layout)
 
 import Browser.Events
-import Components.Button
+import Components.SimpleAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -40,12 +40,15 @@ layout props shared route =
 
 
 type alias Model =
-    { lastHide : Maybe Time.Posix }
+    { lastHide : Maybe Time.Posix
+    , updateButton : Button.Model Msg
+    }
 
 
 init : () -> ( Model, Effect Msg )
 init _ =
     ( { lastHide = Nothing
+      , updateButton = Button.init { onPress = Just CloseUpdate }
       }
     , Effect.none
     )
@@ -61,6 +64,7 @@ type Msg
     | ShownAt Time.Posix
     | VisibilityChanged Browser.Events.Visibility
     | CloseUpdate
+    | ButtonSent Button.Msg
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -102,6 +106,13 @@ update msg model =
         CloseUpdate ->
             ( model, Effect.setUpdating False )
 
+        ButtonSent innerMsg ->
+            Button.update
+                { msg = innerMsg
+                , model = model.updateButton
+                , toModel = \button -> { model | updateButton = button }
+                }
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -140,9 +151,17 @@ view props shared route { toContentMsg, model, content } =
                             "Update auf Version "
                                 ++ shared.currentVersion
                                 ++ " erfolgreich!"
-                    , Components.Button.new { onPress = Just CloseUpdate, label = text "Fertig" }
-                        |> Components.Button.withLightColor
-                        |> Components.Button.view shared.colorScheme
+
+                    -- , Components.Button.new { onPress = Just CloseUpdate, label = text "Fertig" }
+                    --     |> Components.Button.withLightColor
+                    --     |> Components.Button.view shared.colorScheme
+                    , Button.new
+                        { model = model.updateButton
+                        , label = text "Fertig"
+                        , toMsg = ButtonSent
+                        }
+                        |> Button.withLightColor
+                        |> Button.view shared.colorScheme
                     ]
             )
                 |> map toContentMsg

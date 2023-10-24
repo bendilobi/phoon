@@ -1,14 +1,16 @@
 module Pages.Information exposing (Model, Msg, page)
 
-import Animator
+-- import Animator
+
 import Api
 import Browser.Events
 import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
-import Components.Button
+import Components.Button as UButton
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
 import Components.RetentionChart as RetentionChart
+import Components.SimpleAnimatedButton as SButton
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -62,8 +64,9 @@ type ClipboardData value
 type alias Model =
     { settingsItemShown : SettingsItem
     , bubble : Bubble.Model Msg
-    , copyButton : Button.Model Msg
-    , pasteButton : Button.Model Msg
+    , copyButton : SButton.Model Msg
+    , pasteButton : SButton.Model Msg
+    , updateButton : SButton.Model Msg
     , pastedMotivationData : ClipboardData MotivationData
     }
 
@@ -77,14 +80,20 @@ init shared () =
                 , onFinished = Nothing
                 }
       , copyButton =
-            Button.init
-                { id = "copy"
-                , onPress = Just WriteMotDataToClipboard
+            SButton.init
+                { onPress = Just WriteMotDataToClipboard
+
+                -- , id = "copy"
                 }
       , pasteButton =
-            Button.init
-                { id = "paste"
-                , onPress = Just RequestClipboard
+            SButton.init
+                { onPress = Just RequestClipboard
+
+                -- , id = "paste"
+                }
+      , updateButton =
+            SButton.init
+                { onPress = Just <| ReloadApp False
                 }
       , pastedMotivationData = NoData
       }
@@ -111,9 +120,10 @@ type SettingsItem
 
 type Msg
     = Tick Time.Posix
-    | CopyButtonAnimation Time.Posix
-    | PasteButtonAnimation Time.Posix
+      -- | CopyButtonAnimation Time.Posix
+      -- | PasteButtonAnimation Time.Posix
     | ReloadApp Bool
+    | UpdateButtonSent SButton.Msg
     | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int
     | DefaultRelaxRetDurationChanged Int
@@ -125,9 +135,9 @@ type Msg
     | ReceivedNewestVersionString (Result Http.Error String)
     | SetMotivationData MotivationData
     | WriteMotDataToClipboard
-    | CopyButtonSent Button.Msg
+    | CopyButtonSent SButton.Msg
     | RequestClipboard
-    | PasteButtonSent Button.Msg
+    | PasteButtonSent SButton.Msg
     | ReceivedClipboard Json.Decode.Value
 
 
@@ -141,32 +151,37 @@ update shared msg model =
                 , toModel = \bubble -> { model | bubble = bubble }
                 }
 
-        CopyButtonAnimation newTime ->
-            Button.update
-                { msg = Button.AnimationTick newTime
-                , model = model.copyButton
-                , toModel = \button -> { model | copyButton = button }
-                }
-
+        -- CopyButtonAnimation newTime ->
+        --     Button.update
+        --         { msg = Button.AnimationTick newTime
+        --         , model = model.copyButton
+        --         , toModel = \button -> { model | copyButton = button }
+        --         }
         CopyButtonSent innerMsg ->
-            Button.update
+            SButton.update
                 { msg = innerMsg
                 , model = model.copyButton
                 , toModel = \button -> { model | copyButton = button }
                 }
 
-        PasteButtonAnimation newTime ->
-            Button.update
-                { msg = Button.AnimationTick newTime
+        -- PasteButtonAnimation newTime ->
+        --     Button.update
+        --         { msg = Button.AnimationTick newTime
+        --         , model = model.pasteButton
+        --         , toModel = \button -> { model | pasteButton = button }
+        --         }
+        PasteButtonSent innerMsg ->
+            SButton.update
+                { msg = innerMsg
                 , model = model.pasteButton
                 , toModel = \button -> { model | pasteButton = button }
                 }
 
-        PasteButtonSent innerMsg ->
-            Button.update
+        UpdateButtonSent innerMsg ->
+            SButton.update
                 { msg = innerMsg
-                , model = model.pasteButton
-                , toModel = \button -> { model | pasteButton = button }
+                , model = model.updateButton
+                , toModel = \button -> { model | updateButton = button }
                 }
 
         VisibilityChanged visibility ->
@@ -309,8 +324,9 @@ subscriptions shared model =
     Sub.batch
         [ Browser.Events.onVisibilityChange VisibilityChanged
         , Effect.clipboardReceiver ReceivedClipboard
-        , Animator.toSubscription CopyButtonAnimation model.copyButton Button.animator
-        , Animator.toSubscription PasteButtonAnimation model.pasteButton Button.animator
+
+        -- , Animator.toSubscription CopyButtonAnimation model.copyButton Button.animator
+        -- , Animator.toSubscription PasteButtonAnimation model.pasteButton Button.animator
         , if model.settingsItemShown == BreathingSpeed then
             Time.every (Session.speedToMillis shared.sessionSettings.breathingSpeed |> Millis.toInt |> toFloat) Tick
 
@@ -418,9 +434,17 @@ viewUpdate shared model =
                             ++ shared.currentVersion
                             ++ " auf "
                             ++ versionOnServer
-                    , Components.Button.new { onPress = Just <| ReloadApp False, label = text "Update jetzt laden" }
-                        |> Components.Button.withLightColor
-                        |> Components.Button.view shared.colorScheme
+
+                    -- , UButton.new { onPress = Just <| ReloadApp False, label = text "Update jetzt laden" }
+                    --     |> UButton.withLightColor
+                    --     |> UButton.view shared.colorScheme
+                    , SButton.new
+                        { model = model.updateButton
+                        , label = text "Update jetzt laden"
+                        , toMsg = UpdateButtonSent
+                        }
+                        |> SButton.withLightColor
+                        |> SButton.view shared.colorScheme
                     ]
 
             else
@@ -496,13 +520,13 @@ viewSettings shared model pagePadding =
 
         activeItemLabel : String -> Element Msg
         activeItemLabel label =
-            Components.Button.new
+            UButton.new
                 { onPress = Just ResetSettingItemStatus
                 , label = text label
                 }
-                |> Components.Button.withInline
-                |> Components.Button.withLightColor
-                |> Components.Button.view shared.colorScheme
+                |> UButton.withInline
+                |> UButton.withLightColor
+                |> UButton.view shared.colorScheme
     in
     column [ width fill, spacing 10 ]
         [ row [ width fill, alignBottom ]
@@ -515,13 +539,13 @@ viewSettings shared model pagePadding =
                 text "Übung anpassen"
             , el [ width fill ] none
             , el [ alignBottom ] <|
-                (Components.Button.new
+                (UButton.new
                     { onPress = Just ResetSettings
                     , label = text "Zurücksetzen"
                     }
-                    |> Components.Button.withInline
-                    |> Components.Button.withLightColor
-                    |> Components.Button.view shared.colorScheme
+                    |> UButton.withInline
+                    |> UButton.withLightColor
+                    |> UButton.view shared.colorScheme
                 )
             ]
         , column settingsAttrs
@@ -726,30 +750,32 @@ viewSettings shared model pagePadding =
                     [ el itemAttrs <|
                         column [ width fill, spacing 20 ]
                             [ activeItemLabel "Spezialwerkzeuge..."
-
-                            -- , Components.Button.new
-                            --     { onPress = Just WriteMotDataToClipboard
-                            --     , label = text "Übungsergebnisse kopieren"
-                            --     }
-                            , Button.new
+                            , SButton.new
                                 { model = model.copyButton
                                 , label = text "Übungsergebnisse kopieren"
                                 , toMsg = CopyButtonSent
                                 }
-                                |> Button.withLightColor
-                                |> Button.view shared.colorScheme
+                                |> SButton.withLightColor
+                                |> SButton.view shared.colorScheme
 
+                            -- , Button.new
+                            --     { model = model.copyButton
+                            --     , label = text "Übungsergebnisse kopieren"
+                            --     , toMsg = CopyButtonSent
+                            --     }
+                            --     |> Button.withLightColor
+                            --     |> Button.view shared.colorScheme
                             -- , Components.Button.new
                             --     { onPress = Just RequestClipboard
                             --     , label = text "Übungsergebnisse einfügen"
                             --     }
-                            , Button.new
+                            , SButton.new
                                 { model = model.pasteButton
                                 , label = text "Übungsergebnisse einfügen"
                                 , toMsg = PasteButtonSent
                                 }
-                                |> Button.withLightColor
-                                |> Button.view shared.colorScheme
+                                |> SButton.withLightColor
+                                |> SButton.view shared.colorScheme
                             , case model.pastedMotivationData of
                                 NoData ->
                                     none
@@ -799,22 +825,22 @@ viewSettings shared model pagePadding =
                                                         , paddingXY 0 50
                                                         ]
                                                       <|
-                                                        (Components.Button.new
+                                                        (UButton.new
                                                             { onPress = Just <| SetMotivationData motData
                                                             , label = text "Eingefügte Ergebnisse übernehmen"
                                                             }
-                                                            |> Components.Button.withLightColor
-                                                            |> Components.Button.withInline
-                                                            |> Components.Button.view shared.colorScheme
+                                                            |> UButton.withLightColor
+                                                            |> UButton.withInline
+                                                            |> UButton.view shared.colorScheme
                                                         )
                                                     ]
                                                 ]
                                         ]
                             ]
                     , el lastItemAttrs <|
-                        (Components.Button.new { onPress = Just <| ReloadApp True, label = text "App neu laden" }
-                            |> Components.Button.withLightColor
-                            |> Components.Button.view shared.colorScheme
+                        (UButton.new { onPress = Just <| ReloadApp True, label = text "App neu laden" }
+                            |> UButton.withLightColor
+                            |> UButton.view shared.colorScheme
                         )
                     ]
 
