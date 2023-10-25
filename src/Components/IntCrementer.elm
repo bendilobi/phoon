@@ -7,6 +7,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Simple.Transition as Transition
 
 
 

@@ -152,6 +152,7 @@ update shared route msg model =
             in
             ( { model | controlsShown = False }
             , if
+                --TODO: Wie kann die Logik hier verständlicher und robuster gemacht werden?
                 route.path
                     == Session.phasePath Session.Start
                     && not (shared.previousPath == Session.phasePath Session.End)
@@ -413,7 +414,7 @@ viewSessionControls colorScheme model route =
             --     |> Components.Button.view colorScheme
             [ Button.new
                 { model = model.cancelButton
-                , label = text "Sitzung verwerfen"
+                , label = text "Sitzung abbrechen"
                 , toMsg = ButtonSent
                 }
                 |> Button.view colorScheme

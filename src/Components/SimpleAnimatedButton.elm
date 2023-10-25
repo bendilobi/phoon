@@ -195,41 +195,46 @@ view colorScheme (Settings settings) =
             settings.label
 
     else
-        button
-            (commonAttributes
-                ++ (if settings.isLightColored then
-                        CS.interactActiveLighter colorScheme
+        --TODO: Anscheinend kann das Problem mit den falsch getriggerten Animationen
+        --      gelöst werden, wenn der Button in zwei (!) els eingepackt wird...
+        --      Wirklich? Warum? Im Elm-ui Slack zur Sprache bringen?
+        el [ width fill ] <|
+            el [ width fill ] <|
+                button
+                    (commonAttributes
+                        ++ (if settings.isLightColored then
+                                CS.interactActiveLighter colorScheme
 
-                    else
-                        CS.interactActive colorScheme
-                   )
-                ++ [ BG.color <|
-                        if model.buttonState == Pressed then
-                            CS.interactActiveLighterColor colorScheme
+                            else
+                                CS.interactActive colorScheme
+                           )
+                        ++ [ BG.color <|
+                                if model.buttonState == Pressed then
+                                    CS.interactActiveLighterColor colorScheme
+
+                                else
+                                    CS.interactActiveColor colorScheme
+                           , htmlAttribute <| Swipe.onStart (\event -> settings.toMsg <| ButtonPressed event)
+                           , htmlAttribute <| Swipe.onEnd (\event -> settings.toMsg <| ButtonReleased event)
+                           , htmlAttribute <|
+                                if model.buttonState == Pressed then
+                                    Transition.properties
+                                        [ Transition.backgroundColor 100 []
+                                        ]
+
+                                else
+                                    Transition.properties
+                                        [ Transition.backgroundColor 500 [ Transition.easeOutSine ]
+                                        ]
+
+                           --TODO: Border color...
+                           ]
+                    )
+                    { onPress =
+                        if settings.isDisabled then
+                            Nothing
 
                         else
-                            CS.interactActiveColor colorScheme
-                   , htmlAttribute <| Swipe.onStart (\event -> settings.toMsg <| ButtonPressed event)
-                   , htmlAttribute <| Swipe.onEnd (\event -> settings.toMsg <| ButtonReleased event)
-                   , htmlAttribute <|
-                        if model.buttonState == Pressed then
-                            Transition.properties
-                                [ Transition.backgroundColor 100 []
-                                ]
-
-                        else
-                            Transition.properties
-                                [ Transition.backgroundColor 500 [ Transition.easeOutSine ]
-                                ]
-
-                   --TODO: Border color...
-                   ]
-            )
-            { onPress =
-                if settings.isDisabled then
-                    Nothing
-
-                else
-                    model.onPress
-            , label = settings.label
-            }
+                            model.onPress
+                    , label = settings.label
+                    }
