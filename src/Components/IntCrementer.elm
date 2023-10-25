@@ -1,4 +1,4 @@
-module Components.IntCrementer exposing (new, view, withLightColor, withMax, withMin)
+module Components.IntCrementer exposing (Model, init, new, view, withLightColor, withMax, withMin)
 
 import Components.CrementButton as CrementButton
 import Element exposing (..)
@@ -7,7 +7,6 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Simple.Transition as Transition
 
 
 
@@ -17,7 +16,8 @@ import Simple.Transition as Transition
 type IntCrementer msg
     = Settings
         { label : Int -> Element msg
-        , onCrement : Int -> msg
+        , onCrement : Int -> CrementButton.Model -> msg
+        , model : CrementButton.Model
         , min : Maybe Int
         , max : Maybe Int
         , isLightColored : Bool
@@ -26,13 +26,15 @@ type IntCrementer msg
 
 new :
     { label : Int -> Element msg
-    , onCrement : Int -> msg
+    , onCrement : Int -> CrementButton.Model -> msg
+    , model : CrementButton.Model
     }
     -> IntCrementer msg
 new props =
     Settings
         { label = props.label
         , onCrement = props.onCrement
+        , model = props.model
         , min = Nothing
         , max = Nothing
         , isLightColored = False
@@ -54,6 +56,23 @@ withLightColor (Settings settings) =
     Settings { settings | isLightColored = True }
 
 
+
+--- Model ---
+
+
+type alias Model =
+    CrementButton.Model
+
+
+init : Model
+init =
+    CrementButton.init
+
+
+
+--- View ---
+
+
 view : ColorScheme -> Int -> IntCrementer msg -> Element msg
 view colorScheme currentInt (Settings settings) =
     el [ width fill ] <|
@@ -63,16 +82,30 @@ view colorScheme currentInt (Settings settings) =
             , centerX
             ]
             [ CrementButton.new
-                { onPress = settings.onCrement <| currentInt - 1
+                { onPress =
+                    settings.onCrement <|
+                        if settings.model == CrementButton.Pressed CrementButton.De then
+                            currentInt - 1
+
+                        else
+                            currentInt
                 , crement = CrementButton.De
+                , model = settings.model
                 }
                 |> CrementButton.withDisabled (Just currentInt == settings.min)
                 |> CrementButton.withLightColor settings.isLightColored
                 |> CrementButton.view colorScheme
             , settings.label currentInt
             , CrementButton.new
-                { onPress = settings.onCrement <| currentInt + 1
+                { onPress =
+                    settings.onCrement <|
+                        if settings.model == CrementButton.Pressed CrementButton.In then
+                            currentInt + 1
+
+                        else
+                            currentInt
                 , crement = CrementButton.In
+                , model = settings.model
                 }
                 |> CrementButton.withDisabled (Just currentInt == settings.max)
                 |> CrementButton.withLightColor settings.isLightColored

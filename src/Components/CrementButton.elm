@@ -1,5 +1,7 @@
 module Components.CrementButton exposing
     ( Crement(..)
+    , Model(..)
+    , init
     , new
     , view
     , withDisabled
@@ -14,6 +16,8 @@ import Element.Font as Font
 import Element.Input exposing (button)
 import FeatherIcons
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Swipe as Swipe
+import Simple.Transition as Transition
 
 
 
@@ -28,21 +32,24 @@ type Crement
 type Button msg
     = Settings
         { crement : Crement
-        , onPress : msg
+        , onPress : Model -> msg
+        , model : Model
         , isDisabled : Bool
         , isLightColored : Bool
         }
 
 
 new :
-    { onPress : msg
+    { onPress : Model -> msg
     , crement : Crement
+    , model : Model
     }
     -> Button msg
 new props =
     Settings
         { crement = props.crement
         , onPress = props.onPress
+        , model = props.model
         , isDisabled = False
         , isLightColored = False
         }
@@ -60,6 +67,20 @@ withDisabled isDisabled (Settings settings) =
 withLightColor : Bool -> Button msg -> Button msg
 withLightColor light (Settings settings) =
     Settings { settings | isLightColored = light }
+
+
+
+--- Model ---
+
+
+type Model
+    = Pressed Crement
+    | Released
+
+
+init : Model
+init =
+    Released
 
 
 
@@ -103,8 +124,34 @@ view colorScheme (Settings settings) =
                 CS.interactActive colorScheme
              )
                 ++ commonAttributes
+                ++ [ BG.color <|
+                        case settings.model of
+                            Pressed crement ->
+                                if crement == settings.crement then
+                                    --- It's-a-me!
+                                    CS.interactActiveLighterColor colorScheme
+
+                                else
+                                    CS.interactActiveColor colorScheme
+
+                            Released ->
+                                CS.interactActiveColor colorScheme
+                   , htmlAttribute <| Swipe.onStart (\_ -> settings.onPress <| Pressed settings.crement)
+                   , htmlAttribute <| Swipe.onEnd (\_ -> settings.onPress <| Released)
+                   , htmlAttribute <|
+                        case settings.model of
+                            Pressed _ ->
+                                Transition.properties
+                                    [ Transition.backgroundColor 50 []
+                                    ]
+
+                            Released ->
+                                Transition.properties
+                                    [ Transition.backgroundColor 1000 [ Transition.easeOutQuad ]
+                                    ]
+                   ]
             )
-            { onPress = Just settings.onPress
+            { onPress = Just <| settings.onPress settings.model
             , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
             }
 

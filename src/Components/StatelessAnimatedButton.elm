@@ -14,21 +14,6 @@ import Simple.Transition as Transition
 -- SETTINGS
 
 
-type Model
-    = Pressed
-    | Default
-
-
-
--- type alias State =
---     Bool
-
-
-init : Model
-init =
-    Default
-
-
 type Button msg
     = Settings
         { label : Element msg
@@ -77,6 +62,20 @@ withInline (Settings settings) =
 withLightColor : Button msg -> Button msg
 withLightColor (Settings settings) =
     Settings { settings | isLightColored = True }
+
+
+
+--- Model ---
+
+
+type Model
+    = Pressed
+    | Default
+
+
+init : Model
+init =
+    Default
 
 
 

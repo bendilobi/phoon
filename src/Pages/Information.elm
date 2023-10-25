@@ -64,6 +64,8 @@ type ClipboardData value
 type alias Model =
     { settingsItemShown : SettingsItem
     , bubble : Bubble.Model Msg
+    , cycleCrementer : IntCrementer.Model
+    , relaxRetDurCrementer : IntCrementer.Model
 
     -- , copyButton : SButton.Model Msg
     , copyButton : TButton.Model
@@ -81,6 +83,8 @@ init shared () =
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
                 }
+      , cycleCrementer = IntCrementer.init
+      , relaxRetDurCrementer = IntCrementer.init
 
       --   , copyButton =
       --         SButton.init
@@ -128,8 +132,8 @@ type Msg
     | ReloadApp Bool
     | UpdateButtonSent SButton.Msg
     | VisibilityChanged Browser.Events.Visibility
-    | DefaultCyclesChanged Int
-    | DefaultRelaxRetDurationChanged Int
+    | DefaultCyclesChanged Int IntCrementer.Model
+    | DefaultRelaxRetDurationChanged Int IntCrementer.Model
     | DefaultBreathingSpeedChanged BreathingSpeed
     | DefaultBreathCountChanged BreathCount
     | SettingsItemShown SettingsItem
@@ -209,21 +213,21 @@ update shared msg model =
                 Effect.updateApp
             )
 
-        DefaultCyclesChanged cycles ->
+        DefaultCyclesChanged cycles state ->
             let
                 settings =
                     shared.sessionSettings
             in
-            ( model
+            ( { model | cycleCrementer = state }
             , Effect.updateSessionSettings { settings | cycles = cycles }
             )
 
-        DefaultRelaxRetDurationChanged seconds ->
+        DefaultRelaxRetDurationChanged seconds state ->
             let
                 settings =
                     shared.sessionSettings
             in
-            ( model
+            ( { model | relaxRetDurCrementer = state }
             , Effect.updateSessionSettings { settings | relaxRetDuration = Millis.fromSeconds seconds }
             )
 
@@ -572,6 +576,21 @@ viewSettings shared model pagePadding =
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
                         [ activeItemLabel "Gesamtablauf"
+
+                        -- , IntCrementer.new
+                        --     { label =
+                        --         \n ->
+                        --             paragraph []
+                        --                 [ el [ Font.bold ] <| text <| String.fromInt n
+                        --                 , text " Runde"
+                        --                 , el [ transparent <| n == 1 ] <| text "n"
+                        --                 ]
+                        --     , onCrement = DefaultCyclesChanged
+                        --     }
+                        --     |> IntCrementer.withMin 1
+                        --     |> IntCrementer.withMax 9
+                        --     |> IntCrementer.withLightColor
+                        --     |> IntCrementer.view shared.colorScheme shared.sessionSettings.cycles
                         , IntCrementer.new
                             { label =
                                 \n ->
@@ -581,6 +600,7 @@ viewSettings shared model pagePadding =
                                         , el [ transparent <| n == 1 ] <| text "n"
                                         ]
                             , onCrement = DefaultCyclesChanged
+                            , model = model.cycleCrementer
                             }
                             |> IntCrementer.withMin 1
                             |> IntCrementer.withMax 9
@@ -698,6 +718,27 @@ viewSettings shared model pagePadding =
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
                         [ activeItemLabel "Erholungsretention"
+
+                        -- , IntCrementer.new
+                        --     { label =
+                        --         \n ->
+                        --             paragraph []
+                        --                 [ if n < 10 then
+                        --                     el [ transparent True ] <| text "1"
+                        --                   else
+                        --                     none
+                        --                 , el [ Font.bold ] <| text <| String.fromInt n
+                        --                 , text " Sekunden"
+                        --                 ]
+                        --     , onCrement = DefaultRelaxRetDurationChanged
+                        --     }
+                        --     |> IntCrementer.withMin 5
+                        --     |> IntCrementer.withMax 30
+                        --     |> IntCrementer.withLightColor
+                        --     |> IntCrementer.view shared.colorScheme
+                        --         (shared.sessionSettings.relaxRetDuration
+                        --             |> Millis.toSeconds
+                        --         )
                         , IntCrementer.new
                             { label =
                                 \n ->
@@ -711,6 +752,7 @@ viewSettings shared model pagePadding =
                                         , text " Sekunden"
                                         ]
                             , onCrement = DefaultRelaxRetDurationChanged
+                            , model = model.relaxRetDurCrementer
                             }
                             |> IntCrementer.withMin 5
                             |> IntCrementer.withMax 30

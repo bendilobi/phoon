@@ -48,6 +48,7 @@ type alias Model =
 
     -- , startButton : Button.Model Msg
     , startButton : Button.Model
+    , cycleCrementer : IntCrementer.Model
     }
 
 
@@ -57,6 +58,7 @@ init shared () =
 
       --   , startButton = Button.init { onPress = Just SessionStartPressed }
       , startButton = Button.init
+      , cycleCrementer = IntCrementer.init
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Tick Time.now
@@ -73,7 +75,7 @@ type Msg
     = Tick Time.Posix
       -- | SessionStartPressed
     | OnStartButton Button.Model
-    | CycleCountChanged Int
+    | CycleCountChanged Int IntCrementer.Model
 
 
 
@@ -109,8 +111,9 @@ update shared msg model =
                     Effect.none
             )
 
-        CycleCountChanged cycles ->
-            ( model
+        CycleCountChanged cycles state ->
+            ( { model | cycleCrementer = state }
+              --TODO: Ist es ein Problem, dass das hier auch bei Pressed gemacht wird?
             , shared.session
                 |> Session.withCycles cycles
                 |> Effect.sessionUpdated
@@ -156,6 +159,7 @@ view shared model =
                                 , el [ transparent <| n == 1 ] <| text "n"
                                 ]
                     , onCrement = CycleCountChanged
+                    , model = model.cycleCrementer
                     }
                     |> IntCrementer.withMin 1
                     |> IntCrementer.withMax 9
