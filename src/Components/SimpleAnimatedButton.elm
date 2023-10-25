@@ -219,12 +219,12 @@ view colorScheme (Settings settings) =
                            , htmlAttribute <|
                                 if model.buttonState == Pressed then
                                     Transition.properties
-                                        [ Transition.backgroundColor 100 []
+                                        [ Transition.backgroundColor 50 []
                                         ]
 
                                 else
                                     Transition.properties
-                                        [ Transition.backgroundColor 500 [ Transition.easeOutSine ]
+                                        [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
                                         ]
 
                            --TODO: Border color...

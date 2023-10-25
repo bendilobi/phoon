@@ -1,7 +1,9 @@
 module Pages.PrepareSession exposing (Model, Msg, page)
 
+-- import Components.SimpleAnimatedButton as Button
+
 import Components.IntCrementer as IntCrementer
-import Components.SimpleAnimatedButton as Button
+import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -43,14 +45,18 @@ toLayout model =
 
 type alias Model =
     { time : Time.Posix
-    , startButton : Button.Model Msg
+
+    -- , startButton : Button.Model Msg
+    , startButton : Button.Model
     }
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( { time = Time.millisToPosix 0
-      , startButton = Button.init { onPress = Just SessionStartPressed }
+
+      --   , startButton = Button.init { onPress = Just SessionStartPressed }
+      , startButton = Button.init
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Tick Time.now
@@ -65,9 +71,13 @@ init shared () =
 
 type Msg
     = Tick Time.Posix
-    | SessionStartPressed
+      -- | SessionStartPressed
+    | OnStartButton Button.Model
     | CycleCountChanged Int
-    | ButtonSent Button.Msg
+
+
+
+-- | ButtonSent Button.Msg
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -78,21 +88,25 @@ update shared msg model =
             , Effect.none
             )
 
-        ButtonSent innerMsg ->
-            Button.update
-                { msg = innerMsg
-                , model = model.startButton
-                , toModel = \button -> { model | startButton = button }
-                }
+        -- ButtonSent innerMsg ->
+        --     Button.update
+        --         { msg = innerMsg
+        --         , model = model.startButton
+        --         , toModel = \button -> { model | startButton = button }
+        --         }
+        OnStartButton state ->
+            ( { model | startButton = state }
+            , case state of
+                Button.Default ->
+                    Effect.batch
+                        [ Effect.resultsUpdated SessionResults.empty
+                        , Effect.playSound Session.StartSound
+                        , Effect.navigate <|
+                            Session.currentPath shared.session
+                        ]
 
-        SessionStartPressed ->
-            ( model
-            , Effect.batch
-                [ Effect.resultsUpdated SessionResults.empty
-                , Effect.playSound Session.StartSound
-                , Effect.navigate <|
-                    Session.currentPath shared.session
-                ]
+                Button.Pressed ->
+                    Effect.none
             )
 
         CycleCountChanged cycles ->
@@ -154,9 +168,13 @@ view shared model =
                 ]
             , el [ width fill ]
                 (Button.new
-                    { model = model.startButton
+                    -- { model = model.startButton
+                    -- , label = text "Los geht's!"
+                    -- , toMsg = ButtonSent
+                    -- }
+                    { onPress = OnStartButton
                     , label = text "Los geht's!"
-                    , toMsg = ButtonSent
+                    , model = model.startButton
                     }
                     |> Button.view shared.colorScheme
                 )

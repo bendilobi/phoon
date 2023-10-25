@@ -4,13 +4,13 @@ module Pages.Information exposing (Model, Msg, page)
 
 import Api
 import Browser.Events
-import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.Button as UButton
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
 import Components.RetentionChart as RetentionChart
 import Components.SimpleAnimatedButton as SButton
+import Components.StatelessAnimatedButton as TButton
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -64,7 +64,9 @@ type ClipboardData value
 type alias Model =
     { settingsItemShown : SettingsItem
     , bubble : Bubble.Model Msg
-    , copyButton : SButton.Model Msg
+
+    -- , copyButton : SButton.Model Msg
+    , copyButton : TButton.Model
     , pasteButton : SButton.Model Msg
     , updateButton : SButton.Model Msg
     , pastedMotivationData : ClipboardData MotivationData
@@ -79,12 +81,13 @@ init shared () =
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
                 }
-      , copyButton =
-            SButton.init
-                { onPress = Just WriteMotDataToClipboard
 
-                -- , id = "copy"
-                }
+      --   , copyButton =
+      --         SButton.init
+      --             { onPress = Just WriteMotDataToClipboard
+      --             -- , id = "copy"
+      --             }
+      , copyButton = TButton.init
       , pasteButton =
             SButton.init
                 { onPress = Just RequestClipboard
@@ -134,8 +137,9 @@ type Msg
     | ResetSettings
     | ReceivedNewestVersionString (Result Http.Error String)
     | SetMotivationData MotivationData
-    | WriteMotDataToClipboard
-    | CopyButtonSent SButton.Msg
+      -- | WriteMotDataToClipboard
+    | OnCopyButton TButton.Model
+      -- | CopyButtonSent SButton.Msg
     | RequestClipboard
     | PasteButtonSent SButton.Msg
     | ReceivedClipboard Json.Decode.Value
@@ -157,13 +161,12 @@ update shared msg model =
         --         , model = model.copyButton
         --         , toModel = \button -> { model | copyButton = button }
         --         }
-        CopyButtonSent innerMsg ->
-            SButton.update
-                { msg = innerMsg
-                , model = model.copyButton
-                , toModel = \button -> { model | copyButton = button }
-                }
-
+        -- CopyButtonSent innerMsg ->
+        --     SButton.update
+        --         { msg = innerMsg
+        --         , model = model.copyButton
+        --         , toModel = \button -> { model | copyButton = button }
+        --         }
         -- PasteButtonAnimation newTime ->
         --     Button.update
         --         { msg = Button.AnimationTick newTime
@@ -276,17 +279,33 @@ update shared msg model =
         SetMotivationData motData ->
             ( model, Effect.setMotivationData motData )
 
-        WriteMotDataToClipboard ->
-            ( model
-            , case shared.motivationData of
-                Nothing ->
+        -- WriteMotDataToClipboard ->
+        --     ( model
+        --     , case shared.motivationData of
+        --         Nothing ->
+        --             Effect.none
+        --         Just motData ->
+        --             motData
+        --                 |> MotivationData.encoder
+        --                 |> Json.Encode.encode 0
+        --                 |> Effect.writeToClipboard
+        --     )
+        OnCopyButton state ->
+            ( { model | copyButton = state }
+            , case state of
+                TButton.Pressed ->
                     Effect.none
 
-                Just motData ->
-                    motData
-                        |> MotivationData.encoder
-                        |> Json.Encode.encode 0
-                        |> Effect.writeToClipboard
+                TButton.Default ->
+                    case shared.motivationData of
+                        Nothing ->
+                            Effect.none
+
+                        Just motData ->
+                            motData
+                                |> MotivationData.encoder
+                                |> Json.Encode.encode 0
+                                |> Effect.writeToClipboard
             )
 
         RequestClipboard ->
@@ -750,13 +769,19 @@ viewSettings shared model pagePadding =
                     [ el itemAttrs <|
                         column [ width fill, spacing 20 ]
                             [ activeItemLabel "Spezialwerkzeuge..."
-                            , SButton.new
-                                { model = model.copyButton
+
+                            -- , SButton.new
+                            --     { model = model.copyButton
+                            --     , label = text "Übungsergebnisse kopieren"
+                            --     , toMsg = CopyButtonSent
+                            --     }
+                            , TButton.new
+                                { onPress = OnCopyButton
                                 , label = text "Übungsergebnisse kopieren"
-                                , toMsg = CopyButtonSent
+                                , model = model.copyButton
                                 }
-                                |> SButton.withLightColor
-                                |> SButton.view shared.colorScheme
+                                |> TButton.withLightColor
+                                |> TButton.view shared.colorScheme
 
                             -- , Button.new
                             --     { model = model.copyButton
