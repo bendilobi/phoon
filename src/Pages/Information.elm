@@ -1,7 +1,5 @@
 module Pages.Information exposing (Model, Msg, page)
 
--- import Animator
-
 import Api
 import Browser.Events
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
@@ -9,8 +7,7 @@ import Components.Button as UButton
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
 import Components.RetentionChart as RetentionChart
-import Components.SimpleAnimatedButton as SButton
-import Components.StatelessAnimatedButton as TButton
+import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -66,11 +63,10 @@ type alias Model =
     , bubble : Bubble.Model Msg
     , cycleCrementer : IntCrementer.Model
     , relaxRetDurCrementer : IntCrementer.Model
-
-    -- , copyButton : SButton.Model Msg
-    , copyButton : TButton.Model
-    , pasteButton : SButton.Model Msg
-    , updateButton : SButton.Model Msg
+    , copyButton : Button.Model
+    , pasteButton : Button.Model
+    , updateButton : Button.Model
+    , reloadButton : Button.Model
     , pastedMotivationData : ClipboardData MotivationData
     }
 
@@ -85,23 +81,10 @@ init shared () =
                 }
       , cycleCrementer = IntCrementer.init
       , relaxRetDurCrementer = IntCrementer.init
-
-      --   , copyButton =
-      --         SButton.init
-      --             { onPress = Just WriteMotDataToClipboard
-      --             -- , id = "copy"
-      --             }
-      , copyButton = TButton.init
-      , pasteButton =
-            SButton.init
-                { onPress = Just RequestClipboard
-
-                -- , id = "paste"
-                }
-      , updateButton =
-            SButton.init
-                { onPress = Just <| ReloadApp False
-                }
+      , copyButton = Button.init
+      , pasteButton = Button.init
+      , updateButton = Button.init
+      , reloadButton = Button.init
       , pastedMotivationData = NoData
       }
     , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
@@ -127,10 +110,8 @@ type SettingsItem
 
 type Msg
     = Tick Time.Posix
-      -- | CopyButtonAnimation Time.Posix
-      -- | PasteButtonAnimation Time.Posix
-    | ReloadApp Bool
-    | UpdateButtonSent SButton.Msg
+    | OnReloadButton Button.Model
+    | OnUpdateButton Button.Model
     | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int IntCrementer.Model
     | DefaultRelaxRetDurationChanged Int IntCrementer.Model
@@ -141,11 +122,8 @@ type Msg
     | ResetSettings
     | ReceivedNewestVersionString (Result Http.Error String)
     | SetMotivationData MotivationData
-      -- | WriteMotDataToClipboard
-    | OnCopyButton TButton.Model
-      -- | CopyButtonSent SButton.Msg
-    | RequestClipboard
-    | PasteButtonSent SButton.Msg
+    | OnCopyButton Button.Model
+    | OnPasteButton Button.Model
     | ReceivedClipboard Json.Decode.Value
 
 
@@ -157,38 +135,6 @@ update shared msg model =
                 { msg = Bubble.Tick
                 , model = model.bubble
                 , toModel = \bubble -> { model | bubble = bubble }
-                }
-
-        -- CopyButtonAnimation newTime ->
-        --     Button.update
-        --         { msg = Button.AnimationTick newTime
-        --         , model = model.copyButton
-        --         , toModel = \button -> { model | copyButton = button }
-        --         }
-        -- CopyButtonSent innerMsg ->
-        --     SButton.update
-        --         { msg = innerMsg
-        --         , model = model.copyButton
-        --         , toModel = \button -> { model | copyButton = button }
-        --         }
-        -- PasteButtonAnimation newTime ->
-        --     Button.update
-        --         { msg = Button.AnimationTick newTime
-        --         , model = model.pasteButton
-        --         , toModel = \button -> { model | pasteButton = button }
-        --         }
-        PasteButtonSent innerMsg ->
-            SButton.update
-                { msg = innerMsg
-                , model = model.pasteButton
-                , toModel = \button -> { model | pasteButton = button }
-                }
-
-        UpdateButtonSent innerMsg ->
-            SButton.update
-                { msg = innerMsg
-                , model = model.updateButton
-                , toModel = \button -> { model | updateButton = button }
                 }
 
         VisibilityChanged visibility ->
@@ -204,13 +150,22 @@ update shared msg model =
         ReceivedNewestVersionString response ->
             ( model, Effect.receivedVersionOnServer response )
 
-        ReloadApp once ->
-            ( model
-            , if once then
+        OnUpdateButton state ->
+            ( { model | reloadButton = state }
+            , if state == Button.Default then
+                Effect.updateApp
+
+              else
+                Effect.none
+            )
+
+        OnReloadButton state ->
+            ( { model | reloadButton = state }
+            , if state == Button.Default then
                 Effect.reload
 
               else
-                Effect.updateApp
+                Effect.none
             )
 
         DefaultCyclesChanged cycles state ->
@@ -283,24 +238,13 @@ update shared msg model =
         SetMotivationData motData ->
             ( model, Effect.setMotivationData motData )
 
-        -- WriteMotDataToClipboard ->
-        --     ( model
-        --     , case shared.motivationData of
-        --         Nothing ->
-        --             Effect.none
-        --         Just motData ->
-        --             motData
-        --                 |> MotivationData.encoder
-        --                 |> Json.Encode.encode 0
-        --                 |> Effect.writeToClipboard
-        --     )
         OnCopyButton state ->
             ( { model | copyButton = state }
             , case state of
-                TButton.Pressed ->
+                Button.Pressed ->
                     Effect.none
 
-                TButton.Default ->
+                Button.Default ->
                     case shared.motivationData of
                         Nothing ->
                             Effect.none
@@ -312,8 +256,14 @@ update shared msg model =
                                 |> Effect.writeToClipboard
             )
 
-        RequestClipboard ->
-            ( model, Effect.requestClipboardContent )
+        OnPasteButton state ->
+            ( { model | pasteButton = state }
+            , if state == Button.Default then
+                Effect.requestClipboardContent
+
+              else
+                Effect.none
+            )
 
         ReceivedClipboard value ->
             let
@@ -347,9 +297,6 @@ subscriptions shared model =
     Sub.batch
         [ Browser.Events.onVisibilityChange VisibilityChanged
         , Effect.clipboardReceiver ReceivedClipboard
-
-        -- , Animator.toSubscription CopyButtonAnimation model.copyButton Button.animator
-        -- , Animator.toSubscription PasteButtonAnimation model.pasteButton Button.animator
         , if model.settingsItemShown == BreathingSpeed then
             Time.every (Session.speedToMillis shared.sessionSettings.breathingSpeed |> Millis.toInt |> toFloat) Tick
 
@@ -457,17 +404,13 @@ viewUpdate shared model =
                             ++ shared.currentVersion
                             ++ " auf "
                             ++ versionOnServer
-
-                    -- , UButton.new { onPress = Just <| ReloadApp False, label = text "Update jetzt laden" }
-                    --     |> UButton.withLightColor
-                    --     |> UButton.view shared.colorScheme
-                    , SButton.new
+                    , Button.new
                         { model = model.updateButton
                         , label = text "Update jetzt laden"
-                        , toMsg = UpdateButtonSent
+                        , onPress = OnUpdateButton
                         }
-                        |> SButton.withLightColor
-                        |> SButton.view shared.colorScheme
+                        |> Button.withLightColor
+                        |> Button.view shared.colorScheme
                     ]
 
             else
@@ -576,21 +519,6 @@ viewSettings shared model pagePadding =
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
                         [ activeItemLabel "Gesamtablauf"
-
-                        -- , IntCrementer.new
-                        --     { label =
-                        --         \n ->
-                        --             paragraph []
-                        --                 [ el [ Font.bold ] <| text <| String.fromInt n
-                        --                 , text " Runde"
-                        --                 , el [ transparent <| n == 1 ] <| text "n"
-                        --                 ]
-                        --     , onCrement = DefaultCyclesChanged
-                        --     }
-                        --     |> IntCrementer.withMin 1
-                        --     |> IntCrementer.withMax 9
-                        --     |> IntCrementer.withLightColor
-                        --     |> IntCrementer.view shared.colorScheme shared.sessionSettings.cycles
                         , IntCrementer.new
                             { label =
                                 \n ->
@@ -718,27 +646,6 @@ viewSettings shared model pagePadding =
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
                         [ activeItemLabel "Erholungsretention"
-
-                        -- , IntCrementer.new
-                        --     { label =
-                        --         \n ->
-                        --             paragraph []
-                        --                 [ if n < 10 then
-                        --                     el [ transparent True ] <| text "1"
-                        --                   else
-                        --                     none
-                        --                 , el [ Font.bold ] <| text <| String.fromInt n
-                        --                 , text " Sekunden"
-                        --                 ]
-                        --     , onCrement = DefaultRelaxRetDurationChanged
-                        --     }
-                        --     |> IntCrementer.withMin 5
-                        --     |> IntCrementer.withMax 30
-                        --     |> IntCrementer.withLightColor
-                        --     |> IntCrementer.view shared.colorScheme
-                        --         (shared.sessionSettings.relaxRetDuration
-                        --             |> Millis.toSeconds
-                        --         )
                         , IntCrementer.new
                             { label =
                                 \n ->
@@ -811,38 +718,20 @@ viewSettings shared model pagePadding =
                     [ el itemAttrs <|
                         column [ width fill, spacing 20 ]
                             [ activeItemLabel "Spezialwerkzeuge..."
-
-                            -- , SButton.new
-                            --     { model = model.copyButton
-                            --     , label = text "Übungsergebnisse kopieren"
-                            --     , toMsg = CopyButtonSent
-                            --     }
-                            , TButton.new
+                            , Button.new
                                 { onPress = OnCopyButton
                                 , label = text "Übungsergebnisse kopieren"
                                 , model = model.copyButton
                                 }
-                                |> TButton.withLightColor
-                                |> TButton.view shared.colorScheme
-
-                            -- , Button.new
-                            --     { model = model.copyButton
-                            --     , label = text "Übungsergebnisse kopieren"
-                            --     , toMsg = CopyButtonSent
-                            --     }
-                            --     |> Button.withLightColor
-                            --     |> Button.view shared.colorScheme
-                            -- , Components.Button.new
-                            --     { onPress = Just RequestClipboard
-                            --     , label = text "Übungsergebnisse einfügen"
-                            --     }
-                            , SButton.new
+                                |> Button.withLightColor
+                                |> Button.view shared.colorScheme
+                            , Button.new
                                 { model = model.pasteButton
                                 , label = text "Übungsergebnisse einfügen"
-                                , toMsg = PasteButtonSent
+                                , onPress = OnPasteButton
                                 }
-                                |> SButton.withLightColor
-                                |> SButton.view shared.colorScheme
+                                |> Button.withLightColor
+                                |> Button.view shared.colorScheme
                             , case model.pastedMotivationData of
                                 NoData ->
                                     none
@@ -905,9 +794,13 @@ viewSettings shared model pagePadding =
                                         ]
                             ]
                     , el lastItemAttrs <|
-                        (UButton.new { onPress = Just <| ReloadApp True, label = text "App neu laden" }
-                            |> UButton.withLightColor
-                            |> UButton.view shared.colorScheme
+                        (Button.new
+                            { onPress = OnReloadButton
+                            , label = text "App neu laden"
+                            , model = model.reloadButton
+                            }
+                            |> Button.withLightColor
+                            |> Button.view shared.colorScheme
                         )
                     ]
 
