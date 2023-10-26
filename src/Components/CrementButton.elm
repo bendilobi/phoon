@@ -137,7 +137,16 @@ view colorScheme (Settings settings) =
                             Released ->
                                 CS.interactActiveColor colorScheme
                    , htmlAttribute <| Swipe.onStart (\_ -> settings.onPress <| Pressed settings.crement)
-                   , htmlAttribute <| Swipe.onEnd (\_ -> settings.onPress <| Released)
+                   , htmlAttribute <|
+                        Swipe.onEndWithOptions
+                            { --- This is needed, otherwise the button remains in Pressed state sometimes
+                              stopPropagation = True
+
+                            --- This is needed, otherwise strange behavior such as button being
+                            --- triggered again after touch end...
+                            , preventDefault = False
+                            }
+                            (\_ -> settings.onPress Released)
                    , htmlAttribute <|
                         case settings.model of
                             Pressed _ ->
@@ -151,7 +160,8 @@ view colorScheme (Settings settings) =
                                     ]
                    ]
             )
-            { onPress = Just <| settings.onPress settings.model
+            { --TODO: Warum funktioniert das hier nicht, aber beim normalen button schon?
+              onPress = Just <| settings.onPress settings.model
             , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
             }
 

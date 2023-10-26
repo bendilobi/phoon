@@ -106,7 +106,16 @@ view colorScheme (Settings settings) =
 
         eventAttributes =
             [ htmlAttribute <| Swipe.onStart (\_ -> settings.onPress Pressed)
-            , htmlAttribute <| Swipe.onEnd (\_ -> settings.onPress Default)
+            , htmlAttribute <|
+                Swipe.onEndWithOptions
+                    { --- This is needed, otherwise the button remains in Pressed state sometimes
+                      stopPropagation = True
+
+                    --- This is needed, otherwise strange behavior such as button being
+                    --- triggered again after touch end...
+                    , preventDefault = False
+                    }
+                    (\_ -> settings.onPress Default)
             ]
     in
     if settings.isInline then
@@ -127,10 +136,10 @@ view colorScheme (Settings settings) =
                             case settings.model of
                                 Pressed ->
                                     --TODO: Ins Farbschema aufnehmen?
-                                    rgba 0.7 0.7 0.7 1.0
+                                    rgba 0.8 0.8 0.8 1.0
 
                                 Default ->
-                                    rgba 0.7 0.7 0.7 0
+                                    rgba 0.8 0.8 0.8 0
                          , Border.rounded 5
                          , padding 5
                          , moveUp 5
