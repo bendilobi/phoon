@@ -1,9 +1,10 @@
 module Pages.Information exposing (Model, Msg, page)
 
+-- import Components.Button as UButton
+
 import Api
 import Browser.Events
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
-import Components.Button as UButton
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
 import Components.RetentionChart as RetentionChart
@@ -61,6 +62,8 @@ type ClipboardData value
 type alias Model =
     { settingsItemShown : SettingsItem
     , bubble : Bubble.Model Msg
+    , resetSettingsButton : Button.Model
+    , resetItemStatusButton : Button.Model
     , cycleCrementer : IntCrementer.Model
     , relaxRetDurCrementer : IntCrementer.Model
     , copyButton : Button.Model
@@ -68,6 +71,7 @@ type alias Model =
     , updateButton : Button.Model
     , reloadButton : Button.Model
     , pastedMotivationData : ClipboardData MotivationData
+    , replaceMotDataButton : Button.Model
     }
 
 
@@ -79,6 +83,8 @@ init shared () =
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
                 }
+      , resetSettingsButton = Button.init
+      , resetItemStatusButton = Button.init
       , cycleCrementer = IntCrementer.init
       , relaxRetDurCrementer = IntCrementer.init
       , copyButton = Button.init
@@ -86,6 +92,7 @@ init shared () =
       , updateButton = Button.init
       , reloadButton = Button.init
       , pastedMotivationData = NoData
+      , replaceMotDataButton = Button.init
       }
     , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
         Effect.checkVersion ReceivedNewestVersionString
@@ -118,10 +125,10 @@ type Msg
     | DefaultBreathingSpeedChanged BreathingSpeed
     | DefaultBreathCountChanged BreathCount
     | SettingsItemShown SettingsItem
-    | ResetSettingItemStatus
-    | ResetSettings
+    | OnResetSettingsButton Button.Model
+    | OnResetItemStatusButton Button.Model
     | ReceivedNewestVersionString (Result Http.Error String)
-    | SetMotivationData MotivationData
+    | OnReplaceMotivationDataButton MotivationData Button.Model
     | OnCopyButton Button.Model
     | OnPasteButton Button.Model
     | ReceivedClipboard Json.Decode.Value
@@ -204,9 +211,13 @@ update shared msg model =
             , Effect.updateSessionSettings { settings | breathCount = breathCount }
             )
 
-        ResetSettings ->
-            ( model
-            , Effect.updateSessionSettings Session.defaultSettings
+        OnResetSettingsButton newState ->
+            ( { model | resetSettingsButton = newState }
+            , if newState == Button.Default then
+                Effect.updateSessionSettings Session.defaultSettings
+
+              else
+                Effect.none
             )
 
         SettingsItemShown item ->
@@ -230,13 +241,27 @@ update shared msg model =
             , Effect.none
             )
 
-        ResetSettingItemStatus ->
-            ( { model | settingsItemShown = NoItem }
+        OnResetItemStatusButton newState ->
+            ( { model
+                | settingsItemShown =
+                    if newState == Button.Pressed then
+                        model.settingsItemShown
+
+                    else
+                        NoItem
+                , resetItemStatusButton = newState
+              }
             , Effect.none
             )
 
-        SetMotivationData motData ->
-            ( model, Effect.setMotivationData motData )
+        OnReplaceMotivationDataButton motData newState ->
+            ( { model | replaceMotDataButton = newState }
+            , if newState == Button.Default then
+                Effect.setMotivationData motData
+
+              else
+                Effect.none
+            )
 
         OnCopyButton state ->
             ( { model | copyButton = state }
@@ -486,13 +511,14 @@ viewSettings shared model pagePadding =
 
         activeItemLabel : String -> Element Msg
         activeItemLabel label =
-            UButton.new
-                { onPress = Just ResetSettingItemStatus
+            Button.new
+                { onPress = OnResetItemStatusButton
                 , label = text label
+                , model = model.resetItemStatusButton
                 }
-                |> UButton.withInline
-                |> UButton.withLightColor
-                |> UButton.view shared.colorScheme
+                |> Button.withInline
+                |> Button.withLightColor
+                |> Button.view shared.colorScheme
     in
     column [ width fill, spacing 10 ]
         [ row [ width fill, alignBottom ]
@@ -505,13 +531,14 @@ viewSettings shared model pagePadding =
                 text "Übung anpassen"
             , el [ width fill ] none
             , el [ alignBottom ] <|
-                (UButton.new
-                    { onPress = Just ResetSettings
+                (Button.new
+                    { onPress = OnResetSettingsButton
                     , label = text "Zurücksetzen"
+                    , model = model.resetSettingsButton
                     }
-                    |> UButton.withInline
-                    |> UButton.withLightColor
-                    |> UButton.view shared.colorScheme
+                    |> Button.withInline
+                    |> Button.withLightColor
+                    |> Button.view shared.colorScheme
                 )
             ]
         , column settingsAttrs
@@ -781,13 +808,14 @@ viewSettings shared model pagePadding =
                                                         , paddingXY 0 50
                                                         ]
                                                       <|
-                                                        (UButton.new
-                                                            { onPress = Just <| SetMotivationData motData
+                                                        (Button.new
+                                                            { onPress = OnReplaceMotivationDataButton motData
                                                             , label = text "Eingefügte Ergebnisse übernehmen"
+                                                            , model = model.replaceMotDataButton
                                                             }
-                                                            |> UButton.withLightColor
-                                                            |> UButton.withInline
-                                                            |> UButton.view shared.colorScheme
+                                                            |> Button.withLightColor
+                                                            |> Button.withInline
+                                                            |> Button.view shared.colorScheme
                                                         )
                                                     ]
                                                 ]

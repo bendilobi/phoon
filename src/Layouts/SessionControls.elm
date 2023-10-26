@@ -1,7 +1,6 @@
 module Layouts.SessionControls exposing (Model, Msg, Props, layout)
 
 import Browser.Navigation
-import Components.Button
 import Components.StatelessAnimatedButton as Button
 import Date
 import Delay
@@ -48,6 +47,7 @@ type alias Model =
     , cancelButton : Button.Model
     , addCycleButton : Button.Model
     , saveButton : Button.Model
+    , reloadButton : Button.Model
     }
 
 
@@ -60,6 +60,7 @@ init _ =
       , cancelButton = Button.init
       , addCycleButton = Button.init
       , saveButton = Button.init
+      , reloadButton = Button.init
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -80,7 +81,7 @@ type Msg
     | OnSaveButton Button.Model
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
-    | ReloadApp
+    | OnReloadButton Button.Model
       -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
     | MouseNavSwipe
@@ -209,9 +210,13 @@ update shared route msg model =
                 Effect.none
             )
 
-        ReloadApp ->
-            ( model
-            , Effect.sendCmd Browser.Navigation.reload
+        OnReloadButton newState ->
+            ( { model | reloadButton = newState }
+            , if newState == Button.Default then
+                Effect.sendCmd Browser.Navigation.reload
+
+              else
+                Effect.none
             )
 
 
@@ -243,7 +248,7 @@ view props shared route { toContentMsg, model, content } =
                                     |> map toContentMsg
 
                               else if model.controlsShown && route.path == Session.phasePath Session.Start then
-                                viewReload shared.colorScheme
+                                viewReloadButton shared.colorScheme model.reloadButton
                                     |> map toContentMsg
 
                               else
@@ -340,15 +345,16 @@ viewAddCycleControls colorScheme model =
         )
 
 
-viewReload : ColorScheme -> Element Msg
-viewReload colorScheme =
+viewReloadButton : ColorScheme -> Button.Model -> Element Msg
+viewReloadButton colorScheme reloadButton =
     el [ padding 50, centerX ]
-        (Components.Button.new
-            { onPress = Just ReloadApp
+        (Button.new
+            { onPress = OnReloadButton
             , label = text "Reload (Sound fix)"
+            , model = reloadButton
             }
-            |> Components.Button.withInline
-            |> Components.Button.view colorScheme
+            |> Button.withInline
+            |> Button.view colorScheme
         )
 
 

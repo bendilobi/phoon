@@ -17,8 +17,6 @@ import Simple.Transition as Transition
 type Button msg
     = Settings
         { label : Element msg
-
-        -- , onPress : Maybe msg
         , onPress : Model -> msg
         , model : Model
         , isDisabled : Bool
@@ -28,7 +26,6 @@ type Button msg
 
 
 new :
-    -- { onPress : Maybe msg
     { onPress : Model -> msg
     , label : Element msg
     , model : Model
@@ -107,11 +104,6 @@ view colorScheme (Settings settings) =
                         CS.interactActiveColor colorScheme
                 ]
                 { onPress = Just <| settings.onPress settings.model
-
-                -- if settings.isDisabled then
-                --     Nothing
-                -- else
-                --     settings.onPress
                 , label = settings.label
                 }
 
@@ -158,10 +150,5 @@ view colorScheme (Settings settings) =
                            ]
                     )
                     { onPress = Just <| settings.onPress settings.model
-
-                    -- if settings.isDisabled then
-                    --     Nothing
-                    -- else
-                    --     settings.onPress
                     , label = settings.label
                     }
