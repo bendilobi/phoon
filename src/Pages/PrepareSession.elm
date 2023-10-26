@@ -93,7 +93,7 @@ update shared msg model =
         OnStartButton state ->
             ( { model | startButton = state }
             , case state of
-                Button.Default ->
+                Button.Released ->
                     Effect.batch
                         [ Effect.resultsUpdated SessionResults.empty
                         , Effect.playSound Session.StartSound

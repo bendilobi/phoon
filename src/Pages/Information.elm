@@ -160,7 +160,7 @@ update shared msg model =
 
         OnUpdateButton state ->
             ( { model | updateButton = state }
-            , if state == Button.Default then
+            , if state == Button.Released then
                 Effect.updateApp
 
               else
@@ -169,7 +169,7 @@ update shared msg model =
 
         OnReloadButton state ->
             ( { model | reloadButton = state }
-            , if state == Button.Default then
+            , if state == Button.Released then
                 Effect.reload
 
               else
@@ -214,7 +214,7 @@ update shared msg model =
 
         OnResetSettingsButton newState ->
             ( { model | resetSettingsButton = newState }
-            , if newState == Button.Default then
+            , if newState == Button.Released then
                 Effect.updateSessionSettings Session.defaultSettings
 
               else
@@ -257,7 +257,7 @@ update shared msg model =
 
         OnReplaceMotivationDataButton motData newState ->
             ( { model | replaceMotDataButton = newState }
-            , if newState == Button.Default then
+            , if newState == Button.Released then
                 Effect.setMotivationData motData
 
               else
@@ -270,7 +270,7 @@ update shared msg model =
                 Button.Pressed ->
                     Effect.none
 
-                Button.Default ->
+                Button.Released ->
                     case shared.motivationData of
                         Nothing ->
                             Effect.none
@@ -284,7 +284,7 @@ update shared msg model =
 
         OnPasteButton state ->
             ( { model | pasteButton = state }
-            , if state == Button.Default then
+            , if state == Button.Released then
                 Effect.requestClipboardContent
 
               else

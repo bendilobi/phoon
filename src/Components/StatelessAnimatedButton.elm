@@ -67,13 +67,12 @@ withLightColor (Settings settings) =
 
 type Model
     = Pressed
-      --TODO: Umbenennen in Released
-    | Default
+    | Released
 
 
 init : Model
 init =
-    Default
+    Released
 
 
 
@@ -99,7 +98,7 @@ view colorScheme (Settings settings) =
                             [ Transition.backgroundColor 50 []
                             ]
 
-                    Default ->
+                    Released ->
                         Transition.properties
                             [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
                             ]
@@ -116,7 +115,7 @@ view colorScheme (Settings settings) =
                     --- triggered again after touch end...
                     , preventDefault = False
                     }
-                    (\_ -> settings.onPress Default)
+                    (\_ -> settings.onPress Released)
             ]
     in
     if settings.isInline then
@@ -132,6 +131,7 @@ view colorScheme (Settings settings) =
                     else
                         CS.interactActiveColor colorScheme
                  , behindContent <|
+                    --- To give it a bit of padding without affecting the layout
                     el
                         ([ BG.color <|
                             case settings.model of
@@ -139,7 +139,7 @@ view colorScheme (Settings settings) =
                                     --TODO: Ins Farbschema aufnehmen?
                                     rgba 0.8 0.8 0.8 1.0
 
-                                Default ->
+                                Released ->
                                     rgba 0.8 0.8 0.8 0
                          , Border.rounded 5
                          , padding 5
@@ -149,7 +149,9 @@ view colorScheme (Settings settings) =
                             ++ animationAttributes
                         )
                     <|
-                        el [ transparent True ] <|
+                        --- Make the shape adapt to the button's size
+                        el [ transparent True ]
+                        <|
                             settings.label
                  ]
                     ++ eventAttributes
@@ -183,21 +185,8 @@ view colorScheme (Settings settings) =
                                     Pressed ->
                                         CS.interactActiveLighterColor colorScheme
 
-                                    Default ->
+                                    Released ->
                                         CS.interactActiveColor colorScheme
-
-                           --    , htmlAttribute <| Swipe.onStart (\_ -> settings.onPress Pressed)
-                           --    , htmlAttribute <| Swipe.onEnd (\_ -> settings.onPress Default)
-                           --    , htmlAttribute <|
-                           --         case settings.model of
-                           --             Pressed ->
-                           --                 Transition.properties
-                           --                     [ Transition.backgroundColor 50 []
-                           --                     ]
-                           --             Default ->
-                           --                 Transition.properties
-                           --                     [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
-                           --                     ]
                            ]
                         ++ animationAttributes
                         ++ eventAttributes

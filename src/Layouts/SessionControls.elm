@@ -214,7 +214,7 @@ update shared route msg model =
 
         OnReloadButton newState ->
             ( { model | reloadButton = newState }
-            , if newState == Button.Default then
+            , if newState == Button.Released then
                 Effect.sendCmd Browser.Navigation.reload
 
               else

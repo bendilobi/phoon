@@ -40,6 +40,7 @@ new :
     -> RadioGroup choicesType msg
 new { choices, toString, onSelect } =
     Settings
+        --TODO: layout = Vertical implementieren? Oder weg?
         { layout = Horizontal
         , choices = choices
         , toString = toString
