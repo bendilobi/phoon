@@ -80,7 +80,7 @@ init shared () =
     ( { settingsItemShown = NoItem
       , bubble =
             Bubble.init
-                { bubbleType = Bubble.Static
+                { bubbleType = Bubble.Counting <| Session.breathCountInt shared.sessionSettings.breathCount
                 , onFinished = Nothing
                 , breathingSpeed = Session.speedToMillis shared.sessionSettings.breathingSpeed
                 }
@@ -208,7 +208,7 @@ update shared msg model =
                 settings =
                     shared.sessionSettings
             in
-            ( model
+            ( { model | bubble = Bubble.withBreathCount (Session.breathCountInt breathCount) model.bubble }
             , Effect.updateSessionSettings { settings | breathCount = breathCount }
             )
 
@@ -595,11 +595,6 @@ viewSettings shared model pagePadding =
                                 , bubbleColor = CS.guideColor shared.colorScheme
                                 , bgColor = CS.settingsColor shared.colorScheme
                                 }
-                                |> Bubble.withLabel
-                                    (shared.sessionSettings.breathCount
-                                        |> Session.breathCountInt
-                                        |> String.fromInt
-                                    )
                                 |> Bubble.view
                             )
                         , RadioGroup.new

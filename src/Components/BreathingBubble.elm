@@ -8,6 +8,7 @@ module Components.BreathingBubble exposing
     , tickSpeed
     , update
     , view
+    , withBreathCount
     , withFontSize
     , withLabel
     , withSpeed
@@ -131,6 +132,11 @@ withSpeed millis (Model model) =
     Model { model | breathingSpeed = millis }
 
 
+withBreathCount : Int -> Model msg -> Model msg
+withBreathCount breaths (Model model) =
+    Model { model | bubbleType = Counting breaths }
+
+
 
 --- Update ---
 
@@ -250,39 +256,13 @@ view (Settings settings) =
                         [ P.scale 1 ]
                         [ P.scale 0.1 ]
             )
-            ([ Font.bold
-             , width <| px settings.size
-             , height <| px settings.size
-             , Border.rounded <| settings.size // 2
-             , Font.color settings.bgColor
-             , BG.color settings.bubbleColor
-
-             --  , htmlAttribute <|
-             --     Transition.properties
-             --         [ Transition.transform 1300 [ Transition.easeOutQuad ]
-             --         ]
-             ]
-             -- ++ (case model.breathingState of
-             --         AtBreath _ In ->
-             --             [ Font.color settings.bgColor
-             --             , BG.color settings.bubbleColor
-             --             ]
-             --         _ ->
-             --             [ Font.color settings.bubbleColor
-             --             , BG.color settings.bgColor
-             --             ]
-             --    )
-             -- ++ (case model.breathingState of
-             --         AtBreath _ In ->
-             --             [ width <| px settings.size
-             --             , height <| px settings.size
-             --             ]
-             --         _ ->
-             --             [ width <| px 10
-             --             , height <| px 10
-             --             ]
-             --    )
-            )
+            [ Font.bold
+            , width <| px settings.size
+            , height <| px settings.size
+            , Border.rounded <| settings.size // 2
+            , Font.color settings.bgColor
+            , BG.color settings.bubbleColor
+            ]
         <|
             case model.breathingState of
                 AtBreath n _ ->
@@ -305,6 +285,10 @@ view (Settings settings) =
 
                                 Just label ->
                                     label
+
+
+
+--TODO: Das ist aus der Doku von Simple Animation kopiert... in Utils verschieben?
 
 
 animatedUi =
