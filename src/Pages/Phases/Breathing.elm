@@ -46,6 +46,7 @@ init shared () =
             Bubble.init
                 { bubbleType = Bubble.Counting <| Session.breathCount shared.session
                 , onFinished = Just BubbleFinished
+                , breathingSpeed = Session.speedMillis shared.session
                 }
       , breathingFinished = False
       }
@@ -86,7 +87,7 @@ update shared msg model =
 
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
-    Time.every (Session.speedMillis shared.session |> Millis.toInt |> toFloat) Tick
+    Time.every (Bubble.tickSpeed model.bubble) Tick
 
 
 

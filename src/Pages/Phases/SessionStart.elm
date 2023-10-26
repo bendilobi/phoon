@@ -23,7 +23,7 @@ import View exposing (View)
 page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
+        { init = init shared
         , update = update
         , subscriptions = subscriptions shared
         , view = view shared
@@ -47,13 +47,14 @@ type alias Model =
     }
 
 
-init : () -> ( Model, Effect Msg )
-init () =
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared () =
     ( { ticks = 0
       , bubble =
             Bubble.init
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
+                , breathingSpeed = Session.speedMillis shared.session
                 }
       }
     , Effect.none
@@ -94,7 +95,7 @@ update msg model =
 
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
-    Time.every (Session.speedMillis shared.session |> Millis.toInt |> toFloat) Tick
+    Time.every (Bubble.tickSpeed model.bubble) Tick
 
 
 

@@ -82,6 +82,7 @@ init shared () =
             Bubble.init
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
+                , breathingSpeed = Session.speedToMillis shared.sessionSettings.breathingSpeed
                 }
       , resetSettingsButton = Button.init
       , resetItemStatusButton = Button.init
@@ -198,7 +199,7 @@ update shared msg model =
                 settings =
                     shared.sessionSettings
             in
-            ( model
+            ( { model | bubble = Bubble.withSpeed (Session.speedToMillis speed) model.bubble }
             , Effect.updateSessionSettings { settings | breathingSpeed = speed }
             )
 
@@ -323,7 +324,7 @@ subscriptions shared model =
         [ Browser.Events.onVisibilityChange VisibilityChanged
         , Effect.clipboardReceiver ReceivedClipboard
         , if model.settingsItemShown == BreathingSpeed then
-            Time.every (Session.speedToMillis shared.sessionSettings.breathingSpeed |> Millis.toInt |> toFloat) Tick
+            Time.every (Bubble.tickSpeed model.bubble) Tick
 
           else
             Sub.none

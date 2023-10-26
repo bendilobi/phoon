@@ -55,12 +55,14 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , debugButtonsShown = False
       , debounceBlock = False
       , cancelButton = Button.init
       , addCycleButton = Button.init
       , saveButton = Button.init
       , reloadButton = Button.init
+
+      --- Debug-Buttons:
+      , debugButtonsShown = False
       }
     , Effect.batch
         [ Effect.setWakeLock

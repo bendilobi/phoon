@@ -67,6 +67,7 @@ withLightColor (Settings settings) =
 
 type Model
     = Pressed
+      --TODO: Umbenennen in Released
     | Default
 
 

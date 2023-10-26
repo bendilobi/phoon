@@ -5,10 +5,12 @@ module Components.BreathingBubble exposing
     , Msg(..)
     , init
     , new
+    , tickSpeed
     , update
     , view
     , withFontSize
     , withLabel
+    , withSpeed
     )
 
 import Effect exposing (Effect)
@@ -16,6 +18,10 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
+import Lib.Millis as Millis exposing (Milliseconds)
+import Simple.Animation as Animation exposing (Animation)
+import Simple.Animation.Animated as Animated
+import Simple.Animation.Property as P
 
 
 
@@ -69,7 +75,9 @@ withFontSize size (Settings settings) =
 --- Model ---
 
 
-type BreathType
+type
+    BreathType
+    --TODO: brauche ich das ganze In-Out? Vielleicht einfach Animation Steps verwenden...
     = In
     | Out
 
@@ -86,6 +94,7 @@ type BubbleType
 type Model msg
     = Model
         { breathingState : BreathingState
+        , breathingSpeed : Milliseconds
         , bubbleType : BubbleType
         , onFinished : Maybe msg
         }
@@ -98,14 +107,28 @@ starting =
 init :
     { bubbleType : BubbleType
     , onFinished : Maybe msg
+    , breathingSpeed : Milliseconds
     }
     -> Model msg
 init props =
     Model
         { breathingState = starting
+        , breathingSpeed = props.breathingSpeed
         , bubbleType = props.bubbleType
         , onFinished = props.onFinished
         }
+
+
+tickSpeed : Model msg -> Float
+tickSpeed (Model model) =
+    model.breathingSpeed
+        |> Millis.toInt
+        |> toFloat
+
+
+withSpeed : Milliseconds -> Model msg -> Model msg
+withSpeed millis (Model model) =
+    Model { model | breathingSpeed = millis }
 
 
 
@@ -201,44 +224,102 @@ view (Settings settings) =
             settings.model
     in
     el
-        ([ Font.bold
-         , width <| px settings.size
-         , height <| px settings.size
-         , Border.rounded <| settings.size // 2
-         , centerX
-         , centerY
-         ]
-            ++ (case model.breathingState of
-                    AtBreath _ In ->
-                        [ Font.color settings.bgColor
-                        , BG.color settings.bubbleColor
-                        ]
-
-                    _ ->
-                        [ Font.color settings.bubbleColor
-                        , BG.color settings.bgColor
-                        ]
-               )
-        )
+        [ width <| px settings.size
+        , height <| px settings.size
+        , centerX
+        , centerY
+        ]
     <|
-        case model.breathingState of
-            AtBreath n _ ->
-                el
-                    [ centerX
-                    , centerY
-                    , Font.size <|
-                        case settings.fontSize of
-                            Nothing ->
-                                settings.size // 2
+        animatedEl
+            (case model.breathingState of
+                AtBreath _ In ->
+                    --TODO: Dafür sorgen, dass beim ersten view noch nicht animiert wird
+                    --      Starting State wieder einführen?
+                    Animation.fromTo
+                        { duration = model.breathingSpeed |> Millis.toInt
+                        , options = [ Animation.easeOutQuad ]
+                        }
+                        [ P.scale 0.1 ]
+                        [ P.scale 1 ]
 
-                            Just size ->
-                                size
-                    ]
-                <|
-                    text <|
-                        case settings.label of
-                            Nothing ->
-                                String.fromInt n
+                AtBreath _ Out ->
+                    Animation.fromTo
+                        { duration = model.breathingSpeed |> Millis.toInt
+                        , options = [ Animation.easeOutQuad ]
+                        }
+                        [ P.scale 1 ]
+                        [ P.scale 0.1 ]
+            )
+            ([ Font.bold
+             , width <| px settings.size
+             , height <| px settings.size
+             , Border.rounded <| settings.size // 2
+             , Font.color settings.bgColor
+             , BG.color settings.bubbleColor
 
-                            Just label ->
-                                label
+             --  , htmlAttribute <|
+             --     Transition.properties
+             --         [ Transition.transform 1300 [ Transition.easeOutQuad ]
+             --         ]
+             ]
+             -- ++ (case model.breathingState of
+             --         AtBreath _ In ->
+             --             [ Font.color settings.bgColor
+             --             , BG.color settings.bubbleColor
+             --             ]
+             --         _ ->
+             --             [ Font.color settings.bubbleColor
+             --             , BG.color settings.bgColor
+             --             ]
+             --    )
+             -- ++ (case model.breathingState of
+             --         AtBreath _ In ->
+             --             [ width <| px settings.size
+             --             , height <| px settings.size
+             --             ]
+             --         _ ->
+             --             [ width <| px 10
+             --             , height <| px 10
+             --             ]
+             --    )
+            )
+        <|
+            case model.breathingState of
+                AtBreath n _ ->
+                    el
+                        [ centerX
+                        , centerY
+                        , Font.size <|
+                            case settings.fontSize of
+                                Nothing ->
+                                    settings.size // 2
+
+                                Just size ->
+                                    size
+                        ]
+                    <|
+                        text <|
+                            case settings.label of
+                                Nothing ->
+                                    String.fromInt n
+
+                                Just label ->
+                                    label
+
+
+animatedUi =
+    Animated.ui
+        { behindContent = behindContent
+        , htmlAttribute = htmlAttribute
+        , html = html
+        }
+
+
+animatedEl : Animation -> List (Attribute msg) -> Element msg -> Element msg
+animatedEl =
+    animatedUi el
+
+
+animatedColumn : Animation -> List (Attribute msg) -> List (Element msg) -> Element msg
+animatedColumn =
+    animatedUi column
