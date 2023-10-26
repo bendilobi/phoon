@@ -2,7 +2,7 @@ module Layouts.SessionControls exposing (Model, Msg, Props, layout)
 
 import Browser.Navigation
 import Components.Button
-import Components.SimpleAnimatedButton as Button
+import Components.StatelessAnimatedButton as Button
 import Date
 import Delay
 import Effect exposing (Effect)
@@ -45,9 +45,9 @@ type alias Model =
     , controlsShown : Bool
     , debugButtonsShown : Bool
     , debounceBlock : Bool
-    , cancelButton : Button.Model Msg
-    , addCycleButton : Button.Model Msg
-    , saveButton : Button.Model Msg
+    , cancelButton : Button.Model
+    , addCycleButton : Button.Model
+    , saveButton : Button.Model
     }
 
 
@@ -57,12 +57,9 @@ init _ =
       , controlsShown = False
       , debugButtonsShown = False
       , debounceBlock = False
-      , cancelButton =
-            Button.init
-                { onPress = Just Cancelled
-                }
-      , addCycleButton = Button.init { onPress = Just AddCycle }
-      , saveButton = Button.init { onPress = Just EndSession }
+      , cancelButton = Button.init
+      , addCycleButton = Button.init
+      , saveButton = Button.init
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -78,15 +75,12 @@ init _ =
 type Msg
     = Swipe Swipe.Event
     | SwipeEnd Swipe.Event
-    | Cancelled
-    | AddCycle
-    | EndSession
+    | OnCancelButton Button.Model
+    | OnAddCycleButton Button.Model
+    | OnSaveButton Button.Model
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
     | ReloadApp
-    | ButtonSent Button.Msg
-    | AddCycleButtonSent Button.Msg
-    | SaveButtonSent Button.Msg
       -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
     | MouseNavSwipe
@@ -145,13 +139,19 @@ update shared route msg model =
             , Effect.adjustToday today
             )
 
-        Cancelled ->
+        OnCancelButton newState ->
             let
                 sessionAtEnd =
                     Session.jumpToEnd shared.session
             in
-            ( { model | controlsShown = False }
-            , if
+            ( { model
+                | controlsShown = newState == Button.Pressed
+                , cancelButton = newState
+              }
+            , if newState == Button.Pressed then
+                Effect.none
+
+              else if
                 --TODO: Wie kann die Logik hier verständlicher und robuster gemacht werden?
                 route.path
                     == Session.phasePath Session.Start
@@ -169,43 +169,33 @@ update shared route msg model =
                     ]
             )
 
-        ButtonSent innerMsg ->
-            Button.update
-                { msg = innerMsg
-                , model = model.cancelButton
-                , toModel = \button -> { model | cancelButton = button }
-                }
-
-        AddCycle ->
+        OnAddCycleButton newState ->
             let
                 newSession =
                     Session.withCycles 1 shared.session
             in
-            ( { model | controlsShown = False }
-            , Effect.batch
-                [ Effect.sessionUpdated newSession
-                , Effect.navigate <| Session.currentPath newSession
-                ]
+            ( { model
+                | controlsShown = newState == Button.Pressed
+                , addCycleButton = newState
+              }
+            , if newState == Button.Pressed then
+                Effect.none
+
+              else
+                Effect.batch
+                    [ Effect.sessionUpdated newSession
+                    , Effect.navigate <| Session.currentPath newSession
+                    ]
             )
 
-        AddCycleButtonSent innerMsg ->
-            Button.update
-                { msg = innerMsg
-                , model = model.addCycleButton
-                , toModel = \button -> { model | addCycleButton = button }
-                }
+        OnSaveButton newState ->
+            ( { model | saveButton = newState }
+            , if newState == Button.Pressed then
+                Effect.none
 
-        EndSession ->
-            ( model
-            , Effect.sessionEnded Session.Finished
+              else
+                Effect.sessionEnded Session.Finished
             )
-
-        SaveButtonSent innerMsg ->
-            Button.update
-                { msg = innerMsg
-                , model = model.saveButton
-                , toModel = \button -> { model | saveButton = button }
-                }
 
         MouseNavSwipe ->
             ( { model | controlsShown = True }, Effect.none )
@@ -341,16 +331,10 @@ viewDebugButton msg label =
 viewAddCycleControls : ColorScheme -> Model -> Element Msg
 viewAddCycleControls colorScheme model =
     el [ width fill, padding 50 ]
-        -- (Components.Button.new
-        --     { onPress = Just AddCycle
-        --     , label = text "Noch 'ne Runde"
-        --     }
-        --     |> Components.Button.view colorScheme
-        -- )
         (Button.new
             { model = model.addCycleButton
             , label = text "Noch 'ne Runde"
-            , toMsg = AddCycleButtonSent
+            , onPress = OnAddCycleButton
             }
             |> Button.view colorScheme
         )
@@ -376,30 +360,18 @@ viewSessionControls colorScheme model route =
         ]
     <|
         if route.path == Session.phasePath Session.End then
-            -- [ Components.Button.new
-            --     { onPress = Just EndSession
-            --     , label = text "Speichern & beenden"
-            --     }
-            --     |> Components.Button.view colorScheme
             [ Button.new
                 { model = model.saveButton
                 , label = text "Speichern & beenden"
-                , toMsg = SaveButtonSent
+                , onPress = OnSaveButton
                 }
                 |> Button.view colorScheme
             , el [ height <| px 70 ] none
             , el [ centerX ] <|
-                -- (Components.Button.new
-                --     { onPress = Just Cancelled
-                --     , label = text "Sitzung verwerfen"
-                --     }
-                --     |> Components.Button.withInline
-                --     |> Components.Button.view colorScheme
-                -- )
                 (Button.new
                     { model = model.cancelButton
                     , label = text "Sitzung verwerfen"
-                    , toMsg = ButtonSent
+                    , onPress = OnCancelButton
                     }
                     |> Button.withInline
                     |> Button.view colorScheme
@@ -407,15 +379,10 @@ viewSessionControls colorScheme model route =
             ]
 
         else
-            -- [ Components.Button.new
-            --     { onPress = Just Cancelled
-            --     , label = text "Sitzung abbrechen"
-            --     }
-            --     |> Components.Button.view colorScheme
             [ Button.new
                 { model = model.cancelButton
                 , label = text "Sitzung abbrechen"
-                , toMsg = ButtonSent
+                , onPress = OnCancelButton
                 }
                 |> Button.view colorScheme
             ]

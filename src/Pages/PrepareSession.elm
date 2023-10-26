@@ -90,12 +90,6 @@ update shared msg model =
             , Effect.none
             )
 
-        -- ButtonSent innerMsg ->
-        --     Button.update
-        --         { msg = innerMsg
-        --         , model = model.startButton
-        --         , toModel = \button -> { model | startButton = button }
-        --         }
         OnStartButton state ->
             ( { model | startButton = state }
             , case state of
@@ -172,10 +166,6 @@ view shared model =
                 ]
             , el [ width fill ]
                 (Button.new
-                    -- { model = model.startButton
-                    -- , label = text "Los geht's!"
-                    -- , toMsg = ButtonSent
-                    -- }
                     { onPress = OnStartButton
                     , label = text "Los geht's!"
                     , model = model.startButton
