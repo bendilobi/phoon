@@ -158,7 +158,7 @@ update shared msg model =
             ( model, Effect.receivedVersionOnServer response )
 
         OnUpdateButton state ->
-            ( { model | reloadButton = state }
+            ( { model | updateButton = state }
             , if state == Button.Default then
                 Effect.updateApp
 

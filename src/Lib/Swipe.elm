@@ -308,7 +308,12 @@ onEnd =
 
 {-| Record the end of a touch gesture with options.
 -}
-onEndWithOptions : { stopPropagation : Bool, preventDefault : Bool } -> (Event -> msg) -> Html.Attribute msg
+onEndWithOptions :
+    { stopPropagation : Bool
+    , preventDefault : Bool
+    }
+    -> (Event -> msg)
+    -> Html.Attribute msg
 onEndWithOptions options tagger =
     decodeTouchListLength "changedTouches"
         |> Json.andThen (\length -> decodeTouchWithOptions "changedTouches" options (Touch End length >> tagger))

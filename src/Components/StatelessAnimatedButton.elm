@@ -89,6 +89,25 @@ view colorScheme (Settings settings) =
             , Border.rounded 15
             , Border.width 1
             ]
+
+        animationAttributes =
+            [ htmlAttribute <|
+                case settings.model of
+                    Pressed ->
+                        Transition.properties
+                            [ Transition.backgroundColor 50 []
+                            ]
+
+                    Default ->
+                        Transition.properties
+                            [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
+                            ]
+            ]
+
+        eventAttributes =
+            [ htmlAttribute <| Swipe.onStart (\_ -> settings.onPress Pressed)
+            , htmlAttribute <| Swipe.onEnd (\_ -> settings.onPress Default)
+            ]
     in
     if settings.isInline then
         if settings.isDisabled then
@@ -96,13 +115,35 @@ view colorScheme (Settings settings) =
 
         else
             button
-                [ Font.color <|
+                ([ Font.color <|
                     if settings.isLightColored then
                         CS.interactActiveLighterColor colorScheme
 
                     else
                         CS.interactActiveColor colorScheme
-                ]
+                 , behindContent <|
+                    el
+                        ([ BG.color <|
+                            case settings.model of
+                                Pressed ->
+                                    --TODO: Ins Farbschema aufnehmen?
+                                    rgba 0.7 0.7 0.7 1.0
+
+                                Default ->
+                                    rgba 0.7 0.7 0.7 0
+                         , Border.rounded 5
+                         , padding 5
+                         , moveUp 5
+                         , moveLeft 5
+                         ]
+                            ++ animationAttributes
+                        )
+                    <|
+                        el [ transparent True ] <|
+                            settings.label
+                 ]
+                    ++ eventAttributes
+                )
                 { onPress = Just <| settings.onPress settings.model
                 , label = settings.label
                 }
@@ -134,20 +175,22 @@ view colorScheme (Settings settings) =
 
                                     Default ->
                                         CS.interactActiveColor colorScheme
-                           , htmlAttribute <| Swipe.onStart (\_ -> settings.onPress Pressed)
-                           , htmlAttribute <| Swipe.onEnd (\_ -> settings.onPress Default)
-                           , htmlAttribute <|
-                                case settings.model of
-                                    Pressed ->
-                                        Transition.properties
-                                            [ Transition.backgroundColor 50 []
-                                            ]
 
-                                    Default ->
-                                        Transition.properties
-                                            [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
-                                            ]
+                           --    , htmlAttribute <| Swipe.onStart (\_ -> settings.onPress Pressed)
+                           --    , htmlAttribute <| Swipe.onEnd (\_ -> settings.onPress Default)
+                           --    , htmlAttribute <|
+                           --         case settings.model of
+                           --             Pressed ->
+                           --                 Transition.properties
+                           --                     [ Transition.backgroundColor 50 []
+                           --                     ]
+                           --             Default ->
+                           --                 Transition.properties
+                           --                     [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
+                           --                     ]
                            ]
+                        ++ animationAttributes
+                        ++ eventAttributes
                     )
                     { onPress = Just <| settings.onPress settings.model
                     , label = settings.label
