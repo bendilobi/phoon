@@ -29,7 +29,10 @@ page shared route =
 
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
-    Layouts.MainNav { header = Just "Motivation finden" }
+    Layouts.MainNav
+        { header = Just "Motivation finden"
+        , enableScrolling = False
+        }
 
 
 

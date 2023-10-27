@@ -46,7 +46,10 @@ page shared route =
 
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
-    Layouts.MainNav { header = Just "Übung optimieren" }
+    Layouts.MainNav
+        { header = Just "Übung optimieren"
+        , enableScrolling = True
+        }
 
 
 

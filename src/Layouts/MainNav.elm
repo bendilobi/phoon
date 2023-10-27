@@ -22,7 +22,9 @@ import View exposing (View)
 
 
 type alias Props =
-    { header : Maybe String }
+    { header : Maybe String
+    , enableScrolling : Bool
+    }
 
 
 layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
@@ -180,11 +182,24 @@ view props shared route { toContentMsg, model, content } =
                     Just headerText ->
                         viewHeader headerText |> map toContentMsg
                 , el
-                    [ height fill
-                    , width fill
-                    , scrollbarY
-                    , paddingEach <| SafeArea.paddingX shared.safeAreaInset
-                    ]
+                    ([ height fill
+                     , width fill
+                     , paddingEach <| SafeArea.paddingX shared.safeAreaInset
+                     ]
+                        ++ (if props.enableScrolling then
+                                --- Continuous scrolling by flicking on touch devices
+                                --- seems to produce scrolling events even during page
+                                --- change, so the new page continues the unfinished
+                                --- scrolling process of the previous page
+                                --- This leads to broken appearance of the new page
+                                --- if it is scrollable. So we enable scrollbars only
+                                --- on pages that need them.
+                                [ scrollbarY ]
+
+                            else
+                                []
+                           )
+                    )
                     content.element
                 , if shared.deviceInfo.orientation == Portrait then
                     viewNavBar shared route |> map toContentMsg
