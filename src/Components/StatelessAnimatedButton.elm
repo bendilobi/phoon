@@ -3,8 +3,11 @@ module Components.StatelessAnimatedButton exposing (Model(..), init, new, view, 
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
 import Element.Input exposing (button)
+import Html.Events as HEvents
+import Json.Decode as Decode
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Swipe as Swipe
 import Simple.Transition as Transition
@@ -105,17 +108,18 @@ view colorScheme (Settings settings) =
             ]
 
         eventAttributes =
-            [ htmlAttribute <| Swipe.onStart (\_ -> settings.onPress Pressed)
-            , htmlAttribute <|
-                Swipe.onEndWithOptions
-                    { --- This is needed, otherwise the button remains in Pressed state sometimes
-                      stopPropagation = True
+            -- [ htmlAttribute <| Swipe.onStart (\_ -> settings.onPress Pressed)
+            [ htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress Pressed
 
-                    --- This is needed, otherwise strange behavior such as button being
-                    --- triggered again after touch end...
-                    , preventDefault = False
-                    }
-                    (\_ -> settings.onPress Released)
+            -- , htmlAttribute <|
+            --     Swipe.onEndWithOptions
+            --         { --- This is needed, otherwise the button remains in Pressed state sometimes
+            --           stopPropagation = True
+            --         --- This is needed, otherwise strange behavior such as button being
+            --         --- triggered again after touch end...
+            --         , preventDefault = False
+            --         }
+            --         (\_ -> settings.onPress Released)
             ]
     in
     if settings.isInline then
@@ -156,7 +160,8 @@ view colorScheme (Settings settings) =
                  ]
                     ++ eventAttributes
                 )
-                { onPress = Just <| settings.onPress settings.model
+                -- { onPress = Just <| settings.onPress settings.model
+                { onPress = Just <| settings.onPress Released
                 , label = settings.label
                 }
 
@@ -191,6 +196,7 @@ view colorScheme (Settings settings) =
                         ++ animationAttributes
                         ++ eventAttributes
                     )
-                    { onPress = Just <| settings.onPress settings.model
+                    -- { onPress = Just <| settings.onPress settings.model
+                    { onPress = Just <| settings.onPress Released
                     , label = settings.label
                     }

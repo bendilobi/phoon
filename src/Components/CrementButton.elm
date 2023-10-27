@@ -15,8 +15,9 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Input exposing (button)
 import FeatherIcons
+import Html.Events as HEvents
+import Json.Decode as Decode
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.Swipe as Swipe
 import Simple.Transition as Transition
 
 
@@ -136,17 +137,23 @@ view colorScheme (Settings settings) =
 
                             Released ->
                                 CS.interactActiveColor colorScheme
-                   , htmlAttribute <| Swipe.onStart (\_ -> settings.onPress <| Pressed settings.crement)
-                   , htmlAttribute <|
-                        Swipe.onEndWithOptions
-                            { --- This is needed, otherwise the button remains in Pressed state sometimes
-                              stopPropagation = True
 
-                            --- This is needed, otherwise strange behavior such as button being
-                            --- triggered again after touch end...
-                            , preventDefault = False
-                            }
-                            (\_ -> settings.onPress Released)
+                   --    , htmlAttribute <| Swipe.onStart (\_ -> settings.onPress <| Pressed settings.crement)
+                   , htmlAttribute <|
+                        HEvents.on "pointerdown" <|
+                            Decode.succeed <|
+                                settings.onPress <|
+                                    Pressed settings.crement
+
+                   --    , htmlAttribute <|
+                   --         Swipe.onEndWithOptions
+                   --             { --- This is needed, otherwise the button remains in Pressed state sometimes
+                   --               stopPropagation = True
+                   --             --- This is needed, otherwise strange behavior such as button being
+                   --             --- triggered again after touch end...
+                   --             , preventDefault = False
+                   --             }
+                   --             (\_ -> settings.onPress Released)
                    , htmlAttribute <|
                         case settings.model of
                             Pressed _ ->
@@ -160,8 +167,8 @@ view colorScheme (Settings settings) =
                                     ]
                    ]
             )
-            { --TODO: Warum funktioniert das hier nicht, aber beim normalen button schon?
-              onPress = Just <| settings.onPress settings.model
+            { --   onPress = Just <| settings.onPress settings.model
+              onPress = Just <| settings.onPress Released
             , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
             }
 

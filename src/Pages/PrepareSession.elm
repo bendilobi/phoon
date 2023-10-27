@@ -1,7 +1,5 @@
 module Pages.PrepareSession exposing (Model, Msg, page)
 
--- import Components.SimpleAnimatedButton as Button
-
 import Components.IntCrementer as IntCrementer
 import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
@@ -49,8 +47,6 @@ toLayout model =
 
 type alias Model =
     { time : Time.Posix
-
-    -- , startButton : Button.Model Msg
     , startButton : Button.Model
     , cycleCrementer : IntCrementer.Model
     }
@@ -59,8 +55,6 @@ type alias Model =
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( { time = Time.millisToPosix 0
-
-      --   , startButton = Button.init { onPress = Just SessionStartPressed }
       , startButton = Button.init
       , cycleCrementer = IntCrementer.init
       }
@@ -77,13 +71,8 @@ init shared () =
 
 type Msg
     = Tick Time.Posix
-      -- | SessionStartPressed
     | OnStartButton Button.Model
     | CycleCountChanged Int IntCrementer.Model
-
-
-
--- | ButtonSent Button.Msg
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -92,6 +81,14 @@ update shared msg model =
         Tick newTime ->
             ( { model | time = newTime }
             , Effect.none
+            )
+
+        CycleCountChanged cycles state ->
+            ( { model | cycleCrementer = state }
+              --TODO: Ist es ein Problem, dass das hier auch bei Pressed gemacht wird?
+            , shared.session
+                |> Session.withCycles cycles
+                |> Effect.sessionUpdated
             )
 
         OnStartButton state ->
@@ -107,14 +104,6 @@ update shared msg model =
 
                 Button.Pressed ->
                     Effect.none
-            )
-
-        CycleCountChanged cycles state ->
-            ( { model | cycleCrementer = state }
-              --TODO: Ist es ein Problem, dass das hier auch bei Pressed gemacht wird?
-            , shared.session
-                |> Session.withCycles cycles
-                |> Effect.sessionUpdated
             )
 
 

@@ -74,13 +74,6 @@ withFontSize size (Settings settings) =
 
 
 --- Model ---
--- type
---     BreathType
---     --TODO: brauche ich das ganze In-Out? Vielleicht einfach Animation Steps verwenden...
---     = In
---     | Out
--- type BreathingState
---     = AtBreath Int BreathType
 
 
 type BubbleType
@@ -90,17 +83,11 @@ type BubbleType
 
 type Model msg
     = Model
-        -- { breathingState : BreathingState
         { currentBreath : Int
         , breathingSpeed : Milliseconds
         , bubbleType : BubbleType
         , onFinished : Maybe msg
         }
-
-
-
--- starting =
---     AtBreath 1 In
 
 
 init :
@@ -111,7 +98,6 @@ init :
     -> Model msg
 init props =
     Model
-        -- { breathingState = starting
         { currentBreath = 1
         , breathingSpeed = props.breathingSpeed
         , bubbleType = props.bubbleType
@@ -192,47 +178,7 @@ update props =
                     Effect.none
                 )
 
-            -- case model.breathingState of
-            --     AtBreath n In ->
-            --         case model.bubbleType of
-            --             Static ->
-            --                 ( Model { model | breathingState = AtBreath n Out }
-            --                 , Effect.none
-            --                 )
-            --             Counting maxBreaths ->
-            --                 if n == maxBreaths then
-            --                     ( Model { model | breathingState = starting }
-            --                     , case model.onFinished of
-            --                         Nothing ->
-            --                             Effect.none
-            --                         Just msg ->
-            --                             Effect.sendMsg msg
-            --                     )
-            --                 else
-            --                     ( Model { model | breathingState = AtBreath n Out }
-            --                     , Effect.none
-            --                     )
-            --     AtBreath n Out ->
-            --         case model.bubbleType of
-            --             Static ->
-            --                 ( Model { model | breathingState = AtBreath n In }
-            --                 , Effect.none
-            --                 )
-            --             Counting maxBreaths ->
-            --                 if n < maxBreaths then
-            --                     ( Model { model | breathingState = AtBreath (n + 1) In }
-            --                     , Effect.none
-            --                     )
-            --                 else
-            --                     ( Model { model | breathingState = starting }
-            --                     , case model.onFinished of
-            --                         Nothing ->
-            --                             Effect.none
-            --                         Just msg ->
-            --                             Effect.sendMsg msg
-            --                     )
             Reset ->
-                -- ( Model { model | breathingState = starting }
                 ( Model { model | currentBreath = 1 }
                 , Effect.none
                 )
@@ -259,24 +205,6 @@ view (Settings settings) =
         ]
     <|
         animatedEl
-            -- (case model.breathingState of
-            --     AtBreath _ In ->
-            --         --TODO: Dafür sorgen, dass beim ersten view noch nicht animiert wird
-            --         --      Starting State wieder einführen?
-            --         Animation.fromTo
-            --             { duration = model.breathingSpeed |> Millis.toInt
-            --             , options = [ Animation.easeOutQuad ]
-            --             }
-            --             [ P.scale 0.1 ]
-            --             [ P.scale 1 ]
-            --     AtBreath _ Out ->
-            --         Animation.fromTo
-            --             { duration = model.breathingSpeed |> Millis.toInt
-            --             , options = [ Animation.easeOutQuad ]
-            --             }
-            --             [ P.scale 1 ]
-            --             [ P.scale 0.1 ]
-            -- )
             (Animation.steps
                 { startAt = [ P.scale 0.07 ]
                 , options =
@@ -296,8 +224,6 @@ view (Settings settings) =
             , BG.color settings.bubbleColor
             ]
         <|
-            -- case model.breathingState of
-            --     AtBreath n _ ->
             el
                 [ centerX
                 , centerY
@@ -313,7 +239,6 @@ view (Settings settings) =
                 text <|
                     case settings.label of
                         Nothing ->
-                            -- String.fromInt n
                             model.currentBreath |> String.fromInt
 
                         Just label ->
