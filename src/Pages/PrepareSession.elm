@@ -9,6 +9,7 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
+import Html.Attributes as HtmlA
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis

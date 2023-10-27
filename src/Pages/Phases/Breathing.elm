@@ -114,6 +114,8 @@ view shared model =
             else
                 Bubble.new
                     { model = model.bubble
+
+                    --TODO: Bubblegröße abhängig von der Screen-Breite
                     , size = 300
                     , bubbleColor = CS.phaseSessionStartColor shared.colorScheme
                     , bgColor = CS.phaseBreathingColor shared.colorScheme

@@ -95,10 +95,13 @@ update msg model =
 
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
-    Time.every (Bubble.tickSpeed model.bubble) Tick
+    --- Reducing the tickSpeed by 1 millisecond is a fix for a bug in Elm:
+    --- https://github.com/elm/time/issues/25
+    Time.every (Bubble.tickSpeed model.bubble - 1) Tick
 
 
 
+-- Sub.none
 -- VIEW
 
 
