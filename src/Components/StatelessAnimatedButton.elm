@@ -108,18 +108,7 @@ view colorScheme (Settings settings) =
             ]
 
         eventAttributes =
-            -- [ htmlAttribute <| Swipe.onStart (\_ -> settings.onPress Pressed)
             [ htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress Pressed
-
-            -- , htmlAttribute <|
-            --     Swipe.onEndWithOptions
-            --         { --- This is needed, otherwise the button remains in Pressed state sometimes
-            --           stopPropagation = True
-            --         --- This is needed, otherwise strange behavior such as button being
-            --         --- triggered again after touch end...
-            --         , preventDefault = False
-            --         }
-            --         (\_ -> settings.onPress Released)
             ]
     in
     if settings.isInline then
@@ -160,7 +149,6 @@ view colorScheme (Settings settings) =
                  ]
                     ++ eventAttributes
                 )
-                -- { onPress = Just <| settings.onPress settings.model
                 { onPress = Just <| settings.onPress Released
                 , label = settings.label
                 }
@@ -196,7 +184,6 @@ view colorScheme (Settings settings) =
                         ++ animationAttributes
                         ++ eventAttributes
                     )
-                    -- { onPress = Just <| settings.onPress settings.model
                     { onPress = Just <| settings.onPress Released
                     , label = settings.label
                     }

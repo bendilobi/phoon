@@ -7,6 +7,7 @@ module Lib.SessionResults exposing
     , getRetentionTimes
     , incrementCurrentRetention
     , meanRetentionTime
+    , resetCurrentRetention
     )
 
 
@@ -29,19 +30,6 @@ empty =
 -- UPDATE
 
 
-addRetention : SessionResults -> SessionResults
-addRetention results =
-    case results of
-        NoResults ->
-            StartedCounting 0
-
-        StartedCounting n ->
-            Results [ n ] 0
-
-        Results list current ->
-            Results (list ++ [ current ]) 0
-
-
 incrementCurrentRetention : SessionResults -> SessionResults
 incrementCurrentRetention results =
     case results of
@@ -53,6 +41,32 @@ incrementCurrentRetention results =
 
         Results list current ->
             Results list (current + 1)
+
+
+resetCurrentRetention : SessionResults -> SessionResults
+resetCurrentRetention results =
+    case results of
+        NoResults ->
+            NoResults
+
+        StartedCounting _ ->
+            StartedCounting 0
+
+        Results list _ ->
+            Results list 0
+
+
+addRetention : SessionResults -> SessionResults
+addRetention results =
+    case results of
+        NoResults ->
+            StartedCounting 0
+
+        StartedCounting n ->
+            Results [ n ] 0
+
+        Results list current ->
+            Results (list ++ [ current ]) 0
 
 
 

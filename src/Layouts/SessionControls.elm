@@ -62,7 +62,7 @@ init _ =
       , reloadButton = Button.init
 
       --- Debug-Buttons:
-      , debugButtonsShown = False
+      , debugButtonsShown = True
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -122,10 +122,16 @@ update shared route msg model =
               --       ausgelöst. Wenn sich dann die zwei liegengebliebenen Finger kurz bewegen, gibts
               --       ein zweites End Event...
             , if multitouchRegistered then
-                Effect.batch
-                    [ Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock
-                    , Effect.navigateNext shared.session
-                    ]
+                Effect.batch <|
+                    (Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock)
+                        :: multitouchEffects shared route
+                -- , if route.path == Session.phasePath Session.Retention then
+                --     --- The user left the retention by multitouch, so we add the data
+                --     Effect.resultsUpdated <| SessionResults.addRetention shared.results
+                --   else
+                --     Effect.none
+                -- , Effect.navigateNext shared.session
+                -- ]
 
               else if singleTapRegistered && route.path == Session.phasePath Session.Start then
                 Effect.playSound Session.StartSound
@@ -148,6 +154,7 @@ update shared route msg model =
                     Session.jumpToEnd shared.session
             in
             ( { model
+                --TODO: Wenn Abbruch betätigt wurde, Controls zeigen
                 | controlsShown = newState == Button.Pressed
                 , cancelButton = newState
               }
@@ -168,6 +175,13 @@ update shared route msg model =
               else
                 Effect.batch
                     [ Effect.sessionUpdated sessionAtEnd
+                    , if route.path == Session.phasePath Session.Retention then
+                        --- The user cancelled the retention, so we reset the counter in case
+                        --- he retries the round by adding another round:
+                        Effect.resultsUpdated <| SessionResults.resetCurrentRetention shared.results
+
+                      else
+                        Effect.none
                     , Effect.navigate <| Session.currentPath sessionAtEnd
                     ]
             )
@@ -206,7 +220,8 @@ update shared route msg model =
         MouseNavTap ->
             ( { model | controlsShown = False }
             , if not model.controlsShown then
-                Effect.navigateNext shared.session
+                -- Effect.navigateNext shared.session
+                Effect.batch <| multitouchEffects shared route
 
               else
                 Effect.none
@@ -225,6 +240,18 @@ update shared route msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
+
+
+multitouchEffects : Shared.Model -> Route () -> List (Effect msg)
+multitouchEffects shared route =
+    [ if route.path == Session.phasePath Session.Retention then
+        --- The user left the retention by multitouch, so we add the data
+        Effect.resultsUpdated <| SessionResults.addRetention shared.results
+
+      else
+        Effect.none
+    , Effect.navigateNext shared.session
+    ]
 
 
 
@@ -249,7 +276,13 @@ view props shared route { toContentMsg, model, content } =
                                 viewAddCycleControls shared.colorScheme model
                                     |> map toContentMsg
 
-                              else if model.controlsShown && route.path == Session.phasePath Session.Start then
+                              else if
+                                model.controlsShown
+                                    && route.path
+                                    == Session.phasePath Session.Start
+                                    && SessionResults.finishedCycles shared.results
+                                    == 0
+                              then
                                 viewReloadButton shared.colorScheme model.reloadButton
                                     |> map toContentMsg
 
@@ -258,7 +291,7 @@ view props shared route { toContentMsg, model, content } =
                             , viewTouchOverlay model.debugButtonsShown
                                 |> map toContentMsg
                             , if model.controlsShown then
-                                viewSessionControls shared.colorScheme model route
+                                viewSessionControls shared model route
                                     |> map toContentMsg
 
                               else
@@ -360,20 +393,25 @@ viewReloadButton colorScheme reloadButton =
         )
 
 
-viewSessionControls : ColorScheme -> Model -> Route () -> Element Msg
-viewSessionControls colorScheme model route =
+viewSessionControls : Shared.Model -> Model -> Route () -> Element Msg
+viewSessionControls shared model route =
     column
         [ width fill
         , paddingEach { bottom = 100, top = 0, left = 50, right = 50 }
         ]
     <|
-        if route.path == Session.phasePath Session.End then
+        if
+            route.path
+                == Session.phasePath Session.End
+                && SessionResults.finishedCycles shared.results
+                > 0
+        then
             [ Button.new
                 { model = model.saveButton
                 , label = text "Speichern & beenden"
                 , onPress = OnSaveButton
                 }
-                |> Button.view colorScheme
+                |> Button.view shared.colorScheme
             , el [ height <| px 70 ] none
             , el [ centerX ] <|
                 (Button.new
@@ -382,15 +420,23 @@ viewSessionControls colorScheme model route =
                     , onPress = OnCancelButton
                     }
                     |> Button.withInline
-                    |> Button.view colorScheme
+                    |> Button.view shared.colorScheme
                 )
             ]
 
         else
             [ Button.new
                 { model = model.cancelButton
-                , label = text "Sitzung abbrechen"
+                , label =
+                    if
+                        route.path
+                            == Session.phasePath Session.End
+                    then
+                        text "Beenden"
+
+                    else
+                        text "Sitzung abbrechen"
                 , onPress = OnCancelButton
                 }
-                |> Button.view colorScheme
+                |> Button.view shared.colorScheme
             ]

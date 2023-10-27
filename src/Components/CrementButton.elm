@@ -137,23 +137,11 @@ view colorScheme (Settings settings) =
 
                             Released ->
                                 CS.interactActiveColor colorScheme
-
-                   --    , htmlAttribute <| Swipe.onStart (\_ -> settings.onPress <| Pressed settings.crement)
                    , htmlAttribute <|
                         HEvents.on "pointerdown" <|
                             Decode.succeed <|
                                 settings.onPress <|
                                     Pressed settings.crement
-
-                   --    , htmlAttribute <|
-                   --         Swipe.onEndWithOptions
-                   --             { --- This is needed, otherwise the button remains in Pressed state sometimes
-                   --               stopPropagation = True
-                   --             --- This is needed, otherwise strange behavior such as button being
-                   --             --- triggered again after touch end...
-                   --             , preventDefault = False
-                   --             }
-                   --             (\_ -> settings.onPress Released)
                    , htmlAttribute <|
                         case settings.model of
                             Pressed _ ->
@@ -167,8 +155,7 @@ view colorScheme (Settings settings) =
                                     ]
                    ]
             )
-            { --   onPress = Just <| settings.onPress settings.model
-              onPress = Just <| settings.onPress Released
+            { onPress = Just <| settings.onPress Released
             , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
             }
 
