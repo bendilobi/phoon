@@ -153,11 +153,7 @@ update shared route msg model =
                 sessionAtEnd =
                     Session.jumpToEnd shared.session
             in
-            ( { model
-                --TODO: Wenn Abbruch betätigt wurde, Controls zeigen
-                | controlsShown = newState == Button.Pressed
-                , cancelButton = newState
-              }
+            ( { model | cancelButton = newState }
             , if newState == Button.Pressed then
                 Effect.none
 
