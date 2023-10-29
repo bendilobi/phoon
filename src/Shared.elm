@@ -34,7 +34,7 @@ import Time
 
 
 version =
-    "0.6.198"
+    "0.6.199"
 
 
 
@@ -259,22 +259,7 @@ update route msg model =
             )
 
         Shared.Msg.NavigateTriggered path ->
-            ( { model
-                | previousPath = route.path
-
-                -- , results =
-                --     --TODO: Funktioniert so nicht, erst 0 setzten und dann übernehmen wollen...
-                --     --      => Diese Logik ist hier fehl am Platze, Ergebnisse an andrer Stelle
-                --     --      behandeln
-                --     if route.path == Session.phasePath Session.Retention then
-                --         --- We are leaving the retention phase, so we reset the counter:
-                --         SessionResults.resetCurrentRetention model.results
-                --     else if route.path == Session.phasePath Session.RelaxRetention then
-                --         --- We completed a retention, so we add it to the results:
-                --         SessionResults.addRetention model.results
-                --     else
-                --         model.results
-              }
+            ( { model | previousPath = route.path }
             , Effect.replaceRoute
                 { path = path
                 , query = Dict.empty

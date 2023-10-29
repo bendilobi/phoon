@@ -8,6 +8,7 @@ import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.Session as Session
+import Lib.SessionResults as SessionResults
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -23,13 +24,13 @@ page shared route =
         , subscriptions = subscriptions
         , view = view shared
         }
-        |> Page.withLayout toLayout
+        |> Page.withLayout (toLayout shared)
 
 
-toLayout : Model -> Layouts.Layout Msg
-toLayout model =
+toLayout : Shared.Model -> Model -> Layouts.Layout Msg
+toLayout shared model =
     Layouts.SessionControls
-        { showSessionProgress = True }
+        { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results }
 
 
 

@@ -22,7 +22,7 @@ import View exposing (View)
 
 
 type alias Props =
-    { showSessionProgress : Bool }
+    { showCurrentCycle : Maybe Int }
 
 
 layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
@@ -125,13 +125,6 @@ update shared route msg model =
                 Effect.batch <|
                     (Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock)
                         :: multitouchEffects shared route
-                -- , if route.path == Session.phasePath Session.Retention then
-                --     --- The user left the retention by multitouch, so we add the data
-                --     Effect.resultsUpdated <| SessionResults.addRetention shared.results
-                --   else
-                --     Effect.none
-                -- , Effect.navigateNext shared.session
-                -- ]
 
               else if singleTapRegistered && route.path == Session.phasePath Session.Start then
                 Effect.playSound Session.StartSound
@@ -158,7 +151,6 @@ update shared route msg model =
                 Effect.none
 
               else if
-                --TODO: Wie kann die Logik hier verständlicher und robuster gemacht werden?
                 route.path
                     == Session.phasePath Session.Start
                     && not (shared.previousPath == Session.phasePath Session.End)
@@ -300,29 +292,27 @@ view props shared route { toContentMsg, model, content } =
                 [ width fill
                 , height fill
                 ]
-                [ if props.showSessionProgress then
-                    el
-                        ([ width fill
-                         , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                         ]
-                            ++ CS.primary
-                        )
-                    <|
-                        el
-                            [ centerX
-                            , padding 10
-                            , Font.size 30
-                            ]
-                        <|
-                            text <|
-                                "Runde "
-                                    ++ (String.fromInt <|
-                                            SessionResults.finishedCycles shared.results
-                                                + 1
-                                       )
+                [ case props.showCurrentCycle of
+                    Nothing ->
+                        none
 
-                  else
-                    none
+                    Just cycle ->
+                        el
+                            ([ width fill
+                             , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                             ]
+                                ++ CS.primary
+                            )
+                        <|
+                            el
+                                [ centerX
+                                , padding 10
+                                , Font.size 30
+                                ]
+                            <|
+                                text <|
+                                    "Runde "
+                                        ++ String.fromInt cycle
                 , content.element
                 ]
     }

@@ -24,13 +24,13 @@ page shared route =
         , subscriptions = subscriptions
         , view = view shared
         }
-        |> Page.withLayout toLayout
+        |> Page.withLayout (toLayout shared)
 
 
-toLayout : Model -> Layouts.Layout Msg
-toLayout model =
+toLayout : Shared.Model -> Model -> Layouts.Layout Msg
+toLayout shared model =
     Layouts.SessionControls
-        { showSessionProgress = True }
+        { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results + 1 }
 
 
 

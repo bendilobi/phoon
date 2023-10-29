@@ -34,7 +34,7 @@ page shared route =
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
     Layouts.SessionControls
-        { showSessionProgress = False }
+        { showCurrentCycle = Nothing }
 
 
 
