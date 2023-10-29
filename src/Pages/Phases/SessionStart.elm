@@ -10,7 +10,6 @@ import FeatherIcons
 import Html.Attributes
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.Millis as Millis
 import Lib.Session as Session
 import Page exposing (Page)
 import Route exposing (Route)
@@ -136,7 +135,15 @@ view shared model =
                 el [ centerX ] <|
                     (Bubble.new
                         { model = model.bubble
-                        , size = 200
+
+                        -- , size = 200
+                        , size =
+                            (min shared.deviceInfo.window.width
+                                shared.deviceInfo.window.height
+                                |> toFloat
+                            )
+                                * 0.4
+                                |> round
                         , bubbleColor = CS.phaseSessionStartCopyColor shared.colorScheme
                         , bgColor = CS.phaseSessionStartColor shared.colorScheme
                         }

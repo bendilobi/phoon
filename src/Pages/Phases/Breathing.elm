@@ -112,11 +112,15 @@ view shared model =
                     text "Retention \nvorbereiten"
 
             else
+                let
+                    window =
+                        shared.deviceInfo.window
+                in
                 Bubble.new
                     { model = model.bubble
 
-                    --TODO: Bubblegröße abhängig von der Screen-Breite
-                    , size = 300
+                    -- , size = 300
+                    , size = (min window.width window.height |> toFloat) * 0.9 |> round
                     , bubbleColor = CS.phaseSessionStartColor shared.colorScheme
                     , bgColor = CS.phaseBreathingColor shared.colorScheme
                     }

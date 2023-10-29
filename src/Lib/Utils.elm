@@ -45,6 +45,8 @@ formatSeconds sec =
 type alias Device =
     { class : DeviceClass
     , orientation : Orientation
+
+    --TODO: die Dimensionen als Float vorhalten?
     , window : { height : Int, width : Int }
     }
 

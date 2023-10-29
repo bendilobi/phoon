@@ -3,13 +3,11 @@ module Components.StatelessAnimatedButton exposing (Model(..), init, new, view, 
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
-import Element.Events as Events
 import Element.Font as Font
 import Element.Input exposing (button)
 import Html.Events as HEvents
 import Json.Decode as Decode
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.Swipe as Swipe
 import Simple.Transition as Transition
 
 
