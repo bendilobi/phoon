@@ -134,13 +134,13 @@ viewMotivationData today motData colorScheme =
 
                         else
                             String.fromInt <| daysSinceLastSession - 1
-        , el
-            [ centerX
+        , paragraph
+            [ width fill
             , Font.bold
             , Font.size 20
+            , Font.center
             ]
-          <|
-            text <|
+            [ text <|
                 case motData of
                     Nothing ->
                         "Keine Motivationsdaten gespeichert"
@@ -158,4 +158,5 @@ viewMotivationData today motData colorScheme =
 
                         else
                             "...Tage ausgelassen... hm..."
+            ]
         ]
