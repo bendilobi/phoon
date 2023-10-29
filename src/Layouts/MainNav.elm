@@ -1,7 +1,7 @@
 module Layouts.MainNav exposing (Model, Msg, Props, layout)
 
 import Browser.Events
-import Components.SimpleAnimatedButton as Button
+import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -43,14 +43,14 @@ layout props shared route =
 
 type alias Model =
     { lastHide : Maybe Time.Posix
-    , updateButton : Button.Model Msg
+    , updateButton : Button.Model
     }
 
 
 init : () -> ( Model, Effect Msg )
 init _ =
     ( { lastHide = Nothing
-      , updateButton = Button.init { onPress = Just CloseUpdate }
+      , updateButton = Button.init
       }
     , Effect.none
     )
@@ -65,8 +65,8 @@ type Msg
     | HiddenAt Time.Posix
     | ShownAt Time.Posix
     | VisibilityChanged Browser.Events.Visibility
-    | CloseUpdate
-    | ButtonSent Button.Msg
+    | OnCloseUpdateButton Button.Model
+    | CancelUpdate
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -105,15 +105,22 @@ update msg model =
                 Effect.none
             )
 
-        CloseUpdate ->
-            ( model, Effect.setUpdating False )
+        OnCloseUpdateButton newState ->
+            ( { model | updateButton = newState }
+            , if newState == Button.Released then
+                Effect.setUpdating False
 
-        ButtonSent innerMsg ->
-            Button.update
-                { msg = innerMsg
-                , model = model.updateButton
-                , toModel = \button -> { model | updateButton = button }
-                }
+              else
+                Effect.none
+            )
+
+        CancelUpdate ->
+            ( model
+            , Effect.batch
+                [ Effect.setUpdating False
+                , Effect.reload
+                ]
+            )
 
 
 subscriptions : Model -> Sub Msg
@@ -137,7 +144,7 @@ view props shared route { toContentMsg, model, content } =
                     , centerY
 
                     --Todo: stattdessen ordentlich abbrechen
-                    , Events.onClick CloseUpdate
+                    , Events.onClick CancelUpdate
                     ]
                 <|
                     text "Aktualisiere..."
@@ -160,7 +167,7 @@ view props shared route { toContentMsg, model, content } =
                     , Button.new
                         { model = model.updateButton
                         , label = text "Fertig"
-                        , toMsg = ButtonSent
+                        , onPress = OnCloseUpdateButton
                         }
                         |> Button.withLightColor
                         |> Button.view shared.colorScheme
