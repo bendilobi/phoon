@@ -42,7 +42,6 @@ layout props shared route =
 type alias Model =
     { gesture : Swipe.Gesture
     , controlsShown : Bool
-    , debugButtonsShown : Bool
     , debounceBlock : Bool
     , cancelButton : Button.Model
     , addCycleButton : Button.Model
@@ -60,9 +59,6 @@ init _ =
       , addCycleButton = Button.init
       , saveButton = Button.init
       , reloadButton = Button.init
-
-      --- Debug-Buttons:
-      , debugButtonsShown = True
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -276,7 +272,7 @@ view props shared route { toContentMsg, model, content } =
 
                               else
                                 none
-                            , viewTouchOverlay model.debugButtonsShown
+                            , viewTouchOverlay Shared.showDebugButtons
                                 |> map toContentMsg
                             , if model.controlsShown then
                                 viewSessionControls shared model route

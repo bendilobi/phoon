@@ -2,6 +2,7 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
+    , showDebugButtons
     )
 
 {-|
@@ -35,6 +36,10 @@ import Time
 
 version =
     "0.6.199"
+
+
+showDebugButtons =
+    True
 
 
 
@@ -99,10 +104,10 @@ init flagsResult route =
                             SafeArea.decode data.safeAreaInsets
 
                         widthDecoded =
-                            Json.Decode.decodeValue Json.Decode.int data.width
+                            Json.Decode.decodeValue Json.Decode.float data.width
 
                         heightDecoded =
-                            Json.Decode.decodeValue Json.Decode.int data.height
+                            Json.Decode.decodeValue Json.Decode.float data.height
                     in
                     { motData =
                         case motDataDecoded of
@@ -179,7 +184,7 @@ update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
         Shared.Msg.ReceivedViewport { viewport } ->
-            ( { model | deviceInfo = Utils.classifyDevice { width = round viewport.width, height = round viewport.height } }
+            ( { model | deviceInfo = Utils.classifyDevice { width = viewport.width, height = viewport.height } }
             , Effect.none
             )
 

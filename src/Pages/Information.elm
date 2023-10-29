@@ -471,7 +471,7 @@ viewRetentionTrend shared parentPadding =
                         text "Retentionstrend"
                     , el [ centerX ] <|
                         (RetentionChart.new
-                            { width = shared.deviceInfo.window.width - (SafeArea.maxX shared.safeAreaInset * 2) - parentPadding
+                            { width = (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2) - parentPadding
                             , height = 200
                             , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
                             , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
@@ -790,7 +790,7 @@ viewSettings shared model pagePadding =
                                                 , column [ centerX ]
                                                     [ RetentionChart.new
                                                         { width =
-                                                            shared.deviceInfo.window.width
+                                                            (shared.deviceInfo.window.width |> round)
                                                                 - (SafeArea.maxX shared.safeAreaInset * 2)
                                                                 - (pagePadding + (hPad * 2))
                                                         , height = 200

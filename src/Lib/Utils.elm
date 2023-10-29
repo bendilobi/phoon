@@ -47,11 +47,11 @@ type alias Device =
     , orientation : Orientation
 
     --TODO: die Dimensionen als Float vorhalten?
-    , window : { height : Int, width : Int }
+    , window : { height : Float, width : Float }
     }
 
 
-classifyDevice : { height : Int, width : Int } -> Device
+classifyDevice : { height : Float, width : Float } -> Device
 classifyDevice window =
     { class =
         let
