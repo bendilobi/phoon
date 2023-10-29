@@ -107,10 +107,15 @@ update shared route msg model =
                     not model.controlsShown
                         && Swipe.isTap gesture
                         && (Swipe.maxFingers gesture == 1)
+
+                swipeSize =
+                    shared.deviceInfo.window.width * 0.75
             in
             ( { model
                 | gesture = Swipe.blanco
-                , controlsShown = Swipe.isRightSwipe 300 gesture
+
+                -- , controlsShown = Swipe.isRightSwipe 300 gesture
+                , controlsShown = Swipe.isRightSwipe swipeSize gesture
                 , debounceBlock = model.debounceBlock || multitouchRegistered
               }
               -- TODO: Herausfinden, ob ich doch irgendwie ein sauberes "Mehr als 1 Finger beteiligt" hinkriege...

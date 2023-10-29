@@ -428,11 +428,13 @@ viewUpdate shared model =
         Just versionOnServer ->
             if shared.currentVersion /= versionOnServer then
                 column [ width fill, spacing 10 ]
-                    [ text <|
-                        "Ein Update ist verfügbar von Version "
-                            ++ shared.currentVersion
-                            ++ " auf "
-                            ++ versionOnServer
+                    [ paragraph [ width fill ]
+                        [ text <|
+                            "Ein Update ist verfügbar von Version "
+                                ++ shared.currentVersion
+                                ++ " auf "
+                                ++ versionOnServer
+                        ]
                     , Button.new
                         { model = model.updateButton
                         , label = text "Update jetzt laden"

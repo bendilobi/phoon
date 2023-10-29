@@ -142,8 +142,6 @@ view props shared route { toContentMsg, model, content } =
                 el
                     [ centerX
                     , centerY
-
-                    --Todo: stattdessen ordentlich abbrechen
                     , Events.onClick CancelUpdate
                     ]
                 <|
@@ -160,10 +158,6 @@ view props shared route { toContentMsg, model, content } =
                             "Update auf Version "
                                 ++ shared.currentVersion
                                 ++ " erfolgreich!"
-
-                    -- , Components.Button.new { onPress = Just CloseUpdate, label = text "Fertig" }
-                    --     |> Components.Button.withLightColor
-                    --     |> Components.Button.view shared.colorScheme
                     , Button.new
                         { model = model.updateButton
                         , label = text "Fertig"
