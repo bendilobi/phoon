@@ -35,11 +35,11 @@ import Time
 
 
 version =
-    "0.6.202"
+    "0.6.205"
 
 
 showDebugButtons =
-    True
+    False
 
 
 
@@ -161,7 +161,7 @@ init flagsResult route =
       , sessionSettings = decodedFlags.sessionSettings
       , appIsUpdating = decodedFlags.isUpdating
       , justUpdated = False
-      , baseApiUrl = "/"
+      , baseApiUrl = "/version/"
       , safeAreaInset = decodedFlags.safeAreaInsets
       }
     , Effect.batch
