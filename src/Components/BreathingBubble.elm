@@ -20,8 +20,8 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Lib.Millis as Millis exposing (Milliseconds)
+import Lib.Utils as Utils
 import Simple.Animation as Animation exposing (Animation)
-import Simple.Animation.Animated as Animated
 import Simple.Animation.Property as P
 
 
@@ -204,7 +204,7 @@ view (Settings settings) =
         , centerY
         ]
     <|
-        animatedEl
+        Utils.animatedEl
             (Animation.steps
                 { startAt = [ P.scale 0.07 ]
                 , options =
@@ -243,25 +243,3 @@ view (Settings settings) =
 
                         Just label ->
                             label
-
-
-
---TODO: Das ist aus der Doku von Simple Animation kopiert... in Utils verschieben?
-
-
-animatedUi =
-    Animated.ui
-        { behindContent = behindContent
-        , htmlAttribute = htmlAttribute
-        , html = html
-        }
-
-
-animatedEl : Animation -> List (Attribute msg) -> Element msg -> Element msg
-animatedEl =
-    animatedUi el
-
-
-animatedColumn : Animation -> List (Attribute msg) -> List (Element msg) -> Element msg
-animatedColumn =
-    animatedUi column

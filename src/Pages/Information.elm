@@ -428,7 +428,7 @@ viewUpdate shared model =
         Just versionOnServer ->
             if shared.currentVersion /= versionOnServer then
                 column [ width fill, spacing 10 ]
-                    [ paragraph [ width fill ]
+                    [ paragraph [ width fill, Font.center ]
                         [ text <|
                             "Ein Update ist verfügbar von Version "
                                 ++ shared.currentVersion

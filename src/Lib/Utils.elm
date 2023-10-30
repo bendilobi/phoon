@@ -1,8 +1,10 @@
-module Lib.Utils exposing (Device, classifyDevice, colorToHex, formatSeconds)
+module Lib.Utils exposing (Device, animatedColumn, animatedEl, classifyDevice, colorToHex, formatSeconds)
 
 import Color
 import Color.Convert
 import Element exposing (..)
+import Simple.Animation as Animation exposing (Animation)
+import Simple.Animation.Animated as Animated
 
 
 
@@ -88,3 +90,25 @@ colorToHex color =
         |> toRgb
         |> Color.fromRgba
         |> Color.Convert.colorToHex
+
+
+
+--- Animation ---
+
+
+animatedUi =
+    Animated.ui
+        { behindContent = behindContent
+        , htmlAttribute = htmlAttribute
+        , html = html
+        }
+
+
+animatedEl : Animation -> List (Attribute msg) -> Element msg -> Element msg
+animatedEl =
+    animatedUi el
+
+
+animatedColumn : Animation -> List (Attribute msg) -> List (Element msg) -> Element msg
+animatedColumn =
+    animatedUi column
