@@ -644,12 +644,9 @@ viewSettings shared model pagePadding =
                     shared.colorScheme
             ]
         , let
-            seconds =
-                Session.breathCountInt shared.sessionSettings.breathCount
-                    * (Session.speedToMillis shared.sessionSettings.breathingSpeed
-                        |> Millis.multiplyBy 2
-                        |> Millis.toSeconds
-                      )
+            millis =
+                Session.speedToMillis shared.sessionSettings.breathingSpeed
+                    |> Millis.multiplyBy (2 * Session.breathCountInt shared.sessionSettings.breathCount)
           in
           paragraph
             [ Font.size 13
@@ -662,8 +659,8 @@ viewSettings shared model pagePadding =
                 ]
               <|
                 text <|
-                    Utils.formatSeconds seconds
-            , if seconds < 60 then
+                    Millis.toString millis
+            , if Millis.toSeconds millis < 60 then
                 text " Sekunden"
 
               else
@@ -720,7 +717,8 @@ viewSettings shared model pagePadding =
                             |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
                         )
-                    |> Millis.toSeconds
+
+            -- |> Millis.toSeconds
           in
           paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
             [ text "Geschätzte Gesamtdauer der Übung: "
@@ -730,9 +728,9 @@ viewSettings shared model pagePadding =
                 ]
               <|
                 text <|
-                    Utils.formatSeconds duration
+                    Millis.toString duration
             , text <|
-                if duration < 3600 then
+                if Millis.toMinutes duration < 60 then
                     " Minuten"
 
                 else

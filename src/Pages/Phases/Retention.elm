@@ -6,9 +6,9 @@ import Element.Background as BG
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Millis as Millis
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
-import Lib.Utils as Utils
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -85,6 +85,7 @@ view shared model =
         el [ width fill, height fill ] <|
             el [ Font.size 30, centerX, centerY ] <|
                 text <|
-                    Utils.formatSeconds <|
-                        SessionResults.currentRetentionTime shared.results
+                    Millis.toString <|
+                        Millis.fromSeconds <|
+                            SessionResults.currentRetentionTime shared.results
     }

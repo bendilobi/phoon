@@ -3,6 +3,7 @@ module Components.RetentionChart exposing (new, view)
 import Chart as C
 import Chart.Attributes as CA
 import Element exposing (..)
+import Lib.Millis as Millis
 import Lib.Utils as Utils
 import Svg
 
@@ -110,7 +111,7 @@ view (Settings settings) =
                 , CA.color <| Utils.colorToHex settings.copyColor
                 , CA.ellipsis labelWidth 50
                 ]
-                [ Svg.text <| Utils.formatSeconds <| round max ]
+                [ Svg.text <| Millis.toString <| Millis.fromSeconds <| round max ]
             ]
             |> html
         )
