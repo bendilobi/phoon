@@ -357,34 +357,49 @@ viewDebugButton msg label =
 
 viewAddCycleControls : ColorScheme -> Model -> Element Msg
 viewAddCycleControls colorScheme model =
-    el [ width fill, padding 50 ]
+    el
+        [ width fill
+        , padding 50
+        , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
+        ]
         (Button.new
             { model = model.addCycleButton
             , label = text "Noch 'ne Runde"
             , onPress = OnAddCycleButton
             }
+            |> Button.withLightColor
             |> Button.view colorScheme
         )
 
 
 viewReloadButton : ColorScheme -> Button.Model -> Element Msg
 viewReloadButton colorScheme reloadButton =
-    el [ padding 50, centerX ]
-        (Button.new
-            { onPress = OnReloadButton
-            , label = text "Reload (Sound fix)"
-            , model = reloadButton
-            }
-            |> Button.withInline
-            |> Button.view colorScheme
-        )
+    el
+        [ padding 50
+        , centerX
+        , width fill
+        , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
+        ]
+    <|
+        el
+            [ centerX ]
+        <|
+            (Button.new
+                { onPress = OnReloadButton
+                , label = text "Reload (Sound fix)"
+                , model = reloadButton
+                }
+                |> Button.withInline
+                |> Button.view colorScheme
+            )
 
 
 viewSessionControls : Shared.Model -> Model -> Route () -> Element Msg
 viewSessionControls shared model route =
     column
         [ width fill
-        , paddingEach { bottom = 100, top = 0, left = 50, right = 50 }
+        , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
+        , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
         ]
     <|
         if
@@ -398,6 +413,7 @@ viewSessionControls shared model route =
                 , label = text "Speichern & beenden"
                 , onPress = OnSaveButton
                 }
+                |> Button.withLightColor
                 |> Button.view shared.colorScheme
             , el [ height <| px 70 ] none
             , el [ centerX ] <|
@@ -407,6 +423,7 @@ viewSessionControls shared model route =
                     , onPress = OnCancelButton
                     }
                     |> Button.withInline
+                    |> Button.withLightColor
                     |> Button.view shared.colorScheme
                 )
             ]

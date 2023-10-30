@@ -88,7 +88,14 @@ view colorScheme (Settings settings) =
             , padding 20
             , Font.center
             , Border.rounded 15
-            , Border.width 1
+
+            -- , Border.width 1
+            -- , Border.shadow
+            --     { offset = ( 3, 3 )
+            --     , size = 0
+            --     , blur = 10
+            --     , color = rgb 0.5 0.5 0.5
+            --     }
             ]
 
         animationAttributes =
@@ -165,6 +172,7 @@ view colorScheme (Settings settings) =
             el [ width fill ] <|
                 button
                     (commonAttributes
+                        --TODO: Animationsfarbe so definieren, dass lightColor wieder funktioniert
                         ++ (if settings.isLightColored then
                                 CS.interactActiveLighter colorScheme
 
