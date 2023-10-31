@@ -258,6 +258,15 @@ update route msg model =
             , Effect.none
             )
 
+        Shared.Msg.CancelSession session ->
+            let
+                sessionAtEnd =
+                    Session.jumpToEnd model.session
+            in
+            ( { model | session = sessionAtEnd }
+            , Effect.navigate <| Session.currentPath sessionAtEnd
+            )
+
         Shared.Msg.ResultsUpdated results ->
             ( { model | results = results }
             , Effect.none

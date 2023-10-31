@@ -265,6 +265,11 @@ sessionUpdated session =
     SendSharedMsg <| Shared.Msg.SessionUpdated session
 
 
+cancelSession : Session -> Effect msg
+cancelSession session =
+    SendSharedMsg <| Shared.Msg.CancelSession session
+
+
 resultsUpdated : SessionResults -> Effect msg
 resultsUpdated results =
     SendSharedMsg <| Shared.Msg.ResultsUpdated results

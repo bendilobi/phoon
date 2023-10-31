@@ -29,6 +29,7 @@ type Msg
     | AdjustTimeZone Time.Zone
     | AdjustToday Date.Date
     | SessionUpdated Session
+    | CancelSession Session
     | ResultsUpdated SessionResults
     | NavigateTriggered Route.Path.Path
     | SessionEnded Session.EndType

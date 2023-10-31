@@ -33,7 +33,14 @@ page shared route =
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
     Layouts.SessionControls
-        { showCurrentCycle = Nothing }
+        { showCurrentCycle = Nothing
+        , ifCancelled =
+            if not (shared.previousPath == Session.phasePath Session.End) then
+                Effect.navigate shared.previousPath
+
+            else
+                Effect.cancelSession
+        }
 
 
 

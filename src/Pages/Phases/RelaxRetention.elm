@@ -30,7 +30,9 @@ page shared route =
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.SessionControls
-        { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results }
+        { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results
+        , ifCancelled = Effect.cancelSession
+        }
 
 
 

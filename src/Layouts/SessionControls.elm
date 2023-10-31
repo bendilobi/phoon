@@ -21,15 +21,17 @@ import Task
 import View exposing (View)
 
 
-type alias Props =
-    { showCurrentCycle : Maybe Int }
+type alias Props msg =
+    { showCurrentCycle : Maybe Int
+    , ifCancelled : Effect msg
+    }
 
 
-layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
+layout : Props msg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
         { init = init
-        , update = update shared route
+        , update = update props shared route
         , view = view props shared route
         , subscriptions = subscriptions
         }
@@ -85,8 +87,8 @@ type Msg
     | MouseNavSwipe
 
 
-update : Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
-update shared route msg model =
+update : Props msg -> Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
+update props shared route msg model =
     case msg of
         Swipe touch ->
             ( { model | gesture = Swipe.record touch model.gesture }
@@ -143,36 +145,36 @@ update shared route msg model =
             )
 
         OnCancelButton newState ->
-            let
-                sessionAtEnd =
-                    Session.jumpToEnd shared.session
-            in
+            -- let
+            --     sessionAtEnd =
+            --         Session.jumpToEnd shared.session
+            -- in
             ( { model | cancelButton = newState }
             , if newState == Button.Pressed then
                 Effect.none
 
-              else if
-                route.path
-                    == Session.phasePath Session.Start
-                    && not (shared.previousPath == Session.phasePath Session.End)
-              then
-                Effect.navigate shared.previousPath
-
-              else if route.path == Session.phasePath Session.End then
-                Effect.sessionEnded Session.Cancelled
-
               else
-                Effect.batch
-                    [ Effect.sessionUpdated sessionAtEnd
-                    , if route.path == Session.phasePath Session.Retention then
-                        --- The user cancelled the retention, so we reset the counter in case
-                        --- he retries the round by adding another round:
-                        Effect.resultsUpdated <| SessionResults.resetCurrentRetention shared.results
-
-                      else
-                        Effect.none
-                    , Effect.navigate <| Session.currentPath sessionAtEnd
-                    ]
+                props.ifCancelled
+              --   else if
+              --     --TODO: Als Parameter von der Seite ans Layout übergeben?
+              --     route.path
+              --         == Session.phasePath Session.Start
+              --         && not (shared.previousPath == Session.phasePath Session.End)
+              --   then
+              --     Effect.navigate shared.previousPath
+              --   else if route.path == Session.phasePath Session.End then
+              --     Effect.sessionEnded Session.Cancelled
+              --   else
+              --     Effect.batch
+              --         [ Effect.sessionUpdated sessionAtEnd
+              --         , if route.path == Session.phasePath Session.Retention then
+              --             --- The user cancelled the retention, so we reset the counter in case
+              --             --- he retries the round by adding another round:
+              --             Effect.resultsUpdated <| SessionResults.resetCurrentRetention shared.results
+              --           else
+              --             Effect.none
+              --         , Effect.navigate <| Session.currentPath sessionAtEnd
+              --         ]
             )
 
         OnAddCycleButton newState ->
@@ -209,7 +211,6 @@ update shared route msg model =
         MouseNavTap ->
             ( { model | controlsShown = False }
             , if not model.controlsShown then
-                -- Effect.navigateNext shared.session
                 Effect.batch <| multitouchEffects shared route
 
               else
@@ -217,6 +218,9 @@ update shared route msg model =
             )
 
         OnReloadButton newState ->
+            --TODO: Will ich diese Funktionalität behalten? Wenn ja:
+            --      Beim Reload sicherstellen, dass die vom Nutzer gewählte
+            --      Rundenzahl berücksichtigt wird (-> ins localStorage...)
             ( { model | reloadButton = newState }
             , if newState == Button.Released then
                 Effect.sendCmd Browser.Navigation.reload
@@ -247,9 +251,11 @@ multitouchEffects shared route =
 -- VIEW
 
 
-view : Props -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view : Props msg -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff Session"
+
+    --TODO: die content.attributes hierhin?
     , attributes = []
     , element =
         el

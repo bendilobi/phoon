@@ -31,7 +31,9 @@ page shared route =
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.SessionControls
-        { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results + 1 }
+        { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results + 1
+        , ifCancelled = Effect.cancelSession
+        }
 
 
 type alias Model =

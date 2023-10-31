@@ -29,7 +29,9 @@ page shared route =
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
     Layouts.SessionControls
-        { showCurrentCycle = Nothing }
+        { showCurrentCycle = Nothing
+        , ifCancelled = Effect.sessionEnded Session.Cancelled
+        }
 
 
 
