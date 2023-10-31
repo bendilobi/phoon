@@ -48,8 +48,11 @@ layout props shared route =
 type alias Model =
     { gesture : Swipe.Gesture
     , controlsShown : Bool
+    , confirmDialogShown : Bool
     , debounceBlock : Bool
     , cancelButton : Button.Model
+    , discardButton : Button.Model
+    , confirmButton : Button.Model
     , addCycleButton : Button.Model
     , saveButton : Button.Model
     , reloadButton : Button.Model
@@ -60,8 +63,11 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
+      , confirmDialogShown = False
       , debounceBlock = False
       , cancelButton = Button.init
+      , discardButton = Button.init
+      , confirmButton = Button.init
       , addCycleButton = Button.init
       , saveButton = Button.init
       , reloadButton = Button.init
@@ -81,6 +87,8 @@ type Msg
     = Swipe Swipe.Event
     | SwipeEnd Swipe.Event
     | OnCancelButton Button.Model
+    | OnDiscardButton Button.Model
+    | OnConfirmButton Button.Model
     | OnAddCycleButton Button.Model
     | OnSaveButton Button.Model
     | ReleaseDebounceBlock
@@ -123,6 +131,7 @@ update props shared route msg model =
                 -- , controlsShown = Swipe.isRightSwipe 300 gesture
                 , controlsShown = Swipe.isRightSwipe swipeSize gesture
                 , debounceBlock = model.debounceBlock || multitouchRegistered
+                , confirmDialogShown = False
               }
               -- TODO: Herausfinden, ob ich doch irgendwie ein sauberes "Mehr als 1 Finger beteiligt" hinkriege...
               --       Was aktuell zu passieren scheint: Beim Lupfen eines Fingers wird ein End Event
@@ -174,6 +183,25 @@ update props shared route msg model =
                         Effect.none
                     , Effect.cancelSession shared.session
                     ]
+            )
+
+        OnDiscardButton newState ->
+            ( { model
+                | discardButton = newState
+                , confirmDialogShown = newState == Button.Released
+              }
+            , Effect.none
+            )
+
+        OnConfirmButton newState ->
+            ( { model
+                | confirmButton = newState
+              }
+            , if newState == Button.Pressed then
+                Effect.none
+
+              else
+                Effect.sessionEnded Session.Cancelled
             )
 
         OnAddCycleButton newState ->
@@ -405,6 +433,7 @@ viewSessionControls shared model route =
         [ width fill
         , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
         , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
+        , spacing 20
         ]
     <|
         if
@@ -413,25 +442,37 @@ viewSessionControls shared model route =
                 && SessionResults.finishedCycles shared.results
                 > 0
         then
-            [ Button.new
-                { model = model.saveButton
-                , label = text "Speichern & beenden"
-                , onPress = OnSaveButton
-                }
-                |> Button.withLightColor
-                |> Button.view shared.colorScheme
-            , el [ height <| px 70 ] none
-            , el [ centerX ] <|
-                (Button.new
-                    { model = model.cancelButton
-                    , label = text "Sitzung verwerfen"
-                    , onPress = OnCancelButton
+            if model.confirmDialogShown then
+                [ paragraph [ Font.center ] [ text "Retentionsdaten dieser Sitzung wirklich verwerfen?" ]
+                , Button.new
+                    { model = model.confirmButton
+                    , label = text "Ja"
+                    , onPress = OnConfirmButton
                     }
-                    |> Button.withInline
                     |> Button.withLightColor
                     |> Button.view shared.colorScheme
-                )
-            ]
+                ]
+
+            else
+                [ Button.new
+                    { model = model.saveButton
+                    , label = text "Speichern & beenden"
+                    , onPress = OnSaveButton
+                    }
+                    |> Button.withLightColor
+                    |> Button.view shared.colorScheme
+                , el [ height <| px 50 ] none
+                , el [ centerX ] <|
+                    (Button.new
+                        { model = model.discardButton
+                        , label = text "Sitzung verwerfen"
+                        , onPress = OnDiscardButton
+                        }
+                        |> Button.withInline
+                        |> Button.withLightColor
+                        |> Button.view shared.colorScheme
+                    )
+                ]
 
         else
             [ Button.new
