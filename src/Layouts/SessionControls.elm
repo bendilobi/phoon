@@ -21,13 +21,17 @@ import Task
 import View exposing (View)
 
 
-type alias Props msg =
+type alias Props =
     { showCurrentCycle : Maybe Int
-    , ifCancelled : Effect msg
+
+    --TODO: Die gesamten Session Controls (Buttons oben und unten) in der Page
+    --      definieren und hier übergeben -> route.path-basierte Verzweigungen
+    --      fallen hier weg. Das Layout vielleicht umbenennen zu "SessionLayout"
+    --      oder so...
     }
 
 
-layout : Props msg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
+layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
         { init = init
@@ -87,7 +91,7 @@ type Msg
     | MouseNavSwipe
 
 
-update : Props msg -> Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
+update : Props -> Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
 update props shared route msg model =
     case msg of
         Swipe touch ->
@@ -145,36 +149,31 @@ update props shared route msg model =
             )
 
         OnCancelButton newState ->
-            -- let
-            --     sessionAtEnd =
-            --         Session.jumpToEnd shared.session
-            -- in
             ( { model | cancelButton = newState }
             , if newState == Button.Pressed then
                 Effect.none
 
+              else if
+                route.path
+                    == Session.phasePath Session.Start
+                    && not (shared.previousPath == Session.phasePath Session.End)
+              then
+                Effect.navigate shared.previousPath
+
+              else if route.path == Session.phasePath Session.End then
+                Effect.sessionEnded Session.Cancelled
+
               else
-                props.ifCancelled
-              --   else if
-              --     --TODO: Als Parameter von der Seite ans Layout übergeben?
-              --     route.path
-              --         == Session.phasePath Session.Start
-              --         && not (shared.previousPath == Session.phasePath Session.End)
-              --   then
-              --     Effect.navigate shared.previousPath
-              --   else if route.path == Session.phasePath Session.End then
-              --     Effect.sessionEnded Session.Cancelled
-              --   else
-              --     Effect.batch
-              --         [ Effect.sessionUpdated sessionAtEnd
-              --         , if route.path == Session.phasePath Session.Retention then
-              --             --- The user cancelled the retention, so we reset the counter in case
-              --             --- he retries the round by adding another round:
-              --             Effect.resultsUpdated <| SessionResults.resetCurrentRetention shared.results
-              --           else
-              --             Effect.none
-              --         , Effect.navigate <| Session.currentPath sessionAtEnd
-              --         ]
+                Effect.batch
+                    [ if route.path == Session.phasePath Session.Retention then
+                        --- The user cancelled the retention, so we reset the counter in case
+                        --- he retries the round by adding another round:
+                        Effect.resultsUpdated <| SessionResults.resetCurrentRetention shared.results
+
+                      else
+                        Effect.none
+                    , Effect.cancelSession shared.session
+                    ]
             )
 
         OnAddCycleButton newState ->
@@ -251,7 +250,7 @@ multitouchEffects shared route =
 -- VIEW
 
 
-view : Props msg -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view : Props -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff Session"
 

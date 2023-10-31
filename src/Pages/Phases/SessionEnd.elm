@@ -30,7 +30,6 @@ toLayout : Model -> Layouts.Layout Msg
 toLayout model =
     Layouts.SessionControls
         { showCurrentCycle = Nothing
-        , ifCancelled = Effect.sessionEnded Session.Cancelled
         }
 
 

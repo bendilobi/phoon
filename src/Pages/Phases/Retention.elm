@@ -31,11 +31,6 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.SessionControls
         { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results + 1
-        , ifCancelled =
-            Effect.batch
-                [ Effect.resultsUpdated <| SessionResults.resetCurrentRetention shared.results
-                , Effect.cancelSession
-                ]
         }
 
 
