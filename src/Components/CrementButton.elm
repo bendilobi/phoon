@@ -8,6 +8,7 @@ module Components.CrementButton exposing
     , withLightColor
     )
 
+import Components.AnimatedButton exposing (Msg)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
@@ -34,6 +35,7 @@ type Button msg
     = Settings
         { crement : Crement
         , number : Int
+        , stepSize : Int
         , onPress : Int -> Model -> msg
         , model : Model
         , isDisabled : Bool
@@ -45,6 +47,7 @@ new :
     { onPress : Int -> Model -> msg
     , crement : Crement
     , number : Int
+    , stepSize : Int
     , model : Model
     }
     -> Button msg
@@ -52,6 +55,7 @@ new props =
     Settings
         { crement = props.crement
         , number = props.number
+        , stepSize = props.stepSize
         , onPress = props.onPress
         , model = props.model
         , isDisabled = False
@@ -74,6 +78,9 @@ withLightColor light (Settings settings) =
 
 
 
+-- withStepSize : Int -> Button msg -> Button msg
+-- withStepSize size (Settings settings) =
+--     Settings { settings | stepSize = size }
 --- Model ---
 
 
@@ -114,10 +121,10 @@ view colorScheme (Settings settings) =
         crementedNumber =
             case settings.crement of
                 In ->
-                    settings.number + 1
+                    settings.number + settings.stepSize
 
                 De ->
-                    settings.number - 1
+                    settings.number - settings.stepSize
     in
     if settings.isDisabled then
         el

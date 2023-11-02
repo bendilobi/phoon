@@ -1,4 +1,4 @@
-module Components.IntCrementer exposing (Model, init, new, view, withLightColor, withMax, withMin)
+module Components.IntCrementer exposing (Model, init, new, view, withLightColor, withMax, withMin, withStepSize)
 
 import Components.CrementButton as CrementButton
 import Element exposing (..)
@@ -20,6 +20,7 @@ type IntCrementer msg
         , model : CrementButton.Model
         , min : Maybe Int
         , max : Maybe Int
+        , stepSize : Int
         , isLightColored : Bool
         }
 
@@ -37,6 +38,7 @@ new props =
         , model = props.model
         , min = Nothing
         , max = Nothing
+        , stepSize = 1
         , isLightColored = False
         }
 
@@ -54,6 +56,11 @@ withMax max (Settings settings) =
 withLightColor : IntCrementer msg -> IntCrementer msg
 withLightColor (Settings settings) =
     Settings { settings | isLightColored = True }
+
+
+withStepSize : Int -> IntCrementer msg -> IntCrementer msg
+withStepSize size (Settings settings) =
+    Settings { settings | stepSize = size }
 
 
 
@@ -85,6 +92,7 @@ view colorScheme currentInt (Settings settings) =
                 { onPress =
                     settings.onCrement
                 , number = currentInt
+                , stepSize = settings.stepSize
                 , crement = CrementButton.De
                 , model = settings.model
                 }
@@ -96,6 +104,7 @@ view colorScheme currentInt (Settings settings) =
                 { onPress =
                     settings.onCrement
                 , number = currentInt
+                , stepSize = settings.stepSize
                 , crement = CrementButton.In
                 , model = settings.model
                 }

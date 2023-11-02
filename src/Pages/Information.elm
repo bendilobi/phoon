@@ -321,11 +321,10 @@ update shared msg model =
             , Effect.none
             )
 
-        OnTestButton newState ->
-            ( { model | testButton = newState }, Effect.none )
 
 
-
+-- OnTestButton newState ->
+--     ( { model | testButton = newState }, Effect.none )
 -- SUBSCRIPTIONS
 
 
@@ -673,6 +672,7 @@ viewSettings shared model pagePadding =
                             }
                             |> IntCrementer.withMin 5
                             |> IntCrementer.withMax 30
+                            |> IntCrementer.withStepSize 5
                             |> IntCrementer.withLightColor
                             |> IntCrementer.view shared.colorScheme
                                 (shared.sessionSettings.relaxRetDuration
