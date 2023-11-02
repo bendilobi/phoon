@@ -119,8 +119,6 @@ view shared model =
                 in
                 Bubble.new
                     { model = model.bubble
-
-                    -- , size = 300
                     , size = min window.width window.height * 0.9 |> round
                     , bubbleColor = CS.phaseSessionStartColor shared.colorScheme
                     , bgColor = CS.phaseBreathingColor shared.colorScheme

@@ -10,7 +10,6 @@ import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons
 import Html.Events as HEvents
-import Json.Decode as Decode
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SafeArea as SafeArea
@@ -24,8 +23,6 @@ import View exposing (View)
 
 type alias Props =
     { header : Maybe String
-
-    -- , enableScrolling : Maybe contentMsg
     , enableScrolling : Bool
     }
 
@@ -41,11 +38,6 @@ layout props shared route =
 
 
 
--- map : (msg1 -> msg2) -> Props msg1 -> Props msg2
--- map fn props =
---     { header = props.header
---     , enableScrolling = Maybe.map fn props.enableScrolling
---     }
 -- MODEL
 
 
@@ -195,21 +187,6 @@ view props shared route { toContentMsg, model, content } =
                      , width fill
                      , paddingEach <| SafeArea.paddingX shared.safeAreaInset
                      ]
-                        -- ++ (case props.enableScrolling of
-                        --         Nothing ->
-                        --             []
-                        --         Just msg ->
-                        --             --- Continuous scrolling by flicking on touch devices
-                        --             --- seems to produce scrolling events even during page
-                        --             --- change, so the new page continues the unfinished
-                        --             --- scrolling process of the previous page
-                        --             --- This leads to broken appearance of the new page
-                        --             --- if it is scrollable. So we enable scrollbars only
-                        --             --- on pages that need them.
-                        --             [ scrollbarY
-                        --             , htmlAttribute <| HEvents.on "scroll" <| Decode.succeed msg
-                        --             ]
-                        --    )
                         ++ (if props.enableScrolling then
                                 --- Continuous scrolling by flicking on touch devices
                                 --- seems to produce scrolling events even during page

@@ -136,8 +136,6 @@ view shared model =
                 el [ centerX ] <|
                     (Bubble.new
                         { model = model.bubble
-
-                        -- , size = 200
                         , size =
                             min shared.deviceInfo.window.width
                                 shared.deviceInfo.window.height

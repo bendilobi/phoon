@@ -1,7 +1,5 @@
 module Pages.Information exposing (Model, Msg, page)
 
--- import Components.Button as UButton
-
 import Api
 import Browser.Events
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
@@ -74,14 +72,8 @@ type alias Model =
     , reloadButton : Button.Model
     , pastedMotivationData : ClipboardData MotivationData
     , replaceMotDataButton : Button.Model
-    , testButton : Button.Model
 
-    {- If the user starts to scroll while having a button pressed, the button never gets a "pointerup"
-       event and thus stays in "Pressed" state. As a workaround, we only animate buttons if the page
-       is not scrolling. And since Safari doesn't support the "scrollend" event, we have to set
-       scrolling to True again whenever the user presses a button
-    -}
-    -- , scrolling : Bool
+    -- , testButton : Button.Model
     }
 
 
@@ -104,9 +96,8 @@ init shared () =
       , reloadButton = Button.init
       , pastedMotivationData = NoData
       , replaceMotDataButton = Button.init
-      , testButton = Button.init
 
-      --   , scrolling = False
+      --   , testButton = Button.init
       }
     , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
         Effect.checkVersion ReceivedNewestVersionString
@@ -146,8 +137,10 @@ type Msg
     | OnCopyButton Button.Model
     | OnPasteButton Button.Model
     | ReceivedClipboard Json.Decode.Value
-      -- | OnScroll
-    | OnTestButton Button.Model
+
+
+
+-- | OnTestButton Button.Model
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -175,7 +168,6 @@ update shared msg model =
 
         OnUpdateButton state ->
             ( { model | updateButton = state }
-              --, scrolling = False }
             , if state == Button.Released then
                 Effect.updateApp
 
@@ -185,7 +177,6 @@ update shared msg model =
 
         OnReloadButton state ->
             ( { model | reloadButton = state }
-              --, scrolling = False }
             , if state == Button.Released then
                 Effect.reload
 
@@ -231,7 +222,6 @@ update shared msg model =
 
         OnResetSettingsButton newState ->
             ( { model | resetSettingsButton = newState }
-              --, scrolling = False }
             , if newState == Button.Released then
                 Effect.updateSessionSettings Session.defaultSettings
 
@@ -269,15 +259,12 @@ update shared msg model =
                     else
                         model.settingsItemShown
                 , resetItemStatusButton = newState
-
-                -- , scrolling = False
               }
             , Effect.none
             )
 
         OnReplaceMotivationDataButton motData newState ->
             ( { model | replaceMotDataButton = newState }
-              --, scrolling = False }
             , if newState == Button.Released then
                 Effect.setMotivationData motData
 
@@ -286,10 +273,7 @@ update shared msg model =
             )
 
         OnCopyButton state ->
-            --TODO: Ausprobieren, ob ich einfach der gesamten Seite einen onscroll-Handler geben kann
-            --      statt jedem einzelnen Button...
             ( { model | copyButton = state }
-              --, scrolling = False }
             , case state of
                 Button.Released ->
                     case shared.motivationData of
@@ -308,7 +292,6 @@ update shared msg model =
 
         OnPasteButton state ->
             ( { model | pasteButton = state }
-              --, scrolling = False }
             , if state == Button.Released then
                 Effect.requestClipboardContent
 
@@ -338,15 +321,11 @@ update shared msg model =
             , Effect.none
             )
 
-        -- OnScroll ->
-        --     --TODO: Ich muss hier doch die Models der Buttons zurücksetzen, oder?
-        --     ( model, Effect.none )
         OnTestButton newState ->
             ( { model | testButton = newState }, Effect.none )
 
 
 
--- ( { model | scrolling = True }, Effect.none )
 -- SUBSCRIPTIONS
 
 
@@ -447,7 +426,6 @@ viewUpdate shared model =
                         , onPress = OnUpdateButton
                         }
                         -- |> Button.withLightColor
-                        -- |> Button.withAnimated (not model.scrolling)
                         |> Button.view shared.colorScheme
                     ]
 
@@ -531,7 +509,6 @@ viewSettings shared model pagePadding =
                 }
                 |> Button.withInline
                 |> Button.withLightColor
-                -- |> Button.withAnimated (not model.scrolling)
                 |> Button.view shared.colorScheme
     in
     column [ width fill, spacing 10 ]
@@ -552,7 +529,6 @@ viewSettings shared model pagePadding =
                     }
                     |> Button.withInline
                     |> Button.withLightColor
-                    -- |> Button.withAnimated (not model.scrolling)
                     |> Button.view shared.colorScheme
                 )
             ]
@@ -726,8 +702,6 @@ viewSettings shared model pagePadding =
                             |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
                         )
-
-            -- |> Millis.toSeconds
           in
           paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
             [ text "Geschätzte Gesamtdauer der Übung: "
@@ -759,7 +733,6 @@ viewSettings shared model pagePadding =
                                 , model = model.copyButton
                                 }
                                 -- |> Button.withLightColor
-                                -- |> Button.withAnimated (not model.scrolling)
                                 |> Button.view shared.colorScheme
                             , Button.new
                                 { model = model.pasteButton
@@ -767,7 +740,6 @@ viewSettings shared model pagePadding =
                                 , onPress = OnPasteButton
                                 }
                                 -- |> Button.withLightColor
-                                -- |> Button.withAnimated (not model.scrolling)
                                 |> Button.view shared.colorScheme
                             , case model.pastedMotivationData of
                                 NoData ->
@@ -825,7 +797,6 @@ viewSettings shared model pagePadding =
                                                             }
                                                             |> Button.withLightColor
                                                             |> Button.withInline
-                                                            -- |> Button.withAnimated (not model.scrolling)
                                                             |> Button.view shared.colorScheme
                                                         )
                                                     ]
@@ -839,7 +810,6 @@ viewSettings shared model pagePadding =
                             , model = model.reloadButton
                             }
                             -- |> Button.withLightColor
-                            -- |> Button.withAnimated (not model.scrolling)
                             |> Button.view shared.colorScheme
                         )
                     ]

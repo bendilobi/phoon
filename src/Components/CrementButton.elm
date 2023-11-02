@@ -77,10 +77,8 @@ withLightColor light (Settings settings) =
 --- Model ---
 
 
-type
-    Model
-    -- = Pressed Crement Bool
-    = Pressed Crement
+type Model
+    = Pressed Crement Bool
     | Released
     | Cancelled
 
@@ -112,6 +110,14 @@ view colorScheme (Settings settings) =
             , centerY
             , padding 0
             ]
+
+        crementedNumber =
+            case settings.crement of
+                In ->
+                    settings.number + 1
+
+                De ->
+                    settings.number - 1
     in
     if settings.isDisabled then
         el
@@ -133,7 +139,7 @@ view colorScheme (Settings settings) =
                 ++ commonAttributes
                 ++ [ BG.color <|
                         case settings.model of
-                            Pressed crement ->
+                            Pressed crement _ ->
                                 if crement == settings.crement then
                                     --- It's-a-me!
                                     CS.interactActiveLighterColor colorScheme
@@ -147,39 +153,32 @@ view colorScheme (Settings settings) =
                         HEvents.on "pointerdown" <|
                             Decode.succeed <|
                                 settings.onPress settings.number <|
-                                    Pressed settings.crement
-
-                   --    , htmlAttribute <|
-                   --         HEvents.on "pointerenter" <|
-                   --             Decode.succeed <|
-                   --                 settings.onPress <|
-                   --                     Pressed settings.crement False
+                                    Pressed settings.crement True
+                   , htmlAttribute <|
+                        HEvents.on "pointerenter" <|
+                            Decode.succeed <|
+                                settings.onPress settings.number <|
+                                    Pressed settings.crement False
                    , htmlAttribute <|
                         HEvents.on "pointercancel" <|
                             Decode.succeed <|
                                 settings.onPress settings.number Cancelled
+                   , htmlAttribute <|
+                        HEvents.on "pointerleave" <|
+                            Decode.succeed <|
+                                case settings.model of
+                                    Pressed _ False ->
+                                        settings.onPress settings.number Cancelled
 
-                   --    , htmlAttribute <|
-                   --         HEvents.on "pointerleave" <|
-                   --             Decode.succeed <|
-                   --                 settings.onPress <|
-                   --                     case settings.model of
-                   --                         Pressed _ False ->
-                   --                             Cancelled
-                   --                         _ ->
-                   --                             Released
+                                    _ ->
+                                        settings.onPress crementedNumber Released
                    , htmlAttribute <|
                         HEvents.on "pointerup" <|
                             Decode.succeed <|
-                                case settings.crement of
-                                    In ->
-                                        settings.onPress (settings.number + 1) Released
-
-                                    De ->
-                                        settings.onPress (settings.number - 1) Released
+                                settings.onPress crementedNumber Released
                    ]
                 ++ (case settings.model of
-                        Pressed _ ->
+                        Pressed _ _ ->
                             [ htmlAttribute <|
                                 Transition.properties
                                     [ Transition.backgroundColor 50 []

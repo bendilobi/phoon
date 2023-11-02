@@ -127,8 +127,6 @@ update props shared route msg model =
             in
             ( { model
                 | gesture = Swipe.blanco
-
-                -- , controlsShown = Swipe.isRightSwipe 300 gesture
                 , controlsShown = Swipe.isRightSwipe swipeSize gesture
                 , debounceBlock = model.debounceBlock || multitouchRegistered
                 , confirmDialogShown = False
