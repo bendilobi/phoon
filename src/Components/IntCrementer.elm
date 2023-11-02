@@ -85,10 +85,10 @@ view colorScheme currentInt (Settings settings) =
                 { onPress =
                     settings.onCrement <|
                         if settings.model == CrementButton.Pressed CrementButton.De then
-                            currentInt
+                            currentInt - 1
 
                         else
-                            currentInt - 1
+                            currentInt
                 , crement = CrementButton.De
                 , model = settings.model
                 }
@@ -100,10 +100,10 @@ view colorScheme currentInt (Settings settings) =
                 { onPress =
                     settings.onCrement <|
                         if settings.model == CrementButton.Pressed CrementButton.In then
-                            currentInt
+                            currentInt + 1
 
                         else
-                            currentInt + 1
+                            currentInt
                 , crement = CrementButton.In
                 , model = settings.model
                 }

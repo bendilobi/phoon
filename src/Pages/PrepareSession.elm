@@ -37,7 +37,7 @@ toLayout : Model -> Layouts.Layout Msg
 toLayout model =
     Layouts.MainNav
         { header = Just "Sitzung vorbereiten"
-        , enableScrolling = False
+        , enableScrolling = Nothing
         }
 
 

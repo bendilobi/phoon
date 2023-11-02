@@ -1,15 +1,16 @@
-module Layouts.MainNav exposing (Model, Msg, Props, layout)
+module Layouts.MainNav exposing (Model, Msg, Props, layout, map)
 
 import Browser.Events
 import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
-import Element exposing (..)
+import Element as E exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons
 import Html.Events as HEvents
+import Json.Decode as Decode
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SafeArea as SafeArea
@@ -21,13 +22,13 @@ import Time
 import View exposing (View)
 
 
-type alias Props =
+type alias Props contentMsg =
     { header : Maybe String
-    , enableScrolling : Bool
+    , enableScrolling : Maybe contentMsg
     }
 
 
-layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
+layout : Props contentMsg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
         { init = init
@@ -35,6 +36,13 @@ layout props shared route =
         , view = view props shared route
         , subscriptions = subscriptions
         }
+
+
+map : (msg1 -> msg2) -> Props msg1 -> Props msg2
+map fn props =
+    { header = props.header
+    , enableScrolling = Maybe.map fn props.enableScrolling
+    }
 
 
 
@@ -132,7 +140,7 @@ subscriptions model =
 -- VIEW
 
 
-view : Props -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view : Props contentMsg -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = [ Font.size 17 ]
@@ -147,7 +155,7 @@ view props shared route { toContentMsg, model, content } =
                 <|
                     text "Aktualisiere..."
             )
-                |> map toContentMsg
+                |> E.map toContentMsg
 
         else if shared.justUpdated then
             (el [ width fill, height fill ] <|
@@ -167,7 +175,7 @@ view props shared route { toContentMsg, model, content } =
                         |> Button.view shared.colorScheme
                     ]
             )
-                |> map toContentMsg
+                |> E.map toContentMsg
 
         else
             column
@@ -181,29 +189,32 @@ view props shared route { toContentMsg, model, content } =
                         none
 
                     Just headerText ->
-                        viewHeader headerText |> map toContentMsg
+                        viewHeader headerText |> E.map toContentMsg
                 , el
                     ([ height fill
                      , width fill
                      , paddingEach <| SafeArea.paddingX shared.safeAreaInset
                      ]
-                        ++ (if props.enableScrolling then
-                                --- Continuous scrolling by flicking on touch devices
-                                --- seems to produce scrolling events even during page
-                                --- change, so the new page continues the unfinished
-                                --- scrolling process of the previous page
-                                --- This leads to broken appearance of the new page
-                                --- if it is scrollable. So we enable scrollbars only
-                                --- on pages that need them.
-                                [ scrollbarY ]
+                        ++ (case props.enableScrolling of
+                                Nothing ->
+                                    []
 
-                            else
-                                []
+                                Just msg ->
+                                    --- Continuous scrolling by flicking on touch devices
+                                    --- seems to produce scrolling events even during page
+                                    --- change, so the new page continues the unfinished
+                                    --- scrolling process of the previous page
+                                    --- This leads to broken appearance of the new page
+                                    --- if it is scrollable. So we enable scrollbars only
+                                    --- on pages that need them.
+                                    [ scrollbarY
+                                    , htmlAttribute <| HEvents.on "scroll" <| Decode.succeed msg
+                                    ]
                            )
                     )
                     content.element
                 , if shared.deviceInfo.orientation == Portrait then
-                    viewNavBar shared route |> map toContentMsg
+                    viewNavBar shared route |> E.map toContentMsg
 
                   else
                     none

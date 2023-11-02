@@ -1,4 +1,4 @@
-module Components.StatelessAnimatedButton exposing (Model(..), init, new, view, withDisabled, withInline, withLightColor)
+module Components.StatelessAnimatedButton exposing (Model(..), init, new, view, withAnimated, withDisabled, withInline, withLightColor)
 
 import Element exposing (..)
 import Element.Background as BG
@@ -23,6 +23,7 @@ type Button msg
         , isDisabled : Bool
         , isInline : Bool
         , isLightColored : Bool
+        , isAnimated : Bool
         }
 
 
@@ -40,6 +41,7 @@ new props =
         , isDisabled = False
         , isInline = False
         , isLightColored = False
+        , isAnimated = True
         }
 
 
@@ -62,6 +64,11 @@ withLightColor (Settings settings) =
     Settings { settings | isLightColored = True }
 
 
+withAnimated : Bool -> Button msg -> Button msg
+withAnimated animated (Settings settings) =
+    Settings { settings | isAnimated = animated }
+
+
 
 --- Model ---
 
@@ -77,6 +84,9 @@ init =
 
 
 
+-- reset : Model
+-- reset =
+--     Released
 -- VIEW
 
 
@@ -131,20 +141,26 @@ view colorScheme (Settings settings) =
                  , behindContent <|
                     --- To give it a bit of padding without affecting the layout
                     el
-                        ([ BG.color <|
-                            case settings.model of
-                                Pressed ->
-                                    --TODO: Ins Farbschema aufnehmen?
-                                    rgba 0.8 0.8 0.8 1.0
-
-                                Released ->
-                                    rgba 0.8 0.8 0.8 0
-                         , Border.rounded 5
+                        ([ Border.rounded 5
                          , padding 5
                          , moveUp 5
                          , moveLeft 5
                          ]
-                            ++ animationAttributes
+                            ++ (if settings.isAnimated then
+                                    (BG.color <|
+                                        case settings.model of
+                                            Pressed ->
+                                                --TODO: Ins Farbschema aufnehmen?
+                                                rgba 0.8 0.8 0.8 1.0
+
+                                            Released ->
+                                                rgba 0.8 0.8 0.8 0
+                                    )
+                                        :: animationAttributes
+
+                                else
+                                    []
+                               )
                         )
                     <|
                         --- Make the shape adapt to the button's size
@@ -179,15 +195,20 @@ view colorScheme (Settings settings) =
                             else
                                 CS.interactActive colorScheme
                            )
-                        ++ [ BG.color <|
-                                case settings.model of
-                                    Pressed ->
-                                        CS.interactActiveLighterColor colorScheme
+                        ++ (if settings.isAnimated then
+                                (BG.color <|
+                                    case settings.model of
+                                        Pressed ->
+                                            CS.interactActiveLighterColor colorScheme
 
-                                    Released ->
-                                        CS.interactActiveColor colorScheme
-                           ]
-                        ++ animationAttributes
+                                        Released ->
+                                            CS.interactActiveColor colorScheme
+                                )
+                                    :: animationAttributes
+
+                            else
+                                []
+                           )
                         ++ eventAttributes
                     )
                     { onPress = Just <| settings.onPress Released
