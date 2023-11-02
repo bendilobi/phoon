@@ -33,7 +33,8 @@ type Crement
 type Button msg
     = Settings
         { crement : Crement
-        , onPress : Model -> msg
+        , number : Int
+        , onPress : Int -> Model -> msg
         , model : Model
         , isDisabled : Bool
         , isLightColored : Bool
@@ -41,14 +42,16 @@ type Button msg
 
 
 new :
-    { onPress : Model -> msg
+    { onPress : Int -> Model -> msg
     , crement : Crement
+    , number : Int
     , model : Model
     }
     -> Button msg
 new props =
     Settings
         { crement = props.crement
+        , number = props.number
         , onPress = props.onPress
         , model = props.model
         , isDisabled = False
@@ -143,7 +146,7 @@ view colorScheme (Settings settings) =
                    , htmlAttribute <|
                         HEvents.on "pointerdown" <|
                             Decode.succeed <|
-                                settings.onPress <|
+                                settings.onPress settings.number <|
                                     Pressed settings.crement
 
                    --    , htmlAttribute <|
@@ -154,7 +157,7 @@ view colorScheme (Settings settings) =
                    , htmlAttribute <|
                         HEvents.on "pointercancel" <|
                             Decode.succeed <|
-                                settings.onPress Cancelled
+                                settings.onPress settings.number Cancelled
 
                    --    , htmlAttribute <|
                    --         HEvents.on "pointerleave" <|
@@ -168,7 +171,12 @@ view colorScheme (Settings settings) =
                    , htmlAttribute <|
                         HEvents.on "pointerup" <|
                             Decode.succeed <|
-                                settings.onPress Released
+                                case settings.crement of
+                                    In ->
+                                        settings.onPress (settings.number + 1) Released
+
+                                    De ->
+                                        settings.onPress (settings.number - 1) Released
                    ]
                 ++ (case settings.model of
                         Pressed _ ->

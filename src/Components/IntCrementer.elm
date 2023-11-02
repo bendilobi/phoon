@@ -83,19 +83,21 @@ view colorScheme currentInt (Settings settings) =
             ]
             [ CrementButton.new
                 { onPress =
-                    settings.onCrement <|
-                        -- if settings.model == CrementButton.Pressed CrementButton.De then
-                        --     currentInt - 1
-                        -- else
-                        --     currentInt
-                        case settings.model of
-                            --TODO: Damit wird auch bei Cancel (z.B. Scrollen) crementiert
-                            --      => anders lösen
-                            CrementButton.Pressed CrementButton.De ->
-                                currentInt - 1
+                    settings.onCrement
+                , number = currentInt
 
-                            _ ->
-                                currentInt
+                -- <|
+                --     -- if settings.model == CrementButton.Pressed CrementButton.De then
+                --     --     currentInt - 1
+                --     -- else
+                --     --     currentInt
+                --     case settings.model of
+                --         --TODO: Damit wird auch bei Cancel (z.B. Scrollen) crementiert
+                --         --      => anders lösen
+                --         CrementButton.Pressed CrementButton.De ->
+                --             currentInt - 1
+                --         _ ->
+                --             currentInt
                 , crement = CrementButton.De
                 , model = settings.model
                 }
@@ -105,17 +107,19 @@ view colorScheme currentInt (Settings settings) =
             , settings.label currentInt
             , CrementButton.new
                 { onPress =
-                    settings.onCrement <|
-                        -- if settings.model == CrementButton.Pressed CrementButton.In then
-                        --     currentInt + 1
-                        -- else
-                        --     currentInt
-                        case settings.model of
-                            CrementButton.Pressed CrementButton.In ->
-                                currentInt + 1
+                    settings.onCrement
+                , number = currentInt
 
-                            _ ->
-                                currentInt
+                -- <|
+                --     -- if settings.model == CrementButton.Pressed CrementButton.In then
+                --     --     currentInt + 1
+                --     -- else
+                --     --     currentInt
+                --     case settings.model of
+                --         CrementButton.Pressed CrementButton.In ->
+                --             currentInt + 1
+                --         _ ->
+                --             currentInt
                 , crement = CrementButton.In
                 , model = settings.model
                 }
