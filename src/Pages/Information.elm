@@ -406,12 +406,13 @@ viewIntroduction shared model =
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
-        , Button.new
-            { onPress = OnTestButton
-            , model = model.testButton
-            , label = text "blah"
-            }
-            |> Button.view shared.colorScheme
+
+        -- , Button.new
+        --     { onPress = OnTestButton
+        --     , model = model.testButton
+        --     , label = text "blah"
+        --     }
+        --     |> Button.view shared.colorScheme
         ]
 
 

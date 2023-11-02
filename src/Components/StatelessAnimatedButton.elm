@@ -238,20 +238,17 @@ view colorScheme (Settings settings) =
                         ++ eventAttributes
                     )
                     { onPress = Nothing --Just <| settings.onPress Released
+                    , label = settings.label
 
-                    -- , label = settings.label
-                    , label =
-                        text <|
-                            case settings.model of
-                                Pressed True ->
-                                    "Pressed & Captured"
-
-                                Pressed False ->
-                                    "Pressed & Not Cap."
-
-                                Released ->
-                                    "Released"
-
-                                Cancelled ->
-                                    "Cancelled"
+                    -- , label =
+                    --     text <|
+                    --         case settings.model of
+                    --             Pressed True ->
+                    --                 "Pressed & Captured"
+                    --             Pressed False ->
+                    --                 "Pressed & Not Cap."
+                    --             Released ->
+                    --                 "Released"
+                    --             Cancelled ->
+                    --                 "Cancelled"
                     }

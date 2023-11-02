@@ -89,9 +89,9 @@ view colorScheme currentInt (Settings settings) =
                         -- else
                         --     currentInt
                         case settings.model of
-                            --TODO: Das funktioniert nur so halb: beim leave wird crement ausgelöst
-                            --      => Brauche ich leave überhaupt? Könnte pointerenter einfach ignorieren
-                            CrementButton.Pressed CrementButton.De _ ->
+                            --TODO: Damit wird auch bei Cancel (z.B. Scrollen) crementiert
+                            --      => anders lösen
+                            CrementButton.Pressed CrementButton.De ->
                                 currentInt - 1
 
                             _ ->
@@ -111,7 +111,7 @@ view colorScheme currentInt (Settings settings) =
                         -- else
                         --     currentInt
                         case settings.model of
-                            CrementButton.Pressed CrementButton.In _ ->
+                            CrementButton.Pressed CrementButton.In ->
                                 currentInt + 1
 
                             _ ->
