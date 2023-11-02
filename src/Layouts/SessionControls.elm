@@ -159,7 +159,7 @@ update props shared route msg model =
 
         OnCancelButton newState ->
             ( { model | cancelButton = newState }
-            , if newState == Button.Pressed then
+            , if newState /= Button.Released then
                 Effect.none
 
               else if
@@ -197,11 +197,11 @@ update props shared route msg model =
             ( { model
                 | confirmButton = newState
               }
-            , if newState == Button.Pressed then
-                Effect.none
+            , if newState == Button.Released then
+                Effect.sessionEnded Session.Cancelled
 
               else
-                Effect.sessionEnded Session.Cancelled
+                Effect.none
             )
 
         OnAddCycleButton newState ->
@@ -210,26 +210,26 @@ update props shared route msg model =
                     Session.withCycles 1 shared.session
             in
             ( { model
-                | controlsShown = newState == Button.Pressed
+                | controlsShown = newState /= Button.Released
                 , addCycleButton = newState
               }
-            , if newState == Button.Pressed then
-                Effect.none
-
-              else
+            , if newState == Button.Released then
                 Effect.batch
                     [ Effect.sessionUpdated newSession
                     , Effect.navigate <| Session.currentPath newSession
                     ]
+
+              else
+                Effect.none
             )
 
         OnSaveButton newState ->
             ( { model | saveButton = newState }
-            , if newState == Button.Pressed then
-                Effect.none
+            , if newState == Button.Released then
+                Effect.sessionEnded Session.Finished
 
               else
-                Effect.sessionEnded Session.Finished
+                Effect.none
             )
 
         MouseNavSwipe ->

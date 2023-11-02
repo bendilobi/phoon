@@ -75,8 +75,9 @@ withLightColor light (Settings settings) =
 
 
 type Model
-    = Pressed Crement
+    = Pressed Crement Bool
     | Released
+    | Cancelled
 
 
 init : Model
@@ -127,7 +128,7 @@ view colorScheme (Settings settings) =
                 ++ commonAttributes
                 ++ [ BG.color <|
                         case settings.model of
-                            Pressed crement ->
+                            Pressed crement _ ->
                                 if crement == settings.crement then
                                     --- It's-a-me!
                                     CS.interactActiveLighterColor colorScheme
@@ -135,27 +136,57 @@ view colorScheme (Settings settings) =
                                 else
                                     CS.interactActiveColor colorScheme
 
-                            Released ->
+                            _ ->
                                 CS.interactActiveColor colorScheme
                    , htmlAttribute <|
                         HEvents.on "pointerdown" <|
                             Decode.succeed <|
                                 settings.onPress <|
-                                    Pressed settings.crement
+                                    Pressed settings.crement True
                    , htmlAttribute <|
-                        case settings.model of
-                            Pressed _ ->
+                        HEvents.on "pointerenter" <|
+                            Decode.succeed <|
+                                settings.onPress <|
+                                    Pressed settings.crement False
+                   , htmlAttribute <|
+                        HEvents.on "pointercancel" <|
+                            Decode.succeed <|
+                                settings.onPress Cancelled
+                   , htmlAttribute <|
+                        HEvents.on "pointerleave" <|
+                            Decode.succeed <|
+                                settings.onPress <|
+                                    case settings.model of
+                                        Pressed _ False ->
+                                            Cancelled
+
+                                        _ ->
+                                            Released
+                   , htmlAttribute <|
+                        HEvents.on "pointerup" <|
+                            Decode.succeed <|
+                                settings.onPress Released
+                   ]
+                ++ (case settings.model of
+                        Pressed _ _ ->
+                            [ htmlAttribute <|
                                 Transition.properties
                                     [ Transition.backgroundColor 50 []
                                     ]
+                            ]
 
-                            Released ->
+                        Released ->
+                            [ htmlAttribute <|
                                 Transition.properties
                                     [ Transition.backgroundColor 1000 [ Transition.easeOutQuad ]
                                     ]
-                   ]
+                            ]
+
+                        Cancelled ->
+                            []
+                   )
             )
-            { onPress = Just <| settings.onPress Released
+            { onPress = Nothing --Just <| settings.onPress Released
             , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
             }
 

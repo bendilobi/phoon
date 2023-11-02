@@ -31,7 +31,7 @@ toLayout : Model -> Layouts.Layout Msg
 toLayout model =
     Layouts.MainNav
         { header = Just "Motivation finden"
-        , enableScrolling = Nothing
+        , enableScrolling = False
         }
 
 

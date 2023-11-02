@@ -74,8 +74,9 @@ withAnimated animated (Settings settings) =
 
 
 type Model
-    = Pressed
+    = Pressed Bool
     | Released
+    | Cancelled
 
 
 init : Model
@@ -109,21 +110,45 @@ view colorScheme (Settings settings) =
             ]
 
         animationAttributes =
-            [ htmlAttribute <|
-                case settings.model of
-                    Pressed ->
+            case settings.model of
+                Pressed _ ->
+                    [ htmlAttribute <|
                         Transition.properties
                             [ Transition.backgroundColor 50 []
                             ]
+                    ]
 
-                    Released ->
+                Released ->
+                    [ htmlAttribute <|
                         Transition.properties
                             [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
                             ]
-            ]
+                    ]
+
+                Cancelled ->
+                    []
 
         eventAttributes =
-            [ htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress Pressed
+            --TODO: Erklären, warum ich hier was mache...
+            [ htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress <| Pressed True
+            , htmlAttribute <| HEvents.on "pointerenter" <| Decode.succeed <| settings.onPress <| Pressed False
+            , htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| settings.onPress Released
+            , htmlAttribute <| HEvents.on "pointercancel" <| Decode.succeed <| settings.onPress Cancelled
+            , htmlAttribute <|
+                HEvents.on "pointerleave" <|
+                    Decode.succeed <|
+                        settings.onPress <|
+                            case settings.model of
+                                Pressed False ->
+                                    Cancelled
+
+                                _ ->
+                                    Released
+
+            --TODO: Das hier funktioniert nicht, weil pointerleave nach einem pointerdown nicht mehr
+            --      registriert wird (pointercapture, siehe https://developer.mozilla.org/en-US/docs/Web/API/Element/pointerdown_event)
+            -- , htmlAttribute <| HEvents.on "pointerleave" <| Decode.succeed <| settings.onPress Cancelled
+            -- , htmlAttribute <| HEvents.on "pointerout" <| Decode.succeed <| settings.onPress Cancelled
             ]
     in
     if settings.isInline then
@@ -149,11 +174,11 @@ view colorScheme (Settings settings) =
                             ++ (if settings.isAnimated then
                                     (BG.color <|
                                         case settings.model of
-                                            Pressed ->
+                                            Pressed _ ->
                                                 --TODO: Ins Farbschema aufnehmen?
                                                 rgba 0.8 0.8 0.8 1.0
 
-                                            Released ->
+                                            _ ->
                                                 rgba 0.8 0.8 0.8 0
                                     )
                                         :: animationAttributes
@@ -170,7 +195,8 @@ view colorScheme (Settings settings) =
                  ]
                     ++ eventAttributes
                 )
-                { onPress = Just <| settings.onPress Released
+                --TODO: Input.button nicht mehr verwenden, sondern direkt rendern
+                { onPress = Nothing --Just <| settings.onPress Released
                 , label = settings.label
                 }
 
@@ -198,10 +224,10 @@ view colorScheme (Settings settings) =
                         ++ (if settings.isAnimated then
                                 (BG.color <|
                                     case settings.model of
-                                        Pressed ->
+                                        Pressed _ ->
                                             CS.interactActiveLighterColor colorScheme
 
-                                        Released ->
+                                        _ ->
                                             CS.interactActiveColor colorScheme
                                 )
                                     :: animationAttributes
@@ -211,6 +237,21 @@ view colorScheme (Settings settings) =
                            )
                         ++ eventAttributes
                     )
-                    { onPress = Just <| settings.onPress Released
-                    , label = settings.label
+                    { onPress = Nothing --Just <| settings.onPress Released
+
+                    -- , label = settings.label
+                    , label =
+                        text <|
+                            case settings.model of
+                                Pressed True ->
+                                    "Pressed & Captured"
+
+                                Pressed False ->
+                                    "Pressed & Not Cap."
+
+                                Released ->
+                                    "Released"
+
+                                Cancelled ->
+                                    "Cancelled"
                     }

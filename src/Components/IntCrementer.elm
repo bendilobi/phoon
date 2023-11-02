@@ -84,11 +84,18 @@ view colorScheme currentInt (Settings settings) =
             [ CrementButton.new
                 { onPress =
                     settings.onCrement <|
-                        if settings.model == CrementButton.Pressed CrementButton.De then
-                            currentInt - 1
+                        -- if settings.model == CrementButton.Pressed CrementButton.De then
+                        --     currentInt - 1
+                        -- else
+                        --     currentInt
+                        case settings.model of
+                            --TODO: Das funktioniert nur so halb: beim leave wird crement ausgelöst
+                            --      => Brauche ich leave überhaupt? Könnte pointerenter einfach ignorieren
+                            CrementButton.Pressed CrementButton.De _ ->
+                                currentInt - 1
 
-                        else
-                            currentInt
+                            _ ->
+                                currentInt
                 , crement = CrementButton.De
                 , model = settings.model
                 }
@@ -99,11 +106,16 @@ view colorScheme currentInt (Settings settings) =
             , CrementButton.new
                 { onPress =
                     settings.onCrement <|
-                        if settings.model == CrementButton.Pressed CrementButton.In then
-                            currentInt + 1
+                        -- if settings.model == CrementButton.Pressed CrementButton.In then
+                        --     currentInt + 1
+                        -- else
+                        --     currentInt
+                        case settings.model of
+                            CrementButton.Pressed CrementButton.In _ ->
+                                currentInt + 1
 
-                        else
-                            currentInt
+                            _ ->
+                                currentInt
                 , crement = CrementButton.In
                 , model = settings.model
                 }

@@ -37,7 +37,7 @@ toLayout : Model -> Layouts.Layout Msg
 toLayout model =
     Layouts.MainNav
         { header = Just "Sitzung vorbereiten"
-        , enableScrolling = Nothing
+        , enableScrolling = False
         }
 
 
@@ -102,7 +102,7 @@ update shared msg model =
                             Session.currentPath shared.session
                         ]
 
-                Button.Pressed ->
+                _ ->
                     Effect.none
             )
 

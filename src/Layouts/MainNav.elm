@@ -1,4 +1,4 @@
-module Layouts.MainNav exposing (Model, Msg, Props, layout, map)
+module Layouts.MainNav exposing (Model, Msg, Props, layout)
 
 import Browser.Events
 import Components.StatelessAnimatedButton as Button
@@ -22,13 +22,15 @@ import Time
 import View exposing (View)
 
 
-type alias Props contentMsg =
+type alias Props =
     { header : Maybe String
-    , enableScrolling : Maybe contentMsg
+
+    -- , enableScrolling : Maybe contentMsg
+    , enableScrolling : Bool
     }
 
 
-layout : Props contentMsg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
+layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
         { init = init
@@ -38,14 +40,12 @@ layout props shared route =
         }
 
 
-map : (msg1 -> msg2) -> Props msg1 -> Props msg2
-map fn props =
-    { header = props.header
-    , enableScrolling = Maybe.map fn props.enableScrolling
-    }
 
-
-
+-- map : (msg1 -> msg2) -> Props msg1 -> Props msg2
+-- map fn props =
+--     { header = props.header
+--     , enableScrolling = Maybe.map fn props.enableScrolling
+--     }
 -- MODEL
 
 
@@ -140,7 +140,7 @@ subscriptions model =
 -- VIEW
 
 
-view : Props contentMsg -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view : Props -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = [ Font.size 17 ]
@@ -195,21 +195,33 @@ view props shared route { toContentMsg, model, content } =
                      , width fill
                      , paddingEach <| SafeArea.paddingX shared.safeAreaInset
                      ]
-                        ++ (case props.enableScrolling of
-                                Nothing ->
-                                    []
+                        -- ++ (case props.enableScrolling of
+                        --         Nothing ->
+                        --             []
+                        --         Just msg ->
+                        --             --- Continuous scrolling by flicking on touch devices
+                        --             --- seems to produce scrolling events even during page
+                        --             --- change, so the new page continues the unfinished
+                        --             --- scrolling process of the previous page
+                        --             --- This leads to broken appearance of the new page
+                        --             --- if it is scrollable. So we enable scrollbars only
+                        --             --- on pages that need them.
+                        --             [ scrollbarY
+                        --             , htmlAttribute <| HEvents.on "scroll" <| Decode.succeed msg
+                        --             ]
+                        --    )
+                        ++ (if props.enableScrolling then
+                                --- Continuous scrolling by flicking on touch devices
+                                --- seems to produce scrolling events even during page
+                                --- change, so the new page continues the unfinished
+                                --- scrolling process of the previous page
+                                --- This leads to broken appearance of the new page
+                                --- if it is scrollable. So we enable scrollbars only
+                                --- on pages that need them.
+                                [ scrollbarY ]
 
-                                Just msg ->
-                                    --- Continuous scrolling by flicking on touch devices
-                                    --- seems to produce scrolling events even during page
-                                    --- change, so the new page continues the unfinished
-                                    --- scrolling process of the previous page
-                                    --- This leads to broken appearance of the new page
-                                    --- if it is scrollable. So we enable scrollbars only
-                                    --- on pages that need them.
-                                    [ scrollbarY
-                                    , htmlAttribute <| HEvents.on "scroll" <| Decode.succeed msg
-                                    ]
+                            else
+                                []
                            )
                     )
                     content.element
