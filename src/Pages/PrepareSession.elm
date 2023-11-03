@@ -82,17 +82,21 @@ update shared msg model =
             , Effect.none
             )
 
-        CycleCountChanged cycles state ->
-            ( { model | cycleCrementer = state }
-            , shared.session
-                |> Session.withCycles cycles
-                |> Effect.sessionUpdated
+        CycleCountChanged cycles newState ->
+            ( { model | cycleCrementer = newState }
+            , if IntCrementer.wasTriggered newState then
+                shared.session
+                    |> Session.withCycles cycles
+                    |> Effect.sessionUpdated
+
+              else
+                Effect.none
             )
 
-        OnStartButton state ->
-            ( { model | startButton = state }
-            , case state of
-                Button.Released ->
+        OnStartButton newState ->
+            ( { model | startButton = newState }
+            , case newState of
+                Button.Triggered ->
                     Effect.batch
                         [ Effect.resultsUpdated SessionResults.empty
                         , Effect.playSound Session.StartSound

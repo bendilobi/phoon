@@ -1,4 +1,4 @@
-module Components.IntCrementer exposing (Model, init, new, view, withLightColor, withMax, withMin, withStepSize)
+module Components.IntCrementer exposing (Model, init, new, view, wasTriggered, withLightColor, withMax, withMin, withStepSize)
 
 import Components.CrementButton as CrementButton
 import Element exposing (..)
@@ -76,6 +76,11 @@ init =
     CrementButton.init
 
 
+wasTriggered : CrementButton.Model -> Bool
+wasTriggered buttonState =
+    buttonState == CrementButton.Triggered
+
+
 
 --- View ---
 
@@ -91,6 +96,7 @@ view colorScheme currentInt (Settings settings) =
             [ CrementButton.new
                 { onPress =
                     settings.onCrement
+
                 --TODO: Sicherstellen, dass der Wert das Min und Max nie überschreitet
                 --      Der Crementer sollte nie etwas zurückgeben, das außerhalb der
                 --      definierten Grenzen liegt

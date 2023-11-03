@@ -157,7 +157,7 @@ update props shared route msg model =
 
         OnCancelButton newState ->
             ( { model | cancelButton = newState }
-            , if newState /= Button.Released then
+            , if newState /= Button.Triggered then
                 Effect.none
 
               else if
@@ -186,7 +186,7 @@ update props shared route msg model =
         OnDiscardButton newState ->
             ( { model
                 | discardButton = newState
-                , confirmDialogShown = newState == Button.Released
+                , confirmDialogShown = newState == Button.Triggered
               }
             , Effect.none
             )
@@ -195,7 +195,7 @@ update props shared route msg model =
             ( { model
                 | confirmButton = newState
               }
-            , if newState == Button.Released then
+            , if newState == Button.Triggered then
                 Effect.sessionEnded Session.Cancelled
 
               else
@@ -208,10 +208,10 @@ update props shared route msg model =
                     Session.withCycles 1 shared.session
             in
             ( { model
-                | controlsShown = newState /= Button.Released
+                | controlsShown = newState /= Button.Triggered
                 , addCycleButton = newState
               }
-            , if newState == Button.Released then
+            , if newState == Button.Triggered then
                 Effect.batch
                     [ Effect.sessionUpdated newSession
                     , Effect.navigate <| Session.currentPath newSession
@@ -223,7 +223,7 @@ update props shared route msg model =
 
         OnSaveButton newState ->
             ( { model | saveButton = newState }
-            , if newState == Button.Released then
+            , if newState == Button.Triggered then
                 Effect.sessionEnded Session.Finished
 
               else
@@ -247,7 +247,7 @@ update props shared route msg model =
             --      Beim Reload sicherstellen, dass die vom Nutzer gewählte
             --      Rundenzahl berücksichtigt wird (-> ins localStorage...)
             ( { model | reloadButton = newState }
-            , if newState == Button.Released then
+            , if newState == Button.Triggered then
                 Effect.sendCmd Browser.Navigation.reload
 
               else

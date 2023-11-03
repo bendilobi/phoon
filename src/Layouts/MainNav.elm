@@ -107,7 +107,7 @@ update msg model =
 
         OnCloseUpdateButton newState ->
             ( { model | updateButton = newState }
-            , if newState == Button.Released then
+            , if newState == Button.Triggered then
                 Effect.setUpdating False
 
               else

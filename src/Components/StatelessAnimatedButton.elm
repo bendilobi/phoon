@@ -76,6 +76,7 @@ withAnimated animated (Settings settings) =
 type Model
     = Pressed Bool
     | Released
+    | Triggered
     | Cancelled
 
 
@@ -118,22 +119,36 @@ view colorScheme (Settings settings) =
                             ]
                     ]
 
-                Released ->
+                Cancelled ->
+                    []
+
+                _ ->
                     [ htmlAttribute <|
                         Transition.properties
                             [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
                             ]
                     ]
 
-                Cancelled ->
-                    []
-
+        {- Unfortunately, we need quite a bit of event and state handling to have buttons that work nicely with
+           touch and mouse input devices: having different transitions when pressing and releasing as well as nice
+           mouse-overs.
+        -}
         eventAttributes =
-            --TODO: Erklären, warum ich hier was mache...
+            {- Our main events are pointerdown and pointerup... -}
             [ htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress <| Pressed True
+            , htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| settings.onPress Triggered
+
+            {- ...but on touch devices, if the user swipes from outside of the button into it and then lifts the
+               finger, we get a pointerup event. So we want to provide visual feedback to the user by showing the
+               button in Pressed state:
+            -}
             , htmlAttribute <| HEvents.on "pointerenter" <| Decode.succeed <| settings.onPress <| Pressed False
-            , htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| settings.onPress Released
-            , htmlAttribute <| HEvents.on "pointercancel" <| Decode.succeed <| settings.onPress Cancelled
+
+            {- Now, if the user swiped into the button and then swipes out of it again, the button needs to go back
+               to a non-pressed state, so that it can be rendered "non-pressed".
+               Unfortunately again, pointerleave is triggered also when pointerup is triggered so we have to
+               distinguish between a Pressed state originating from pointerdown and one from pointerenter:
+            -}
             , htmlAttribute <|
                 HEvents.on "pointerleave" <|
                     Decode.succeed <|
@@ -142,19 +157,27 @@ view colorScheme (Settings settings) =
                                 Pressed False ->
                                     Cancelled
 
-                                Cancelled ->
-                                    Cancelled
-
                                 Pressed True ->
                                     Released
+
+                                Cancelled ->
+                                    Cancelled
 
                                 Released ->
                                     Released
 
-            --TODO: Das hier funktioniert nicht, weil pointerleave nach einem pointerdown nicht mehr
-            --      registriert wird (pointercapture, siehe https://developer.mozilla.org/en-US/docs/Web/API/Element/pointerdown_event)
-            -- , htmlAttribute <| HEvents.on "pointerleave" <| Decode.succeed <| settings.onPress Cancelled
-            -- , htmlAttribute <| HEvents.on "pointerout" <| Decode.succeed <| settings.onPress Cancelled
+                                Triggered ->
+                                    Triggered
+
+            {- And finally, we want the button to go into non-pressed state and not do a Released
+               animation if the interaction is cancelled, eg. if the user started scrolling after
+               pressing the button:
+            -}
+            , htmlAttribute <| HEvents.on "pointercancel" <| Decode.succeed <| settings.onPress Cancelled
+
+            --TODO: Pointercapture verhindern, sodass der Button bei Swipe aus ihm heraus nicht ausgelöst wird;
+            --      geht nur über Ports...
+            --      siehe https://developer.mozilla.org/en-US/docs/Web/API/Element/pointerdown_event)
             ]
     in
     if settings.isInline then
@@ -202,7 +225,7 @@ view colorScheme (Settings settings) =
                     ++ eventAttributes
                 )
                 --TODO: Input.button nicht mehr verwenden, sondern direkt rendern
-                { onPress = Nothing --Just <| settings.onPress Released
+                { onPress = Nothing
                 , label = settings.label
                 }
 
@@ -243,7 +266,7 @@ view colorScheme (Settings settings) =
                            )
                         ++ eventAttributes
                     )
-                    { onPress = Nothing --Just <| settings.onPress Released
+                    { onPress = Nothing
                     , label = settings.label
 
                     -- , label =
@@ -257,4 +280,5 @@ view colorScheme (Settings settings) =
                     --                 "Released"
                     --             Cancelled ->
                     --                 "Cancelled"
+                    --             Triggered -> "Triggered"
                     }

@@ -165,7 +165,7 @@ update shared msg model =
 
         OnUpdateButton state ->
             ( { model | updateButton = state }
-            , if state == Button.Released then
+            , if state == Button.Triggered then
                 Effect.updateApp
 
               else
@@ -174,29 +174,37 @@ update shared msg model =
 
         OnReloadButton state ->
             ( { model | reloadButton = state }
-            , if state == Button.Released then
+            , if state == Button.Triggered then
                 Effect.reload
 
               else
                 Effect.none
             )
 
-        DefaultCyclesChanged cycles state ->
+        DefaultCyclesChanged cycles newState ->
             let
                 settings =
                     shared.sessionSettings
             in
-            ( { model | cycleCrementer = state }
-            , Effect.updateSessionSettings { settings | cycles = cycles }
+            ( { model | cycleCrementer = newState }
+            , if IntCrementer.wasTriggered newState then
+                Effect.updateSessionSettings { settings | cycles = cycles }
+
+              else
+                Effect.none
             )
 
-        DefaultRelaxRetDurationChanged seconds state ->
+        DefaultRelaxRetDurationChanged seconds newState ->
             let
                 settings =
                     shared.sessionSettings
             in
-            ( { model | relaxRetDurCrementer = state }
-            , Effect.updateSessionSettings { settings | relaxRetDuration = Millis.fromSeconds seconds }
+            ( { model | relaxRetDurCrementer = newState }
+            , if IntCrementer.wasTriggered newState then
+                Effect.updateSessionSettings { settings | relaxRetDuration = Millis.fromSeconds seconds }
+
+              else
+                Effect.none
             )
 
         DefaultBreathingSpeedChanged speed ->
@@ -219,7 +227,7 @@ update shared msg model =
 
         OnResetSettingsButton newState ->
             ( { model | resetSettingsButton = newState }
-            , if newState == Button.Released then
+            , if newState == Button.Triggered then
                 Effect.updateSessionSettings Session.defaultSettings
 
               else
@@ -250,7 +258,7 @@ update shared msg model =
         OnResetItemStatusButton newState ->
             ( { model
                 | settingsItemShown =
-                    if newState == Button.Released then
+                    if newState == Button.Triggered then
                         NoItem
 
                     else
@@ -262,7 +270,7 @@ update shared msg model =
 
         OnReplaceMotivationDataButton motData newState ->
             ( { model | replaceMotDataButton = newState }
-            , if newState == Button.Released then
+            , if newState == Button.Triggered then
                 Effect.setMotivationData motData
 
               else
@@ -272,7 +280,7 @@ update shared msg model =
         OnCopyButton state ->
             ( { model | copyButton = state }
             , case state of
-                Button.Released ->
+                Button.Triggered ->
                     case shared.motivationData of
                         Nothing ->
                             Effect.none
@@ -289,7 +297,7 @@ update shared msg model =
 
         OnPasteButton state ->
             ( { model | pasteButton = state }
-            , if state == Button.Released then
+            , if state == Button.Triggered then
                 Effect.requestClipboardContent
 
               else

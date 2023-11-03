@@ -87,6 +87,7 @@ withLightColor light (Settings settings) =
 type Model
     = Pressed Crement Bool
     | Released
+    | Triggered
     | Cancelled
 
 
@@ -112,7 +113,8 @@ view colorScheme (Settings settings) =
             [ width <| px size
             , height <| px size
             , Border.rounded <| size // 2
-            , Border.width 1
+
+            -- , Border.width 1
             , centerX
             , centerY
             , padding 0
@@ -177,18 +179,22 @@ view colorScheme (Settings settings) =
                                     Pressed _ False ->
                                         settings.onPress settings.number Cancelled
 
+                                    Pressed _ True ->
+                                        --TODO: Hier eigentlich nicht die crementedNumber schicken...
+                                        settings.onPress crementedNumber Released
+
                                     Cancelled ->
                                         settings.onPress settings.number Cancelled
 
-                                    Pressed _ True ->
-                                        settings.onPress crementedNumber Released
-
                                     Released ->
                                         settings.onPress settings.number Released
+
+                                    Triggered ->
+                                        settings.onPress settings.number Triggered
                    , htmlAttribute <|
                         HEvents.on "pointerup" <|
                             Decode.succeed <|
-                                settings.onPress crementedNumber Released
+                                settings.onPress crementedNumber Triggered
                    ]
                 ++ (case settings.model of
                         Pressed _ _ ->
@@ -198,15 +204,15 @@ view colorScheme (Settings settings) =
                                     ]
                             ]
 
-                        Released ->
+                        Cancelled ->
+                            []
+
+                        _ ->
                             [ htmlAttribute <|
                                 Transition.properties
                                     [ Transition.backgroundColor 1000 [ Transition.easeOutQuad ]
                                     ]
                             ]
-
-                        Cancelled ->
-                            []
                    )
             )
             { onPress = Nothing --Just <| settings.onPress Released
