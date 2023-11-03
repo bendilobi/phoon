@@ -75,7 +75,10 @@ view colorScheme (Settings settings) =
 
         viewItem item =
             if Just item == settings.selected then
-                el [ Font.color <| CS.interactInactiveDarkerColor colorScheme ] <|
+                -- el [ Font.color <| CS.interactInactiveDarkerColor colorScheme ] <|
+                el
+                    [ Font.color <| CS.guideColor colorScheme ]
+                <|
                     text <|
                         settings.toString item
 
@@ -96,7 +99,8 @@ view colorScheme (Settings settings) =
         row
             [ centerX
             , spacing 15
-            , Font.size 17
+            , Font.size 20
+            , Font.bold
             ]
         <|
             List.intersperse separator <|
