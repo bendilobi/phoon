@@ -78,9 +78,6 @@ withLightColor light (Settings settings) =
 
 
 
--- withStepSize : Int -> Button msg -> Button msg
--- withStepSize size (Settings settings) =
---     Settings { settings | stepSize = size }
 --- Model ---
 
 
@@ -113,8 +110,6 @@ view colorScheme (Settings settings) =
             [ width <| px size
             , height <| px size
             , Border.rounded <| size // 2
-
-            -- , Border.width 1
             , centerX
             , centerY
             , padding 0
@@ -139,26 +134,32 @@ view colorScheme (Settings settings) =
 
     else
         button
-            ((if settings.isLightColored then
-                CS.interactActiveLighter colorScheme
+            (commonAttributes
+                ++ (let
+                        releasedColors =
+                            if settings.isLightColored then
+                                CS.interactActiveLighter colorScheme
 
-              else
-                CS.interactActive colorScheme
-             )
-                ++ commonAttributes
-                ++ [ BG.color <|
-                        case settings.model of
-                            Pressed crement _ ->
-                                if crement == settings.crement then
-                                    --- It's-a-me!
-                                    CS.interactActiveLighterColor colorScheme
+                            else
+                                CS.interactActive colorScheme
+                    in
+                    case settings.model of
+                        Pressed crement _ ->
+                            if crement == settings.crement then
+                                --- It's-a-me!
+                                if settings.isLightColored then
+                                    CS.interactActive colorScheme
 
                                 else
-                                    CS.interactActiveColor colorScheme
+                                    CS.interactActiveLighter colorScheme
 
-                            _ ->
-                                CS.interactActiveColor colorScheme
-                   , htmlAttribute <|
+                            else
+                                releasedColors
+
+                        _ ->
+                            releasedColors
+                   )
+                ++ [ htmlAttribute <|
                         HEvents.on "pointerdown" <|
                             Decode.succeed <|
                                 settings.onPress settings.number <|
@@ -180,8 +181,7 @@ view colorScheme (Settings settings) =
                                         settings.onPress settings.number Cancelled
 
                                     Pressed _ True ->
-                                        --TODO: Hier eigentlich nicht die crementedNumber schicken...
-                                        settings.onPress crementedNumber Released
+                                        settings.onPress settings.number Released
 
                                     Cancelled ->
                                         settings.onPress settings.number Cancelled
@@ -200,7 +200,7 @@ view colorScheme (Settings settings) =
                         Pressed _ _ ->
                             [ htmlAttribute <|
                                 Transition.properties
-                                    [ Transition.backgroundColor 50 []
+                                    [ Transition.backgroundColor 200 []
                                     ]
                             ]
 
@@ -215,7 +215,7 @@ view colorScheme (Settings settings) =
                             ]
                    )
             )
-            { onPress = Nothing --Just <| settings.onPress Released
+            { onPress = Nothing
             , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
             }
 

@@ -186,7 +186,12 @@ update props shared route msg model =
         OnDiscardButton newState ->
             ( { model
                 | discardButton = newState
-                , confirmDialogShown = newState == Button.Triggered
+                , confirmDialogShown =
+                    if newState == Button.Triggered then
+                        True
+
+                    else
+                        model.confirmDialogShown
               }
             , Effect.none
             )

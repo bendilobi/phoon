@@ -115,7 +115,7 @@ view colorScheme (Settings settings) =
                 Pressed _ ->
                     [ htmlAttribute <|
                         Transition.properties
-                            [ Transition.backgroundColor 50 []
+                            [ Transition.backgroundColor 200 []
                             ]
                     ]
 
@@ -125,7 +125,7 @@ view colorScheme (Settings settings) =
                 _ ->
                     [ htmlAttribute <|
                         Transition.properties
-                            [ Transition.backgroundColor 1300 [ Transition.easeOutQuad ]
+                            [ Transition.backgroundColor 1000 [ Transition.easeOutQuad ]
                             ]
                     ]
 
@@ -199,17 +199,29 @@ view colorScheme (Settings settings) =
                          , padding 5
                          , moveUp 5
                          , moveLeft 5
+
+                         --TODO: Ins Farbschema aufnehmen?
+                         --  , BG.color <| rgb255 213 226 255
                          ]
                             ++ (if settings.isAnimated then
                                     (BG.color <|
                                         case settings.model of
                                             Pressed _ ->
                                                 --TODO: Ins Farbschema aufnehmen?
-                                                rgba 0.8 0.8 0.8 1.0
+                                                -- rgba 0.8 0.8 0.8 1.0
+                                                rgba255 189 201 226 1.0
 
                                             _ ->
-                                                rgba 0.8 0.8 0.8 0
+                                                -- rgba 0.8 0.8 0.8 0
+                                                rgba 189 201 226 0
                                     )
+                                        --TODO: Kann ich Transitions auch auf Alpha hier anwenden?
+                                        -- (case settings.model of
+                                        --     Pressed _ ->
+                                        --         alpha 1
+                                        --     _ ->
+                                        --         alpha 0
+                                        -- )
                                         :: animationAttributes
 
                                 else
@@ -243,27 +255,22 @@ view colorScheme (Settings settings) =
             el [ width fill ] <|
                 button
                     (commonAttributes
-                        --TODO: Animationsfarbe so definieren, dass lightColor wieder funktioniert
-                        ++ (if settings.isLightColored then
-                                CS.interactActiveLighter colorScheme
+                        ++ (case settings.model of
+                                Pressed _ ->
+                                    if settings.isLightColored then
+                                        CS.interactActive colorScheme
 
-                            else
-                                CS.interactActive colorScheme
+                                    else
+                                        CS.interactActiveLighter colorScheme
+
+                                _ ->
+                                    if settings.isLightColored then
+                                        CS.interactActiveLighter colorScheme
+
+                                    else
+                                        CS.interactActive colorScheme
                            )
-                        ++ (if settings.isAnimated then
-                                (BG.color <|
-                                    case settings.model of
-                                        Pressed _ ->
-                                            CS.interactActiveLighterColor colorScheme
-
-                                        _ ->
-                                            CS.interactActiveColor colorScheme
-                                )
-                                    :: animationAttributes
-
-                            else
-                                []
-                           )
+                        ++ animationAttributes
                         ++ eventAttributes
                     )
                     { onPress = Nothing

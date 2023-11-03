@@ -737,14 +737,14 @@ viewSettings shared model pagePadding =
                                 , label = text "Übungsergebnisse kopieren"
                                 , model = model.copyButton
                                 }
-                                -- |> Button.withLightColor
+                                |> Button.withLightColor
                                 |> Button.view shared.colorScheme
                             , Button.new
                                 { model = model.pasteButton
                                 , label = text "Übungsergebnisse einfügen"
                                 , onPress = OnPasteButton
                                 }
-                                -- |> Button.withLightColor
+                                |> Button.withLightColor
                                 |> Button.view shared.colorScheme
                             , case model.pastedMotivationData of
                                 NoData ->
@@ -814,7 +814,7 @@ viewSettings shared model pagePadding =
                             , label = text "App neu laden"
                             , model = model.reloadButton
                             }
-                            -- |> Button.withLightColor
+                            |> Button.withLightColor
                             |> Button.view shared.colorScheme
                         )
                     ]
