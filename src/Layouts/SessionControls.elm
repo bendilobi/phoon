@@ -1,11 +1,10 @@
-module Layouts.SessionControls exposing (Model, Msg, Props, layout)
+module Layouts.SessionControls exposing (Model, Msg, Props, layout, map)
 
 import Browser.Navigation
-import Components.StatelessAnimatedButton as Button
 import Date
 import Delay
 import Effect exposing (Effect)
-import Element exposing (..)
+import Element as E exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
@@ -21,17 +20,14 @@ import Task
 import View exposing (View)
 
 
-type alias Props =
+type alias Props contentMsg =
     { showCurrentCycle : Maybe Int
-
-    --TODO: Die gesamten Session Controls (Buttons oben und unten) in der Page
-    --      definieren und hier übergeben -> route.path-basierte Verzweigungen
-    --      fallen hier weg. Das Layout vielleicht umbenennen zu "SessionLayout"
-    --      oder so...
+    , controlsTop : List (Element contentMsg)
+    , controlsBottom : List (Element contentMsg)
     }
 
 
-layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
+layout : Props contentMsg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
         { init = init
@@ -39,6 +35,14 @@ layout props shared route =
         , view = view props shared route
         , subscriptions = subscriptions
         }
+
+
+map : (msg1 -> msg2) -> Props msg1 -> Props msg2
+map fn props =
+    { showCurrentCycle = props.showCurrentCycle
+    , controlsTop = List.map (E.map fn) props.controlsTop
+    , controlsBottom = List.map (E.map fn) props.controlsBottom
+    }
 
 
 
@@ -50,12 +54,6 @@ type alias Model =
     , controlsShown : Bool
     , confirmDialogShown : Bool
     , debounceBlock : Bool
-    , cancelButton : Button.Model
-    , discardButton : Button.Model
-    , confirmButton : Button.Model
-    , addCycleButton : Button.Model
-    , saveButton : Button.Model
-    , reloadButton : Button.Model
     }
 
 
@@ -65,12 +63,6 @@ init _ =
       , controlsShown = False
       , confirmDialogShown = False
       , debounceBlock = False
-      , cancelButton = Button.init
-      , discardButton = Button.init
-      , confirmButton = Button.init
-      , addCycleButton = Button.init
-      , saveButton = Button.init
-      , reloadButton = Button.init
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -86,20 +78,14 @@ init _ =
 type Msg
     = Swipe Swipe.Event
     | SwipeEnd Swipe.Event
-    | OnCancelButton Button.Model
-    | OnDiscardButton Button.Model
-    | OnConfirmButton Button.Model
-    | OnAddCycleButton Button.Model
-    | OnSaveButton Button.Model
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
-    | OnReloadButton Button.Model
       -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
     | MouseNavSwipe
 
 
-update : Props -> Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
+update : Props contentMsg -> Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
 update props shared route msg model =
     case msg of
         Swipe touch ->
@@ -155,86 +141,6 @@ update props shared route msg model =
             , Effect.adjustToday today
             )
 
-        OnCancelButton newState ->
-            ( { model | cancelButton = newState }
-            , if newState /= Button.Triggered then
-                Effect.none
-
-              else if
-                route.path
-                    == Session.phasePath Session.Start
-                    && not (shared.previousPath == Session.phasePath Session.End)
-              then
-                Effect.navigate shared.previousPath
-
-              else if route.path == Session.phasePath Session.End then
-                Effect.sessionEnded Session.Cancelled
-
-              else
-                Effect.batch
-                    [ if route.path == Session.phasePath Session.Retention then
-                        --- The user cancelled the retention, so we reset the counter in case
-                        --- he retries the round by adding another round:
-                        Effect.resultsUpdated <| SessionResults.resetCurrentRetention shared.results
-
-                      else
-                        Effect.none
-                    , Effect.cancelSession shared.session
-                    ]
-            )
-
-        OnDiscardButton newState ->
-            ( { model
-                | discardButton = newState
-                , confirmDialogShown =
-                    if newState == Button.Triggered then
-                        True
-
-                    else
-                        model.confirmDialogShown
-              }
-            , Effect.none
-            )
-
-        OnConfirmButton newState ->
-            ( { model
-                | confirmButton = newState
-              }
-            , if newState == Button.Triggered then
-                Effect.sessionEnded Session.Cancelled
-
-              else
-                Effect.none
-            )
-
-        OnAddCycleButton newState ->
-            let
-                newSession =
-                    Session.withCycles 1 shared.session
-            in
-            ( { model
-                | controlsShown = newState /= Button.Triggered
-                , addCycleButton = newState
-              }
-            , if newState == Button.Triggered then
-                Effect.batch
-                    [ Effect.sessionUpdated newSession
-                    , Effect.navigate <| Session.currentPath newSession
-                    ]
-
-              else
-                Effect.none
-            )
-
-        OnSaveButton newState ->
-            ( { model | saveButton = newState }
-            , if newState == Button.Triggered then
-                Effect.sessionEnded Session.Finished
-
-              else
-                Effect.none
-            )
-
         MouseNavSwipe ->
             ( { model | controlsShown = True }, Effect.none )
 
@@ -242,18 +148,6 @@ update props shared route msg model =
             ( { model | controlsShown = False }
             , if not model.controlsShown then
                 Effect.batch <| multitouchEffects shared route
-
-              else
-                Effect.none
-            )
-
-        OnReloadButton newState ->
-            --TODO: Will ich diese Funktionalität behalten? Wenn ja:
-            --      Beim Reload sicherstellen, dass die vom Nutzer gewählte
-            --      Rundenzahl berücksichtigt wird (-> ins localStorage...)
-            ( { model | reloadButton = newState }
-            , if newState == Button.Triggered then
-                Effect.sendCmd Browser.Navigation.reload
 
               else
                 Effect.none
@@ -281,49 +175,45 @@ multitouchEffects shared route =
 -- VIEW
 
 
-view : Props -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view : Props contentMsg -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff Session"
-
-    --TODO: die content.attributes hierhin?
-    , attributes = []
+    , attributes = content.attributes
     , element =
         el
-            (content.attributes
-                ++ [ width fill
-                   , height fill
-                   , inFront <|
+            [ width fill
+            , height fill
+            , inFront <|
+                column
+                    [ width fill
+                    , height fill
+                    ]
+                    [ if model.controlsShown && List.length props.controlsTop > 0 then
                         column
                             [ width fill
-                            , height fill
+                            , padding 50
+                            , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
                             ]
-                            [ if model.controlsShown && route.path == Session.phasePath Session.End then
-                                viewAddCycleControls shared.colorScheme model
-                                    |> map toContentMsg
+                        <|
+                            props.controlsTop
 
-                              else if
-                                model.controlsShown
-                                    && route.path
-                                    == Session.phasePath Session.Start
-                                    && SessionResults.finishedCycles shared.results
-                                    == 0
-                              then
-                                viewReloadButton shared.colorScheme model.reloadButton
-                                    |> map toContentMsg
-
-                              else
-                                none
-                            , viewTouchOverlay Shared.showDebugButtons
-                                |> map toContentMsg
-                            , if model.controlsShown then
-                                viewSessionControls shared model route
-                                    |> map toContentMsg
-
-                              else
-                                none
+                      else
+                        none
+                    , viewTouchOverlay Shared.showDebugButtons
+                        |> E.map toContentMsg
+                    , if model.controlsShown then
+                        column
+                            [ width fill
+                            , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
+                            , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
+                            , spacing 20
                             ]
-                   ]
-            )
+                            props.controlsBottom
+
+                      else
+                        none
+                    ]
+            ]
         <|
             column
                 [ width fill
@@ -389,107 +279,3 @@ viewDebugButton msg label =
         { onPress = Just msg
         , label = text label
         }
-
-
-viewAddCycleControls : ColorScheme -> Model -> Element Msg
-viewAddCycleControls colorScheme model =
-    el
-        [ width fill
-        , padding 50
-        , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
-        ]
-        (Button.new
-            { model = model.addCycleButton
-            , label = text "Noch 'ne Runde"
-            , onPress = OnAddCycleButton
-            }
-            |> Button.withLightColor
-            |> Button.view colorScheme
-        )
-
-
-viewReloadButton : ColorScheme -> Button.Model -> Element Msg
-viewReloadButton colorScheme reloadButton =
-    el
-        [ padding 50
-        , centerX
-        , width fill
-        , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
-        ]
-    <|
-        el
-            [ centerX ]
-        <|
-            (Button.new
-                { onPress = OnReloadButton
-                , label = text "Reload (Sound fix)"
-                , model = reloadButton
-                }
-                |> Button.withInline
-                |> Button.view colorScheme
-            )
-
-
-viewSessionControls : Shared.Model -> Model -> Route () -> Element Msg
-viewSessionControls shared model route =
-    column
-        [ width fill
-        , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
-        , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
-        , spacing 20
-        ]
-    <|
-        if
-            route.path
-                == Session.phasePath Session.End
-                && SessionResults.finishedCycles shared.results
-                > 0
-        then
-            if model.confirmDialogShown then
-                [ paragraph [ Font.center ] [ text "Retentionsdaten dieser Sitzung wirklich verwerfen?" ]
-                , Button.new
-                    { model = model.confirmButton
-                    , label = text "Ja"
-                    , onPress = OnConfirmButton
-                    }
-                    |> Button.withLightColor
-                    |> Button.view shared.colorScheme
-                ]
-
-            else
-                [ Button.new
-                    { model = model.saveButton
-                    , label = text "Speichern & beenden"
-                    , onPress = OnSaveButton
-                    }
-                    |> Button.withLightColor
-                    |> Button.view shared.colorScheme
-                , el [ height <| px 50 ] none
-                , el [ centerX ] <|
-                    (Button.new
-                        { model = model.discardButton
-                        , label = text "Sitzung verwerfen"
-                        , onPress = OnDiscardButton
-                        }
-                        |> Button.withInline
-                        |> Button.withLightColor
-                        |> Button.view shared.colorScheme
-                    )
-                ]
-
-        else
-            [ Button.new
-                { model = model.cancelButton
-                , label =
-                    if
-                        route.path
-                            == Session.phasePath Session.End
-                    then
-                        text "Beenden"
-
-                    else
-                        text "Sitzung abbrechen"
-                , onPress = OnCancelButton
-                }
-                |> Button.view shared.colorScheme
-            ]

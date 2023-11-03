@@ -1,6 +1,7 @@
 module Pages.Phases.Breathing exposing (Model, Msg, page)
 
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
+import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -32,12 +33,15 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.SessionControls
         { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results + 1
+        , controlsTop = []
+        , controlsBottom = [ viewCancelButton shared model ]
         }
 
 
 type alias Model =
     { bubble : Bubble.Model Msg
     , breathingFinished : Bool
+    , cancelButton : Button.Model
     }
 
 
@@ -50,6 +54,7 @@ init shared () =
                 , breathingSpeed = Session.speedMillis shared.session
                 }
       , breathingFinished = False
+      , cancelButton = Button.init
       }
     , Effect.batch
         [ Effect.playSound Session.BreathingSound
@@ -64,6 +69,7 @@ init shared () =
 type Msg
     = Tick Time.Posix
     | BubbleFinished
+    | OnCancelButton Button.Model
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -79,6 +85,15 @@ update shared msg model =
         BubbleFinished ->
             ( { model | breathingFinished = True }
             , Effect.playSound Session.BreathingSound
+            )
+
+        OnCancelButton newState ->
+            ( { model | cancelButton = newState }
+            , if newState == Button.Triggered then
+                Effect.cancelSession shared.session
+
+              else
+                Effect.none
             )
 
 
@@ -125,3 +140,13 @@ view shared model =
                     }
                     |> Bubble.view
     }
+
+
+viewCancelButton : Shared.Model -> Model -> Element Msg
+viewCancelButton shared model =
+    Button.new
+        { model = model.cancelButton
+        , label = text "Sitzung abbrechen"
+        , onPress = OnCancelButton
+        }
+        |> Button.view shared.colorScheme

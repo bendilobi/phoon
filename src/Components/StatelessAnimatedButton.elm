@@ -201,29 +201,17 @@ view colorScheme (Settings settings) =
                          , padding 5
                          , moveUp 5
                          , moveLeft 5
-
-                         --TODO: Ins Farbschema aufnehmen?
-                         --  , BG.color <| rgb255 213 226 255
                          ]
                             ++ (if settings.isAnimated then
                                     (BG.color <|
                                         case settings.model of
                                             Pressed _ ->
                                                 --TODO: Ins Farbschema aufnehmen?
-                                                -- rgba 0.8 0.8 0.8 1.0
                                                 rgba255 189 201 226 1.0
 
                                             _ ->
-                                                -- rgba 0.8 0.8 0.8 0
                                                 rgba 189 201 226 0
                                     )
-                                        --TODO: Kann ich Transitions auch auf Alpha hier anwenden?
-                                        -- (case settings.model of
-                                        --     Pressed _ ->
-                                        --         alpha 1
-                                        --     _ ->
-                                        --         alpha 0
-                                        -- )
                                         :: animationAttributes
 
                                 else

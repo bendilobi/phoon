@@ -34,12 +34,12 @@ import Task
 import Time
 
 
-version =
-    "0.6.271"
-
-
 showDebugButtons =
     True
+
+
+version =
+    "0.6.272"
 
 
 

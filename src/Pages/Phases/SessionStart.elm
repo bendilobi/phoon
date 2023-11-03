@@ -1,6 +1,7 @@
 module Pages.Phases.SessionStart exposing (Model, Msg, page)
 
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
+import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -23,17 +24,19 @@ page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
         { init = init shared
-        , update = update
+        , update = update shared
         , subscriptions = subscriptions shared
         , view = view shared
         }
-        |> Page.withLayout toLayout
+        |> Page.withLayout (toLayout shared)
 
 
-toLayout : Model -> Layouts.Layout Msg
-toLayout model =
+toLayout : Shared.Model -> Model -> Layouts.Layout Msg
+toLayout shared model =
     Layouts.SessionControls
         { showCurrentCycle = Nothing
+        , controlsTop = []
+        , controlsBottom = [ viewCancelButton shared model ]
         }
 
 
@@ -44,6 +47,7 @@ toLayout model =
 type alias Model =
     { bubble : Bubble.Model Msg
     , ticks : Int
+    , cancelButton : Button.Model
     }
 
 
@@ -56,6 +60,7 @@ init shared () =
                 , onFinished = Nothing
                 , breathingSpeed = Session.speedMillis shared.session
                 }
+      , cancelButton = Button.init
       }
     , Effect.none
     )
@@ -67,10 +72,11 @@ init shared () =
 
 type Msg
     = Tick Time.Posix
+    | OnCancelButton Button.Model
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update shared msg model =
     case msg of
         Tick _ ->
             let
@@ -86,6 +92,19 @@ update msg model =
                 , bubble = bModel.bubble
               }
             , Effect.none
+            )
+
+        OnCancelButton newState ->
+            ( { model | cancelButton = newState }
+            , if newState == Button.Triggered then
+                if shared.previousPath == Session.phasePath Session.End then
+                    Effect.cancelSession shared.session
+
+                else
+                    Effect.navigate shared.previousPath
+
+              else
+                Effect.none
             )
 
 
@@ -199,3 +218,14 @@ viewReminder shared icon =
 
     else
         none
+
+
+viewCancelButton : Shared.Model -> Model -> Element Msg
+viewCancelButton shared model =
+    --TODO: Texte zwischen den verschiedenen CancelButtons auf den Phasen-Seiten synchronisieren
+    Button.new
+        { model = model.cancelButton
+        , label = text "Sitzung abbrechen"
+        , onPress = OnCancelButton
+        }
+        |> Button.view shared.colorScheme

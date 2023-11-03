@@ -1,5 +1,6 @@
 module Pages.Phases.Retention exposing (Model, Msg, page)
 
+import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -31,6 +32,8 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.SessionControls
         { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results + 1
+        , controlsTop = []
+        , controlsBottom = [ viewCancelButton shared model ]
         }
 
 
@@ -39,12 +42,12 @@ toLayout shared model =
 
 
 type alias Model =
-    {}
+    { cancelButton : Button.Model }
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
-    ( {}
+    ( { cancelButton = Button.init }
     , Effect.playSound Session.RetentionSound
     )
 
@@ -55,6 +58,7 @@ init shared () =
 
 type Msg
     = Tick Time.Posix
+    | OnCancelButton Button.Model
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -62,6 +66,18 @@ update shared msg model =
     case msg of
         Tick _ ->
             ( model, Effect.resultsUpdated <| SessionResults.incrementCurrentRetention shared.results )
+
+        OnCancelButton newState ->
+            ( { model | cancelButton = newState }
+            , if newState == Button.Triggered then
+                Effect.batch
+                    [ Effect.resultsUpdated <| SessionResults.resetCurrentRetention shared.results
+                    , Effect.cancelSession shared.session
+                    ]
+
+              else
+                Effect.none
+            )
 
 
 
@@ -90,3 +106,13 @@ view shared model =
                         Millis.fromSeconds <|
                             SessionResults.currentRetentionTime shared.results
     }
+
+
+viewCancelButton : Shared.Model -> Model -> Element Msg
+viewCancelButton shared model =
+    Button.new
+        { model = model.cancelButton
+        , label = text "Sitzung abbrechen"
+        , onPress = OnCancelButton
+        }
+        |> Button.view shared.colorScheme

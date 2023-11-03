@@ -219,11 +219,6 @@ interactActiveLighterColor (ColorScheme colors) =
     colors.interactActiveLighter
 
 
-
---- TODO: Wird jetzt auch für Settings etc. verwendet
----         -> umbenennen?
-
-
 interactInactiveDarkerColor : ColorScheme -> Color
 interactInactiveDarkerColor (ColorScheme colors) =
     colors.interactInactiveDarker

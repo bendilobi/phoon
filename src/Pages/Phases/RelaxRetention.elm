@@ -1,5 +1,6 @@
 module Pages.Phases.RelaxRetention exposing (Model, Msg, page)
 
+import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -31,6 +32,8 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.SessionControls
         { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results
+        , controlsTop = []
+        , controlsBottom = [ viewCancelButton shared model ]
         }
 
 
@@ -38,24 +41,34 @@ toLayout shared model =
 -- INIT
 
 
-{-| If the Time.every subscription starts right at page load, it
-doesn't seem to (re-)start properly, the Tick timespan continues
+{-| Elm Time bundles timers with the same time setting together, so the
+Tick timespan continues
 from the previous page (Retention phase). Because of that,
 the timer here wouldn't start with a full second but with what
-remains from the Tick.every of the previous page (this issue
-might be Elm Land related...).
+remains from the Tick.every of the previous page.
+See <https://github.com/elm/time/issues/25>
+
 We solve it here by having a Starting step, sending the first
 Tick in the init function and starting the subscription to
 Time.every only if the model is Counting.
+
 -}
-type Model
+type Timer
     = Starting
     | Counting Int
 
 
+type alias Model =
+    { timer : Timer
+    , cancelButton : Button.Model
+    }
+
+
 init : () -> ( Model, Effect Msg )
 init () =
-    ( Starting
+    ( { timer = Starting
+      , cancelButton = Button.init
+      }
     , Effect.batch
         [ Effect.playSound Session.RelaxRetentionSound
         , Effect.sendMsg <| Tick <| Time.millisToPosix 0
@@ -69,6 +82,7 @@ init () =
 
 type Msg
     = Tick Time.Posix
+    | OnCancelButton Button.Model
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -77,7 +91,7 @@ update shared msg model =
         Tick _ ->
             let
                 seconds =
-                    case model of
+                    case model.timer of
                         Starting ->
                             Session.relaxRetDuration shared.session
                                 |> Millis.toSeconds
@@ -85,9 +99,18 @@ update shared msg model =
                         Counting sec ->
                             sec - 1
             in
-            ( Counting seconds
+            ( { model | timer = Counting seconds }
             , if seconds == 0 then
                 Effect.navigateNext shared.session
+
+              else
+                Effect.none
+            )
+
+        OnCancelButton newState ->
+            ( { model | cancelButton = newState }
+            , if newState == Button.Triggered then
+                Effect.cancelSession shared.session
 
               else
                 Effect.none
@@ -100,7 +123,7 @@ update shared msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model of
+    case model.timer of
         Starting ->
             Sub.none
 
@@ -127,10 +150,20 @@ view shared model =
                 ]
             <|
                 text <|
-                    case model of
+                    case model.timer of
                         Starting ->
                             ""
 
                         Counting sec ->
                             String.fromInt sec
     }
+
+
+viewCancelButton : Shared.Model -> Model -> Element Msg
+viewCancelButton shared model =
+    Button.new
+        { model = model.cancelButton
+        , label = text "Sitzung abbrechen"
+        , onPress = OnCancelButton
+        }
+        |> Button.view shared.colorScheme
