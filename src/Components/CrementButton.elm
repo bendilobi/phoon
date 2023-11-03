@@ -133,7 +133,7 @@ view colorScheme (Settings settings) =
                 viewIcon settings.crement iconSize
 
     else
-        button
+        el
             (commonAttributes
                 ++ (let
                         releasedColors =
@@ -159,7 +159,8 @@ view colorScheme (Settings settings) =
                         _ ->
                             releasedColors
                    )
-                ++ [ htmlAttribute <|
+                ++ [ pointer
+                   , htmlAttribute <|
                         HEvents.on "pointerdown" <|
                             Decode.succeed <|
                                 settings.onPress settings.number <|
@@ -215,9 +216,9 @@ view colorScheme (Settings settings) =
                             ]
                    )
             )
-            { onPress = Nothing
-            , label = el [ centerX, centerY ] <| viewIcon settings.crement iconSize
-            }
+        <|
+            el [ centerX, centerY ] <|
+                viewIcon settings.crement iconSize
 
 
 viewIcon : Crement -> Int -> Element msg

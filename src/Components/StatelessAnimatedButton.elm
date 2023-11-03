@@ -135,7 +135,8 @@ view colorScheme (Settings settings) =
         -}
         eventAttributes =
             {- Our main events are pointerdown and pointerup... -}
-            [ htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress <| Pressed True
+            [ pointer
+            , htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress <| Pressed True
             , htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| settings.onPress Triggered
 
             {- ...but on touch devices, if the user swipes from outside of the button into it and then lifts the
@@ -185,13 +186,14 @@ view colorScheme (Settings settings) =
             el [ Font.color <| CS.interactInactiveDarkerColor colorScheme ] settings.label
 
         else
-            button
+            el
                 ([ Font.color <|
                     if settings.isLightColored then
                         CS.interactActiveLighterColor colorScheme
 
                     else
                         CS.interactActiveColor colorScheme
+                 , pointer
                  , behindContent <|
                     --- To give it a bit of padding without affecting the layout
                     el
@@ -236,10 +238,7 @@ view colorScheme (Settings settings) =
                  ]
                     ++ eventAttributes
                 )
-                --TODO: Input.button nicht mehr verwenden, sondern direkt rendern
-                { onPress = Nothing
-                , label = settings.label
-                }
+                settings.label
 
     else if settings.isDisabled then
         el
@@ -251,9 +250,10 @@ view colorScheme (Settings settings) =
         --TODO: Anscheinend kann das Problem mit den falsch getriggerten Animationen
         --      gelöst werden, wenn der Button in zwei (!) els eingepackt wird...
         --      Wirklich? Warum? Im Elm-ui Slack zur Sprache bringen?
+        --      => testen, ob das immer noch so ist
         el [ width fill ] <|
             el [ width fill ] <|
-                button
+                el
                     (commonAttributes
                         ++ (case settings.model of
                                 Pressed _ ->
@@ -273,19 +273,18 @@ view colorScheme (Settings settings) =
                         ++ animationAttributes
                         ++ eventAttributes
                     )
-                    { onPress = Nothing
-                    , label = settings.label
+                    settings.label
 
-                    -- , label =
-                    --     text <|
-                    --         case settings.model of
-                    --             Pressed True ->
-                    --                 "Pressed & Captured"
-                    --             Pressed False ->
-                    --                 "Pressed & Not Cap."
-                    --             Released ->
-                    --                 "Released"
-                    --             Cancelled ->
-                    --                 "Cancelled"
-                    --             Triggered -> "Triggered"
-                    }
+
+
+--     text <|
+--         case settings.model of
+--             Pressed True ->
+--                 "Pressed & Captured"
+--             Pressed False ->
+--                 "Pressed & Not Cap."
+--             Released ->
+--                 "Released"
+--             Cancelled ->
+--                 "Cancelled"
+--             Triggered -> "Triggered"
