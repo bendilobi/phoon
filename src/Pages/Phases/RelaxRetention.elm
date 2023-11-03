@@ -166,4 +166,5 @@ viewCancelButton shared model =
         , label = text "Sitzung abbrechen"
         , onPress = OnCancelButton
         }
+        |> Button.withLightColor
         |> Button.view shared.colorScheme

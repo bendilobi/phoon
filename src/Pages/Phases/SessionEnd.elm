@@ -119,7 +119,7 @@ update shared msg model =
                 | discardButton = newState
                 , confirmDialogShown =
                     if newState == Button.Triggered then
-                        True
+                        not model.confirmDialogShown
 
                     else
                         model.confirmDialogShown
@@ -247,6 +247,17 @@ viewControlsBottom shared model =
                 }
                 |> Button.withLightColor
                 |> Button.view shared.colorScheme
+            , el [ height <| px 50 ] none
+            , el [ centerX ] <|
+                (Button.new
+                    { model = model.discardButton
+                    , label = text "Zurück"
+                    , onPress = OnDiscardButton
+                    }
+                    |> Button.withInline
+                    |> Button.withLightColor
+                    |> Button.view shared.colorScheme
+                )
             ]
 
         else

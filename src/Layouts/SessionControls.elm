@@ -52,7 +52,8 @@ map fn props =
 type alias Model =
     { gesture : Swipe.Gesture
     , controlsShown : Bool
-    , confirmDialogShown : Bool
+
+    -- , confirmDialogShown : Bool
     , debounceBlock : Bool
     }
 
@@ -61,7 +62,8 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
-      , confirmDialogShown = False
+
+      --   , confirmDialogShown = False
       , debounceBlock = False
       }
     , Effect.batch
@@ -115,7 +117,8 @@ update props shared route msg model =
                 | gesture = Swipe.blanco
                 , controlsShown = Swipe.isRightSwipe swipeSize gesture
                 , debounceBlock = model.debounceBlock || multitouchRegistered
-                , confirmDialogShown = False
+
+                -- , confirmDialogShown = False
               }
               -- TODO: Herausfinden, ob ich doch irgendwie ein sauberes "Mehr als 1 Finger beteiligt" hinkriege...
               --       Was aktuell zu passieren scheint: Beim Lupfen eines Fingers wird ein End Event
@@ -192,7 +195,7 @@ view props shared route { toContentMsg, model, content } =
                         column
                             [ width fill
                             , padding 50
-                            , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
+                            , behindContent <| el ([ alpha 0.6, width fill, height fill ] ++ CS.primary) none
                             ]
                         <|
                             props.controlsTop
@@ -205,7 +208,7 @@ view props shared route { toContentMsg, model, content } =
                         column
                             [ width fill
                             , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
-                            , behindContent <| el ([ alpha 0.5, width fill, height fill ] ++ CS.primary) none
+                            , behindContent <| el ([ alpha 0.6, width fill, height fill ] ++ CS.primary) none
                             , spacing 20
                             ]
                             props.controlsBottom
