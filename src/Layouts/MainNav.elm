@@ -9,7 +9,6 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons
-import Html.Events as HEvents
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SafeArea as SafeArea
@@ -231,7 +230,7 @@ viewNavBar shared route =
     row
         ([ width fill
          , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
-         , paddingEach { top = 5, left = 0, right = 0, bottom = 35 }
+         , paddingEach { top = 4, left = 0, right = 0, bottom = 35 }
          , spaceEvenly
          ]
             ++ CS.navbar shared.colorScheme
@@ -263,7 +262,7 @@ viewNavButton colorScheme route label icon path =
         )
     <|
         column
-            [ Font.size 10
+            [ Font.size 11
             , spacing 4
             , Font.semiBold
             , pointer

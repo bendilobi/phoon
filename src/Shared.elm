@@ -39,7 +39,7 @@ showDebugButtons =
 
 
 version =
-    "0.6.281"
+    "0.6.293"
 
 
 

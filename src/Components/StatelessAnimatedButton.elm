@@ -1,8 +1,9 @@
-module Components.StatelessAnimatedButton exposing (Model(..), init, new, view, withAnimated, withDisabled, withInline, withLightColor)
+module Components.StatelessAnimatedButton exposing (Model(..), init, new, view, withDisabled, withInline, withLightColor)
 
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
 import Element.Input exposing (button)
 import Html.Events as HEvents
@@ -23,7 +24,6 @@ type Button msg
         , isDisabled : Bool
         , isInline : Bool
         , isLightColored : Bool
-        , isAnimated : Bool
         }
 
 
@@ -41,7 +41,6 @@ new props =
         , isDisabled = False
         , isInline = False
         , isLightColored = False
-        , isAnimated = True
         }
 
 
@@ -64,11 +63,6 @@ withLightColor (Settings settings) =
     Settings { settings | isLightColored = True }
 
 
-withAnimated : Bool -> Button msg -> Button msg
-withAnimated animated (Settings settings) =
-    Settings { settings | isAnimated = animated }
-
-
 
 --- Model ---
 
@@ -86,9 +80,6 @@ init =
 
 
 
--- reset : Model
--- reset =
---     Released
 -- VIEW
 
 
@@ -100,14 +91,6 @@ view colorScheme (Settings settings) =
             , padding 20
             , Font.center
             , Border.rounded 15
-
-            -- , Border.width 1
-            -- , Border.shadow
-            --     { offset = ( 3, 3 )
-            --     , size = 0
-            --     , blur = 10
-            --     , color = rgb 0.5 0.5 0.5
-            --     }
             ]
 
         animationAttributes =
@@ -137,7 +120,14 @@ view colorScheme (Settings settings) =
             {- Our main events are pointerdown and pointerup... -}
             [ pointer
             , htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress <| Pressed True
-            , htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| settings.onPress Triggered
+
+            --TODO: Mit pointerup funktionieren die Copy und Paste Buttons nicht richtig. Wenn man sie kurz drückt,
+            --      funktionierts, wenn man sie lang drückt, wird nicht kopiert/gepastet. Der Code innerhalb von Elm
+            --      macht alles. Womöglich stellt sich Safari quer, weil copy/paste vom Nutzer getriggert werden muss
+            --      Bei Verwendung von onClick gibt's kein Problem...
+            --      => Aber welche Wechselwirkungen?
+            -- , htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| settings.onPress Triggered
+            , Events.onClick <| settings.onPress Triggered
 
             {- ...but on touch devices, if the user swipes from outside of the button into it and then lifts the
                finger, we get a pointerup event. So we want to provide visual feedback to the user by showing the
@@ -202,20 +192,16 @@ view colorScheme (Settings settings) =
                          , moveUp 5
                          , moveLeft 5
                          ]
-                            ++ (if settings.isAnimated then
-                                    (BG.color <|
-                                        case settings.model of
-                                            Pressed _ ->
-                                                --TODO: Ins Farbschema aufnehmen?
-                                                rgba255 189 201 226 1.0
+                            ++ ((BG.color <|
+                                    case settings.model of
+                                        Pressed _ ->
+                                            --TODO: Ins Farbschema aufnehmen?
+                                            rgba255 189 201 226 1.0
 
-                                            _ ->
-                                                rgba 189 201 226 0
-                                    )
-                                        :: animationAttributes
-
-                                else
-                                    []
+                                        _ ->
+                                            rgba 189 201 226 0
+                                )
+                                    :: animationAttributes
                                )
                         )
                     <|
@@ -265,14 +251,16 @@ view colorScheme (Settings settings) =
 
 
 
---     text <|
---         case settings.model of
---             Pressed True ->
---                 "Pressed & Captured"
---             Pressed False ->
---                 "Pressed & Not Cap."
---             Released ->
---                 "Released"
---             Cancelled ->
---                 "Cancelled"
---             Triggered -> "Triggered"
+-- <|
+-- text <|
+--     case settings.model of
+--         Pressed True ->
+--             "Pressed & Captured"
+--         Pressed False ->
+--             "Pressed & Not Cap."
+--         Released ->
+--             "Released"
+--         Cancelled ->
+--             "Cancelled"
+--         Triggered ->
+--             "Triggered"

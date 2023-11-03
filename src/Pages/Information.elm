@@ -278,27 +278,26 @@ update shared msg model =
                 Effect.none
             )
 
-        OnCopyButton state ->
-            ( { model | copyButton = state }
-            , case state of
-                Button.Triggered ->
-                    case shared.motivationData of
-                        Nothing ->
-                            Effect.none
+        OnCopyButton newState ->
+            ( { model | copyButton = newState }
+            , if newState == Button.Triggered then
+                case shared.motivationData of
+                    Nothing ->
+                        Effect.none
 
-                        Just motData ->
-                            motData
-                                |> MotivationData.encoder
-                                |> Json.Encode.encode 0
-                                |> Effect.writeToClipboard
+                    Just motData ->
+                        motData
+                            |> MotivationData.encoder
+                            |> Json.Encode.encode 0
+                            |> Effect.writeToClipboard
 
-                _ ->
-                    Effect.none
+              else
+                Effect.none
             )
 
-        OnPasteButton state ->
-            ( { model | pasteButton = state }
-            , if state == Button.Triggered then
+        OnPasteButton newState ->
+            ( { model | pasteButton = newState }
+            , if newState == Button.Triggered then
                 Effect.requestClipboardContent
 
               else
@@ -396,6 +395,7 @@ viewIntroduction shared model =
         --     , model = model.testButton
         --     , label = text "blah"
         --     }
+        --     |> Button.withLightColor
         --     |> Button.view shared.colorScheme
         ]
 
@@ -430,7 +430,7 @@ viewUpdate shared model =
                         , label = text "Update jetzt laden"
                         , onPress = OnUpdateButton
                         }
-                        -- |> Button.withLightColor
+                        |> Button.withLightColor
                         |> Button.view shared.colorScheme
                     ]
 

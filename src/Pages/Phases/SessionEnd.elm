@@ -287,5 +287,6 @@ viewControlsBottom shared model =
             , label = text "Beenden"
             , onPress = OnCancelButton
             }
+            |> Button.withLightColor
             |> Button.view shared.colorScheme
         ]
