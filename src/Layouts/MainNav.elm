@@ -228,37 +228,32 @@ viewHeader headerText =
 
 viewNavBar : Shared.Model -> Route () -> Element Msg
 viewNavBar shared route =
-    column
+    row
         ([ width fill
          , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
+         , paddingEach { top = 5, left = 0, right = 0, bottom = 35 }
+         , spaceEvenly
          ]
             ++ CS.navbar shared.colorScheme
         )
-        [ row
-            [ width fill
-            , paddingEach { top = 10, left = 50, right = 50, bottom = 3 }
-            ]
-            [ el [ alignLeft ] <|
-                viewNavButton shared.colorScheme route FeatherIcons.thumbsUp Route.Path.Home_
-            , el [ centerX ] <|
-                viewNavButton shared.colorScheme route FeatherIcons.play Route.Path.PrepareSession
-            , el [ alignRight ] <|
-                viewNavButton shared.colorScheme route FeatherIcons.user Route.Path.Information
-            ]
-        , el
-            [ width fill
-
-            -- This is to compensate for the area with rounded screen corners on iPhone XR
-            -- TODO: Das portabler machen wie in Tip 5 beschrieben:
-            -- https://samselikoff.com/blog/8-tips-to-make-your-website-feel-like-an-ios-app
-            , height <| px 41
-            ]
-            none
+    <|
+        let
+            viewButton =
+                viewNavButton shared.colorScheme route
+        in
+        --- Elements with zero width to make elm-ui space them correctly...
+        [ el [ width <| px 0 ] none
+        , viewButton "Motivieren" FeatherIcons.thumbsUp Route.Path.Home_
+        , el [ width <| px 0 ] none
+        , viewButton "Praktizieren" FeatherIcons.play Route.Path.PrepareSession
+        , el [ width <| px 0 ] none
+        , viewButton "Optimieren" FeatherIcons.user Route.Path.Information
+        , el [ width <| px 0 ] none
         ]
 
 
-viewNavButton : ColorScheme -> Route () -> FeatherIcons.Icon -> Route.Path.Path -> Element Msg
-viewNavButton colorScheme route icon path =
+viewNavButton : ColorScheme -> Route () -> String -> FeatherIcons.Icon -> Route.Path.Path -> Element Msg
+viewNavButton colorScheme route label icon path =
     el
         (if route.path == path then
             [ Font.color <| CS.guideColor colorScheme ]
@@ -267,6 +262,16 @@ viewNavButton colorScheme route icon path =
             []
         )
     <|
-        html <|
-            FeatherIcons.toHtml [ HEvents.onClick <| NavButtonClicked path ] <|
-                FeatherIcons.withSize 30 icon
+        column
+            [ Font.size 10
+            , spacing 4
+            , Font.semiBold
+            , pointer
+            , Events.onClick <| NavButtonClicked path
+            ]
+            [ el [ centerX ] <|
+                html <|
+                    FeatherIcons.toHtml [] <|
+                        FeatherIcons.withSize 29 icon
+            , el [ centerX ] <| text label
+            ]
