@@ -14,8 +14,9 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
+import Html.Events as HEvents
 import Http
-import Json.Decode
+import Json.Decode as Decode
 import Json.Encode
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -56,7 +57,7 @@ toLayout model =
 type ClipboardData value
     = NoData
     | Success value
-    | Failure Json.Decode.Error
+    | Failure Decode.Error
 
 
 type alias Model =
@@ -137,7 +138,7 @@ type Msg
     | OnReplaceMotivationDataButton MotivationData Button.Model
     | OnCopyButton Button.Model
     | OnPasteButton Button.Model
-    | ReceivedClipboard Json.Decode.Value
+    | ReceivedClipboard Decode.Value
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -309,7 +310,7 @@ update shared msg model =
         ReceivedClipboard value ->
             let
                 clipContent =
-                    case Json.Decode.decodeValue Json.Decode.string value of
+                    case Decode.decodeValue Decode.string value of
                         Err e ->
                             "Decode failed"
 
@@ -317,7 +318,7 @@ update shared msg model =
                             string
 
                 pastedMotivationData =
-                    case Json.Decode.decodeString MotivationData.fieldsDecoder clipContent of
+                    case Decode.decodeString MotivationData.fieldsDecoder clipContent of
                         Err e ->
                             Failure e
 
@@ -833,14 +834,27 @@ viewSettingsItem :
     -> ColorScheme
     -> Element Msg
 viewSettingsItem { item, label, value, attributes } colorScheme =
-    Input.button [ width fill ]
-        { onPress = Just <| SettingsItemShown item
-        , label =
-            row attributes
-                [ text label
-                , el [ alignRight, Font.color <| CS.interactInactiveDarkerColor colorScheme ] <| text value
-                ]
-        }
+    -- Input.button [ width fill ]
+    --     { onPress = Just <| SettingsItemShown item
+    --     , label =
+    {- For some strange reason, if we use an Element.Input.button here, the button gets triggered
+       if it gets rendered right after one of our Animated Buttons was pressed that existed at the
+       same coordinates. It seems the button press of the latter "seeps through" to the newly rendered
+       button... This doesn't happen if we use "pointerup":
+    -}
+    row
+        ([ htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| SettingsItemShown item
+         , pointer
+         ]
+            ++ attributes
+        )
+        [ text label
+        , el [ alignRight, Font.color <| CS.interactInactiveDarkerColor colorScheme ] <| text value
+        ]
+
+
+
+-- }
 
 
 viewTechInfo : Shared.Model -> Model -> Element Msg
