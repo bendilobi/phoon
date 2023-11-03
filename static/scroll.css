@@ -12,6 +12,8 @@ body {
     text-size-adjust: none;
     -webkit-text-size-adjust: none;
     -moz-text-size-adjust: none;
+    /* To disable pull-to-refresh on Android */
+    overscroll-behavior: contain;
 }
 
 :root{
