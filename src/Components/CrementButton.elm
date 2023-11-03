@@ -177,8 +177,14 @@ view colorScheme (Settings settings) =
                                     Pressed _ False ->
                                         settings.onPress settings.number Cancelled
 
-                                    _ ->
+                                    Cancelled ->
+                                        settings.onPress settings.number Cancelled
+
+                                    Pressed _ True ->
                                         settings.onPress crementedNumber Released
+
+                                    Released ->
+                                        settings.onPress settings.number Released
                    , htmlAttribute <|
                         HEvents.on "pointerup" <|
                             Decode.succeed <|

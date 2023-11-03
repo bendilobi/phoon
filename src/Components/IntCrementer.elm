@@ -91,6 +91,9 @@ view colorScheme currentInt (Settings settings) =
             [ CrementButton.new
                 { onPress =
                     settings.onCrement
+                --TODO: Sicherstellen, dass der Wert das Min und Max nie überschreitet
+                --      Der Crementer sollte nie etwas zurückgeben, das außerhalb der
+                --      definierten Grenzen liegt
                 , number = currentInt
                 , stepSize = settings.stepSize
                 , crement = CrementButton.De

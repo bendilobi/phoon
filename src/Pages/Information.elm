@@ -122,6 +122,7 @@ type SettingsItem
 
 type Msg
     = Tick Time.Posix
+      -- | OnTestButton Button.Model
     | OnReloadButton Button.Model
     | OnUpdateButton Button.Model
     | VisibilityChanged Browser.Events.Visibility
@@ -137,10 +138,6 @@ type Msg
     | OnCopyButton Button.Model
     | OnPasteButton Button.Model
     | ReceivedClipboard Json.Decode.Value
-
-
-
--- | OnTestButton Button.Model
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -299,6 +296,8 @@ update shared msg model =
                 Effect.none
             )
 
+        -- OnTestButton newState ->
+        --     ( { model | testButton = newState }, Effect.none )
         ReceivedClipboard value ->
             let
                 clipContent =
@@ -323,8 +322,6 @@ update shared msg model =
 
 
 
--- OnTestButton newState ->
---     ( { model | testButton = newState }, Effect.none )
 -- SUBSCRIPTIONS
 
 

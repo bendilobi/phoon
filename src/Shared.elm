@@ -39,7 +39,7 @@ version =
 
 
 showDebugButtons =
-    False
+    True
 
 
 

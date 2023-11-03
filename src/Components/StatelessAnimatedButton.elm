@@ -142,7 +142,13 @@ view colorScheme (Settings settings) =
                                 Pressed False ->
                                     Cancelled
 
-                                _ ->
+                                Cancelled ->
+                                    Cancelled
+
+                                Pressed True ->
+                                    Released
+
+                                Released ->
                                     Released
 
             --TODO: Das hier funktioniert nicht, weil pointerleave nach einem pointerdown nicht mehr
