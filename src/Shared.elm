@@ -35,11 +35,11 @@ import Time
 
 
 showDebugButtons =
-    True
+    False
 
 
 version =
-    "0.6.296"
+    "0.6.297"
 
 
 

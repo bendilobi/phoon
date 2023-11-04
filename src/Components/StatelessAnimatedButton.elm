@@ -1,4 +1,4 @@
-module Components.StatelessAnimatedButton exposing (Model(..), init, new, view, withDisabled, withInline, withLightColor)
+module Components.StatelessAnimatedButton exposing (Model(..), init, new, view, withDisabled, withInline, withLightColor, withTransparent)
 
 import Element exposing (..)
 import Element.Background as BG
@@ -24,6 +24,7 @@ type Button msg
         , isDisabled : Bool
         , isInline : Bool
         , isLightColored : Bool
+        , isTransparent : Bool
         }
 
 
@@ -41,6 +42,7 @@ new props =
         , isDisabled = False
         , isInline = False
         , isLightColored = False
+        , isTransparent = False
         }
 
 
@@ -61,6 +63,11 @@ withInline (Settings settings) =
 withLightColor : Button msg -> Button msg
 withLightColor (Settings settings) =
     Settings { settings | isLightColored = True }
+
+
+withTransparent : Button msg -> Button msg
+withTransparent (Settings settings) =
+    Settings { settings | isTransparent = True }
 
 
 
@@ -196,6 +203,7 @@ view colorScheme (Settings settings) =
                                     case settings.model of
                                         Pressed _ ->
                                             --TODO: Ins Farbschema aufnehmen?
+                                            --      Und mit transparentem Modus sync
                                             rgba255 189 201 226 1.0
 
                                         _ ->
@@ -231,14 +239,34 @@ view colorScheme (Settings settings) =
                     (commonAttributes
                         ++ (case settings.model of
                                 Pressed _ ->
-                                    if settings.isLightColored then
+                                    if settings.isTransparent then
+                                        [ Font.color <|
+                                            if settings.isLightColored then
+                                                CS.interactActiveLighterColor colorScheme
+
+                                            else
+                                                CS.interactActiveColor colorScheme
+                                        , BG.color <| rgba255 189 201 226 1.0
+                                        ]
+
+                                    else if settings.isLightColored then
                                         CS.interactActive colorScheme
 
                                     else
                                         CS.interactActiveLighter colorScheme
 
                                 _ ->
-                                    if settings.isLightColored then
+                                    if settings.isTransparent then
+                                        [ Font.color <|
+                                            if settings.isLightColored then
+                                                CS.interactActiveLighterColor colorScheme
+
+                                            else
+                                                CS.interactActiveColor colorScheme
+                                        , BG.color <| rgba255 189 201 226 0
+                                        ]
+
+                                    else if settings.isLightColored then
                                         CS.interactActiveLighter colorScheme
 
                                     else

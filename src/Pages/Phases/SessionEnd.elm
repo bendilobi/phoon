@@ -248,17 +248,15 @@ viewControlsBottom shared model =
                 |> Button.withLightColor
                 |> Button.view shared.colorScheme
 
-            -- , el [ height <| px 30 ] none
-            , el [ centerX ] <|
-                (Button.new
-                    { model = model.discardButton
-                    , label = el [ paddingXY 0 10 ] <| text "Zurück"
-                    , onPress = OnDiscardButton
-                    }
-                    |> Button.withInline
-                    |> Button.withLightColor
-                    |> Button.view shared.colorScheme
-                )
+            -- , el [ height <| px 10 ] none
+            , Button.new
+                { model = model.discardButton
+                , label = text "Zurück"
+                , onPress = OnDiscardButton
+                }
+                |> Button.withLightColor
+                |> Button.withTransparent
+                |> Button.view shared.colorScheme
             ]
 
         else
@@ -269,17 +267,16 @@ viewControlsBottom shared model =
                 }
                 |> Button.withLightColor
                 |> Button.view shared.colorScheme
-            , el [ height <| px 30 ] none
-            , el [ centerX ] <|
-                (Button.new
-                    { model = model.discardButton
-                    , label = text "Sitzung verwerfen"
-                    , onPress = OnDiscardButton
-                    }
-                    |> Button.withInline
-                    |> Button.withLightColor
-                    |> Button.view shared.colorScheme
-                )
+
+            -- , el [ height <| px 10 ] none
+            , Button.new
+                { model = model.discardButton
+                , label = text "Sitzung verwerfen"
+                , onPress = OnDiscardButton
+                }
+                |> Button.withTransparent
+                |> Button.withLightColor
+                |> Button.view shared.colorScheme
             ]
 
     else
