@@ -207,7 +207,9 @@ view props shared route { toContentMsg, model, content } =
                     , if model.controlsShown then
                         column
                             [ width fill
-                            , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
+                            , padding 50
+
+                            -- , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
                             , behindContent <| el ([ alpha 0.6, width fill, height fill ] ++ CS.primary) none
                             , spacing 20
                             ]

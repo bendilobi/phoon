@@ -1,7 +1,7 @@
 // Increment version when you update any of the local resources, which will
 // in turn trigger the install event again.
 // ... but not on iOS Safari, it seems...
-const PRECACHE = "precache-v0.6.51";
+const PRECACHE = "precache-v0.7";
 
 // A list of local resources we always want to be cached.
 const PRECACHE_URLS = [ 
@@ -15,6 +15,7 @@ const PRECACHE_URLS = [
     "/audio/retention.mp3",
     "/audio/relaxRetention.mp3",
     "/audio/breathing.mp3",
+    "/audio/breathingEnd.mp3",
     // TODO: Bringt es etwas, die Icons zu cachen?
     "/img/logo/favicon.png",
     "/img/logo/favicon-192x192.png",

@@ -84,7 +84,7 @@ update shared msg model =
 
         BubbleFinished ->
             ( { model | breathingFinished = True }
-            , Effect.playSound Session.BreathingSound
+            , Effect.playSound Session.BreathingEndSound
             )
 
         OnCancelButton newState ->

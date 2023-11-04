@@ -247,11 +247,12 @@ viewControlsBottom shared model =
                 }
                 |> Button.withLightColor
                 |> Button.view shared.colorScheme
-            , el [ height <| px 50 ] none
+
+            -- , el [ height <| px 30 ] none
             , el [ centerX ] <|
                 (Button.new
                     { model = model.discardButton
-                    , label = text "Zurück"
+                    , label = el [ paddingXY 0 10 ] <| text "Zurück"
                     , onPress = OnDiscardButton
                     }
                     |> Button.withInline
@@ -268,7 +269,7 @@ viewControlsBottom shared model =
                 }
                 |> Button.withLightColor
                 |> Button.view shared.colorScheme
-            , el [ height <| px 50 ] none
+            , el [ height <| px 30 ] none
             , el [ centerX ] <|
                 (Button.new
                     { model = model.discardButton

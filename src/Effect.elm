@@ -188,6 +188,9 @@ soundEncoder sound =
         Session.BreathingSound ->
             Json.Encode.string <| audioPath ++ "breathing.mp3"
 
+        Session.BreathingEndSound ->
+            Json.Encode.string <| audioPath ++ "breathingEnd.mp3"
+
         Session.RetentionSound ->
             Json.Encode.string <| audioPath ++ "retention.mp3"
 

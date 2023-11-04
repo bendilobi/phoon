@@ -149,6 +149,7 @@ type EndType
 type SessionSound
     = StartSound
     | BreathingSound
+    | BreathingEndSound
     | RetentionSound
     | RelaxRetentionSound
     | EndSound
