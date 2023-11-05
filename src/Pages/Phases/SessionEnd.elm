@@ -1,6 +1,6 @@
 module Pages.Phases.SessionEnd exposing (Model, Msg, page)
 
-import Components.StatelessAnimatedButton as Button
+import Components.AnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG

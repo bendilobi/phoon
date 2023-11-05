@@ -1,7 +1,7 @@
 module Layouts.MainNav exposing (Model, Msg, Props, layout)
 
 import Browser.Events
-import Components.StatelessAnimatedButton as Button
+import Components.AnimatedButton as Button
 import Effect exposing (Effect)
 import Element as E exposing (..)
 import Element.Background as BG

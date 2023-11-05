@@ -1,7 +1,7 @@
 module Pages.Phases.SessionStart exposing (Model, Msg, page)
 
+import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
-import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG

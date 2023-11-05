@@ -8,13 +8,12 @@ module Components.CrementButton exposing
     , withLightColor
     )
 
-import Components.AnimatedButton exposing (Msg)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
-import Element.Input exposing (button)
+import Element.Input as Input
 import FeatherIcons
 import Html.Events as HEvents
 import Json.Decode as Decode

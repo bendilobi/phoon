@@ -1,67 +1,48 @@
-module Components.AnimatedButton exposing
-    ( Model
-    , Msg(..)
-    , animator
-    , init
-    , new
-    , update
-    , view
-    , withDisabled
-    , withInline
-    , withLightColor
-    )
+module Components.AnimatedButton exposing (Model(..), init, new, view, withDisabled, withInline, withLightColor, withTransparent)
 
-import Animator
-import Color
-import Dict exposing (Dict)
-import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
-import Element.Input exposing (button)
+import Element.Input as Input
+import Html.Events as HEvents
+import Json.Decode as Decode
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.Swipe as Swipe
-import Time
+import Simple.Transition as Transition
 
 
 
---TODO: Disabled State ordentlich handhaben...
 -- SETTINGS
 
 
 type Button msg
     = Settings
-        { model : Model msg
-        , label : Element msg
-
-        -- , onPress : Maybe msg
-        , toMsg : Msg -> msg
+        { label : Element msg
+        , onPress : Model -> msg
+        , model : Model
         , isDisabled : Bool
         , isInline : Bool
         , isLightColored : Bool
+        , isTransparent : Bool
         }
 
 
 new :
-    { model : Model msg
-
-    -- , onPress : Maybe msg
+    { onPress : Model -> msg
     , label : Element msg
-    , toMsg : Msg -> msg
+    , model : Model
     }
     -> Button msg
 new props =
     Settings
-        { model = props.model
-        , label = props.label
-
-        -- , onPress = props.onPress
-        , toMsg = props.toMsg
+        { label = props.label
+        , onPress = props.onPress
+        , model = props.model
         , isDisabled = False
         , isInline = False
         , isLightColored = False
+        , isTransparent = False
         }
 
 
@@ -84,130 +65,25 @@ withLightColor (Settings settings) =
     Settings { settings | isLightColored = True }
 
 
+withTransparent : Button msg -> Button msg
+withTransparent (Settings settings) =
+    Settings { settings | isTransparent = True }
+
+
 
 --- Model ---
 
 
-type State
-    = Default
-    | Pressed
-    | Disabled
+type Model
+    = Pressed Bool
+    | Released
+    | Triggered
+    | Cancelled
 
 
-type Model msg
-    = Model
-        { buttonState : Animator.Timeline State -- (Dict Id State)
-
-        -- , id : String
-        , onPress : Maybe msg
-        }
-
-
-init :
-    { onPress : Maybe msg
-
-    -- , id : String
-    }
-    -> Model msg
-init props =
-    Model
-        { buttonState =
-            Animator.init Default
-
-        -- Dict.fromList
-        -- [ ( props.id, Default )
-        -- ]
-        -- , id = props.id
-        , onPress = props.onPress
-        }
-
-
-
---- Animator ---
-
-
-animator : Animator.Animator (Model msg)
-animator =
-    Animator.animator
-        |> Animator.watching
-            (\(Model model) -> model.buttonState)
-            (\newButtonState (Model model) ->
-                Model { model | buttonState = newButtonState }
-            )
-
-
-
--- (\buttonState ->
---     List.any ((==) Pressed) <| Dict.values buttonStates
--- )
---- Update ---
--- type alias Id =
---     String
-
-
-type Msg
-    = AnimationTick Time.Posix
-      -- | ButtonPressed Id Swipe.Event
-      -- | ButtonReleased Id Swipe.Event
-    | ButtonPressed Swipe.Event
-    | ButtonReleased Swipe.Event
-
-
-update :
-    { msg : Msg
-    , model : Model msg
-    , toModel : Model msg -> model
-    }
-    -> ( model, Effect msg )
-update props =
-    let
-        (Model model) =
-            props.model
-
-        toParentModel : ( Model msg, Effect msg ) -> ( model, Effect msg )
-        toParentModel ( innerModel, effect ) =
-            ( props.toModel innerModel, effect )
-
-        maybeAlways value =
-            Maybe.map (\_ -> value)
-
-        -- setButtonState id newState =
-        --     Dict.update id (maybeAlways newState) <|
-        --         Animator.current model.buttonState
-    in
-    toParentModel <|
-        case props.msg of
-            AnimationTick newTime ->
-                ( Animator.update newTime animator props.model
-                , Effect.none
-                )
-
-            -- ButtonPressed id _ ->
-            ButtonPressed _ ->
-                ( Model
-                    { model
-                        | buttonState =
-                            -- Animator.go Animator.veryQuickly (setButtonState id Pressed) model.buttonState
-                            Animator.go Animator.veryQuickly Pressed model.buttonState
-                    }
-                , Effect.none
-                )
-
-            -- ButtonReleased id _ ->
-            ButtonReleased _ ->
-                ( Model
-                    { model
-                        | buttonState =
-                            -- Animator.go Animator.slowly (setButtonState id Default) model.buttonState
-                            Animator.go Animator.slowly Default model.buttonState
-                    }
-                , case model.onPress of
-                    Nothing ->
-                        Effect.none
-
-                    Just msg ->
-                        Effect.sendMsg msg
-                )
+init : Model
+init =
+    Released
 
 
 
@@ -217,41 +93,89 @@ update props =
 view : ColorScheme -> Button msg -> Element msg
 view colorScheme (Settings settings) =
     let
-        (Model model) =
-            settings.model
-
-        -- buttonState id =
-        --     Animator.current model.buttonState
-        --         |> Dict.get id
-        --         |> Maybe.withDefault Default
-        -- bgColor id =
-        --     (\buttonStates ->
-        --         if (Dict.get id buttonStates |> Maybe.withDefault Default) == Pressed then
-        --             CS.interactActiveLighterColor colorScheme |> toRgb |> Color.fromRgba
-        --         else
-        --             CS.interactActiveColor colorScheme |> toRgb |> Color.fromRgba
-        --     )
-        --         |> Animator.color model.buttonState
-        --         |> Color.toRgba
-        --         |> fromRgb
-        bgColor =
-            (\buttonState ->
-                if buttonState == Pressed then
-                    CS.interactActiveLighterColor colorScheme |> toRgb |> Color.fromRgba
-
-                else
-                    CS.interactActiveColor colorScheme |> toRgb |> Color.fromRgba
-            )
-                |> Animator.color model.buttonState
-                |> Color.toRgba
-                |> fromRgb
-
         commonAttributes =
             [ width fill
             , padding 20
             , Font.center
             , Border.rounded 15
-            , Border.width 1
+            ]
+
+        animationAttributes =
+            case settings.model of
+                Pressed _ ->
+                    [ htmlAttribute <|
+                        Transition.properties
+                            [ Transition.backgroundColor 200 []
+                            ]
+                    ]
+
+                Cancelled ->
+                    []
+
+                _ ->
+                    [ htmlAttribute <|
+                        Transition.properties
+                            [ Transition.backgroundColor 1000 [ Transition.easeOutQuad ]
+                            ]
+                    ]
+
+        {- Unfortunately, we need quite a bit of event and state handling to have buttons that work nicely with
+           touch and mouse input devices: having different transitions when pressing and releasing as well as nice
+           mouse-overs.
+        -}
+        eventAttributes =
+            {- Our main events are pointerdown and pointerup... -}
+            [ pointer
+            , htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress <| Pressed True
+
+            --TODO: Mit pointerup funktionieren die Copy und Paste Buttons nicht richtig. Wenn man sie kurz drückt,
+            --      funktionierts, wenn man sie lang drückt, wird nicht kopiert/gepastet. Der Code innerhalb von Elm
+            --      macht alles. Womöglich stellt sich Safari quer, weil copy/paste vom Nutzer getriggert werden muss
+            --      Bei Verwendung von onClick gibt's kein Problem...
+            --      => Aber welche Wechselwirkungen?
+            -- , htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| settings.onPress Triggered
+            , Events.onClick <| settings.onPress Triggered
+
+            {- ...but on touch devices, if the user swipes from outside of the button into it and then lifts the
+               finger, we get a pointerup event. So we want to provide visual feedback to the user by showing the
+               button in Pressed state:
+            -}
+            , htmlAttribute <| HEvents.on "pointerenter" <| Decode.succeed <| settings.onPress <| Pressed False
+
+            {- Now, if the user swiped into the button and then swipes out of it again, the button needs to go back
+               to a non-pressed state, so that it can be rendered "non-pressed".
+               Unfortunately again, pointerleave is triggered also when pointerup is triggered so we have to
+               distinguish between a Pressed state originating from pointerdown and one from pointerenter:
+            -}
+            , htmlAttribute <|
+                HEvents.on "pointerleave" <|
+                    Decode.succeed <|
+                        settings.onPress <|
+                            case settings.model of
+                                Pressed False ->
+                                    Cancelled
+
+                                Pressed True ->
+                                    Released
+
+                                Cancelled ->
+                                    Cancelled
+
+                                Released ->
+                                    Released
+
+                                Triggered ->
+                                    Triggered
+
+            {- And finally, we want the button to go into non-pressed state and not do a Released
+               animation if the interaction is cancelled, eg. if the user started scrolling after
+               pressing the button:
+            -}
+            , htmlAttribute <| HEvents.on "pointercancel" <| Decode.succeed <| settings.onPress Cancelled
+
+            --TODO: Pointercapture verhindern, sodass der Button bei Swipe aus ihm heraus nicht ausgelöst wird;
+            --      geht nur über Ports...
+            --      siehe https://developer.mozilla.org/en-US/docs/Web/API/Element/pointerdown_event)
             ]
     in
     if settings.isInline then
@@ -259,22 +183,44 @@ view colorScheme (Settings settings) =
             el [ Font.color <| CS.interactInactiveDarkerColor colorScheme ] settings.label
 
         else
-            button
-                [ Font.color <|
+            el
+                ([ Font.color <|
                     if settings.isLightColored then
                         CS.interactActiveLighterColor colorScheme
 
                     else
                         CS.interactActiveColor colorScheme
-                ]
-                { onPress =
-                    if settings.isDisabled then
-                        Nothing
+                 , pointer
+                 , behindContent <|
+                    --- To give it a bit of padding without affecting the layout
+                    el
+                        ([ Border.rounded 5
+                         , padding 5
+                         , moveUp 5
+                         , moveLeft 5
+                         ]
+                            ++ ((BG.color <|
+                                    case settings.model of
+                                        Pressed _ ->
+                                            --TODO: Ins Farbschema aufnehmen?
+                                            --      Und mit transparentem Modus sync
+                                            rgba255 189 201 226 1.0
 
-                    else
-                        model.onPress
-                , label = settings.label
-                }
+                                        _ ->
+                                            rgba 189 201 226 0
+                                )
+                                    :: animationAttributes
+                               )
+                        )
+                    <|
+                        --- Make the shape adapt to the button's size
+                        el [ transparent True ]
+                        <|
+                            settings.label
+                 ]
+                    ++ eventAttributes
+                )
+                settings.label
 
     else if settings.isDisabled then
         el
@@ -283,31 +229,66 @@ view colorScheme (Settings settings) =
             settings.label
 
     else
-        button
-            (commonAttributes
-                ++ [ BG.color <| bgColor --model.id
+        --TODO: Anscheinend kann das Problem mit den falsch getriggerten Animationen
+        --      gelöst werden, wenn der Button in zwei (!) els eingepackt wird...
+        --      Wirklich? Warum? Im Elm-ui Slack zur Sprache bringen?
+        --      => testen, ob das immer noch so ist
+        el [ width fill ] <|
+            el [ width fill ] <|
+                el
+                    (commonAttributes
+                        ++ (case settings.model of
+                                Pressed _ ->
+                                    if settings.isTransparent then
+                                        [ Font.color <|
+                                            if settings.isLightColored then
+                                                CS.interactActiveLighterColor colorScheme
 
-                   --    , Events.onMouseDown <| settings.toMsg <| ButtonPressed model.id
-                   --    , Events.onMouseUp <| settings.toMsg <| ButtonReleased model.id
-                   --    , htmlAttribute <| Swipe.onStart <| settings.toMsg <| ButtonPressed model.id
-                   --    , htmlAttribute <| Swipe.onStart (\event -> settings.toMsg <| ButtonPressed model.id event)
-                   --    , htmlAttribute <| Swipe.onEnd (\event -> settings.toMsg <| ButtonReleased model.id event)
-                   , htmlAttribute <| Swipe.onStart (\event -> settings.toMsg <| ButtonPressed event)
-                   , htmlAttribute <| Swipe.onEnd (\event -> settings.toMsg <| ButtonReleased event)
+                                            else
+                                                CS.interactActiveColor colorScheme
+                                        , BG.color <| rgba255 189 201 226 1.0
+                                        ]
 
-                   --TODO: Border color...
-                   ]
-             -- ++ (if settings.isLightColored then
-             --         CS.interactActiveLighter colorScheme
-             --     else
-             --         CS.interactActive colorScheme
-             --    )
-            )
-            { onPress =
-                if settings.isDisabled then
-                    Nothing
+                                    else if settings.isLightColored then
+                                        CS.interactActive colorScheme
 
-                else
-                    model.onPress
-            , label = settings.label
-            }
+                                    else
+                                        CS.interactActiveLighter colorScheme
+
+                                _ ->
+                                    if settings.isTransparent then
+                                        [ Font.color <|
+                                            if settings.isLightColored then
+                                                CS.interactActiveLighterColor colorScheme
+
+                                            else
+                                                CS.interactActiveColor colorScheme
+                                        , BG.color <| rgba255 189 201 226 0
+                                        ]
+
+                                    else if settings.isLightColored then
+                                        CS.interactActiveLighter colorScheme
+
+                                    else
+                                        CS.interactActive colorScheme
+                           )
+                        ++ animationAttributes
+                        ++ eventAttributes
+                    )
+                    settings.label
+
+
+
+-- <|
+-- text <|
+--     case settings.model of
+--         Pressed True ->
+--             "Pressed & Captured"
+--         Pressed False ->
+--             "Pressed & Not Cap."
+--         Released ->
+--             "Released"
+--         Cancelled ->
+--             "Cancelled"
+--         Triggered ->
+--             "Triggered"

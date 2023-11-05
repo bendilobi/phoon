@@ -5,7 +5,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
-import Element.Input exposing (button)
+import Element.Input as Input
 import Lib.ColorScheme as CS exposing (ColorScheme)
 
 
@@ -83,7 +83,7 @@ view colorScheme (Settings settings) =
                         settings.toString item
 
             else
-                button
+                Input.button
                     [ Font.color <|
                         if settings.isLightColored then
                             CS.interactActiveLighterColor colorScheme

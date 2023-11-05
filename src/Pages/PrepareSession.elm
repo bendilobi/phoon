@@ -1,7 +1,7 @@
 module Pages.PrepareSession exposing (Model, Msg, page)
 
+import Components.AnimatedButton as Button
 import Components.IntCrementer as IntCrementer
-import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG

@@ -2,11 +2,11 @@ module Pages.Information exposing (Model, Msg, page)
 
 import Api
 import Browser.Events
+import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
 import Components.RetentionChart as RetentionChart
-import Components.StatelessAnimatedButton as Button
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -802,7 +802,7 @@ viewSettings shared model pagePadding =
                                                             , model = model.replaceMotDataButton
                                                             }
                                                             |> Button.withLightColor
-                                                            |> Button.withInline
+                                                            |> Button.withTransparent
                                                             |> Button.view shared.colorScheme
                                                         )
                                                     ]

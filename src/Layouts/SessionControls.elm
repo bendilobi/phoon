@@ -1,6 +1,5 @@
 module Layouts.SessionControls exposing (Model, Msg, Props, layout, map)
 
-import Browser.Navigation
 import Date
 import Delay
 import Effect exposing (Effect)
@@ -8,7 +7,7 @@ import Element as E exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input exposing (button)
+import Element.Input as Input
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Session as Session
@@ -201,9 +200,9 @@ view props shared route { toContentMsg, model, content } =
                     , if model.controlsShown then
                         column
                             [ width fill
-                            , padding 50
 
-                            -- , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
+                            -- , padding 50
+                            , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
                             , behindContent <| el ([ alpha 0.6, width fill, height fill ] ++ CS.primary) none
                             , spacing 30
                             ]
@@ -267,7 +266,7 @@ viewTouchOverlay debug =
 
 viewDebugButton : Msg -> String -> Element Msg
 viewDebugButton msg label =
-    button
+    Input.button
         [ BG.color <| rgb255 33 33 33
         , Font.color <| rgb 1 1 1
         , padding 10
