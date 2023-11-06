@@ -546,7 +546,13 @@ viewSettings shared model pagePadding =
                             { label =
                                 \n ->
                                     paragraph []
-                                        [ el [ Font.bold ] <| text <| String.fromInt n
+                                        [ el
+                                            [ Font.bold
+                                            , Font.color <| CS.guideColor shared.colorScheme
+                                            ]
+                                          <|
+                                            text <|
+                                                String.fromInt n
                                         , text " Runde"
                                         , el [ transparent <| n == 1 ] <| text "n"
                                         ]
@@ -670,7 +676,13 @@ viewSettings shared model pagePadding =
 
                                           else
                                             none
-                                        , el [ Font.bold ] <| text <| String.fromInt n
+                                        , el
+                                            [ Font.bold
+                                            , Font.color <| CS.guideColor shared.colorScheme
+                                            ]
+                                          <|
+                                            text <|
+                                                String.fromInt n
                                         , text " Sekunden"
                                         ]
                             , onCrement = DefaultRelaxRetDurationChanged
@@ -843,7 +855,8 @@ viewSettingsItem { item, label, value, attributes } colorScheme =
        button... This doesn't happen if we use "pointerup":
     -}
     row
-        ([ htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| SettingsItemShown item
+        -- ([ htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| SettingsItemShown item
+        ([ Events.onClick <| SettingsItemShown item
          , pointer
          ]
             ++ attributes

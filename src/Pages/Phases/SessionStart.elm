@@ -158,7 +158,7 @@ view shared model =
                         , size =
                             min shared.deviceInfo.window.width
                                 shared.deviceInfo.window.height
-                                * 0.4
+                                * 0.5
                                 |> round
                         , bubbleColor = CS.phaseSessionStartCopyColor shared.colorScheme
                         , bgColor = CS.phaseSessionStartColor shared.colorScheme

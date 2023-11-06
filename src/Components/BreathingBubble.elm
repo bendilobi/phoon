@@ -206,22 +206,27 @@ view (Settings settings) =
     <|
         Utils.animatedEl
             (Animation.steps
-                { startAt = [ P.scale 0.07 ]
+                { startAt = [ P.scale 0.05 ]
                 , options =
                     [ Animation.easeOutQuad
                     , Animation.loop
                     ]
                 }
                 [ Animation.step speed [ P.scale 1 ]
-                , Animation.step speed [ P.scale 0.07 ]
+                , Animation.step speed [ P.scale 0.05 ]
                 ]
             )
             [ Font.bold
             , width <| px settings.size
             , height <| px settings.size
             , Border.rounded <| settings.size // 2
-            , Font.color settings.bgColor
-            , BG.color settings.bubbleColor
+
+            -- , Font.color settings.bgColor
+            , Font.color settings.bubbleColor
+
+            -- , BG.color settings.bubbleColor
+            , Border.color settings.bubbleColor
+            , Border.width <| settings.size // 7
             ]
         <|
             el
