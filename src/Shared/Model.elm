@@ -24,8 +24,6 @@ type alias Model =
     , today : Date.Date
     , appVisible : Bool
     , updateState : UpdateState
-
-    -- , currentVersion : String
     , versionOnServer : Api.Data String
     , deviceInfo : Utils.Device
     , session : Session
@@ -34,9 +32,6 @@ type alias Model =
     , motivationData : Maybe MotivationData
     , colorScheme : CS.ColorScheme
     , sessionSettings : Session.Settings
-
-    -- , appIsUpdating : Bool
-    -- , justUpdated : Bool
     , baseApiUrl : String
     , safeAreaInset : SafeArea
     }
@@ -53,6 +48,7 @@ type alias Model =
 
 type UpdateState
     = NotUpdating
+    | UpdateAvailable String
     | Updating Int
     | JustUpdated
     | UpdateFailed String

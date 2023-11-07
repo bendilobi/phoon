@@ -11,6 +11,7 @@ import Lib.MotivationData exposing (MotivationData)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
+import Shared.Model
 import Time
 
 
@@ -34,6 +35,6 @@ type Msg
     | NavigateTriggered Route.Path.Path
     | SessionEnded Session.EndType
     | SessionSettingsUpdated Session.Settings
-    | SetUpdating Bool
+    | SetUpdateState Shared.Model.UpdateState
     | ReceivedVersionOnServer (Result Http.Error String)
     | SetMotivationData (Maybe MotivationData)

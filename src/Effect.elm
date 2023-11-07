@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setMotivationData, setUpdating, setWakeLock, soundEncoder, updateApp, updateSessionSettings, writeToClipboard
+    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setMotivationData, setUpdateState, setWakeLock, soundEncoder, updateApp, updateSessionSettings, writeToClipboard
     )
 
 {-|
@@ -24,7 +24,7 @@ import Dict exposing (Dict)
 import Http
 import Json.Decode
 import Json.Encode
-import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.MotivationData as MotivationData exposing (MotivationData, update)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route exposing (Route)
@@ -225,15 +225,6 @@ saveSessionSettings settings =
         }
 
 
-
--- saveUpdatingState : Bool -> Effect msg
--- saveUpdatingState isUpdating =
---     SendMessageToJavaScript
---         { tag = "SET_UPDATING"
---         , data = Json.Encode.bool isUpdating
---         }
-
-
 saveUpdatingState : Shared.Model.UpdateState -> Effect msg
 saveUpdatingState updateState =
     SendMessageToJavaScript
@@ -261,9 +252,9 @@ getSafeArea =
 -- SHARED
 
 
-setUpdating : Bool -> Effect msg
-setUpdating isUpdating =
-    SendSharedMsg <| Shared.Msg.SetUpdating isUpdating
+setUpdateState : Shared.Model.UpdateState -> Effect msg
+setUpdateState updateState =
+    SendSharedMsg <| Shared.Msg.SetUpdateState updateState
 
 
 adjustToday : Date.Date -> Effect msg
@@ -339,9 +330,13 @@ setMotivationData motData =
 updateApp : Shared.Model.UpdateState -> Effect msg
 updateApp updateState =
     batch
-        [ setUpdating True
+        [ setUpdateState <|
+            case updateState of
+                Shared.Model.Updating _ ->
+                    updateState
 
-        -- [ saveUpdatingState updateState
+                _ ->
+                    Shared.Model.Updating 0
         , Reload
         ]
 

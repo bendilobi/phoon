@@ -2,7 +2,7 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
-    , showDebugButtons, version
+    , appVersion, showDebugButtons
     )
 
 {-|
@@ -38,8 +38,8 @@ showDebugButtons =
     False
 
 
-version =
-    "0.6.313"
+appVersion =
+    "0.6.316"
 
 
 
@@ -157,8 +157,6 @@ init flagsResult route =
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
-
-      --   , currentVersion = version
       , appVisible = True
       , updateState = decodedFlags.updateState
       , versionOnServer = Api.Loading
@@ -169,9 +167,6 @@ init flagsResult route =
       , motivationData = decodedFlags.motData
       , colorScheme = CS.newSunrise
       , sessionSettings = decodedFlags.sessionSettings
-
-      --   , appIsUpdating = decodedFlags.isUpdating
-      --   , justUpdated = False
       , baseApiUrl = "/version/"
       , safeAreaInset = decodedFlags.safeAreaInsets
       }
@@ -221,7 +216,6 @@ update route msg model =
             case visibility of
                 Browser.Events.Hidden ->
                     ( { model
-                        -- | justUpdated = False
                         | updateState =
                             case model.updateState of
                                 JustUpdated ->
@@ -324,90 +318,43 @@ update route msg model =
             , Effect.saveSessionSettings newSettings
             )
 
-        Shared.Msg.SetUpdating updating ->
-            --TODO: Brauche ich das hier überhaupt? Besser direkt den updateState ändern?
-            let
-                updateState =
-                    if updating then
-                        case model.updateState of
-                            NotUpdating ->
-                                Updating 0
-
-                            Updating n ->
-                                Updating n
-
-                            JustUpdated ->
-                                Updating 0
-
-                            UpdateFailed _ ->
-                                Updating 0
-
-                    else
-                        case model.updateState of
-                            NotUpdating ->
-                                NotUpdating
-
-                            Updating n ->
-                                JustUpdated
-
-                            JustUpdated ->
-                                NotUpdating
-
-                            UpdateFailed _ ->
-                                NotUpdating
-            in
-            ( { model
-                -- | appIsUpdating = updating
-                -- , justUpdated = model.appIsUpdating && not updating
-                | updateState = updateState
-              }
-            , Effect.saveUpdatingState updateState
+        Shared.Msg.SetUpdateState newState ->
+            ( { model | updateState = newState }
+            , Effect.saveUpdatingState newState
             )
 
         Shared.Msg.ReceivedVersionOnServer (Ok versionString) ->
             ( { model
                 | versionOnServer = Api.Success versionString
               }
-            , if versionString == version then
-                --TODO: Muss ich hier über Effect gehen?
-                Effect.setUpdating False
-                --   else if model.appIsUpdating then
-                --     Effect.reload
-                --   else
-                --     Effect.none
+            , case model.updateState of
+                Updating _ ->
+                    if versionString == appVersion then
+                        Effect.setUpdateState JustUpdated
 
-              else
-                case model.updateState of
-                    NotUpdating ->
-                        Effect.none
-
-                    Updating n ->
+                    else
                         Effect.updateApp model.updateState
 
-                    JustUpdated ->
-                        Effect.none
+                UpdateFailed _ ->
+                    --- If the update failed for some reason, we want the user to
+                    --- trigger a new updating process.
+                    Effect.none
 
-                    UpdateFailed _ ->
+                _ ->
+                    if versionString /= appVersion then
+                        Effect.setUpdateState <| UpdateAvailable versionString
+
+                    else
                         Effect.none
             )
 
         Shared.Msg.ReceivedVersionOnServer (Err httpError) ->
-            -- ( { model | versionOnServer = Api.Failure httpError }
-            --   --TODO: Failed, wenn Updating
-            -- , Effect.setUpdating False
-            -- )
-            let
-                updateState =
-                    --TODO: Fehlermeldung optimieren -> ist das hier qualitativ
-                    --      anders als wenn die Number of Tries überschritten wird?
-                    --      httpError mit ausgeben?
-                    UpdateFailed "Kann Update nicht vom Server laden"
-            in
-            ( { model
-                | versionOnServer = Api.Failure httpError
-                , updateState = updateState
-              }
-            , Effect.saveUpdatingState updateState
+            ( { model | versionOnServer = Api.Failure httpError }
+            , Effect.setUpdateState <|
+                --TODO: Fehlermeldung optimieren -> ist das hier qualitativ
+                --      anders als wenn die Number of Tries überschritten wird?
+                --      httpError mit ausgeben?
+                UpdateFailed "Kann Update nicht vom Server laden"
             )
 
         Shared.Msg.SetMotivationData motData ->

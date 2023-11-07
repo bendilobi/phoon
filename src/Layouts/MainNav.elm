@@ -108,7 +108,7 @@ update msg model =
         OnCloseUpdateButton newState ->
             ( { model | updateButton = newState }
             , if newState == Button.Triggered then
-                Effect.setUpdating False
+                Effect.setUpdateState <| NotUpdating
 
               else
                 Effect.none
@@ -117,7 +117,9 @@ update msg model =
         CancelUpdate ->
             ( model
             , Effect.batch
-                [ Effect.setUpdating False
+                [ Effect.setUpdateState <| NotUpdating
+
+                --TODO: Wofür brauche ich reload?
                 , Effect.reload
                 ]
             )
@@ -137,7 +139,6 @@ view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = [ Font.size 17 ]
     , element =
-        -- if shared.appIsUpdating then
         case shared.updateState of
             Updating _ ->
                 (el [ width fill, height fill ] <|
@@ -152,7 +153,6 @@ view props shared route { toContentMsg, model, content } =
                 )
                     |> E.map toContentMsg
 
-            -- else if shared.justUpdated then
             JustUpdated ->
                 (el [ width fill, height fill ] <|
                     column [ centerX, centerY, spacing 20 ]
@@ -160,7 +160,7 @@ view props shared route { toContentMsg, model, content } =
                         [ el [ Font.color <| CS.successColor shared.colorScheme, Font.bold ] <|
                             text <|
                                 "Update auf Version "
-                                    ++ Shared.version
+                                    ++ Shared.appVersion
                                     ++ " erfolgreich!"
                         , Button.new
                             { model = model.updateButton
@@ -191,8 +191,7 @@ view props shared route { toContentMsg, model, content } =
                 )
                     |> E.map toContentMsg
 
-            -- else
-            NotUpdating ->
+            _ ->
                 column
                     (content.attributes
                         ++ [ width fill

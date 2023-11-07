@@ -14,7 +14,6 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Html.Events as HEvents
 import Http
 import Json.Decode as Decode
 import Json.Encode
@@ -101,7 +100,6 @@ init shared () =
 
       --   , testButton = Button.init
       }
-      -- , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
     , if shared.versionOnServer /= Api.Loading && shared.updateState /= JustUpdated then
         Effect.checkVersion ReceivedNewestVersionString
 
@@ -160,11 +158,12 @@ update shared msg model =
                     Effect.none
 
                 Browser.Events.Visible ->
+                    --TODO: Ausprobieren, ob ich das überhaupt brauche, oder ob das selbe
+                    --      im Shared update das sowieso übernimmt
                     Effect.checkVersion ReceivedNewestVersionString
             )
 
         ReceivedNewestVersionString response ->
-            --TODO: Brauche ich nicht extra hier durchleiten, oder?
             ( model, Effect.receivedVersionOnServer response )
 
         OnUpdateButton state ->
@@ -405,41 +404,27 @@ viewIntroduction shared model =
 
 viewUpdate : Shared.Model -> Model -> Element Msg
 viewUpdate shared model =
-    let
-        serverResponse =
-            case shared.versionOnServer of
-                Api.Success versionString ->
-                    Just versionString
-
-                _ ->
-                    Nothing
-    in
-    case serverResponse of
-        Nothing ->
-            none
-
-        Just versionOnServer ->
-            -- if shared.currentVersion /= versionOnServer then
-            if Shared.version /= versionOnServer then
-                column [ width fill, spacing 10 ]
-                    [ paragraph [ width fill, Font.center ]
-                        [ text <|
-                            "Ein Update ist verfügbar von Version "
-                                ++ Shared.version
-                                ++ " auf "
-                                ++ versionOnServer
-                        ]
-                    , Button.new
-                        { model = model.updateButton
-                        , label = text "Update jetzt laden"
-                        , onPress = OnUpdateButton
-                        }
-                        |> Button.withLightColor
-                        |> Button.view shared.colorScheme
+    case shared.updateState of
+        UpdateAvailable versionOnServer ->
+            column [ width fill, spacing 10 ]
+                [ paragraph [ width fill, Font.center ]
+                    [ text <|
+                        "Ein Update ist verfügbar von Version "
+                            ++ Shared.appVersion
+                            ++ " auf "
+                            ++ versionOnServer
                     ]
+                , Button.new
+                    { model = model.updateButton
+                    , label = text "Update jetzt laden"
+                    , onPress = OnUpdateButton
+                    }
+                    |> Button.withLightColor
+                    |> Button.view shared.colorScheme
+                ]
 
-            else
-                none
+        _ ->
+            none
 
 
 viewRetentionTrend : Shared.Model -> Int -> Element msg
@@ -885,4 +870,4 @@ viewTechInfo shared model =
         <|
             text <|
                 "Zoff Version "
-                    ++ Shared.version
+                    ++ Shared.appVersion
