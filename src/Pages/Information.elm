@@ -27,6 +27,7 @@ import Lib.Session as Session exposing (BreathCount, BreathingSpeed, Session)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
+import Shared.Model exposing (UpdateState(..))
 import Time
 import View exposing (View)
 
@@ -100,7 +101,8 @@ init shared () =
 
       --   , testButton = Button.init
       }
-    , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
+      -- , if shared.versionOnServer /= Api.Loading && not shared.justUpdated then
+    , if shared.versionOnServer /= Api.Loading && shared.updateState /= JustUpdated then
         Effect.checkVersion ReceivedNewestVersionString
 
       else
@@ -162,12 +164,13 @@ update shared msg model =
             )
 
         ReceivedNewestVersionString response ->
+            --TODO: Brauche ich nicht extra hier durchleiten, oder?
             ( model, Effect.receivedVersionOnServer response )
 
         OnUpdateButton state ->
             ( { model | updateButton = state }
             , if state == Button.Triggered then
-                Effect.updateApp
+                Effect.updateApp shared.updateState
 
               else
                 Effect.none
@@ -416,12 +419,13 @@ viewUpdate shared model =
             none
 
         Just versionOnServer ->
-            if shared.currentVersion /= versionOnServer then
+            -- if shared.currentVersion /= versionOnServer then
+            if Shared.version /= versionOnServer then
                 column [ width fill, spacing 10 ]
                     [ paragraph [ width fill, Font.center ]
                         [ text <|
                             "Ein Update ist verfügbar von Version "
-                                ++ shared.currentVersion
+                                ++ Shared.version
                                 ++ " auf "
                                 ++ versionOnServer
                         ]
@@ -881,4 +885,4 @@ viewTechInfo shared model =
         <|
             text <|
                 "Zoff Version "
-                    ++ shared.currentVersion
+                    ++ Shared.version

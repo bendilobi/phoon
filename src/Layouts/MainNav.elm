@@ -15,6 +15,7 @@ import Lib.SafeArea as SafeArea
 import Route exposing (Route)
 import Route.Path
 import Shared
+import Shared.Model exposing (UpdateState(..))
 import Task
 import Time
 import View exposing (View)
@@ -136,77 +137,100 @@ view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = [ Font.size 17 ]
     , element =
-        if shared.appIsUpdating then
-            (el [ width fill, height fill ] <|
-                el
-                    [ centerX
-                    , centerY
-                    , Events.onClick CancelUpdate
-                    ]
-                <|
-                    text "Aktualisiere..."
-            )
-                |> E.map toContentMsg
-
-        else if shared.justUpdated then
-            (el [ width fill, height fill ] <|
-                column [ centerX, centerY, spacing 20 ]
-                    --TODO: nur Erfolg melden, wenns wirklich erfolgreich war
-                    [ el [ Font.color <| CS.successColor shared.colorScheme, Font.bold ] <|
+        -- if shared.appIsUpdating then
+        case shared.updateState of
+            Updating _ ->
+                (el [ width fill, height fill ] <|
+                    el
+                        [ centerX
+                        , centerY
+                        , Events.onClick CancelUpdate
+                        ]
+                    <|
                         text <|
-                            "Update auf Version "
-                                ++ shared.currentVersion
-                                ++ " erfolgreich!"
-                    , Button.new
-                        { model = model.updateButton
-                        , label = text "Fertig"
-                        , onPress = OnCloseUpdateButton
-                        }
-                        |> Button.withLightColor
-                        |> Button.view shared.colorScheme
-                    ]
-            )
-                |> E.map toContentMsg
-
-        else
-            column
-                (content.attributes
-                    ++ [ width fill
-                       , height fill
-                       ]
+                            "Aktualisiere..."
                 )
-                [ case props.header of
-                    Nothing ->
-                        none
+                    |> E.map toContentMsg
 
-                    Just headerText ->
-                        viewHeader headerText |> E.map toContentMsg
-                , el
-                    ([ height fill
-                     , width fill
-                     , paddingEach <| SafeArea.paddingX shared.safeAreaInset
-                     ]
-                        ++ (if props.enableScrolling then
-                                --- Continuous scrolling by flicking on touch devices
-                                --- seems to produce scrolling events even during page
-                                --- change, so the new page continues the unfinished
-                                --- scrolling process of the previous page
-                                --- This leads to broken appearance of the new page
-                                --- if it is scrollable. So we enable scrollbars only
-                                --- on pages that need them.
-                                [ scrollbarY ]
+            -- else if shared.justUpdated then
+            JustUpdated ->
+                (el [ width fill, height fill ] <|
+                    column [ centerX, centerY, spacing 20 ]
+                        --TODO: nur Erfolg melden, wenns wirklich erfolgreich war
+                        [ el [ Font.color <| CS.successColor shared.colorScheme, Font.bold ] <|
+                            text <|
+                                "Update auf Version "
+                                    ++ Shared.version
+                                    ++ " erfolgreich!"
+                        , Button.new
+                            { model = model.updateButton
+                            , label = text "Fertig"
+                            , onPress = OnCloseUpdateButton
+                            }
+                            |> Button.withLightColor
+                            |> Button.view shared.colorScheme
+                        ]
+                )
+                    |> E.map toContentMsg
 
-                            else
-                                []
-                           )
+            UpdateFailed errorMessage ->
+                --TODO: Code Duplication mit JustUpdated auflösen
+                (el [ width fill, height fill ] <|
+                    column [ centerX, centerY, spacing 20 ]
+                        --TODO: nur Erfolg melden, wenns wirklich erfolgreich war
+                        [ el [ Font.color <| CS.actionNeededColor shared.colorScheme, Font.bold ] <|
+                            text errorMessage
+                        , Button.new
+                            { model = model.updateButton
+                            , label = text "Später versuchen"
+                            , onPress = OnCloseUpdateButton
+                            }
+                            |> Button.withLightColor
+                            |> Button.view shared.colorScheme
+                        ]
+                )
+                    |> E.map toContentMsg
+
+            -- else
+            NotUpdating ->
+                column
+                    (content.attributes
+                        ++ [ width fill
+                           , height fill
+                           ]
                     )
-                    content.element
-                , if shared.deviceInfo.orientation == Portrait then
-                    viewNavBar shared route |> E.map toContentMsg
+                    [ case props.header of
+                        Nothing ->
+                            none
 
-                  else
-                    none
-                ]
+                        Just headerText ->
+                            viewHeader headerText |> E.map toContentMsg
+                    , el
+                        ([ height fill
+                         , width fill
+                         , paddingEach <| SafeArea.paddingX shared.safeAreaInset
+                         ]
+                            ++ (if props.enableScrolling then
+                                    --- Continuous scrolling by flicking on touch devices
+                                    --- seems to produce scrolling events even during page
+                                    --- change, so the new page continues the unfinished
+                                    --- scrolling process of the previous page
+                                    --- This leads to broken appearance of the new page
+                                    --- if it is scrollable. So we enable scrollbars only
+                                    --- on pages that need them.
+                                    [ scrollbarY ]
+
+                                else
+                                    []
+                               )
+                        )
+                        content.element
+                    , if shared.deviceInfo.orientation == Portrait then
+                        viewNavBar shared route |> E.map toContentMsg
+
+                      else
+                        none
+                    ]
     }
 
 

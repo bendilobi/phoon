@@ -1,4 +1,4 @@
-module Shared.Model exposing (Model)
+module Shared.Model exposing (Model, UpdateState(..))
 
 import Api
 import Date
@@ -23,7 +23,9 @@ type alias Model =
     { zone : Time.Zone
     , today : Date.Date
     , appVisible : Bool
-    , currentVersion : String
+    , updateState : UpdateState
+
+    -- , currentVersion : String
     , versionOnServer : Api.Data String
     , deviceInfo : Utils.Device
     , session : Session
@@ -32,8 +34,25 @@ type alias Model =
     , motivationData : Maybe MotivationData
     , colorScheme : CS.ColorScheme
     , sessionSettings : Session.Settings
-    , appIsUpdating : Bool
-    , justUpdated : Bool
+
+    -- , appIsUpdating : Bool
+    -- , justUpdated : Bool
     , baseApiUrl : String
     , safeAreaInset : SafeArea
     }
+
+
+
+-- type UpdateState
+--     = Current
+--     | Comparing (Api.Data String)
+--       -- | Different (Api.Data String)
+--     | Updating Int (Api.Data String)
+--     | JustUpdated
+
+
+type UpdateState
+    = NotUpdating
+    | Updating Int
+    | JustUpdated
+    | UpdateFailed String

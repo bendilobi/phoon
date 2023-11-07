@@ -2,7 +2,7 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
-    , showDebugButtons
+    , showDebugButtons, version
     )
 
 {-|
@@ -28,7 +28,7 @@ import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Lib.Utils as Utils
 import Route exposing (Route)
 import Route.Path
-import Shared.Model
+import Shared.Model exposing (UpdateState(..))
 import Shared.Msg
 import Task
 import Time
@@ -39,7 +39,7 @@ showDebugButtons =
 
 
 version =
-    "0.6.305"
+    "0.6.313"
 
 
 
@@ -83,7 +83,7 @@ init flagsResult route =
                 Err e ->
                     { motData = Nothing
                     , sessionSettings = Session.defaultSettings
-                    , isUpdating = False
+                    , updateState = NotUpdating
                     , safeAreaInsets = SafeArea.new { top = 0, bottom = 0, left = 0, right = 0 }
                     , width = 0
                     , height = 0
@@ -97,8 +97,8 @@ init flagsResult route =
                         sessionSettingsDecoded =
                             Json.Decode.decodeValue Session.settingsDecoder data.storedSessionSettings
 
-                        isUpdatingDecoded =
-                            Json.Decode.decodeValue Json.Decode.bool data.storedUpdatingState
+                        updateStateDecoded =
+                            Json.Decode.decodeValue Json.Decode.int data.storedUpdatingState
 
                         safeAreasDecoded =
                             SafeArea.decode data.safeAreaInsets
@@ -123,13 +123,21 @@ init flagsResult route =
 
                             Ok settings ->
                                 settings
-                    , isUpdating =
-                        case isUpdatingDecoded of
+                    , updateState =
+                        case updateStateDecoded of
                             Err e ->
-                                False
+                                NotUpdating
 
-                            Ok updating ->
-                                updating
+                            Ok nOfTries ->
+                                if nOfTries < 0 then
+                                    NotUpdating
+
+                                else if nOfTries == 10 then
+                                    --TODO: Fehlermeldung besser formulieren...
+                                    UpdateFailed "Kann Update nicht laden..."
+
+                                else
+                                    Updating <| nOfTries + 1
                     , safeAreaInsets = safeAreasDecoded
                     , width =
                         case widthDecoded of
@@ -149,8 +157,10 @@ init flagsResult route =
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
-      , currentVersion = version
+
+      --   , currentVersion = version
       , appVisible = True
+      , updateState = decodedFlags.updateState
       , versionOnServer = Api.Loading
       , deviceInfo = Utils.classifyDevice { width = decodedFlags.width, height = decodedFlags.height }
       , session = Session.new decodedFlags.sessionSettings
@@ -159,8 +169,9 @@ init flagsResult route =
       , motivationData = decodedFlags.motData
       , colorScheme = CS.newSunrise
       , sessionSettings = decodedFlags.sessionSettings
-      , appIsUpdating = decodedFlags.isUpdating
-      , justUpdated = False
+
+      --   , appIsUpdating = decodedFlags.isUpdating
+      --   , justUpdated = False
       , baseApiUrl = "/version/"
       , safeAreaInset = decodedFlags.safeAreaInsets
       }
@@ -188,7 +199,7 @@ update route msg model =
             , Effect.none
             )
 
-        Shared.Msg.Resized width height ->
+        Shared.Msg.Resized _ _ ->
             --- There seems to be a timing issue: "sometimes" the width or height received
             --- here after a change between portrait and landscape mode is wrong. Therefore,
             --- we get the viewport size in an additional step:
@@ -210,7 +221,14 @@ update route msg model =
             case visibility of
                 Browser.Events.Hidden ->
                     ( { model
-                        | justUpdated = False
+                        -- | justUpdated = False
+                        | updateState =
+                            case model.updateState of
+                                JustUpdated ->
+                                    NotUpdating
+
+                                _ ->
+                                    model.updateState
                         , appVisible = False
                       }
                     , Effect.none
@@ -307,30 +325,89 @@ update route msg model =
             )
 
         Shared.Msg.SetUpdating updating ->
+            --TODO: Brauche ich das hier überhaupt? Besser direkt den updateState ändern?
+            let
+                updateState =
+                    if updating then
+                        case model.updateState of
+                            NotUpdating ->
+                                Updating 0
+
+                            Updating n ->
+                                Updating n
+
+                            JustUpdated ->
+                                Updating 0
+
+                            UpdateFailed _ ->
+                                Updating 0
+
+                    else
+                        case model.updateState of
+                            NotUpdating ->
+                                NotUpdating
+
+                            Updating n ->
+                                JustUpdated
+
+                            JustUpdated ->
+                                NotUpdating
+
+                            UpdateFailed _ ->
+                                NotUpdating
+            in
             ( { model
-                | appIsUpdating = updating
-                , justUpdated = model.appIsUpdating && not updating
+                -- | appIsUpdating = updating
+                -- , justUpdated = model.appIsUpdating && not updating
+                | updateState = updateState
               }
-            , Effect.saveUpdatingState updating
+            , Effect.saveUpdatingState updateState
             )
 
         Shared.Msg.ReceivedVersionOnServer (Ok versionString) ->
             ( { model
                 | versionOnServer = Api.Success versionString
               }
-            , if versionString == model.currentVersion then
+            , if versionString == version then
+                --TODO: Muss ich hier über Effect gehen?
                 Effect.setUpdating False
-
-              else if model.appIsUpdating then
-                Effect.reload
+                --   else if model.appIsUpdating then
+                --     Effect.reload
+                --   else
+                --     Effect.none
 
               else
-                Effect.none
+                case model.updateState of
+                    NotUpdating ->
+                        Effect.none
+
+                    Updating n ->
+                        Effect.updateApp model.updateState
+
+                    JustUpdated ->
+                        Effect.none
+
+                    UpdateFailed _ ->
+                        Effect.none
             )
 
         Shared.Msg.ReceivedVersionOnServer (Err httpError) ->
-            ( { model | versionOnServer = Api.Failure httpError }
-            , Effect.setUpdating False
+            -- ( { model | versionOnServer = Api.Failure httpError }
+            --   --TODO: Failed, wenn Updating
+            -- , Effect.setUpdating False
+            -- )
+            let
+                updateState =
+                    --TODO: Fehlermeldung optimieren -> ist das hier qualitativ
+                    --      anders als wenn die Number of Tries überschritten wird?
+                    --      httpError mit ausgeben?
+                    UpdateFailed "Kann Update nicht vom Server laden"
+            in
+            ( { model
+                | versionOnServer = Api.Failure httpError
+                , updateState = updateState
+              }
+            , Effect.saveUpdatingState updateState
             )
 
         Shared.Msg.SetMotivationData motData ->

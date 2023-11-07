@@ -225,11 +225,27 @@ saveSessionSettings settings =
         }
 
 
-saveUpdatingState : Bool -> Effect msg
-saveUpdatingState isUpdating =
+
+-- saveUpdatingState : Bool -> Effect msg
+-- saveUpdatingState isUpdating =
+--     SendMessageToJavaScript
+--         { tag = "SET_UPDATING"
+--         , data = Json.Encode.bool isUpdating
+--         }
+
+
+saveUpdatingState : Shared.Model.UpdateState -> Effect msg
+saveUpdatingState updateState =
     SendMessageToJavaScript
         { tag = "SET_UPDATING"
-        , data = Json.Encode.bool isUpdating
+        , data =
+            Json.Encode.int <|
+                case updateState of
+                    Shared.Model.Updating nOfTries ->
+                        nOfTries
+
+                    _ ->
+                        -1
         }
 
 
@@ -320,10 +336,12 @@ setMotivationData motData =
 --- Commands ---
 
 
-updateApp : Effect msg
-updateApp =
+updateApp : Shared.Model.UpdateState -> Effect msg
+updateApp updateState =
     batch
         [ setUpdating True
+
+        -- [ saveUpdatingState updateState
         , Reload
         ]
 
