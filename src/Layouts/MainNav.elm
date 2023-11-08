@@ -154,41 +154,21 @@ view props shared route { toContentMsg, model, content } =
                     |> E.map toContentMsg
 
             JustUpdated ->
-                (el [ width fill, height fill ] <|
-                    column [ centerX, centerY, spacing 20 ]
-                        --TODO: nur Erfolg melden, wenns wirklich erfolgreich war
-                        [ el [ Font.color <| CS.successColor shared.colorScheme, Font.bold ] <|
-                            text <|
-                                "Update auf Version "
-                                    ++ Shared.appVersion
-                                    ++ " erfolgreich!"
-                        , Button.new
-                            { model = model.updateButton
-                            , label = text "Fertig"
-                            , onPress = OnCloseUpdateButton
-                            }
-                            |> Button.withLightColor
-                            |> Button.view shared.colorScheme
-                        ]
-                )
+                viewUpdateResult shared
+                    model
+                    { color = CS.successColor shared.colorScheme
+                    , message = "Update auf Version " ++ Shared.appVersion ++ " erfolgreich!"
+                    , label = "Fertig"
+                    }
                     |> E.map toContentMsg
 
             UpdateFailed errorMessage ->
-                --TODO: Code Duplication mit JustUpdated auflösen
-                (el [ width fill, height fill ] <|
-                    column [ centerX, centerY, spacing 20 ]
-                        --TODO: nur Erfolg melden, wenns wirklich erfolgreich war
-                        [ el [ Font.color <| CS.actionNeededColor shared.colorScheme, Font.bold ] <|
-                            text errorMessage
-                        , Button.new
-                            { model = model.updateButton
-                            , label = text "Später versuchen"
-                            , onPress = OnCloseUpdateButton
-                            }
-                            |> Button.withLightColor
-                            |> Button.view shared.colorScheme
-                        ]
-                )
+                viewUpdateResult shared
+                    model
+                    { color = CS.actionNeededColor shared.colorScheme
+                    , message = errorMessage
+                    , label = "Später versuchen"
+                    }
                     |> E.map toContentMsg
 
             _ ->
@@ -246,6 +226,26 @@ viewHeader headerText =
         )
     <|
         text headerText
+
+
+viewUpdateResult :
+    Shared.Model
+    -> Model
+    -> { color : Color, message : String, label : String }
+    -> Element Msg
+viewUpdateResult shared model { color, message, label } =
+    el [ width fill, height fill ] <|
+        column [ centerX, centerY, spacing 20 ]
+            [ el [ Font.color color, Font.bold ] <|
+                text message
+            , Button.new
+                { model = model.updateButton
+                , label = text label
+                , onPress = OnCloseUpdateButton
+                }
+                |> Button.withLightColor
+                |> Button.view shared.colorScheme
+            ]
 
 
 viewNavBar : Shared.Model -> Route () -> Element Msg
