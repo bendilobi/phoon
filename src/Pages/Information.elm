@@ -47,6 +47,7 @@ toLayout model =
     Layouts.MainNav
         { header = Just "Übung optimieren"
         , enableScrolling = True
+        , fadeOut = False
         }
 
 
@@ -411,9 +412,8 @@ viewUpdate shared model =
                 , spacing 10
                 , Border.rounded 10
 
-                -- , BG.color <| CS.settingsColor shared.colorScheme
                 --TODO: Ins colorScheme aufnehmen?
-                , BG.color <| rgb255 243 233 236
+                , BG.color <| rgb255 239 233 243 --243 233 236
                 , padding 20
                 ]
                 [ paragraph [ width fill, Font.center ]

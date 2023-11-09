@@ -32,7 +32,7 @@ type Msg
     | SessionUpdated Session
     | CancelSession Session
     | ResultsUpdated SessionResults
-    | NavigateTriggered Route.Path.Path
+    | NavigateTriggered Bool Route.Path.Path
     | SessionEnded Session.EndType
     | SessionSettingsUpdated Session.Settings
     | SetUpdateState Shared.Model.UpdateState

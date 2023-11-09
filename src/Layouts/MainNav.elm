@@ -10,8 +10,6 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons
-import Html.Events as HEvents
-import Json.Decode as Decode
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SafeArea as SafeArea
@@ -28,13 +26,14 @@ import View exposing (View)
 type alias Props =
     { header : Maybe String
     , enableScrolling : Bool
+    , fadeOut : Bool
     }
 
 
 layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
-        { init = init
+        { init = init shared
         , update = update
         , view = view props shared route
         , subscriptions = subscriptions
@@ -45,20 +44,43 @@ layout props shared route =
 -- MODEL
 
 
+type FadeState
+    = PreparingFadeIn
+    | FadingIn
+    | PreparingFadeOut
+
+
+
+-- | FadingOut
+
+
 type alias Model =
     { lastHide : Maybe Time.Posix
     , updateButton : Button.Model
     , updateAcknowledged : Bool
+    , fadeState : FadeState
     }
 
 
-init : () -> ( Model, Effect Msg )
-init _ =
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared _ =
     ( { lastHide = Nothing
       , updateButton = Button.init
       , updateAcknowledged = False
+      , fadeState =
+            if shared.fadeIn then
+                PreparingFadeIn
+
+            else
+                PreparingFadeOut
       }
-    , Effect.none
+    , if shared.fadeIn then
+        --- For some reason, the transition animation doesn't play
+        --- without the delay:
+        Effect.sendCmd <| Delay.after 1 <| ToggleFadeIn True
+
+      else
+        Effect.none
     )
 
 
@@ -77,13 +99,14 @@ type Msg
     | VisibilityChanged Browser.Events.Visibility
     | OnCloseUpdateButton Button.Model
     | UpdateFinished
+    | ToggleFadeIn Bool
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         NavButtonClicked path ->
-            ( model, Effect.navigate path )
+            ( model, Effect.navigate False path )
 
         VisibilityChanged visibility ->
             ( model
@@ -109,7 +132,7 @@ update msg model =
             in
             ( model
             , if Time.posixToMillis time - lastHide > 900000 then
-                Effect.navigate Route.Path.Home_
+                Effect.navigate False Route.Path.Home_
 
               else
                 Effect.none
@@ -133,6 +156,22 @@ update msg model =
         UpdateFinished ->
             ( { model | updateAcknowledged = False }
             , Effect.setUpdateState <| NotUpdating
+            )
+
+        ToggleFadeIn fade ->
+            ( { model
+                | fadeState =
+                    if fade then
+                        FadingIn
+
+                    else
+                        PreparingFadeOut
+              }
+            , if fade then
+                Effect.sendCmd <| Delay.after 1000 <| ToggleFadeIn False
+
+              else
+                Effect.none
             )
 
 
@@ -190,7 +229,55 @@ view props shared route { toContentMsg, model, content } =
                                             |> E.map toContentMsg
 
                                     _ ->
-                                        none
+                                        el
+                                            ([ BG.color <| rgb 0 0 0
+
+                                             --TODO: das wird vielleicht übersichtlicher, wenn
+                                             --      ich einfach in shared ein FadeIn|FadeOut|NoFade habe...
+                                             --     Oder doch den Animator verwenden...?
+                                             --  , if model.fadingIn then
+                                             --     alpha 0
+                                             --    else if props.fadeOut || shared.fadeIn then
+                                             --     --|| not model.fadingIn then
+                                             --     alpha 1
+                                             --    else
+                                             --     alpha 0
+                                             , case model.fadeState of
+                                                PreparingFadeIn ->
+                                                    alpha 1
+
+                                                FadingIn ->
+                                                    alpha 0
+
+                                                PreparingFadeOut ->
+                                                    if props.fadeOut then
+                                                        alpha 1
+
+                                                    else
+                                                        alpha 0
+                                             , htmlAttribute <|
+                                                Transition.properties
+                                                    [ Transition.opacity 1000 [ Transition.easeInOutQuint ] -- Transition.easeInQuart ]
+                                                    ]
+                                             ]
+                                                -- ++ (if props.fadeOut || model.fadingIn then
+                                                ++ (case model.fadeState of
+                                                        PreparingFadeOut ->
+                                                            if props.fadeOut then
+                                                                [ width fill, height fill ]
+
+                                                            else
+                                                                [ width <| px 0
+                                                                , height <| px 0
+                                                                ]
+
+                                                        _ ->
+                                                            [ width fill
+                                                            , height fill
+                                                            ]
+                                                   )
+                                            )
+                                            none
                            ]
                     )
                     [ case props.header of
@@ -252,16 +339,6 @@ viewUpdateResult shared model { color, message, label } =
     el
         [ width fill
         , height fill
-
-        -- , BG.color <|
-        --     if model.updateAcknowledged then
-        --         rgba 1 1 1 0
-        --     else
-        --         rgba 1 1 1 1
-        -- , htmlAttribute <|
-        --     Transition.properties
-        --         [ Transition.backgroundColor updateFadeOutDuration [ Transition.easeInQuart ]
-        --         ]
         , if model.updateAcknowledged then
             alpha 0
 
@@ -270,16 +347,13 @@ viewUpdateResult shared model { color, message, label } =
         , BG.color <| rgb 1 1 1
         , htmlAttribute <|
             Transition.properties
-                [ Transition.opacity updateFadeOutDuration [ Transition.easeInQuart ]
+                [ Transition.opacity updateFadeOutDuration [ Transition.easeInOutQuint ] -- Transition.easeInQuart ]
                 ]
 
         --- This doesn't work because it reacts on the transition of the button...
         -- , htmlAttribute <| HEvents.on "transitionend" <| Decode.succeed UpdateFinished
         ]
     <|
-        -- if model.updateAcknowledged then
-        --     none
-        -- else
         column [ centerX, centerY, spacing 20 ]
             [ el [ Font.color color, Font.bold ] <|
                 text message

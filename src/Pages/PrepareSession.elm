@@ -2,6 +2,7 @@ module Pages.PrepareSession exposing (Model, Msg, page)
 
 import Components.AnimatedButton as Button
 import Components.IntCrementer as IntCrementer
+import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -37,6 +38,7 @@ toLayout model =
     Layouts.MainNav
         { header = Just "Sitzung vorbereiten"
         , enableScrolling = False
+        , fadeOut = model.fadeOut
         }
 
 
@@ -48,6 +50,7 @@ type alias Model =
     { time : Time.Posix
     , startButton : Button.Model
     , cycleCrementer : IntCrementer.Model
+    , fadeOut : Bool
     }
 
 
@@ -56,6 +59,7 @@ init shared () =
     ( { time = Time.millisToPosix 0
       , startButton = Button.init
       , cycleCrementer = IntCrementer.init
+      , fadeOut = False
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Tick Time.now
@@ -72,6 +76,7 @@ type Msg
     = Tick Time.Posix
     | OnStartButton Button.Model
     | CycleCountChanged Int IntCrementer.Model
+    | ReadyToStartSession
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -94,18 +99,26 @@ update shared msg model =
             )
 
         OnStartButton newState ->
-            ( { model | startButton = newState }
+            ( { model
+                | startButton = newState
+                , fadeOut = newState == Button.Triggered
+              }
             , case newState of
                 Button.Triggered ->
-                    Effect.batch
-                        [ Effect.resultsUpdated SessionResults.empty
-                        , Effect.playSound Session.StartSound
-                        , Effect.navigate <|
-                            Session.currentPath shared.session
-                        ]
+                    Effect.sendCmd <| Delay.after 1000 ReadyToStartSession
 
                 _ ->
                     Effect.none
+            )
+
+        ReadyToStartSession ->
+            ( model
+            , Effect.batch
+                [ Effect.resultsUpdated SessionResults.empty
+                , Effect.playSound Session.StartSound
+                , Effect.navigate False <|
+                    Session.currentPath shared.session
+                ]
             )
 
 

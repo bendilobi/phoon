@@ -285,9 +285,9 @@ resultsUpdated results =
     SendSharedMsg <| Shared.Msg.ResultsUpdated results
 
 
-navigate : Route.Path.Path -> Effect msg
-navigate path =
-    SendSharedMsg <| Shared.Msg.NavigateTriggered path
+navigate : Bool -> Route.Path.Path -> Effect msg
+navigate fade path =
+    SendSharedMsg <| Shared.Msg.NavigateTriggered fade path
 
 
 navigateNext : Session -> Effect msg
@@ -296,7 +296,7 @@ navigateNext session =
         Just sess ->
             batch
                 [ sessionUpdated sess
-                , navigate <| Session.phasePath <| Session.currentPhase sess
+                , navigate False <| Session.phasePath <| Session.currentPhase sess
                 ]
 
         Nothing ->

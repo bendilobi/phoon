@@ -101,7 +101,7 @@ update shared msg model =
                     Effect.cancelSession shared.session
 
                 else
-                    Effect.navigate shared.previousPath
+                    Effect.navigate True shared.previousPath
 
               else
                 Effect.none

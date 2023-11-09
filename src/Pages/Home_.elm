@@ -32,6 +32,7 @@ toLayout model =
     Layouts.MainNav
         { header = Just "Motivation finden"
         , enableScrolling = False
+        , fadeOut = False
         }
 
 

@@ -35,11 +35,11 @@ import Time
 
 
 showDebugButtons =
-    False
+    True
 
 
 appVersion =
-    "0.6.344"
+    "0.6.359"
 
 
 
@@ -169,6 +169,7 @@ init flagsResult route =
       , sessionSettings = decodedFlags.sessionSettings
       , baseApiUrl = "/version/"
       , safeAreaInset = decodedFlags.safeAreaInsets
+      , fadeIn = False
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -276,7 +277,7 @@ update route msg model =
                     Session.jumpToEnd model.session
             in
             ( { model | session = sessionAtEnd }
-            , Effect.navigate <| Session.currentPath sessionAtEnd
+            , Effect.navigate False <| Session.currentPath sessionAtEnd
             )
 
         Shared.Msg.ResultsUpdated results ->
@@ -284,8 +285,11 @@ update route msg model =
             , Effect.none
             )
 
-        Shared.Msg.NavigateTriggered path ->
-            ( { model | previousPath = route.path }
+        Shared.Msg.NavigateTriggered fade path ->
+            ( { model
+                | previousPath = route.path
+                , fadeIn = fade
+              }
             , Effect.replaceRoute
                 { path = path
                 , query = Dict.empty
@@ -306,7 +310,7 @@ update route msg model =
                         MotivationData.update model.results model.today model.motivationData
                             |> Shared.Msg.SetMotivationData
                             |> Effect.sendMsg
-                , Effect.navigate Route.Path.Home_
+                , Effect.navigate False Route.Path.Home_
                 ]
             )
 

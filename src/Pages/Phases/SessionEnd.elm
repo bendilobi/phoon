@@ -87,7 +87,7 @@ update shared msg model =
             , if newState == Button.Triggered then
                 Effect.batch
                     [ Effect.sessionUpdated newSession
-                    , Effect.navigate <| Session.currentPath newSession
+                    , Effect.navigate False <| Session.currentPath newSession
                     ]
 
               else

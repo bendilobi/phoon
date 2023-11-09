@@ -34,16 +34,8 @@ type alias Model =
     , sessionSettings : Session.Settings
     , baseApiUrl : String
     , safeAreaInset : SafeArea
+    , fadeIn : Bool
     }
-
-
-
--- type UpdateState
---     = Current
---     | Comparing (Api.Data String)
---       -- | Different (Api.Data String)
---     | Updating Int (Api.Data String)
---     | JustUpdated
 
 
 type UpdateState
