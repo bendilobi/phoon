@@ -406,7 +406,16 @@ viewUpdate : Shared.Model -> Model -> Element Msg
 viewUpdate shared model =
     case shared.updateState of
         UpdateAvailable versionOnServer ->
-            column [ width fill, spacing 10 ]
+            column
+                [ width fill
+                , spacing 10
+                , Border.rounded 10
+
+                -- , BG.color <| CS.settingsColor shared.colorScheme
+                --TODO: Ins colorScheme aufnehmen?
+                , BG.color <| rgb255 243 233 236
+                , padding 20
+                ]
                 [ paragraph [ width fill, Font.center ]
                     [ text <|
                         "Ein Update ist verfügbar von Version "

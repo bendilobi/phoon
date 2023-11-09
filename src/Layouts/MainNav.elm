@@ -2,6 +2,7 @@ module Layouts.MainNav exposing (Model, Msg, Props, layout)
 
 import Browser.Events
 import Components.AnimatedButton as Button
+import Delay
 import Effect exposing (Effect)
 import Element as E exposing (..)
 import Element.Background as BG
@@ -9,6 +10,8 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons
+import Html.Events as HEvents
+import Json.Decode as Decode
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SafeArea as SafeArea
@@ -16,6 +19,7 @@ import Route exposing (Route)
 import Route.Path
 import Shared
 import Shared.Model exposing (UpdateState(..))
+import Simple.Transition as Transition
 import Task
 import Time
 import View exposing (View)
@@ -44,6 +48,7 @@ layout props shared route =
 type alias Model =
     { lastHide : Maybe Time.Posix
     , updateButton : Button.Model
+    , updateAcknowledged : Bool
     }
 
 
@@ -51,9 +56,14 @@ init : () -> ( Model, Effect Msg )
 init _ =
     ( { lastHide = Nothing
       , updateButton = Button.init
+      , updateAcknowledged = False
       }
     , Effect.none
     )
+
+
+updateFadeOutDuration =
+    1000
 
 
 
@@ -66,7 +76,7 @@ type Msg
     | ShownAt Time.Posix
     | VisibilityChanged Browser.Events.Visibility
     | OnCloseUpdateButton Button.Model
-    | CancelUpdate
+    | UpdateFinished
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -106,22 +116,23 @@ update msg model =
             )
 
         OnCloseUpdateButton newState ->
-            ( { model | updateButton = newState }
+            ( { model
+                | updateButton = newState
+                , updateAcknowledged = newState == Button.Triggered
+              }
             , if newState == Button.Triggered then
-                Effect.setUpdateState <| NotUpdating
+                --- Wait until the animation finished. Cannot use the "transitionend"
+                --- event since it is triggered by the button within the animated
+                --- container...
+                Effect.sendCmd <| Delay.after updateFadeOutDuration UpdateFinished
 
               else
                 Effect.none
             )
 
-        CancelUpdate ->
-            ( model
-            , Effect.batch
-                [ Effect.setUpdateState <| NotUpdating
-
-                --TODO: Wofür brauche ich reload?
-                , Effect.reload
-                ]
+        UpdateFinished ->
+            ( { model | updateAcknowledged = False }
+            , Effect.setUpdateState <| NotUpdating
             )
 
 
@@ -145,7 +156,7 @@ view props shared route { toContentMsg, model, content } =
                     el
                         [ centerX
                         , centerY
-                        , Events.onClick CancelUpdate
+                        , Events.onClick UpdateFinished
                         ]
                     <|
                         text <|
@@ -153,29 +164,33 @@ view props shared route { toContentMsg, model, content } =
                 )
                     |> E.map toContentMsg
 
-            JustUpdated ->
-                viewUpdateResult shared
-                    model
-                    { color = CS.successColor shared.colorScheme
-                    , message = "Update auf Version " ++ Shared.appVersion ++ " erfolgreich!"
-                    , label = "Fertig"
-                    }
-                    |> E.map toContentMsg
-
-            UpdateFailed errorMessage ->
-                viewUpdateResult shared
-                    model
-                    { color = CS.actionNeededColor shared.colorScheme
-                    , message = errorMessage
-                    , label = "Später versuchen"
-                    }
-                    |> E.map toContentMsg
-
             _ ->
                 column
                     (content.attributes
                         ++ [ width fill
                            , height fill
+                           , inFront <|
+                                case shared.updateState of
+                                    JustUpdated ->
+                                        viewUpdateResult shared
+                                            model
+                                            { color = CS.successColor shared.colorScheme
+                                            , message = "Update auf Version " ++ Shared.appVersion ++ " erfolgreich!"
+                                            , label = "Fertig"
+                                            }
+                                            |> E.map toContentMsg
+
+                                    UpdateFailed errorMessage ->
+                                        viewUpdateResult shared
+                                            model
+                                            { color = CS.actionNeededColor shared.colorScheme
+                                            , message = errorMessage
+                                            , label = "Später versuchen"
+                                            }
+                                            |> E.map toContentMsg
+
+                                    _ ->
+                                        none
                            ]
                     )
                     [ case props.header of
@@ -234,7 +249,37 @@ viewUpdateResult :
     -> { color : Color, message : String, label : String }
     -> Element Msg
 viewUpdateResult shared model { color, message, label } =
-    el [ width fill, height fill ] <|
+    el
+        [ width fill
+        , height fill
+
+        -- , BG.color <|
+        --     if model.updateAcknowledged then
+        --         rgba 1 1 1 0
+        --     else
+        --         rgba 1 1 1 1
+        -- , htmlAttribute <|
+        --     Transition.properties
+        --         [ Transition.backgroundColor updateFadeOutDuration [ Transition.easeInQuart ]
+        --         ]
+        , if model.updateAcknowledged then
+            alpha 0
+
+          else
+            alpha 1
+        , BG.color <| rgb 1 1 1
+        , htmlAttribute <|
+            Transition.properties
+                [ Transition.opacity updateFadeOutDuration [ Transition.easeInQuart ]
+                ]
+
+        --- This doesn't work because it reacts on the transition of the button...
+        -- , htmlAttribute <| HEvents.on "transitionend" <| Decode.succeed UpdateFinished
+        ]
+    <|
+        -- if model.updateAcknowledged then
+        --     none
+        -- else
         column [ centerX, centerY, spacing 20 ]
             [ el [ Font.color color, Font.bold ] <|
                 text message
