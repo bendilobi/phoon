@@ -2,6 +2,7 @@ module Pages.Phases.SessionStart exposing (Model, Msg, page)
 
 import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
+import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -37,6 +38,7 @@ toLayout shared model =
         { showCurrentCycle = Nothing
         , controlsTop = []
         , controlsBottom = [ viewCancelButton shared model ]
+        , fadeOut = model.fadeOut
         }
 
 
@@ -48,6 +50,7 @@ type alias Model =
     { bubble : Bubble.Model Msg
     , ticks : Int
     , cancelButton : Button.Model
+    , fadeOut : Bool
     }
 
 
@@ -61,6 +64,7 @@ init shared () =
                 , breathingSpeed = Session.speedMillis shared.session
                 }
       , cancelButton = Button.init
+      , fadeOut = False
       }
     , Effect.none
     )
@@ -73,6 +77,7 @@ init shared () =
 type Msg
     = Tick Time.Posix
     | OnCancelButton Button.Model
+    | FadeOutFinished
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -95,16 +100,30 @@ update shared msg model =
             )
 
         OnCancelButton newState ->
-            ( { model | cancelButton = newState }
+            ( { model
+                | cancelButton = newState
+                , fadeOut =
+                    if shared.previousPath == Session.phasePath Session.End then
+                        False
+
+                    else
+                        newState == Button.Triggered
+              }
             , if newState == Button.Triggered then
                 if shared.previousPath == Session.phasePath Session.End then
                     Effect.cancelSession shared.session
 
                 else
-                    Effect.navigate True shared.previousPath
+                    -- Effect.navigate True shared.previousPath
+                    Effect.sendCmd <| Delay.after 500 FadeOutFinished
 
               else
                 Effect.none
+            )
+
+        FadeOutFinished ->
+            ( model
+            , Effect.navigate True shared.previousPath
             )
 
 
@@ -120,7 +139,6 @@ subscriptions shared model =
 
 
 
--- Sub.none
 -- VIEW
 
 

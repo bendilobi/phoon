@@ -77,7 +77,7 @@ init shared _ =
     , if shared.fadeIn then
         --- For some reason, the transition animation doesn't play
         --- without the delay:
-        Effect.sendCmd <| Delay.after 1 <| ToggleFadeIn True
+        Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn True
 
       else
         Effect.none
@@ -168,7 +168,8 @@ update msg model =
                         PreparingFadeOut
               }
             , if fade then
-                Effect.sendCmd <| Delay.after 1000 <| ToggleFadeIn False
+                --TODO: Fading-Zeiten synchronisieren
+                Effect.sendCmd <| Delay.after 500 <| ToggleFadeIn False
 
               else
                 Effect.none
@@ -257,7 +258,7 @@ view props shared route { toContentMsg, model, content } =
                                                         alpha 0
                                              , htmlAttribute <|
                                                 Transition.properties
-                                                    [ Transition.opacity 1000 [ Transition.easeInOutQuint ] -- Transition.easeInQuart ]
+                                                    [ Transition.opacity 500 [ Transition.easeInOutQuint ] -- Transition.easeInQuart ]
                                                     ]
                                              ]
                                                 -- ++ (if props.fadeOut || model.fadingIn then

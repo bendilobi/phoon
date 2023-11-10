@@ -1,6 +1,7 @@
 module Pages.Phases.SessionEnd exposing (Model, Msg, page)
 
 import Components.AnimatedButton as Button
+import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -33,6 +34,7 @@ toLayout shared model =
         { showCurrentCycle = Nothing
         , controlsTop = [ viewAddCycleButton shared model ]
         , controlsBottom = viewControlsBottom shared model
+        , fadeOut = model.fadeOut
         }
 
 
@@ -47,6 +49,7 @@ type alias Model =
     , discardButton : Button.Model
     , confirmDialogShown : Bool
     , cancelButton : Button.Model
+    , fadeOut : Bool
     }
 
 
@@ -58,6 +61,7 @@ init () =
       , discardButton = Button.init
       , confirmDialogShown = False
       , cancelButton = Button.init
+      , fadeOut = False
       }
     , Effect.playSound Session.EndSound
     )
@@ -73,6 +77,7 @@ type Msg
     | OnSaveButton Button.Model
     | OnDiscardButton Button.Model
     | OnCancelButton Button.Model
+    | FadeOutFinished Session.EndType
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -97,18 +102,22 @@ update shared msg model =
         OnConfirmButton newState ->
             ( { model
                 | confirmButton = newState
+                , fadeOut = newState == Button.Triggered
               }
             , if newState == Button.Triggered then
-                Effect.sessionEnded Session.Cancelled
+                Effect.sendCmd <| Delay.after 500 <| FadeOutFinished Session.Cancelled
 
               else
                 Effect.none
             )
 
         OnSaveButton newState ->
-            ( { model | saveButton = newState }
+            ( { model
+                | saveButton = newState
+                , fadeOut = newState == Button.Triggered
+              }
             , if newState == Button.Triggered then
-                Effect.sessionEnded Session.Finished
+                Effect.sendCmd <| Delay.after 500 <| FadeOutFinished Session.Finished
 
               else
                 Effect.none
@@ -128,12 +137,20 @@ update shared msg model =
             )
 
         OnCancelButton newState ->
-            ( { model | cancelButton = newState }
+            ( { model
+                | cancelButton = newState
+                , fadeOut = newState == Button.Triggered
+              }
             , if newState == Button.Triggered then
-                Effect.sessionEnded Session.Cancelled
+                Effect.sendCmd <| Delay.after 500 <| FadeOutFinished Session.Cancelled
 
               else
                 Effect.none
+            )
+
+        FadeOutFinished endType ->
+            ( model
+            , Effect.sessionEnded endType
             )
 
 

@@ -34,6 +34,7 @@ toLayout shared model =
         { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results + 1
         , controlsTop = []
         , controlsBottom = [ viewCancelButton shared model ]
+        , fadeOut = False
         }
 
 

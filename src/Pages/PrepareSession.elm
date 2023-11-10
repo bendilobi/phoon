@@ -105,7 +105,7 @@ update shared msg model =
               }
             , case newState of
                 Button.Triggered ->
-                    Effect.sendCmd <| Delay.after 1000 ReadyToStartSession
+                    Effect.sendCmd <| Delay.after 500 ReadyToStartSession
 
                 _ ->
                     Effect.none
@@ -116,7 +116,7 @@ update shared msg model =
             , Effect.batch
                 [ Effect.resultsUpdated SessionResults.empty
                 , Effect.playSound Session.StartSound
-                , Effect.navigate False <|
+                , Effect.navigate True <|
                     Session.currentPath shared.session
                 ]
             )

@@ -35,11 +35,11 @@ import Time
 
 
 showDebugButtons =
-    True
+    False
 
 
 appVersion =
-    "0.6.359"
+    "0.6.370"
 
 
 
@@ -310,7 +310,7 @@ update route msg model =
                         MotivationData.update model.results model.today model.motivationData
                             |> Shared.Msg.SetMotivationData
                             |> Effect.sendMsg
-                , Effect.navigate False Route.Path.Home_
+                , Effect.navigate True Route.Path.Home_
                 ]
             )
 
@@ -354,11 +354,16 @@ update route msg model =
 
         Shared.Msg.ReceivedVersionOnServer (Err httpError) ->
             ( { model | versionOnServer = Api.Failure httpError }
-            , Effect.setUpdateState <|
-                --TODO: Fehlermeldung optimieren -> ist das hier qualitativ
-                --      anders als wenn die Number of Tries überschritten wird?
-                --      httpError mit ausgeben?
-                UpdateFailed "Kann Update nicht vom Server laden"
+            , case model.updateState of
+                Updating _ ->
+                    Effect.setUpdateState <|
+                        --TODO: Fehlermeldung optimieren -> ist das hier qualitativ
+                        --      anders als wenn die Number of Tries überschritten wird?
+                        --      httpError mit ausgeben?
+                        UpdateFailed "Kann Update nicht vom Server laden"
+
+                _ ->
+                    Effect.none
             )
 
         Shared.Msg.SetMotivationData motData ->

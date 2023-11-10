@@ -15,6 +15,7 @@ import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Shared
+import Simple.Transition as Transition
 import Task
 import View exposing (View)
 
@@ -23,13 +24,14 @@ type alias Props contentMsg =
     { showCurrentCycle : Maybe Int
     , controlsTop : List (Element contentMsg)
     , controlsBottom : List (Element contentMsg)
+    , fadeOut : Bool
     }
 
 
 layout : Props contentMsg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
-        { init = init
+        { init = init shared
         , update = update props shared route
         , view = view props shared route
         , subscriptions = subscriptions
@@ -41,29 +43,53 @@ map fn props =
     { showCurrentCycle = props.showCurrentCycle
     , controlsTop = List.map (E.map fn) props.controlsTop
     , controlsBottom = List.map (E.map fn) props.controlsBottom
+    , fadeOut = props.fadeOut
     }
 
 
 
 -- MODEL
+--TODO: Fading-Implementierung zwischen den Layouts synchronisieren:
+--      FadeState, fading Zeiten, ...?
+--      Oder ein "Meta-Layout" nur für's Fading?
+
+
+type FadeState
+    = PreparingFadeIn
+    | FadingIn
+    | PreparingFadeOut
 
 
 type alias Model =
     { gesture : Swipe.Gesture
     , controlsShown : Bool
     , debounceBlock : Bool
+    , fadeState : FadeState
     }
 
 
-init : () -> ( Model, Effect Msg )
-init _ =
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
       , debounceBlock = False
+      , fadeState =
+            if shared.fadeIn then
+                PreparingFadeIn
+
+            else
+                PreparingFadeOut
       }
     , Effect.batch
         [ Effect.setWakeLock
         , Effect.sendCmd <| Task.perform AdjustToday Date.today
+        , if shared.fadeIn then
+            --TODO: Entweder verstehen, warum und wieviel Delay gebraucht wird
+            --      oder eine Lösung ohne "Voodoo" finden...
+            Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn True
+
+          else
+            Effect.none
         ]
     )
 
@@ -77,6 +103,7 @@ type Msg
     | SwipeEnd Swipe.Event
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
+    | ToggleFadeIn Bool
       -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
     | MouseNavSwipe
@@ -149,6 +176,23 @@ update props shared route msg model =
                 Effect.none
             )
 
+        ToggleFadeIn fade ->
+            ( { model
+                | fadeState =
+                    if fade then
+                        FadingIn
+
+                    else
+                        PreparingFadeOut
+              }
+            , if fade then
+                --TODO: Fading-Zeiten synchronisieren
+                Effect.sendCmd <| Delay.after 500 <| ToggleFadeIn False
+
+              else
+                Effect.none
+            )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -183,6 +227,46 @@ view props shared route { toContentMsg, model, content } =
                 column
                     [ width fill
                     , height fill
+                    , inFront <|
+                        --TODO: Das ganze Element ist kopiert aus MainNav -> synchronisieren
+                        --      In einem Fading-Modul?
+                        el
+                            ([ BG.color <| rgb 0 0 0
+                             , case model.fadeState of
+                                PreparingFadeIn ->
+                                    alpha 1
+
+                                FadingIn ->
+                                    alpha 0
+
+                                PreparingFadeOut ->
+                                    if props.fadeOut then
+                                        alpha 1
+
+                                    else
+                                        alpha 0
+                             , htmlAttribute <|
+                                Transition.properties
+                                    [ Transition.opacity 500 [ Transition.easeInOutQuint ] -- Transition.easeInQuart ]
+                                    ]
+                             ]
+                                ++ (case model.fadeState of
+                                        PreparingFadeOut ->
+                                            if props.fadeOut then
+                                                [ width fill, height fill ]
+
+                                            else
+                                                [ width <| px 0
+                                                , height <| px 0
+                                                ]
+
+                                        _ ->
+                                            [ width fill
+                                            , height fill
+                                            ]
+                                   )
+                            )
+                            none
                     ]
                     [ if model.controlsShown && List.length props.controlsTop > 0 then
                         column
