@@ -12,6 +12,7 @@ import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.PageFading as Fading
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
 import Page exposing (Page)
@@ -105,7 +106,7 @@ update shared msg model =
               }
             , case newState of
                 Button.Triggered ->
-                    Effect.sendCmd <| Delay.after 500 ReadyToStartSession
+                    Effect.sendCmd <| Delay.after Fading.fadeDuration ReadyToStartSession
 
                 _ ->
                     Effect.none

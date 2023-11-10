@@ -9,6 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.PageFading as Fading
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Page exposing (Page)
@@ -105,7 +106,7 @@ update shared msg model =
                 , fadeOut = newState == Button.Triggered
               }
             , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after 500 <| FadeOutFinished Session.Cancelled
+                Effect.sendCmd <| Delay.after Fading.fadeDuration <| FadeOutFinished Session.Cancelled
 
               else
                 Effect.none
@@ -117,7 +118,7 @@ update shared msg model =
                 , fadeOut = newState == Button.Triggered
               }
             , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after 500 <| FadeOutFinished Session.Finished
+                Effect.sendCmd <| Delay.after Fading.fadeDuration <| FadeOutFinished Session.Finished
 
               else
                 Effect.none
@@ -142,7 +143,7 @@ update shared msg model =
                 , fadeOut = newState == Button.Triggered
               }
             , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after 500 <| FadeOutFinished Session.Cancelled
+                Effect.sendCmd <| Delay.after Fading.fadeDuration <| FadeOutFinished Session.Cancelled
 
               else
                 Effect.none

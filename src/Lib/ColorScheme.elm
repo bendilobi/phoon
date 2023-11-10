@@ -20,6 +20,7 @@ module Lib.ColorScheme exposing
     , phaseSessionStartColor
     , phaseSessionStartCopyColor
     , primary
+    , primaryColors
     , primaryInformation
     , primaryMotivation
     , primaryPrepareSession

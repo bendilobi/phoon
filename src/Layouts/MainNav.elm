@@ -12,6 +12,7 @@ import Element.Font as Font
 import FeatherIcons
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.PageFading as Fading exposing (FadeState(..))
 import Lib.SafeArea as SafeArea
 import Route exposing (Route)
 import Route.Path
@@ -42,16 +43,6 @@ layout props shared route =
 
 
 -- MODEL
-
-
-type FadeState
-    = PreparingFadeIn
-    | FadingIn
-    | PreparingFadeOut
-
-
-
--- | FadingOut
 
 
 type alias Model =
@@ -168,8 +159,7 @@ update msg model =
                         PreparingFadeOut
               }
             , if fade then
-                --TODO: Fading-Zeiten synchronisieren
-                Effect.sendCmd <| Delay.after 500 <| ToggleFadeIn False
+                Effect.sendCmd <| Delay.after Fading.fadeDuration <| ToggleFadeIn False
 
               else
                 Effect.none
@@ -230,55 +220,12 @@ view props shared route { toContentMsg, model, content } =
                                             |> E.map toContentMsg
 
                                     _ ->
-                                        el
-                                            ([ BG.color <| rgb 0 0 0
+                                        Fading.fadeOverlay CS.primaryColors.primary <|
+                                            if props.fadeOut then
+                                                FadingOut
 
-                                             --TODO: das wird vielleicht übersichtlicher, wenn
-                                             --      ich einfach in shared ein FadeIn|FadeOut|NoFade habe...
-                                             --     Oder doch den Animator verwenden...?
-                                             --  , if model.fadingIn then
-                                             --     alpha 0
-                                             --    else if props.fadeOut || shared.fadeIn then
-                                             --     --|| not model.fadingIn then
-                                             --     alpha 1
-                                             --    else
-                                             --     alpha 0
-                                             , case model.fadeState of
-                                                PreparingFadeIn ->
-                                                    alpha 1
-
-                                                FadingIn ->
-                                                    alpha 0
-
-                                                PreparingFadeOut ->
-                                                    if props.fadeOut then
-                                                        alpha 1
-
-                                                    else
-                                                        alpha 0
-                                             , htmlAttribute <|
-                                                Transition.properties
-                                                    [ Transition.opacity 500 [ Transition.easeInOutQuint ] -- Transition.easeInQuart ]
-                                                    ]
-                                             ]
-                                                -- ++ (if props.fadeOut || model.fadingIn then
-                                                ++ (case model.fadeState of
-                                                        PreparingFadeOut ->
-                                                            if props.fadeOut then
-                                                                [ width fill, height fill ]
-
-                                                            else
-                                                                [ width <| px 0
-                                                                , height <| px 0
-                                                                ]
-
-                                                        _ ->
-                                                            [ width fill
-                                                            , height fill
-                                                            ]
-                                                   )
-                                            )
-                                            none
+                                            else
+                                                model.fadeState
                            ]
                     )
                     [ case props.header of

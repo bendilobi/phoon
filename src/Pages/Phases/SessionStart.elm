@@ -12,6 +12,7 @@ import FeatherIcons
 import Html.Attributes
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.PageFading as Fading
 import Lib.Session as Session
 import Page exposing (Page)
 import Route exposing (Route)
@@ -115,7 +116,7 @@ update shared msg model =
 
                 else
                     -- Effect.navigate True shared.previousPath
-                    Effect.sendCmd <| Delay.after 500 FadeOutFinished
+                    Effect.sendCmd <| Delay.after Fading.fadeDuration FadeOutFinished
 
               else
                 Effect.none

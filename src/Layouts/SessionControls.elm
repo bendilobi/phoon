@@ -10,6 +10,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.PageFading as Fading exposing (FadeState(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
@@ -52,12 +53,10 @@ map fn props =
 --TODO: Fading-Implementierung zwischen den Layouts synchronisieren:
 --      FadeState, fading Zeiten, ...?
 --      Oder ein "Meta-Layout" nur für's Fading?
-
-
-type FadeState
-    = PreparingFadeIn
-    | FadingIn
-    | PreparingFadeOut
+-- type FadeState
+--     = PreparingFadeIn
+--     | FadingIn
+--     | PreparingFadeOut
 
 
 type alias Model =
@@ -186,8 +185,7 @@ update props shared route msg model =
                         PreparingFadeOut
               }
             , if fade then
-                --TODO: Fading-Zeiten synchronisieren
-                Effect.sendCmd <| Delay.after 500 <| ToggleFadeIn False
+                Effect.sendCmd <| Delay.after Fading.fadeDuration <| ToggleFadeIn False
 
               else
                 Effect.none
@@ -228,45 +226,12 @@ view props shared route { toContentMsg, model, content } =
                     [ width fill
                     , height fill
                     , inFront <|
-                        --TODO: Das ganze Element ist kopiert aus MainNav -> synchronisieren
-                        --      In einem Fading-Modul?
-                        el
-                            ([ BG.color <| rgb 0 0 0
-                             , case model.fadeState of
-                                PreparingFadeIn ->
-                                    alpha 1
+                        Fading.fadeOverlay CS.primaryColors.primary <|
+                            if props.fadeOut then
+                                FadingOut
 
-                                FadingIn ->
-                                    alpha 0
-
-                                PreparingFadeOut ->
-                                    if props.fadeOut then
-                                        alpha 1
-
-                                    else
-                                        alpha 0
-                             , htmlAttribute <|
-                                Transition.properties
-                                    [ Transition.opacity 500 [ Transition.easeInOutQuint ] -- Transition.easeInQuart ]
-                                    ]
-                             ]
-                                ++ (case model.fadeState of
-                                        PreparingFadeOut ->
-                                            if props.fadeOut then
-                                                [ width fill, height fill ]
-
-                                            else
-                                                [ width <| px 0
-                                                , height <| px 0
-                                                ]
-
-                                        _ ->
-                                            [ width fill
-                                            , height fill
-                                            ]
-                                   )
-                            )
-                            none
+                            else
+                                model.fadeState
                     ]
                     [ if model.controlsShown && List.length props.controlsTop > 0 then
                         column
