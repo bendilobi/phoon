@@ -27,6 +27,7 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Shared.Model exposing (UpdateState(..))
+import Simple.Transition as Transition
 import Time
 import View exposing (View)
 
@@ -75,6 +76,7 @@ type alias Model =
     , pastedMotivationData : ClipboardData MotivationData
     , replaceMotDataButton : Button.Model
 
+    -- , scaleTest : Bool
     -- , testButton : Button.Model
     }
 
@@ -99,6 +101,7 @@ init shared () =
       , pastedMotivationData = NoData
       , replaceMotDataButton = Button.init
 
+      --   , scaleTest = True
       --   , testButton = Button.init
       }
     , if shared.versionOnServer /= Api.Loading && shared.updateState /= JustUpdated then
@@ -308,7 +311,12 @@ update shared msg model =
             )
 
         -- OnTestButton newState ->
-        --     ( { model | testButton = newState }, Effect.none )
+        --     ( { model
+        --         | testButton = newState
+        --         , scaleTest = newState == Button.Triggered
+        --       }
+        --     , Effect.none
+        --     )
         ReceivedClipboard value ->
             let
                 clipContent =
@@ -393,13 +401,45 @@ viewIntroduction shared model =
         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
         """ ]
 
-        -- , Button.new
-        --     { onPress = OnTestButton
-        --     , model = model.testButton
-        --     , label = text "blah"
-        --     }
-        --     |> Button.withLightColor
-        --     |> Button.view shared.colorScheme
+        -- , column
+        --     [ width fill
+        --     , height <|
+        --         px <|
+        --             if model.scaleTest then
+        --                 200
+        --             else
+        --                 100
+        --     -- , scale <|
+        --     --     if model.scaleTest then
+        --     --         1
+        --     --     else
+        --     --         0.2
+        --     , BG.color <| rgb255 200 200 200
+        --     , htmlAttribute <|
+        --         Transition.properties
+        --             [ Transition.property "height" 1000 [ Transition.easeInOutCirc ] --Transition.easeInOutQuint ] -- Transition.easeInQuart ]
+        --             -- [ Transition.transform 1000 [ Transition.easeInOutCirc ] --Transition.easeInOutQuint ] -- Transition.easeInQuart ]
+        --             ]
+        --     ]
+        --     [ el [ width fill, height <| px 100 ] <|
+        --         (Button.new
+        --             { onPress = OnTestButton
+        --             , model = model.testButton
+        --             , label = text "blah"
+        --             }
+        --             |> Button.withLightColor
+        --             |> Button.view shared.colorScheme
+        --         )
+        --     , if model.scaleTest then
+        --         el
+        --             [ height <| px 100
+        --             , width fill
+        --             , BG.color <| rgb 0 0 1
+        --             ]
+        --             none
+        --       else
+        --         none
+        --     ]
         ]
 
 
@@ -501,6 +541,13 @@ viewSettings shared model pagePadding =
             , Border.rounded 10
             , BG.color <| CS.settingsColor shared.colorScheme
             , paddingEach { left = hPad, right = 0, top = 0, bottom = 0 }
+
+            --TODO: Hierfür müsste die Height direkt definiert sein -> Kann ich das aus
+            --      den verschiedenen Größen berechnen?
+            -- , htmlAttribute <|
+            --     Transition.properties
+            --         [ Transition.property "height" 1000 [ Transition.easeInOutCirc ] --Transition.easeInOutQuint ] -- Transition.easeInQuart ]
+            --         ]
             ]
 
         activeItemLabel : String -> Element Msg
@@ -581,8 +628,7 @@ viewSettings shared model pagePadding =
                     shared.colorScheme
             ]
         , el [ height <| px 15 ] none
-        , column
-            settingsAttrs
+        , column settingsAttrs
             [ if model.settingsItemShown == BreathingSpeed then
                 el itemAttrs <|
                     column [ width fill, spacing 20 ]

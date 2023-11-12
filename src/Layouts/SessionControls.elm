@@ -124,7 +124,7 @@ update props shared route msg model =
                 multitouchRegistered =
                     not model.controlsShown
                         && not model.debounceBlock
-                        && (Swipe.maxFingers gesture == 2)
+                        && (Swipe.maxFingers gesture == 3)
 
                 singleTapRegistered =
                     not model.controlsShown
