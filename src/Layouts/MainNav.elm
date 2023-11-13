@@ -12,7 +12,7 @@ import Element.Font as Font
 import FeatherIcons
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.PageFading as Fading exposing (FadeState(..), Trigger(..))
+import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
 import Lib.SafeArea as SafeArea
 import Route exposing (Route)
 import Route.Path
@@ -55,29 +55,12 @@ type alias Model =
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared _ =
-    let
-        --TODO: Noch mehr Fading-Zeugs in PageFade verschieben => FadeState opaque machen?
-        fadeState =
-            case shared.fadeIn of
-                NoFade ->
-                    PreparingFadeOut
-
-                FadeWith clr ->
-                    PreparingFadeIn clr
-    in
     ( { lastHide = Nothing
       , updateButton = Button.init
       , updateAcknowledged = False
-      , fadeState = fadeState
+      , fadeState = Fading.init shared.fadeIn
       }
-    , case shared.fadeIn of
-        FadeWith color ->
-            --- For some reason, the transition animation doesn't play
-            --- without the delay:
-            Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn <| FadeWith color
-
-        NoFade ->
-            Effect.none
+    , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
     )
 
 
@@ -156,21 +139,8 @@ update msg model =
             )
 
         ToggleFadeIn fade ->
-            ( { model
-                | fadeState =
-                    case fade of
-                        FadeWith color ->
-                            FadingIn color
-
-                        NoFade ->
-                            PreparingFadeOut
-              }
-            , case fade of
-                FadeWith color ->
-                    Effect.sendCmd <| Delay.after Fading.duration <| ToggleFadeIn NoFade
-
-                NoFade ->
-                    Effect.none
+            ( { model | fadeState = Fading.update fade }
+            , Effect.sendCmd <| Fading.updateCmd fade ToggleFadeIn
             )
 
 
@@ -228,12 +198,7 @@ view props shared route { toContentMsg, model, content } =
                                             |> E.map toContentMsg
 
                                     _ ->
-                                        case props.fadeOut of
-                                            FadeWith color ->
-                                                Fading.fadeOverlay <| FadingOut color
-
-                                            NoFade ->
-                                                Fading.fadeOverlay model.fadeState
+                                        Fading.fadeOverlay props.fadeOut model.fadeState
                            ]
                     )
                     [ case props.header of
@@ -277,7 +242,9 @@ viewHeader headerText =
         ([ width fill
          , Font.center
          , Font.bold
-         , padding 10
+
+         --  , padding 10
+         , paddingEach { bottom = 10, top = 0, left = 0, right = 0 }
          , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
          ]
             ++ CS.primary

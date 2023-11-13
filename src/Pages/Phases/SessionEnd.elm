@@ -103,8 +103,6 @@ update shared msg model =
         OnConfirmButton newState ->
             ( { model
                 | confirmButton = newState
-
-                -- , fadeOut = newState == Button.Triggered
                 , fadeOut =
                     if newState == Button.Triggered then
                         FadeWith Fading.sessionFadingColor
@@ -122,8 +120,6 @@ update shared msg model =
         OnSaveButton newState ->
             ( { model
                 | saveButton = newState
-
-                -- , fadeOut = newState == Button.Triggered
                 , fadeOut =
                     if newState == Button.Triggered then
                         FadeWith Fading.sessionFadingColor
@@ -154,8 +150,6 @@ update shared msg model =
         OnCancelButton newState ->
             ( { model
                 | cancelButton = newState
-
-                -- , fadeOut = newState == Button.Triggered
                 , fadeOut =
                     if newState == Button.Triggered then
                         FadeWith Fading.sessionFadingColor
