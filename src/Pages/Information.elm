@@ -7,6 +7,7 @@ import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
 import Components.RetentionChart as RetentionChart
+import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
@@ -21,13 +22,13 @@ import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session exposing (BreathCount, BreathingSpeed, Session)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Shared.Model exposing (UpdateState(..))
-import Simple.Transition as Transition
 import Time
 import View exposing (View)
 
@@ -48,7 +49,7 @@ toLayout model =
     Layouts.MainNav
         { header = Just "Übung optimieren"
         , enableScrolling = True
-        , fadeOut = False
+        , fadeOut = model.fadeOut
         }
 
 
@@ -75,6 +76,7 @@ type alias Model =
     , reloadButton : Button.Model
     , pastedMotivationData : ClipboardData MotivationData
     , replaceMotDataButton : Button.Model
+    , fadeOut : Fading.Trigger
 
     -- , scaleTest : Bool
     -- , testButton : Button.Model
@@ -100,6 +102,7 @@ init shared () =
       , reloadButton = Button.init
       , pastedMotivationData = NoData
       , replaceMotDataButton = Button.init
+      , fadeOut = NoFade
 
       --   , scaleTest = True
       --   , testButton = Button.init
@@ -143,6 +146,7 @@ type Msg
     | OnCopyButton Button.Model
     | OnPasteButton Button.Model
     | ReceivedClipboard Decode.Value
+    | FadedOutBeforeUpdate
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -170,13 +174,26 @@ update shared msg model =
         ReceivedNewestVersionString response ->
             ( model, Effect.receivedVersionOnServer response )
 
-        OnUpdateButton state ->
-            ( { model | updateButton = state }
-            , if state == Button.Triggered then
-                Effect.updateApp shared.updateState
+        OnUpdateButton newState ->
+            ( { model
+                | updateButton = newState
+                , fadeOut =
+                    if newState == Button.Triggered then
+                        FadeWith <| rgb 1 1 1
+
+                    else
+                        NoFade
+              }
+            , if newState == Button.Triggered then
+                Effect.sendCmd <| Delay.after Fading.duration FadedOutBeforeUpdate
 
               else
                 Effect.none
+            )
+
+        FadedOutBeforeUpdate ->
+            ( model
+            , Effect.updateApp shared.updateState
             )
 
         OnReloadButton state ->

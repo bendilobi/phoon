@@ -10,13 +10,12 @@ import Element.Font as Font
 import Element.Input as Input
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.PageFading as Fading exposing (FadeState(..))
+import Lib.PageFading as Fading exposing (FadeState(..), Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Shared
-import Simple.Transition as Transition
 import Task
 import View exposing (View)
 
@@ -25,7 +24,7 @@ type alias Props contentMsg =
     { showCurrentCycle : Maybe Int
     , controlsTop : List (Element contentMsg)
     , controlsBottom : List (Element contentMsg)
-    , fadeOut : Bool
+    , fadeOut : Fading.Trigger
     }
 
 
@@ -50,13 +49,6 @@ map fn props =
 
 
 -- MODEL
---TODO: Fading-Implementierung zwischen den Layouts synchronisieren:
---      FadeState, fading Zeiten, ...?
---      Oder ein "Meta-Layout" nur für's Fading?
--- type FadeState
---     = PreparingFadeIn
---     | FadingIn
---     | PreparingFadeOut
 
 
 type alias Model =
@@ -64,31 +56,38 @@ type alias Model =
     , controlsShown : Bool
     , debounceBlock : Bool
     , fadeState : FadeState
+    , fadeColor : Color
     }
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared _ =
+    let
+        ( msg, color ) =
+            case shared.fadeIn of
+                NoFade ->
+                    ( PreparingFadeOut, rgb 0 0 0 )
+
+                FadeWith clr ->
+                    ( PreparingFadeIn, clr )
+    in
     ( { gesture = Swipe.blanco
       , controlsShown = False
       , debounceBlock = False
-      , fadeState =
-            if shared.fadeIn then
-                PreparingFadeIn
-
-            else
-                PreparingFadeOut
+      , fadeState = msg
+      , fadeColor = color
       }
     , Effect.batch
         [ Effect.setWakeLock
         , Effect.sendCmd <| Task.perform AdjustToday Date.today
-        , if shared.fadeIn then
-            --TODO: Entweder verstehen, warum und wieviel Delay gebraucht wird
-            --      oder eine Lösung ohne "Voodoo" finden...
-            Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn True
+        , case shared.fadeIn of
+            FadeWith _ ->
+                --TODO: Entweder verstehen, warum und wieviel Delay gebraucht wird
+                --      oder eine Lösung ohne "Voodoo" finden...
+                Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn True
 
-          else
-            Effect.none
+            NoFade ->
+                Effect.none
         ]
     )
 
@@ -185,7 +184,7 @@ update props shared route msg model =
                         PreparingFadeOut
               }
             , if fade then
-                Effect.sendCmd <| Delay.after Fading.fadeDuration <| ToggleFadeIn False
+                Effect.sendCmd <| Delay.after Fading.duration <| ToggleFadeIn False
 
               else
                 Effect.none
@@ -226,12 +225,13 @@ view props shared route { toContentMsg, model, content } =
                     [ width fill
                     , height fill
                     , inFront <|
-                        Fading.fadeOverlay CS.primaryColors.primary <|
-                            if props.fadeOut then
-                                FadingOut
+                        -- Fading.fadeOverlay CS.primaryColors.primary <|
+                        case props.fadeOut of
+                            FadeWith color ->
+                                Fading.fadeOverlay color FadingOut
 
-                            else
-                                model.fadeState
+                            NoFade ->
+                                Fading.fadeOverlay model.fadeColor model.fadeState
                     ]
                     [ if model.controlsShown && List.length props.controlsTop > 0 then
                         column

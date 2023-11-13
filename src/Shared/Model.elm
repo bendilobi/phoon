@@ -2,8 +2,10 @@ module Shared.Model exposing (Model, UpdateState(..))
 
 import Api
 import Date
+import Element exposing (Color)
 import Lib.ColorScheme as CS
 import Lib.MotivationData exposing (MotivationData)
+import Lib.PageFading as Fading
 import Lib.SafeArea exposing (SafeArea)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
@@ -34,7 +36,7 @@ type alias Model =
     , sessionSettings : Session.Settings
     , baseApiUrl : String
     , safeAreaInset : SafeArea
-    , fadeIn : Bool
+    , fadeIn : Fading.Trigger
     }
 
 

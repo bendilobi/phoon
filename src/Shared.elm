@@ -22,6 +22,7 @@ import Effect exposing (Effect)
 import Json.Decode
 import Lib.ColorScheme as CS
 import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
@@ -39,7 +40,7 @@ showDebugButtons =
 
 
 appVersion =
-    "0.6.380"
+    "0.6.389"
 
 
 
@@ -169,7 +170,7 @@ init flagsResult route =
       , sessionSettings = decodedFlags.sessionSettings
       , baseApiUrl = "/version/"
       , safeAreaInset = decodedFlags.safeAreaInsets
-      , fadeIn = False
+      , fadeIn = NoFade
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -277,7 +278,7 @@ update route msg model =
                     Session.jumpToEnd model.session
             in
             ( { model | session = sessionAtEnd }
-            , Effect.navigate False <| Session.currentPath sessionAtEnd
+            , Effect.navigate NoFade <| Session.currentPath sessionAtEnd
             )
 
         Shared.Msg.ResultsUpdated results ->
@@ -310,7 +311,7 @@ update route msg model =
                         MotivationData.update model.results model.today model.motivationData
                             |> Shared.Msg.SetMotivationData
                             |> Effect.sendMsg
-                , Effect.navigate True Route.Path.Home_
+                , Effect.navigate (FadeWith Fading.sessionFadingColor) Route.Path.Home_
                 ]
             )
 

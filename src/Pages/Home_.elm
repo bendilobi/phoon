@@ -9,6 +9,7 @@ import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.PageFading exposing (Trigger(..))
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -32,7 +33,7 @@ toLayout model =
     Layouts.MainNav
         { header = Just "Motivation finden"
         , enableScrolling = False
-        , fadeOut = False
+        , fadeOut = NoFade
         }
 
 

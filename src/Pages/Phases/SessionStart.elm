@@ -12,7 +12,7 @@ import FeatherIcons
 import Html.Attributes
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.PageFading as Fading
+import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session
 import Page exposing (Page)
 import Route exposing (Route)
@@ -51,7 +51,7 @@ type alias Model =
     { bubble : Bubble.Model Msg
     , ticks : Int
     , cancelButton : Button.Model
-    , fadeOut : Bool
+    , fadeOut : Fading.Trigger
     }
 
 
@@ -65,7 +65,7 @@ init shared () =
                 , breathingSpeed = Session.speedMillis shared.session
                 }
       , cancelButton = Button.init
-      , fadeOut = False
+      , fadeOut = NoFade
       }
     , Effect.none
     )
@@ -105,10 +105,16 @@ update shared msg model =
                 | cancelButton = newState
                 , fadeOut =
                     if shared.previousPath == Session.phasePath Session.End then
-                        False
+                        NoFade
+                        -- else
+                        -- newState == Button.Triggered
+
+                    else if newState == Button.Triggered then
+                        FadeWith Fading.sessionFadingColor
+                        --CS.primaryColors.primary
 
                     else
-                        newState == Button.Triggered
+                        NoFade
               }
             , if newState == Button.Triggered then
                 if shared.previousPath == Session.phasePath Session.End then
@@ -116,7 +122,7 @@ update shared msg model =
 
                 else
                     -- Effect.navigate True shared.previousPath
-                    Effect.sendCmd <| Delay.after Fading.fadeDuration FadeOutFinished
+                    Effect.sendCmd <| Delay.after Fading.duration FadeOutFinished
 
               else
                 Effect.none
@@ -124,7 +130,7 @@ update shared msg model =
 
         FadeOutFinished ->
             ( model
-            , Effect.navigate True shared.previousPath
+            , Effect.navigate (FadeWith Fading.sessionFadingColor) shared.previousPath
             )
 
 

@@ -9,7 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.PageFading as Fading
+import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Page exposing (Page)
@@ -50,7 +50,7 @@ type alias Model =
     , discardButton : Button.Model
     , confirmDialogShown : Bool
     , cancelButton : Button.Model
-    , fadeOut : Bool
+    , fadeOut : Fading.Trigger
     }
 
 
@@ -62,7 +62,7 @@ init () =
       , discardButton = Button.init
       , confirmDialogShown = False
       , cancelButton = Button.init
-      , fadeOut = False
+      , fadeOut = NoFade
       }
     , Effect.playSound Session.EndSound
     )
@@ -93,7 +93,7 @@ update shared msg model =
             , if newState == Button.Triggered then
                 Effect.batch
                     [ Effect.sessionUpdated newSession
-                    , Effect.navigate False <| Session.currentPath newSession
+                    , Effect.navigate NoFade <| Session.currentPath newSession
                     ]
 
               else
@@ -103,10 +103,17 @@ update shared msg model =
         OnConfirmButton newState ->
             ( { model
                 | confirmButton = newState
-                , fadeOut = newState == Button.Triggered
+
+                -- , fadeOut = newState == Button.Triggered
+                , fadeOut =
+                    if newState == Button.Triggered then
+                        FadeWith Fading.sessionFadingColor
+
+                    else
+                        NoFade
               }
             , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after Fading.fadeDuration <| FadeOutFinished Session.Cancelled
+                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Cancelled
 
               else
                 Effect.none
@@ -115,10 +122,17 @@ update shared msg model =
         OnSaveButton newState ->
             ( { model
                 | saveButton = newState
-                , fadeOut = newState == Button.Triggered
+
+                -- , fadeOut = newState == Button.Triggered
+                , fadeOut =
+                    if newState == Button.Triggered then
+                        FadeWith Fading.sessionFadingColor
+
+                    else
+                        NoFade
               }
             , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after Fading.fadeDuration <| FadeOutFinished Session.Finished
+                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Finished
 
               else
                 Effect.none
@@ -140,10 +154,17 @@ update shared msg model =
         OnCancelButton newState ->
             ( { model
                 | cancelButton = newState
-                , fadeOut = newState == Button.Triggered
+
+                -- , fadeOut = newState == Button.Triggered
+                , fadeOut =
+                    if newState == Button.Triggered then
+                        FadeWith Fading.sessionFadingColor
+
+                    else
+                        NoFade
               }
             , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after Fading.fadeDuration <| FadeOutFinished Session.Cancelled
+                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Cancelled
 
               else
                 Effect.none

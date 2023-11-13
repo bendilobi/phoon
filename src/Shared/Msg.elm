@@ -5,9 +5,11 @@ module Shared.Msg exposing (Msg(..))
 import Browser.Dom
 import Browser.Events
 import Date
+import Element exposing (Color)
 import Http
 import Json.Decode
 import Lib.MotivationData exposing (MotivationData)
+import Lib.PageFading as Fading
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route.Path
@@ -32,7 +34,7 @@ type Msg
     | SessionUpdated Session
     | CancelSession Session
     | ResultsUpdated SessionResults
-    | NavigateTriggered Bool Route.Path.Path
+    | NavigateTriggered Fading.Trigger Route.Path.Path
     | SessionEnded Session.EndType
     | SessionSettingsUpdated Session.Settings
     | SetUpdateState Shared.Model.UpdateState

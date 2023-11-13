@@ -21,10 +21,12 @@ port module Effect exposing
 import Browser.Navigation
 import Date
 import Dict exposing (Dict)
+import Element exposing (Color)
 import Http
 import Json.Decode
 import Json.Encode
 import Lib.MotivationData as MotivationData exposing (MotivationData, update)
+import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
 import Route exposing (Route)
@@ -285,7 +287,7 @@ resultsUpdated results =
     SendSharedMsg <| Shared.Msg.ResultsUpdated results
 
 
-navigate : Bool -> Route.Path.Path -> Effect msg
+navigate : Fading.Trigger -> Route.Path.Path -> Effect msg
 navigate fade path =
     SendSharedMsg <| Shared.Msg.NavigateTriggered fade path
 
@@ -296,7 +298,7 @@ navigateNext session =
         Just sess ->
             batch
                 [ sessionUpdated sess
-                , navigate False <| Session.phasePath <| Session.currentPhase sess
+                , navigate NoFade <| Session.phasePath <| Session.currentPhase sess
                 ]
 
         Nothing ->

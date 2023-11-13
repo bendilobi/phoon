@@ -8,6 +8,7 @@ import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
+import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
 import Page exposing (Page)
@@ -34,7 +35,7 @@ toLayout shared model =
         { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results + 1
         , controlsTop = []
         , controlsBottom = [ viewCancelButton shared model ]
-        , fadeOut = False
+        , fadeOut = NoFade
         }
 
 

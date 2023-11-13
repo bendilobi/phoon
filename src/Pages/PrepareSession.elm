@@ -12,7 +12,7 @@ import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
-import Lib.PageFading as Fading
+import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
 import Page exposing (Page)
@@ -51,7 +51,7 @@ type alias Model =
     { time : Time.Posix
     , startButton : Button.Model
     , cycleCrementer : IntCrementer.Model
-    , fadeOut : Bool
+    , fadeOut : Fading.Trigger
     }
 
 
@@ -60,7 +60,7 @@ init shared () =
     ( { time = Time.millisToPosix 0
       , startButton = Button.init
       , cycleCrementer = IntCrementer.init
-      , fadeOut = False
+      , fadeOut = NoFade
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Tick Time.now
@@ -102,11 +102,17 @@ update shared msg model =
         OnStartButton newState ->
             ( { model
                 | startButton = newState
-                , fadeOut = newState == Button.Triggered
+                , fadeOut =
+                    if newState == Button.Triggered then
+                        FadeWith Fading.sessionFadingColor
+                        --CS.primaryColors.primary
+
+                    else
+                        NoFade
               }
             , case newState of
                 Button.Triggered ->
-                    Effect.sendCmd <| Delay.after Fading.fadeDuration ReadyToStartSession
+                    Effect.sendCmd <| Delay.after Fading.duration ReadyToStartSession
 
                 _ ->
                     Effect.none
@@ -117,7 +123,7 @@ update shared msg model =
             , Effect.batch
                 [ Effect.resultsUpdated SessionResults.empty
                 , Effect.playSound Session.StartSound
-                , Effect.navigate True <|
+                , Effect.navigate (FadeWith Fading.sessionFadingColor) <|
                     Session.currentPath shared.session
                 ]
             )

@@ -12,7 +12,7 @@ import Element.Font as Font
 import FeatherIcons
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.PageFading as Fading exposing (FadeState(..))
+import Lib.PageFading as Fading exposing (FadeState(..), Trigger(..))
 import Lib.SafeArea as SafeArea
 import Route exposing (Route)
 import Route.Path
@@ -27,7 +27,7 @@ import View exposing (View)
 type alias Props =
     { header : Maybe String
     , enableScrolling : Bool
-    , fadeOut : Bool
+    , fadeOut : Fading.Trigger
     }
 
 
@@ -49,29 +49,43 @@ type alias Model =
     { lastHide : Maybe Time.Posix
     , updateButton : Button.Model
     , updateAcknowledged : Bool
+
+    --TODO: Doch FadeState und Color vereinen? => nicht zwei attribute hier haben müssen
     , fadeState : FadeState
+    , fadeColor : Color
     }
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared _ =
+    let
+        ( msg, color ) =
+            case shared.fadeIn of
+                NoFade ->
+                    ( PreparingFadeOut, rgb 0 0 0 )
+
+                FadeWith clr ->
+                    ( PreparingFadeIn, clr )
+    in
     ( { lastHide = Nothing
       , updateButton = Button.init
       , updateAcknowledged = False
-      , fadeState =
-            if shared.fadeIn then
-                PreparingFadeIn
+      , fadeState = msg
+      , fadeColor = color
 
-            else
-                PreparingFadeOut
+      -- if shared.fadeIn then
+      --     PreparingFadeIn
+      -- else
+      --     PreparingFadeOut
       }
-    , if shared.fadeIn then
-        --- For some reason, the transition animation doesn't play
-        --- without the delay:
-        Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn True
+    , case shared.fadeIn of
+        FadeWith _ ->
+            --- For some reason, the transition animation doesn't play
+            --- without the delay:
+            Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn True
 
-      else
-        Effect.none
+        NoFade ->
+            Effect.none
     )
 
 
@@ -97,7 +111,7 @@ update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         NavButtonClicked path ->
-            ( model, Effect.navigate False path )
+            ( model, Effect.navigate NoFade path )
 
         VisibilityChanged visibility ->
             ( model
@@ -123,7 +137,7 @@ update msg model =
             in
             ( model
             , if Time.posixToMillis time - lastHide > 900000 then
-                Effect.navigate False Route.Path.Home_
+                Effect.navigate NoFade Route.Path.Home_
 
               else
                 Effect.none
@@ -159,7 +173,7 @@ update msg model =
                         PreparingFadeOut
               }
             , if fade then
-                Effect.sendCmd <| Delay.after Fading.fadeDuration <| ToggleFadeIn False
+                Effect.sendCmd <| Delay.after Fading.duration <| ToggleFadeIn False
 
               else
                 Effect.none
@@ -220,12 +234,13 @@ view props shared route { toContentMsg, model, content } =
                                             |> E.map toContentMsg
 
                                     _ ->
-                                        Fading.fadeOverlay CS.primaryColors.primary <|
-                                            if props.fadeOut then
-                                                FadingOut
+                                        -- Fading.fadeOverlay CS.primaryColors.primary <|
+                                        case props.fadeOut of
+                                            FadeWith color ->
+                                                Fading.fadeOverlay color FadingOut
 
-                                            else
-                                                model.fadeState
+                                            NoFade ->
+                                                Fading.fadeOverlay model.fadeColor model.fadeState
                            ]
                     )
                     [ case props.header of
