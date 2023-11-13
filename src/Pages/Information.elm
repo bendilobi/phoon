@@ -850,19 +850,21 @@ viewSettings shared model pagePadding =
                                             column [ width fill, spacing 10 ]
                                                 [ text "Retentionstrend:"
                                                 , column [ centerX ]
-                                                    [ RetentionChart.new
-                                                        { width =
-                                                            (shared.deviceInfo.window.width |> round)
-                                                                - (SafeArea.maxX shared.safeAreaInset * 2)
-                                                                - (pagePadding + (hPad * 2))
-                                                        , height = 200
-                                                        , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
-                                                        , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
-                                                        , meanRetentionColor = CS.guideColor shared.colorScheme
-                                                        , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
-                                                        , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
-                                                        }
-                                                        |> RetentionChart.view
+                                                    [ el [ centerX ] <|
+                                                        (RetentionChart.new
+                                                            { width =
+                                                                (shared.deviceInfo.window.width |> round)
+                                                                    - (SafeArea.maxX shared.safeAreaInset * 2)
+                                                                    - (pagePadding + (hPad * 2))
+                                                            , height = 200
+                                                            , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
+                                                            , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
+                                                            , meanRetentionColor = CS.guideColor shared.colorScheme
+                                                            , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
+                                                            , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
+                                                            }
+                                                            |> RetentionChart.view
+                                                        )
                                                     , el
                                                         [ Font.size 15
                                                         , centerX

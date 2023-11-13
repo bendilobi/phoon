@@ -49,40 +49,32 @@ type alias Model =
     { lastHide : Maybe Time.Posix
     , updateButton : Button.Model
     , updateAcknowledged : Bool
-
-    --TODO: Doch FadeState und Color vereinen? => nicht zwei attribute hier haben müssen
     , fadeState : FadeState
-    , fadeColor : Color
     }
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared _ =
     let
-        ( msg, color ) =
+        --TODO: Noch mehr Fading-Zeugs in PageFade verschieben => FadeState opaque machen?
+        fadeState =
             case shared.fadeIn of
                 NoFade ->
-                    ( PreparingFadeOut, rgb 0 0 0 )
+                    PreparingFadeOut
 
                 FadeWith clr ->
-                    ( PreparingFadeIn, clr )
+                    PreparingFadeIn clr
     in
     ( { lastHide = Nothing
       , updateButton = Button.init
       , updateAcknowledged = False
-      , fadeState = msg
-      , fadeColor = color
-
-      -- if shared.fadeIn then
-      --     PreparingFadeIn
-      -- else
-      --     PreparingFadeOut
+      , fadeState = fadeState
       }
     , case shared.fadeIn of
-        FadeWith _ ->
+        FadeWith color ->
             --- For some reason, the transition animation doesn't play
             --- without the delay:
-            Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn True
+            Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn <| FadeWith color
 
         NoFade ->
             Effect.none
@@ -104,7 +96,7 @@ type Msg
     | VisibilityChanged Browser.Events.Visibility
     | OnCloseUpdateButton Button.Model
     | UpdateFinished
-    | ToggleFadeIn Bool
+    | ToggleFadeIn Fading.Trigger
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -166,17 +158,19 @@ update msg model =
         ToggleFadeIn fade ->
             ( { model
                 | fadeState =
-                    if fade then
-                        FadingIn
+                    case fade of
+                        FadeWith color ->
+                            FadingIn color
 
-                    else
-                        PreparingFadeOut
+                        NoFade ->
+                            PreparingFadeOut
               }
-            , if fade then
-                Effect.sendCmd <| Delay.after Fading.duration <| ToggleFadeIn False
+            , case fade of
+                FadeWith color ->
+                    Effect.sendCmd <| Delay.after Fading.duration <| ToggleFadeIn NoFade
 
-              else
-                Effect.none
+                NoFade ->
+                    Effect.none
             )
 
 
@@ -234,13 +228,12 @@ view props shared route { toContentMsg, model, content } =
                                             |> E.map toContentMsg
 
                                     _ ->
-                                        -- Fading.fadeOverlay CS.primaryColors.primary <|
                                         case props.fadeOut of
                                             FadeWith color ->
-                                                Fading.fadeOverlay color FadingOut
+                                                Fading.fadeOverlay <| FadingOut color
 
                                             NoFade ->
-                                                Fading.fadeOverlay model.fadeColor model.fadeState
+                                                Fading.fadeOverlay model.fadeState
                            ]
                     )
                     [ case props.header of
@@ -310,7 +303,7 @@ viewUpdateResult shared model { color, message, label } =
         , BG.color <| rgb 1 1 1
         , htmlAttribute <|
             Transition.properties
-                [ Transition.opacity updateFadeOutDuration [ Transition.easeInOutQuint ] -- Transition.easeInQuart ]
+                [ Transition.opacity updateFadeOutDuration [ Transition.easeInQuint ] -- Transition.easeInQuart ]
                 ]
 
         --- This doesn't work because it reacts on the transition of the button...

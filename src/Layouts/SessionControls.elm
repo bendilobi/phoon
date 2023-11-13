@@ -56,35 +56,33 @@ type alias Model =
     , controlsShown : Bool
     , debounceBlock : Bool
     , fadeState : FadeState
-    , fadeColor : Color
     }
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared _ =
     let
-        ( msg, color ) =
+        fadeState =
             case shared.fadeIn of
                 NoFade ->
-                    ( PreparingFadeOut, rgb 0 0 0 )
+                    PreparingFadeOut
 
                 FadeWith clr ->
-                    ( PreparingFadeIn, clr )
+                    PreparingFadeIn clr
     in
     ( { gesture = Swipe.blanco
       , controlsShown = False
       , debounceBlock = False
-      , fadeState = msg
-      , fadeColor = color
+      , fadeState = fadeState
       }
     , Effect.batch
         [ Effect.setWakeLock
         , Effect.sendCmd <| Task.perform AdjustToday Date.today
         , case shared.fadeIn of
-            FadeWith _ ->
+            FadeWith color ->
                 --TODO: Entweder verstehen, warum und wieviel Delay gebraucht wird
                 --      oder eine Lösung ohne "Voodoo" finden...
-                Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn True
+                Effect.sendCmd <| Delay.after 50 <| ToggleFadeIn <| FadeWith color
 
             NoFade ->
                 Effect.none
@@ -101,7 +99,7 @@ type Msg
     | SwipeEnd Swipe.Event
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
-    | ToggleFadeIn Bool
+    | ToggleFadeIn Fading.Trigger
       -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
     | MouseNavSwipe
@@ -177,17 +175,19 @@ update props shared route msg model =
         ToggleFadeIn fade ->
             ( { model
                 | fadeState =
-                    if fade then
-                        FadingIn
+                    case fade of
+                        FadeWith color ->
+                            FadingIn color
 
-                    else
-                        PreparingFadeOut
+                        NoFade ->
+                            PreparingFadeOut
               }
-            , if fade then
-                Effect.sendCmd <| Delay.after Fading.duration <| ToggleFadeIn False
+            , case fade of
+                FadeWith color ->
+                    Effect.sendCmd <| Delay.after Fading.duration <| ToggleFadeIn NoFade
 
-              else
-                Effect.none
+                NoFade ->
+                    Effect.none
             )
 
 
@@ -225,13 +225,12 @@ view props shared route { toContentMsg, model, content } =
                     [ width fill
                     , height fill
                     , inFront <|
-                        -- Fading.fadeOverlay CS.primaryColors.primary <|
                         case props.fadeOut of
                             FadeWith color ->
-                                Fading.fadeOverlay color FadingOut
+                                Fading.fadeOverlay <| FadingOut color
 
                             NoFade ->
-                                Fading.fadeOverlay model.fadeColor model.fadeState
+                                Fading.fadeOverlay model.fadeState
                     ]
                     [ if model.controlsShown && List.length props.controlsTop > 0 then
                         column
@@ -249,8 +248,6 @@ view props shared route { toContentMsg, model, content } =
                     , if model.controlsShown then
                         column
                             [ width fill
-
-                            -- , padding 50
                             , paddingEach { bottom = 100, top = 50, left = 50, right = 50 }
                             , behindContent <| el ([ alpha 0.6, width fill, height fill ] ++ CS.primary) none
                             , spacing 30

@@ -7,10 +7,10 @@ import Simple.Transition as Transition
 
 
 type FadeState
-    = PreparingFadeIn
-    | FadingIn
+    = PreparingFadeIn Color
+    | FadingIn Color
     | PreparingFadeOut
-    | FadingOut
+    | FadingOut Color
 
 
 type Trigger
@@ -33,27 +33,33 @@ sessionFadingColor =
 --     1000
 
 
-fadeOverlay : Color -> FadeState -> Element msg
-fadeOverlay color fadeState =
+fadeOverlay : FadeState -> Element msg
+fadeOverlay fadeState =
     el
-        ([ BG.color color
-         , case fadeState of
-            PreparingFadeIn ->
-                alpha 1
-
-            FadingIn ->
-                alpha 0
-
-            PreparingFadeOut ->
-                alpha 0
-
-            FadingOut ->
-                alpha 1
-         , htmlAttribute <|
+        ((htmlAttribute <|
             Transition.properties
                 [ Transition.opacity duration [ Transition.easeInOutCirc ] --Transition.easeInOutQuint ] -- Transition.easeInQuart ]
                 ]
-         ]
+         )
+            :: (case fadeState of
+                    PreparingFadeIn color ->
+                        [ BG.color color
+                        , alpha 1
+                        ]
+
+                    FadingIn color ->
+                        [ BG.color color
+                        , alpha 0
+                        ]
+
+                    PreparingFadeOut ->
+                        [ alpha 0 ]
+
+                    FadingOut color ->
+                        [ BG.color color
+                        , alpha 1
+                        ]
+               )
             ++ (case fadeState of
                     PreparingFadeOut ->
                         [ width <| px 0
