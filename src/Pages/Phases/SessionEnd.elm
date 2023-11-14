@@ -9,6 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults exposing (SessionResults)
@@ -21,7 +22,7 @@ import View exposing (View)
 page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
+        { init = init shared
         , update = update shared
         , subscriptions = subscriptions
         , view = view shared
@@ -46,7 +47,6 @@ toLayout shared model =
 type alias Model =
     { addCycleButton : Button.Model
     , confirmButton : Button.Model
-    , saveButton : Button.Model
     , discardButton : Button.Model
     , confirmDialogShown : Bool
     , cancelButton : Button.Model
@@ -54,17 +54,20 @@ type alias Model =
     }
 
 
-init : () -> ( Model, Effect Msg )
-init () =
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared () =
     ( { addCycleButton = Button.init
       , confirmButton = Button.init
-      , saveButton = Button.init
       , discardButton = Button.init
       , confirmDialogShown = False
       , cancelButton = Button.init
       , fadeOut = NoFade
       }
-    , Effect.playSound Session.EndSound
+    , Effect.batch
+        [ Effect.playSound Session.EndSound
+        , Effect.setMotivationData <|
+            MotivationData.update shared.results shared.today shared.motivationData
+        ]
     )
 
 
@@ -75,7 +78,6 @@ init () =
 type Msg
     = OnAddCycleButton Button.Model
     | OnConfirmButton Button.Model
-    | OnSaveButton Button.Model
     | OnDiscardButton Button.Model
     | OnCancelButton Button.Model
     | FadeOutFinished Session.EndType
@@ -93,6 +95,7 @@ update shared msg model =
             , if newState == Button.Triggered then
                 Effect.batch
                     [ Effect.sessionUpdated newSession
+                    , Effect.setMotivationData shared.previousMotivationData
                     , Effect.navigate NoFade <| Session.currentPath newSession
                     ]
 
@@ -111,24 +114,7 @@ update shared msg model =
                         NoFade
               }
             , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Cancelled
-
-              else
-                Effect.none
-            )
-
-        OnSaveButton newState ->
-            ( { model
-                | saveButton = newState
-                , fadeOut =
-                    if newState == Button.Triggered then
-                        FadeWith Fading.sessionFadingColor
-
-                    else
-                        NoFade
-              }
-            , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Finished
+                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Discarded
 
               else
                 Effect.none
@@ -158,7 +144,7 @@ update shared msg model =
                         NoFade
               }
             , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Cancelled
+                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Discarded
 
               else
                 Effect.none
@@ -294,15 +280,6 @@ viewControlsBottom shared model =
 
         else
             [ Button.new
-                { model = model.saveButton
-                , label = text "Speichern & beenden"
-                , onPress = OnSaveButton
-                }
-                |> Button.withLightColor
-                |> Button.view shared.colorScheme
-
-            -- , el [ height <| px 10 ] none
-            , Button.new
                 { model = model.discardButton
                 , label = text "Sitzung verwerfen"
                 , onPress = OnDiscardButton

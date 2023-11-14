@@ -105,7 +105,6 @@ update shared msg model =
                 , fadeOut =
                     if newState == Button.Triggered then
                         FadeWith Fading.sessionFadingColor
-                        --CS.primaryColors.primary
 
                     else
                         NoFade

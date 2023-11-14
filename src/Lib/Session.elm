@@ -143,7 +143,7 @@ type Phase
 
 type EndType
     = Finished
-    | Cancelled
+    | Discarded
 
 
 type SessionSound

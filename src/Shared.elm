@@ -40,7 +40,7 @@ showDebugButtons =
 
 
 appVersion =
-    "0.6.399"
+    "0.6.407"
 
 
 
@@ -166,6 +166,7 @@ init flagsResult route =
       , results = SessionResults.empty
       , previousPath = Route.Path.Home_
       , motivationData = decodedFlags.motData
+      , previousMotivationData = Nothing
       , colorScheme = CS.newSunrise
       , sessionSettings = decodedFlags.sessionSettings
       , baseApiUrl = "/version/"
@@ -304,15 +305,26 @@ update route msg model =
               }
             , Effect.batch
                 [ case endType of
-                    Session.Cancelled ->
-                        Effect.none
+                    Session.Discarded ->
+                        Effect.sendMsg <| Shared.Msg.SetMotivationData model.previousMotivationData
 
                     Session.Finished ->
-                        MotivationData.update model.results model.today model.motivationData
-                            |> Shared.Msg.SetMotivationData
-                            |> Effect.sendMsg
+                        Effect.none
                 , Effect.navigate (FadeWith Fading.sessionFadingColor) Route.Path.Home_
                 ]
+            )
+
+        Shared.Msg.SetMotivationData motData ->
+            ( { model
+                | motivationData = motData
+                , previousMotivationData = model.motivationData
+              }
+            , case motData of
+                Nothing ->
+                    Effect.none
+
+                Just data ->
+                    Effect.saveMotivationData data
             )
 
         Shared.Msg.SessionSettingsUpdated newSettings ->
@@ -365,16 +377,6 @@ update route msg model =
 
                 _ ->
                     Effect.none
-            )
-
-        Shared.Msg.SetMotivationData motData ->
-            ( { model | motivationData = motData }
-            , case motData of
-                Nothing ->
-                    Effect.none
-
-                Just data ->
-                    Effect.saveMotivationData data
             )
 
 

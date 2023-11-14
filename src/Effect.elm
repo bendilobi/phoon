@@ -21,11 +21,10 @@ port module Effect exposing
 import Browser.Navigation
 import Date
 import Dict exposing (Dict)
-import Element exposing (Color)
 import Http
 import Json.Decode
 import Json.Encode
-import Lib.MotivationData as MotivationData exposing (MotivationData, update)
+import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
@@ -320,9 +319,9 @@ receivedVersionOnServer result =
     SendSharedMsg <| Shared.Msg.ReceivedVersionOnServer result
 
 
-setMotivationData : MotivationData -> Effect msg
+setMotivationData : Maybe MotivationData -> Effect msg
 setMotivationData motData =
-    SendSharedMsg <| Shared.Msg.SetMotivationData <| Just motData
+    SendSharedMsg <| Shared.Msg.SetMotivationData motData
 
 
 

@@ -295,7 +295,7 @@ update shared msg model =
         OnReplaceMotivationDataButton motData newState ->
             ( { model | replaceMotDataButton = newState }
             , if newState == Button.Triggered then
-                Effect.setMotivationData motData
+                Effect.setMotivationData <| Just motData
 
               else
                 Effect.none

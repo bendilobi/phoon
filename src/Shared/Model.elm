@@ -32,6 +32,7 @@ type alias Model =
     , results : SessionResults
     , previousPath : Route.Path.Path
     , motivationData : Maybe MotivationData
+    , previousMotivationData : Maybe MotivationData
     , colorScheme : CS.ColorScheme
     , sessionSettings : Session.Settings
     , baseApiUrl : String

@@ -56,6 +56,7 @@ type alias Model =
     , controlsShown : Bool
     , debounceBlock : Bool
     , fadeState : FadeState
+    , doSessionEndFadeOut : Bool
     }
 
 
@@ -65,6 +66,7 @@ init shared _ =
       , controlsShown = False
       , debounceBlock = False
       , fadeState = Fading.init shared.fadeIn
+      , doSessionEndFadeOut = False
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -84,6 +86,7 @@ type Msg
     | ReleaseDebounceBlock
     | AdjustToday Date.Date
     | ToggleFadeIn Fading.Trigger
+    | SessionFadedOut
       -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
     | MouseNavSwipe
@@ -119,6 +122,7 @@ update props shared route msg model =
                 | gesture = Swipe.blanco
                 , controlsShown = Swipe.isRightSwipe swipeSize gesture
                 , debounceBlock = model.debounceBlock || multitouchRegistered
+                , doSessionEndFadeOut = model.doSessionEndFadeOut || multitouchRegistered && route.path == Session.phasePath Session.End
               }
               -- TODO: Herausfinden, ob ich doch irgendwie ein sauberes "Mehr als 1 Finger beteiligt" hinkriege...
               --       Was aktuell zu passieren scheint: Beim Lupfen eines Fingers wird ein End Event
@@ -135,6 +139,9 @@ update props shared route msg model =
               else
                 Effect.none
             )
+
+        SessionFadedOut ->
+            ( model, Effect.sessionEnded Session.Finished )
 
         ReleaseDebounceBlock ->
             ( { model | debounceBlock = False }, Effect.none )
@@ -167,11 +174,14 @@ subscriptions model =
     Sub.none
 
 
-multitouchEffects : Shared.Model -> Route () -> List (Effect msg)
+multitouchEffects : Shared.Model -> Route () -> List (Effect Msg)
 multitouchEffects shared route =
     [ if route.path == Session.phasePath Session.Retention then
         --- The user left the retention by multitouch, so we add the data
         Effect.resultsUpdated <| SessionResults.addRetention shared.results
+
+      else if route.path == Session.phasePath Session.End then
+        Effect.sendCmd <| Delay.after Fading.duration SessionFadedOut
 
       else
         Effect.none
@@ -196,7 +206,11 @@ view props shared route { toContentMsg, model, content } =
                     [ width fill
                     , height fill
                     , inFront <|
-                        Fading.fadeOverlay props.fadeOut model.fadeState
+                        if model.doSessionEndFadeOut then
+                            Fading.fadeOverlay (FadeWith Fading.sessionFadingColor) model.fadeState
+
+                        else
+                            Fading.fadeOverlay props.fadeOut model.fadeState
                     ]
                     [ if model.controlsShown && List.length props.controlsTop > 0 then
                         column
