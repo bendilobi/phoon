@@ -221,7 +221,7 @@ viewHints model =
         , Font.size 15
         , transparent <| model.ticks < 8
         ]
-        [ bullet "Tippe mit zwei Fingern, um jeweils zur nächsten Übungsphase zu gehen"
+        [ bullet "Tippe mit drei Fingern, um jeweils zur nächsten Übungsphase zu gehen"
         , bullet "Wische mit einem Finger von links nach rechts, um Optionen anzuzeigen"
         , bullet "Teste hier den Sound durch Tipp mit einem Finger"
         ]

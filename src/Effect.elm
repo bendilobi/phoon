@@ -53,6 +53,7 @@ type Effect msg
         { tag : String
         , data : Json.Encode.Value
         }
+      -- API
     | SendApiRequest
         { endpoint : String
         , decoder : Json.Decode.Decoder msg
@@ -473,6 +474,8 @@ toCmd options effect =
             outgoing msg
 
         SendApiRequest data ->
+            --TODO: This was copied from the Elm Land guide and is quite generic
+            --      => simplify for our needs?
             Http.request
                 { method = "GET"
                 , url = options.shared.baseApiUrl ++ data.endpoint

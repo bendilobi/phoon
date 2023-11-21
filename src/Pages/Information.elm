@@ -415,7 +415,7 @@ viewIntroduction shared model =
         , paragraph [] [ text """
         Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
-        weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit zwei Fingern irgendwo auf den Bildschirm.
+        weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit drei Fingern irgendwo auf den Bildschirm.
         """ ]
 
         -- , column
@@ -909,16 +909,7 @@ viewSettingsItem :
     -> ColorScheme
     -> Element Msg
 viewSettingsItem { item, label, value, attributes } colorScheme =
-    -- Input.button [ width fill ]
-    --     { onPress = Just <| SettingsItemShown item
-    --     , label =
-    {- For some strange reason, if we use an Element.Input.button here, the button gets triggered
-       if it gets rendered right after one of our Animated Buttons was pressed that existed at the
-       same coordinates. It seems the button press of the latter "seeps through" to the newly rendered
-       button... This doesn't happen if we use "pointerup":
-    -}
     row
-        -- ([ htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| SettingsItemShown item
         ([ Events.onClick <| SettingsItemShown item
          , pointer
          ]

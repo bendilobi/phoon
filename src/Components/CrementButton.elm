@@ -198,12 +198,13 @@ view colorScheme (Settings settings) =
                    ]
                 ++ (case settings.model of
                         Pressed _ _ ->
-                            [ htmlAttribute <|
-                                Transition.properties
-                                    [ Transition.backgroundColor 200 []
-                                    ]
-                            ]
+                            []
 
+                        -- [ htmlAttribute <|
+                        --     Transition.properties
+                        --         [ Transition.backgroundColor 200 []
+                        --         ]
+                        -- ]
                         Cancelled ->
                             []
 
