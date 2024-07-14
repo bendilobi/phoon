@@ -52,6 +52,7 @@ type alias Model =
     , ticks : Int
     , cancelButton : Button.Model
     , fadeOut : Fading.Trigger
+    , fadeInFinished : Bool
     }
 
 
@@ -66,8 +67,9 @@ init shared () =
                 }
       , cancelButton = Button.init
       , fadeOut = NoFade
+      , fadeInFinished = False
       }
-    , Effect.none
+    , Effect.sendCmd <| Delay.after (Fading.duration + 500) FadeInFinished
     )
 
 
@@ -79,6 +81,7 @@ type Msg
     = Tick Time.Posix
     | OnCancelButton Button.Model
     | FadeOutFinished
+    | FadeInFinished
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -128,6 +131,9 @@ update shared msg model =
                 Effect.none
             )
 
+        FadeInFinished ->
+            ( { model | fadeInFinished = True }, Effect.none )
+
         FadeOutFinished ->
             ( model
             , Effect.navigate (FadeWith Fading.sessionFadingColor) shared.previousPath
@@ -140,9 +146,13 @@ update shared msg model =
 
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
-    --- Reducing the tickSpeed by 1 millisecond is a fix for a bug in Elm:
-    --- https://github.com/elm/time/issues/25
-    Time.every (Bubble.tickSpeed model.bubble - 1) Tick
+    if model.fadeInFinished then
+        --- Reducing the tickSpeed by 1 millisecond is a fix for a bug in Elm:
+        --- https://github.com/elm/time/issues/25
+        Time.every (Bubble.tickSpeed model.bubble - 1) Tick
+
+    else
+        Sub.none
 
 
 
@@ -177,21 +187,25 @@ view shared model =
                     viewReminder shared FeatherIcons.bellOff
                 ]
             , el [ width fill, height fill ] <|
-                el [ centerX ] <|
-                    (Bubble.new
-                        { model = model.bubble
-                        , size =
-                            min shared.deviceInfo.window.width
-                                shared.deviceInfo.window.height
-                                * 0.5
-                                |> round
-                        , bubbleColor = CS.phaseSessionStartCopyColor shared.colorScheme
-                        , bgColor = CS.phaseSessionStartColor shared.colorScheme
-                        }
-                        |> Bubble.withLabel "Start"
-                        |> Bubble.withFontSize 50
-                        |> Bubble.view
-                    )
+                if model.fadeInFinished then
+                    el [ centerX ] <|
+                        (Bubble.new
+                            { model = model.bubble
+                            , size =
+                                min shared.deviceInfo.window.width
+                                    shared.deviceInfo.window.height
+                                    * 0.5
+                                    |> round
+                            , bubbleColor = CS.phaseSessionStartCopyColor shared.colorScheme
+                            , bgColor = CS.phaseSessionStartColor shared.colorScheme
+                            }
+                            |> Bubble.withLabel "Start"
+                            |> Bubble.withFontSize 50
+                            |> Bubble.view
+                        )
+
+                else
+                    none
             , viewHints model
             ]
     }
