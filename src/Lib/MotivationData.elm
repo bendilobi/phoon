@@ -1,9 +1,9 @@
 module Lib.MotivationData exposing
-    ( Fields
-    , MotivationData
+    ( MotivationData
+    , decoder
     , encoder
-    , fieldsDecoder
-    , fromFields
+      -- , fieldsDecoder
+      -- , fromFields
     , lastSessionDate
     , maxRetention
     , meanRetentionTimes
@@ -13,31 +13,47 @@ module Lib.MotivationData exposing
 
 import Date
 import Json.Decode
+import Json.Decode.Pipeline exposing (optional, required)
 import Json.Encode
 import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 
 
-type MotivationData
-    = MotivationData Fields
+type
+    MotivationData
+    -- = MotivationData Fields
+    = MotivationData
+        { streak : Int
+        , streakFreezeDays : Float
+        , lastSessionDate : Date.Date
+        , meanRetentiontimes : List Milliseconds
+        , maxRetention : Milliseconds
+        }
 
 
-type alias Fields =
-    { streak : Int
-    , streakFreezeDays : Float
-    , lastSessionDate : Date.Date
-    , meanRetentiontimes : List Milliseconds
-    , maxRetention : Milliseconds
-    }
 
-
-
+-- type alias Fields =
+--     { streak : Int
+--     , streakFreezeDays : Float
+--     , lastSessionDate : Date.Date
+--     , meanRetentiontimes : List Milliseconds
+--     , maxRetention : Milliseconds
+--     }
 -- CREATION
+-- fromFields : Fields -> MotivationData
+-- fromFields fields =
+--     MotivationData fields
 
 
-fromFields : Fields -> MotivationData
-fromFields fields =
-    MotivationData fields
+create : Int -> Float -> Date.Date -> List Milliseconds -> Milliseconds -> MotivationData
+create streak streakFreezeDays lastSessDate meanRetentiontimes maxRet =
+    MotivationData
+        { streak = streak
+        , streakFreezeDays = streakFreezeDays
+        , lastSessionDate = lastSessDate
+        , meanRetentiontimes = meanRetentiontimes
+        , maxRetention = maxRet
+        }
 
 
 
@@ -173,21 +189,38 @@ dateDecoder =
     Json.Decode.map Date.fromRataDie Json.Decode.int
 
 
-fieldsDecoder : Json.Decode.Decoder Fields
-fieldsDecoder =
-    Json.Decode.map5
-        -- TODO: Kann ich doch irgendwie direkt in MotivationData decoden?
-        --       https://discourse.elm-lang.org/t/how-to-decode-json-into-a-custom-type-union-type-adt/4065/2
-        Fields
-        (Json.Decode.field fieldnames.series Json.Decode.int)
-        --TODO: So implementieren, dass nicht das gesamte Decode fehlschlägt, wenn ein Feld fehlt
-        (Json.Decode.field fieldnames.streakFreezeDays Json.Decode.float)
-        (Json.Decode.field fieldnames.lastSessionDate dateDecoder)
-        (Json.Decode.field fieldnames.meanRetentiontimes
+
+-- fieldsDecoder : Json.Decode.Decoder Fields
+-- fieldsDecoder =
+--     Json.Decode.map5
+--         -- TODO: Kann ich doch irgendwie direkt in MotivationData decoden?
+--         --       https://discourse.elm-lang.org/t/how-to-decode-json-into-a-custom-type-union-type-adt/4065/2
+--         Fields
+--         (Json.Decode.field fieldnames.series Json.Decode.int)
+--         --TODO: So implementieren, dass nicht das gesamte Decode fehlschlägt, wenn ein Feld fehlt
+--         (Json.Decode.field fieldnames.streakFreezeDays Json.Decode.float)
+--         (Json.Decode.field fieldnames.lastSessionDate dateDecoder)
+--         (Json.Decode.field fieldnames.meanRetentiontimes
+--             (Json.Decode.list
+--                 (Json.Decode.int
+--                     |> Json.Decode.map Millis.fromSeconds
+--                 )
+--             )
+--         )
+--         (Json.Decode.field fieldnames.maxRetention (Json.Decode.int |> Json.Decode.map Millis.fromSeconds))
+
+
+decoder : Json.Decode.Decoder MotivationData
+decoder =
+    --TODO: Prüfen, ob ich den fieldsDecoder und fromFields komplett durch diesen Decoder ersetzen kann
+    Json.Decode.succeed create
+        |> optional fieldnames.series Json.Decode.int 0
+        |> optional fieldnames.streakFreezeDays Json.Decode.float 0
+        |> required fieldnames.lastSessionDate dateDecoder
+        |> required fieldnames.meanRetentiontimes
             (Json.Decode.list
                 (Json.Decode.int
                     |> Json.Decode.map Millis.fromSeconds
                 )
             )
-        )
-        (Json.Decode.field fieldnames.maxRetention (Json.Decode.int |> Json.Decode.map Millis.fromSeconds))
+        |> required fieldnames.maxRetention (Json.Decode.int |> Json.Decode.map Millis.fromSeconds)

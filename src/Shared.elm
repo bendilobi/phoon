@@ -93,7 +93,7 @@ init flagsResult route =
                 Ok data ->
                     let
                         motDataDecoded =
-                            Json.Decode.decodeValue MotivationData.fieldsDecoder data.storedMotivationData
+                            Json.Decode.decodeValue MotivationData.decoder data.storedMotivationData
 
                         sessionSettingsDecoded =
                             Json.Decode.decodeValue Session.settingsDecoder data.storedSessionSettings
@@ -115,8 +115,10 @@ init flagsResult route =
                             Err e ->
                                 Nothing
 
-                            Ok fields ->
-                                Just <| MotivationData.fromFields fields
+                            -- Ok fields ->
+                            --     Just <| MotivationData.fromFields fields
+                            Ok motDat ->
+                                Just motDat
                     , sessionSettings =
                         case sessionSettingsDecoded of
                             Err e ->

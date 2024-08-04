@@ -345,12 +345,12 @@ update shared msg model =
                             string
 
                 pastedMotivationData =
-                    case Decode.decodeString MotivationData.fieldsDecoder clipContent of
+                    case Decode.decodeString MotivationData.decoder clipContent of
                         Err e ->
                             Failure e
 
-                        Ok fields ->
-                            Success <| MotivationData.fromFields fields
+                        Ok motDat ->
+                            Success motDat
             in
             ( { model | pastedMotivationData = pastedMotivationData }
             , Effect.none
