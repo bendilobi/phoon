@@ -65,9 +65,6 @@ init shared () =
       }
     , Effect.batch
         [ Effect.playSound Session.EndSound
-
-        -- TODO: Hier die Atemzeit berechnen und an update geben?
-        --
         , Effect.setMotivationData <|
             MotivationData.update shared.results shared.today shared.motivationData
         ]

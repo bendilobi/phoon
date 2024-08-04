@@ -2,8 +2,6 @@ module Lib.MotivationData exposing
     ( MotivationData
     , decoder
     , encoder
-      -- , fieldsDecoder
-      -- , fromFields
     , lastSessionDate
     , maxRetention
     , meanRetentionTimes
@@ -12,16 +10,14 @@ module Lib.MotivationData exposing
     )
 
 import Date
-import Json.Decode
+import Json.Decode exposing (float)
 import Json.Decode.Pipeline exposing (optional, required)
 import Json.Encode
 import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 
 
-type
-    MotivationData
-    -- = MotivationData Fields
+type MotivationData
     = MotivationData
         { streak : Int
         , streakFreezeDays : Float
@@ -32,17 +28,7 @@ type
 
 
 
--- type alias Fields =
---     { streak : Int
---     , streakFreezeDays : Float
---     , lastSessionDate : Date.Date
---     , meanRetentiontimes : List Milliseconds
---     , maxRetention : Milliseconds
---     }
 -- CREATION
--- fromFields : Fields -> MotivationData
--- fromFields fields =
---     MotivationData fields
 
 
 create : Int -> Float -> Date.Date -> List Milliseconds -> Milliseconds -> MotivationData
@@ -116,7 +102,10 @@ update results today motivationData =
                                     else
                                         motData.streak + 1
 
-                                --TODO: streakFreezeDays berechnen und anpassen
+                                --TODO: Faktor konfigurierbar machen
+                                --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
+                                --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
+                                , streakFreezeDays = motData.streakFreezeDays + 0.7
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
@@ -171,8 +160,7 @@ encoder : MotivationData -> Json.Encode.Value
 encoder (MotivationData motData) =
     Json.Encode.object
         [ ( fieldnames.series, Json.Encode.int motData.streak )
-
-        --TODO: streakFreezeDays enkodieren
+        , ( fieldnames.streakFreezeDays, Json.Encode.float motData.streakFreezeDays )
         , ( fieldnames.lastSessionDate, Json.Encode.int <| Date.toRataDie motData.lastSessionDate )
         , ( fieldnames.meanRetentiontimes
           , Json.Encode.list Json.Encode.int
@@ -184,39 +172,12 @@ encoder (MotivationData motData) =
         ]
 
 
-dateDecoder : Json.Decode.Decoder Date.Date
-dateDecoder =
-    Json.Decode.map Date.fromRataDie Json.Decode.int
-
-
-
--- fieldsDecoder : Json.Decode.Decoder Fields
--- fieldsDecoder =
---     Json.Decode.map5
---         -- TODO: Kann ich doch irgendwie direkt in MotivationData decoden?
---         --       https://discourse.elm-lang.org/t/how-to-decode-json-into-a-custom-type-union-type-adt/4065/2
---         Fields
---         (Json.Decode.field fieldnames.series Json.Decode.int)
---         --TODO: So implementieren, dass nicht das gesamte Decode fehlschlägt, wenn ein Feld fehlt
---         (Json.Decode.field fieldnames.streakFreezeDays Json.Decode.float)
---         (Json.Decode.field fieldnames.lastSessionDate dateDecoder)
---         (Json.Decode.field fieldnames.meanRetentiontimes
---             (Json.Decode.list
---                 (Json.Decode.int
---                     |> Json.Decode.map Millis.fromSeconds
---                 )
---             )
---         )
---         (Json.Decode.field fieldnames.maxRetention (Json.Decode.int |> Json.Decode.map Millis.fromSeconds))
-
-
 decoder : Json.Decode.Decoder MotivationData
 decoder =
-    --TODO: Prüfen, ob ich den fieldsDecoder und fromFields komplett durch diesen Decoder ersetzen kann
     Json.Decode.succeed create
         |> optional fieldnames.series Json.Decode.int 0
         |> optional fieldnames.streakFreezeDays Json.Decode.float 0
-        |> required fieldnames.lastSessionDate dateDecoder
+        |> required fieldnames.lastSessionDate (Json.Decode.map Date.fromRataDie Json.Decode.int)
         |> required fieldnames.meanRetentiontimes
             (Json.Decode.list
                 (Json.Decode.int

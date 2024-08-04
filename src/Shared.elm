@@ -36,7 +36,7 @@ import Time
 
 
 showDebugButtons =
-    False
+    True
 
 
 appVersion =
@@ -115,8 +115,6 @@ init flagsResult route =
                             Err e ->
                                 Nothing
 
-                            -- Ok fields ->
-                            --     Just <| MotivationData.fromFields fields
                             Ok motDat ->
                                 Just motDat
                     , sessionSettings =
