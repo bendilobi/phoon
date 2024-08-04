@@ -23,7 +23,8 @@ type MotivationData
 
 
 type alias Fields =
-    { series : Int
+    { streak : Int
+    , streakFreezeDays : Float
     , lastSessionDate : Date.Date
     , meanRetentiontimes : List Milliseconds
     , maxRetention : Milliseconds
@@ -75,7 +76,8 @@ update results today motivationData =
                 Nothing ->
                     Just <|
                         MotivationData
-                            { series = 1
+                            { streak = 1
+                            , streakFreezeDays = 0
                             , lastSessionDate = today
                             , meanRetentiontimes = [ mean ]
                             , maxRetention = maxTime
@@ -86,16 +88,19 @@ update results today motivationData =
                     Just <|
                         MotivationData
                             { motData
-                                | series =
+                                | streak =
                                     if Date.diff Date.Days today motData.lastSessionDate < -1 then
                                         -- Last session is longer ago than yesterday, so we start at 1
                                         1
 
                                     else if motData.lastSessionDate == today then
-                                        motData.series
+                                        --TODO: Trotzdem hochzählen, d.h. Streak ist Übungen, nicht Tage
+                                        motData.streak
 
                                     else
-                                        motData.series + 1
+                                        motData.streak + 1
+
+                                --TODO: streakFreezeDays berechnen und anpassen
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
@@ -108,7 +113,7 @@ update results today motivationData =
 
 series : MotivationData -> Int
 series (MotivationData motData) =
-    motData.series
+    motData.streak
 
 
 lastSessionDate : MotivationData -> Date.Date
@@ -132,12 +137,14 @@ maxRetention (MotivationData motData) =
 
 fieldnames :
     { series : String
+    , streakFreezeDays : String
     , lastSessionDate : String
     , meanRetentiontimes : String
     , maxRetention : String
     }
 fieldnames =
     { series = "series"
+    , streakFreezeDays = "streakFreezeDays"
     , lastSessionDate = "lastSessionDate"
     , meanRetentiontimes = "meanRetentiontimes"
     , maxRetention = "maxRetention"
@@ -147,7 +154,9 @@ fieldnames =
 encoder : MotivationData -> Json.Encode.Value
 encoder (MotivationData motData) =
     Json.Encode.object
-        [ ( fieldnames.series, Json.Encode.int motData.series )
+        [ ( fieldnames.series, Json.Encode.int motData.streak )
+
+        --TODO: streakFreezeDays enkodieren
         , ( fieldnames.lastSessionDate, Json.Encode.int <| Date.toRataDie motData.lastSessionDate )
         , ( fieldnames.meanRetentiontimes
           , Json.Encode.list Json.Encode.int
@@ -166,11 +175,13 @@ dateDecoder =
 
 fieldsDecoder : Json.Decode.Decoder Fields
 fieldsDecoder =
-    Json.Decode.map4
+    Json.Decode.map5
         -- TODO: Kann ich doch irgendwie direkt in MotivationData decoden?
         --       https://discourse.elm-lang.org/t/how-to-decode-json-into-a-custom-type-union-type-adt/4065/2
         Fields
         (Json.Decode.field fieldnames.series Json.Decode.int)
+        --TODO: So implementieren, dass nicht das gesamte Decode fehlschlägt, wenn ein Feld fehlt
+        (Json.Decode.field fieldnames.streakFreezeDays Json.Decode.float)
         (Json.Decode.field fieldnames.lastSessionDate dateDecoder)
         (Json.Decode.field fieldnames.meanRetentiontimes
             (Json.Decode.list
