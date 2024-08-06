@@ -6,6 +6,7 @@ module Lib.MotivationData exposing
     , maxRetention
     , meanRetentionTimes
     , series
+    , streakFreezeDays
     , update
     )
 
@@ -32,10 +33,10 @@ type MotivationData
 
 
 create : Int -> Float -> Date.Date -> List Milliseconds -> Milliseconds -> MotivationData
-create streak streakFreezeDays lastSessDate meanRetentiontimes maxRet =
+create streak streakFreezeD lastSessDate meanRetentiontimes maxRet =
     MotivationData
         { streak = streak
-        , streakFreezeDays = streakFreezeDays
+        , streakFreezeDays = streakFreezeD
         , lastSessionDate = lastSessDate
         , meanRetentiontimes = meanRetentiontimes
         , maxRetention = maxRet
@@ -85,14 +86,33 @@ update results today motivationData =
                             , maxRetention = maxTime
                             }
 
-                -- )
                 Just (MotivationData motData) ->
+                    let
+                        daysSinceLastSession =
+                            Date.diff Date.Days motData.lastSessionDate today
+
+                        remainingStreakFreezeDays =
+                            if daysSinceLastSession > 1 then
+                                -- Last session was not yesterday so we need to apply the freeze days
+                                motData.streakFreezeDays
+                                    - (toFloat daysSinceLastSession - 1)
+                                    |> (\days ->
+                                            if days < 1 then
+                                                0
+
+                                            else
+                                                days
+                                       )
+
+                            else
+                                motData.streakFreezeDays
+                    in
                     Just <|
                         MotivationData
                             { motData
                                 | streak =
-                                    if Date.diff Date.Days today motData.lastSessionDate < -1 then
-                                        -- Last session is longer ago than yesterday, so we start at 1
+                                    -- if Date.diff Date.Days today motData.lastSessionDate < -1 then
+                                    if remainingStreakFreezeDays == 0 then
                                         1
 
                                     else if motData.lastSessionDate == today then
@@ -105,7 +125,7 @@ update results today motivationData =
                                 --TODO: Faktor konfigurierbar machen
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
-                                , streakFreezeDays = motData.streakFreezeDays + 0.7
+                                , streakFreezeDays = remainingStreakFreezeDays + 0.7
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
@@ -134,6 +154,11 @@ meanRetentionTimes (MotivationData motData) =
 maxRetention : MotivationData -> Milliseconds
 maxRetention (MotivationData motData) =
     motData.maxRetention
+
+
+streakFreezeDays : MotivationData -> Float
+streakFreezeDays (MotivationData motData) =
+    motData.streakFreezeDays
 
 
 

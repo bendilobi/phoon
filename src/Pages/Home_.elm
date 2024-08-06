@@ -10,6 +10,7 @@ import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading exposing (Trigger(..))
+import Maybe exposing (withDefault)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -102,7 +103,7 @@ viewMotivationData today motData colorScheme =
                 |> Maybe.withDefault 0
 
         seriesContinued =
-            daysSinceLastSession < 2
+            daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays motData) < 2
 
         seriesColor =
             if seriesContinued then
@@ -136,6 +137,28 @@ viewMotivationData today motData colorScheme =
 
                         else
                             String.fromInt <| daysSinceLastSession - 1
+
+        -- , paragraph
+        --     [ width fill
+        --     , Font.bold
+        --     , Font.size 20
+        --     , Font.center
+        --     ]
+        --     [ text <|
+        --         case motData of
+        --             Nothing ->
+        --                 "Keine Motivationsdaten gespeichert"
+        --             Just data ->
+        --                 if seriesContinued then
+        --                     if MotivationData.series data == 1 then
+        --                         "...Tag praktiziert!"
+        --                     else
+        --                         "...Tage durchgehend praktiziert! Super!"
+        --                 else if daysSinceLastSession - 1 == 1 then
+        --                     "...Tag ausgelassen..."
+        --                 else
+        --                     "...Tage ausgelassen... hm..."
+        --     ]
         , paragraph
             [ width fill
             , Font.bold
@@ -145,20 +168,45 @@ viewMotivationData today motData colorScheme =
             [ text <|
                 case motData of
                     Nothing ->
-                        "Keine Motivationsdaten gespeichert"
+                        ""
 
                     Just data ->
-                        if seriesContinued then
-                            if MotivationData.series data == 1 then
-                                "...Tag praktiziert!"
+                        MotivationData.streakFreezeDays data
+                            |> floor
+                            |> (\freezes ->
+                                    if daysSinceLastSession > 1 then
+                                        freezes - (daysSinceLastSession - 1)
 
-                            else
-                                "...Tage durchgehend praktiziert! Super!"
+                                    else
+                                        freezes
+                               )
+                            |> (\freezes ->
+                                    if freezes < 0 then
+                                        "0 Freezes übrig"
 
-                        else if daysSinceLastSession - 1 == 1 then
-                            "...Tag ausgelassen..."
+                                    else if freezes == 0 && daysSinceLastSession > 0 then
+                                        "Praktiziere noch heute, um Deinen Streak zu erhalten!"
 
-                        else
-                            "...Tage ausgelassen... hm..."
+                                    else
+                                        String.fromInt freezes ++ " Freezes übrig"
+                               )
+            ]
+        , paragraph
+            [ width fill
+
+            -- , Font.bold
+            -- , Font.size 20
+            , Font.center
+            ]
+            [ text "Freezes: "
+            , text <|
+                case motData of
+                    Nothing ->
+                        ""
+
+                    Just data ->
+                        String.fromFloat <| MotivationData.streakFreezeDays data
+            , text "; Tage seit letzter Sitzung: "
+            , text <| String.fromInt daysSinceLastSession
             ]
         ]
