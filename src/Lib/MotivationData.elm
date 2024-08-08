@@ -91,17 +91,19 @@ update results today motivationData =
                         daysSinceLastSession =
                             Date.diff Date.Days motData.lastSessionDate today
 
-                        remainingStreakFreezeDays =
+                        remainingStreakFreeze =
                             if daysSinceLastSession > 1 then
                                 -- Last session was not yesterday so we need to apply the freeze days
                                 motData.streakFreezeDays
                                     - (toFloat daysSinceLastSession - 1)
-                                    |> (\days ->
-                                            if days < 1 then
+                                    |> (\freezeDays ->
+                                            --TODO: Oder will ich nur dann von 0 starten, wenn der Streak gerissen war?
+                                            --      d.h. hier "freezeDays < 0"?
+                                            if freezeDays < 1 then
                                                 0
 
                                             else
-                                                days
+                                                freezeDays
                                        )
 
                             else
@@ -111,8 +113,8 @@ update results today motivationData =
                         MotivationData
                             { motData
                                 | streak =
-                                    -- if Date.diff Date.Days today motData.lastSessionDate < -1 then
-                                    if remainingStreakFreezeDays == 0 then
+                                    if daysSinceLastSession - floor motData.streakFreezeDays > 1 then
+                                        -- Begin a new streak since streak freeze doesn't cover all missed days
                                         1
 
                                     else if motData.lastSessionDate == today then
@@ -125,7 +127,7 @@ update results today motivationData =
                                 --TODO: Faktor konfigurierbar machen
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
-                                , streakFreezeDays = remainingStreakFreezeDays + 0.7
+                                , streakFreezeDays = remainingStreakFreeze + 0.7
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
