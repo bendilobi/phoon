@@ -91,15 +91,16 @@ update results today motivationData =
                         daysSinceLastSession =
                             Date.diff Date.Days motData.lastSessionDate today
 
+                        streakEnded =
+                            daysSinceLastSession - floor motData.streakFreezeDays > 1
+
                         remainingStreakFreeze =
                             if daysSinceLastSession > 1 then
                                 -- Last session was not yesterday so we need to apply the freeze days
                                 motData.streakFreezeDays
                                     - (toFloat daysSinceLastSession - 1)
                                     |> (\freezeDays ->
-                                            --TODO: Oder will ich nur dann von 0 starten, wenn der Streak gerissen war?
-                                            --      d.h. hier "freezeDays < 0"?
-                                            if freezeDays < 1 then
+                                            if streakEnded then
                                                 0
 
                                             else
@@ -113,7 +114,7 @@ update results today motivationData =
                         MotivationData
                             { motData
                                 | streak =
-                                    if daysSinceLastSession - floor motData.streakFreezeDays > 1 then
+                                    if streakEnded then
                                         -- Begin a new streak since streak freeze doesn't cover all missed days
                                         1
 
