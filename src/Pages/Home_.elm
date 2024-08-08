@@ -5,6 +5,7 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -43,12 +44,12 @@ toLayout model =
 
 
 type alias Model =
-    {}
+    { debugInfoHidden : Bool }
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( {}
+    ( { debugInfoHidden = True }
     , Effect.sendCmd <| Task.perform TodayIs Date.today
     )
 
@@ -59,6 +60,7 @@ init () =
 
 type Msg
     = TodayIs Date.Date
+    | DebugInfoToggled
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -67,6 +69,11 @@ update msg model =
         TodayIs date ->
             ( model
             , Effect.adjustToday date
+            )
+
+        DebugInfoToggled ->
+            ( { model | debugInfoHidden = not model.debugInfoHidden }
+            , Effect.none
             )
 
 
@@ -89,12 +96,12 @@ view shared model =
     , attributes =
         CS.primaryMotivation shared.colorScheme
     , element =
-        viewMotivationData shared.today shared.motivationData shared.colorScheme
+        viewMotivationData model shared.today shared.motivationData shared.colorScheme
     }
 
 
-viewMotivationData : Date.Date -> Maybe MotivationData -> ColorScheme -> Element msg
-viewMotivationData today motData colorScheme =
+viewMotivationData : Model -> Date.Date -> Maybe MotivationData -> ColorScheme -> Element Msg
+viewMotivationData model today motData colorScheme =
     let
         daysSinceLastSession =
             motData
@@ -164,6 +171,7 @@ viewMotivationData today motData colorScheme =
             , Font.bold
             , Font.size 20
             , Font.center
+            , Events.onClick DebugInfoToggled
             ]
             [ text <|
                 case motData of
@@ -197,6 +205,7 @@ viewMotivationData today motData colorScheme =
             -- , Font.bold
             -- , Font.size 20
             , Font.center
+            , transparent model.debugInfoHidden
             ]
             [ text "Freezes: "
             , text <|
