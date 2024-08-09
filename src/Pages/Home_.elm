@@ -11,7 +11,7 @@ import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading exposing (Trigger(..))
-import Maybe exposing (withDefault)
+import Maybe
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -189,10 +189,18 @@ viewMotivationData model today motData colorScheme =
                                         freezes
                                )
                             |> (\freezes ->
-                                    if freezes < 0 then
+                                    if not seriesContinued then
+                                        if daysSinceLastSession - 1 == 1 then
+                                            "Tag seit letzter Serie"
+
+                                        else
+                                            "Tage seit letzter Serie... Auf geht's!"
+
+                                    else if freezes < 0 then
                                         "0 Freezes übrig"
 
-                                    else if freezes == 0 && daysSinceLastSession > 0 then
+                                    else if freezes == 0 && daysSinceLastSession > 0 && MotivationData.series data > 1 then
+                                        -- Last freeze will be used up if no practice today
                                         "Praktiziere noch heute, um Deinen Streak zu erhalten!"
 
                                     else
