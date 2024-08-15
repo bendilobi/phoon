@@ -80,7 +80,7 @@ update results today motivationData =
                     Just <|
                         MotivationData
                             { streak = 1
-                            , streakFreezeDays = 0
+                            , streakFreezeDays = 0.7
                             , lastSessionDate = today
                             , meanRetentiontimes = [ mean ]
                             , maxRetention = maxTime
@@ -92,7 +92,7 @@ update results today motivationData =
                             Date.diff Date.Days motData.lastSessionDate today
 
                         streakEnded =
-                            daysSinceLastSession - floor motData.streakFreezeDays > 1
+                            (daysSinceLastSession - floor motData.streakFreezeDays) > 1
 
                         remainingStreakFreeze =
                             if daysSinceLastSession > 1 then

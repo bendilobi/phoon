@@ -110,7 +110,7 @@ viewMotivationData model today motData colorScheme =
                 |> Maybe.withDefault 0
 
         seriesContinued =
-            daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays motData) < 2
+            (daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays motData)) < 2
 
         seriesColor =
             if seriesContinued then
@@ -176,7 +176,7 @@ viewMotivationData model today motData colorScheme =
             [ text <|
                 case motData of
                     Nothing ->
-                        ""
+                        "Willkommen bei Zoff!!"
 
                     Just data ->
                         MotivationData.streakFreezeDays data
