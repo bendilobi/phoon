@@ -23,6 +23,7 @@ module Lib.ColorScheme exposing
     , primaryColors
     , primaryInformation
     , primaryMotivation
+    , primaryMotivationCopyColor
     , primaryPrepareSession
     , seriesBadColor
     , seriesGoodColor
@@ -247,6 +248,11 @@ interactInactive (ColorScheme colors) =
     , Font.color colors.interactInactiveCopy
     , Border.color colors.interactInactiveDarker
     ]
+
+
+primaryMotivationCopyColor : ColorScheme -> Color
+primaryMotivationCopyColor (ColorScheme colors) =
+    colors.primaryMotivationCopy
 
 
 phaseSessionStart : ColorScheme -> List (Attribute msg)

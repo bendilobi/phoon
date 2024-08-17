@@ -7,10 +7,12 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
+import FeatherIcons exposing (alignCenter)
 import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading exposing (Trigger(..))
+import Lib.Utils as Utils
 import Maybe
 import Page exposing (Page)
 import Route exposing (Route)
@@ -96,12 +98,12 @@ view shared model =
     , attributes =
         CS.primaryMotivation shared.colorScheme
     , element =
-        viewMotivationData model shared.today shared.motivationData shared.colorScheme
+        viewMotivationData model shared.deviceInfo shared.today shared.motivationData shared.colorScheme
     }
 
 
-viewMotivationData : Model -> Date.Date -> Maybe MotivationData -> ColorScheme -> Element Msg
-viewMotivationData model today motData colorScheme =
+viewMotivationData : Model -> Utils.Device -> Date.Date -> Maybe MotivationData -> ColorScheme -> Element Msg
+viewMotivationData model deviceInfo today motData colorScheme =
     let
         daysSinceLastSession =
             motData
@@ -112,17 +114,16 @@ viewMotivationData model today motData colorScheme =
         seriesContinued =
             (daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays motData)) < 2
 
-        seriesColor =
-            if seriesContinued then
-                CS.seriesGoodColor colorScheme
-
-            else
-                CS.seriesBadColor colorScheme
+        -- seriesColor =
+        --     if seriesContinued then
+        --         CS.seriesGoodColor colorScheme
+        --     else
+        --         CS.seriesBadColor colorScheme
     in
     column
         [ width fill
         , padding 20
-        , spacing 70
+        , spacing 20
         , centerY
         ]
         [ case motData of
@@ -132,18 +133,76 @@ viewMotivationData model today motData colorScheme =
             Just data ->
                 el
                     [ width fill
-                    , Font.center
-                    , Font.size 70
-                    , Font.color seriesColor
-                    , Font.bold
+                    , Events.onClick DebugInfoToggled
                     ]
                 <|
-                    text <|
-                        if seriesContinued then
-                            String.fromInt <| MotivationData.series data
+                    --     el
+                    --         [ width <| px 200
+                    --         , height <| px 200
+                    --         , Border.rounded 100
+                    --         , Border.color <| rgb 1 1 1
+                    --         , Border.width 7
+                    --         , centerX
+                    --         ]
+                    --     <|
+                    --         el
+                    --             [ width <| px 160
+                    --             , height <| px 160
+                    --             , Font.center
+                    --             , Font.size 70
+                    --             , Font.color seriesColor
+                    --             , Font.bold
+                    --             , Border.rounded 80
+                    --             , Border.color <| rgb 1 1 1
+                    --             , Border.width 7
+                    --             , centerX
+                    --             , centerY
+                    --             ]
+                    --         <|
+                    --             el [ centerX, centerY ] <|
+                    --                 text <|
+                    --                     if seriesContinued then
+                    --                         String.fromInt <| MotivationData.series data
+                    --                     else
+                    --                         String.fromInt <| daysSinceLastSession - 1
+                    if seriesContinued then
+                        let
+                            remainingFreezes =
+                                MotivationData.streakFreezeDays data
+                                    |> floor
+                                    |> (\freezes ->
+                                            if daysSinceLastSession > 1 then
+                                                freezes - (daysSinceLastSession - 1)
 
-                        else
-                            String.fromInt <| daysSinceLastSession - 1
+                                            else
+                                                freezes
+                                       )
+
+                            window =
+                                deviceInfo.window
+
+                            streakWidgetSize =
+                                min window.width window.height
+                                    * 0.8
+                                    |> round
+                        in
+                        viewStreak colorScheme streakWidgetSize remainingFreezes <| MotivationData.series data
+                        -- viewStreak colorScheme streakWidgetSize 4 35
+
+                    else
+                        el
+                            [ centerX
+                            , centerY
+                            , Font.color <| CS.seriesBadColor colorScheme
+                            , Font.size 70
+                            , Font.bold
+                            , paddingXY 0 50
+                            ]
+                        <|
+                            text <|
+                                String.fromInt <|
+                                    daysSinceLastSession
+                                        - 1
 
         -- , paragraph
         --     [ width fill
@@ -173,39 +232,39 @@ viewMotivationData model today motData colorScheme =
             , Font.center
             , Events.onClick DebugInfoToggled
             ]
-            [ text <|
-                case motData of
-                    Nothing ->
-                        "Willkommen bei Zoff!!"
+            [ case motData of
+                Nothing ->
+                    text <| "Willkommen bei Zoff!!"
 
-                    Just data ->
-                        MotivationData.streakFreezeDays data
-                            |> floor
-                            |> (\freezes ->
-                                    if daysSinceLastSession > 1 then
-                                        freezes - (daysSinceLastSession - 1)
+                Just data ->
+                    MotivationData.streakFreezeDays data
+                        |> floor
+                        |> (\freezes ->
+                                if daysSinceLastSession > 1 then
+                                    freezes - (daysSinceLastSession - 1)
 
-                                    else
-                                        freezes
-                               )
-                            |> (\freezes ->
-                                    if not seriesContinued then
-                                        if daysSinceLastSession - 1 == 1 then
-                                            "Tag seit letzter Serie"
-
-                                        else
-                                            "Tage seit letzter Serie... Auf geht's!"
-
-                                    else if freezes < 0 then
-                                        "0 Freezes übrig"
-
-                                    else if freezes == 0 && daysSinceLastSession > 0 && MotivationData.series data > 1 then
-                                        -- Last freeze will be used up if no practice today
-                                        "Praktiziere noch heute, um Deinen Streak zu erhalten!"
+                                else
+                                    freezes
+                           )
+                        |> (\freezes ->
+                                if not seriesContinued then
+                                    if daysSinceLastSession - 1 == 1 then
+                                        text <| "Tag seit letzter Serie"
 
                                     else
-                                        String.fromInt freezes ++ " Freezes übrig"
-                               )
+                                        text <| "Tage seit letzter Serie... Auf geht's!"
+
+                                else if freezes < 0 then
+                                    text <| "0 Freezes übrig"
+
+                                else if freezes == 0 && daysSinceLastSession > 0 && MotivationData.series data > 1 then
+                                    -- Last freeze will be used up if no practice today
+                                    text <| "Praktiziere noch heute, um Deinen Streak zu erhalten!"
+
+                                else
+                                    -- String.fromInt freezes ++ " Freezes übrig"
+                                    none
+                           )
             ]
         , paragraph
             [ width fill
@@ -227,3 +286,40 @@ viewMotivationData model today motData colorScheme =
             , text <| String.fromInt daysSinceLastSession
             ]
         ]
+
+
+viewStreak : ColorScheme -> Int -> Int -> Int -> Element msg
+viewStreak colorScheme size freezes streak =
+    let
+        ringSizes =
+            List.foldl (\ringNumber sizes -> size - (ringNumber * 20) :: sizes) [] <|
+                List.range 0 (freezes - 1)
+
+        viewRing : Int -> Element msg -> Element msg
+        viewRing ringSize content =
+            el
+                [ centerX
+                , centerY
+                , width <| px ringSize
+                , height <| px ringSize
+                , Border.rounded <| ringSize // 2
+                , Border.color <| CS.primaryMotivationCopyColor colorScheme
+                , Border.width 3
+                ]
+                content
+
+        viewStreakNumber =
+            el
+                [ centerX
+                , centerY
+
+                --TODO: Berechnen aus Freezes-Anzahl, d.h. proportional zur Menge der Ringe?
+                , Font.size 70
+                , Font.bold
+                , Font.color <| CS.seriesGoodColor colorScheme
+                ]
+            <|
+                text <|
+                    String.fromInt streak
+    in
+    List.foldl viewRing viewStreakNumber ringSizes

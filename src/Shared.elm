@@ -35,12 +35,17 @@ import Task
 import Time
 
 
-showDebugButtons =
-    False
+adjustBeforeRelease =
+    -- Make version string in version.json identical!!!
+    ( "0.6.430", False )
 
 
 appVersion =
-    "0.6.426"
+    Tuple.first adjustBeforeRelease
+
+
+showDebugButtons =
+    Tuple.second adjustBeforeRelease
 
 
 
