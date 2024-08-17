@@ -128,7 +128,13 @@ update results today motivationData =
                                 --TODO: Faktor konfigurierbar machen
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
-                                , streakFreezeDays = remainingStreakFreeze + 0.7
+                                , streakFreezeDays =
+                                    if remainingStreakFreeze > 8.2 then
+                                        -- allow no more than 8 streak freezes
+                                        8.9
+
+                                    else
+                                        remainingStreakFreeze + 0.7
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
