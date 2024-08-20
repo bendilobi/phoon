@@ -16,6 +16,7 @@ import Json.Decode.Pipeline exposing (optional, required)
 import Json.Encode
 import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
+import Round
 
 
 type MotivationData
@@ -47,8 +48,8 @@ create streak streakFreezeD lastSessDate meanRetentiontimes maxRet =
 -- MODIFICATION
 
 
-update : SessionResults -> Date.Date -> Maybe MotivationData -> Maybe MotivationData
-update results today motivationData =
+update : SessionResults -> Date.Date -> Int -> Maybe MotivationData -> Maybe MotivationData
+update results today practiceFrequencyTarget motivationData =
     let
         meanRetTime : Maybe Milliseconds
         meanRetTime =
@@ -117,24 +118,37 @@ update results today motivationData =
                                     if streakEnded then
                                         -- Begin a new streak since streak freeze doesn't cover all missed days
                                         1
-
-                                    else if motData.lastSessionDate == today then
-                                        --TODO: Trotzdem hochzählen, d.h. Streak ist Übungen, nicht Tage
-                                        motData.streak
+                                        -- else if motData.lastSessionDate == today then
+                                        --     motData.streak
 
                                     else
                                         motData.streak + 1
 
-                                --TODO: Faktor konfigurierbar machen
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
                                 , streakFreezeDays =
-                                    if remainingStreakFreeze > 8.2 then
+                                    let
+                                        target =
+                                            practiceFrequencyTarget |> toFloat
+
+                                        freezeIncrement =
+                                            -- target is max 7 (as per the upper bound of the IntCrementer
+                                            -- used in the settings). More than once per day doesn't work with
+                                            -- the current using of one freeze per day...
+                                            ((7 - target) / target)
+                                                |> Round.ceilingNum 2
+                                    in
+                                    -- if remainingStreakFreeze > 8.2 then
+                                    --     -- allow no more than 8 streak freezes
+                                    --     8.9
+                                    -- else
+                                    --     remainingStreakFreeze + 0.7
+                                    if remainingStreakFreeze >= 9 - freezeIncrement then
                                         -- allow no more than 8 streak freezes
-                                        8.9
+                                        8.99
 
                                     else
-                                        remainingStreakFreeze + 0.7
+                                        remainingStreakFreeze + freezeIncrement
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention

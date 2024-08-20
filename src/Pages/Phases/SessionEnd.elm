@@ -66,7 +66,11 @@ init shared () =
     , Effect.batch
         [ Effect.playSound Session.EndSound
         , Effect.setMotivationData <|
-            MotivationData.update shared.results shared.today shared.motivationData
+            MotivationData.update
+                shared.results
+                shared.today
+                shared.sessionSettings.practiceFrequencyTarget
+                shared.motivationData
         ]
     )
 

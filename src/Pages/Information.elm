@@ -70,6 +70,7 @@ type alias Model =
     , resetItemStatusButton : Button.Model
     , cycleCrementer : IntCrementer.Model
     , relaxRetDurCrementer : IntCrementer.Model
+    , practiceFreqCrementer : IntCrementer.Model
     , copyButton : Button.Model
     , pasteButton : Button.Model
     , updateButton : Button.Model
@@ -96,6 +97,7 @@ init shared () =
       , resetItemStatusButton = Button.init
       , cycleCrementer = IntCrementer.init
       , relaxRetDurCrementer = IntCrementer.init
+      , practiceFreqCrementer = IntCrementer.init
       , copyButton = Button.init
       , pasteButton = Button.init
       , updateButton = Button.init
@@ -125,6 +127,7 @@ type SettingsItem
     | BreathingSpeed
     | BreathCount
     | RelaxRetDuration
+    | PracticeFrequencyTarget
     | AppControls
 
 
@@ -136,6 +139,7 @@ type Msg
     | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int IntCrementer.Model
     | DefaultRelaxRetDurationChanged Int IntCrementer.Model
+    | PracticeFreqTargetChanged Int IntCrementer.Model
     | DefaultBreathingSpeedChanged BreathingSpeed
     | DefaultBreathCountChanged BreathCount
     | SettingsItemShown SettingsItem
@@ -226,6 +230,19 @@ update shared msg model =
             ( { model | relaxRetDurCrementer = newState }
             , if IntCrementer.wasTriggered newState then
                 Effect.updateSessionSettings { settings | relaxRetDuration = Millis.fromSeconds seconds }
+
+              else
+                Effect.none
+            )
+
+        PracticeFreqTargetChanged frequency newState ->
+            let
+                settings =
+                    shared.sessionSettings
+            in
+            ( { model | practiceFreqCrementer = newState }
+            , if IntCrementer.wasTriggered newState then
+                Effect.updateSessionSettings { settings | practiceFrequencyTarget = frequency }
 
               else
                 Effect.none
@@ -798,6 +815,71 @@ viewSettings shared model pagePadding =
                 else
                     " Stunden"
             ]
+        , el [ height <| px 15 ] none
+
+        --TODO: Eigene Überschrift? Dann muss "Zurücksetzen" aber unabhängig vom obigen möglich sein...
+        -- , el
+        --     [ Font.bold
+        --     , Font.size 20
+        --     , Font.color <| CS.guideColor shared.colorScheme
+        --     ]
+        --   <|
+        --     text "Häufigkeit vereinbaren"
+        , column settingsAttrs
+            --TODO: Merken (in MotivationData), mit welcher Einstellung der Streak begonnen
+            --      wurde und dann das als Untergrenze hier verwenden
+            --      Wenn Untergrenze erreicht => Dialog "Soll Streak beendet werden?"
+            [ if model.settingsItemShown == PracticeFrequencyTarget then
+                el lastItemAttrs <|
+                    column [ width fill, spacing 20 ]
+                        [ activeItemLabel "Übungsziel"
+                        , IntCrementer.new
+                            { label =
+                                \n ->
+                                    paragraph []
+                                        [ el
+                                            [ Font.bold
+                                            , Font.color <| CS.guideColor shared.colorScheme
+                                            ]
+                                          <|
+                                            text <|
+                                                String.fromInt n
+                                        , text " mal pro Woche"
+                                        ]
+                            , onCrement = PracticeFreqTargetChanged
+                            , model = model.practiceFreqCrementer
+                            }
+                            |> IntCrementer.withMin 1
+                            -- Max 7 because more than once per day doesn't work with using one freeze
+                            -- per day. If users wish to have, say, a target of two practice sessions
+                            -- per day, freezes would have to be valid for half a day each...
+                            |> IntCrementer.withMax 7
+                            |> IntCrementer.withLightColor
+                            |> IntCrementer.view shared.colorScheme
+                                shared.sessionSettings.practiceFrequencyTarget
+                        ]
+
+              else
+                viewSettingsItem
+                    { label = "Übungsziel"
+                    , value =
+                        (shared.sessionSettings.practiceFrequencyTarget
+                            |> String.fromInt
+                        )
+                            ++ " mal pro Woche"
+                    , attributes = lastItemAttrs
+                    , item = PracticeFrequencyTarget
+                    }
+                    shared.colorScheme
+            ]
+        , paragraph
+            --TODO: Styling mit dem obigen zusammenführen ("Dauer der Atemphase"...)
+            [ Font.size 13
+            , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
+            ]
+            [ text "Das Übungsziel bestimmt, wie häufig \"Schutzringe\" für die Fortsetzung der Serie hinzukommen. \"4 mal pro Woche\" bedeutet beispielsweise, dass für vier Übungen drei Ringe hinzukommen. Es können also drei von sieben Tagen freigenommen werden." ]
+
+        --TODO: Erklärenden Text zum Übungsziel anzeigen
         , if model.settingsItemShown == AppControls then
             --TODO: Was, wenn noch keine Motivationsdaten vorhanden?
             --      Buttons deaktivieren oder gar nicht anzeigen?

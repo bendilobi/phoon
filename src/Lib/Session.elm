@@ -34,6 +34,7 @@ module Lib.Session exposing
     )
 
 import Json.Decode
+import Json.Decode.Pipeline exposing (optional)
 import Json.Encode
 import Lib.Millis as Millis exposing (Milliseconds)
 import Route.Path
@@ -168,11 +169,16 @@ type Session
         }
 
 
+
+--TODO: Settings in ein eigenes Modul auslagern?
+
+
 type alias Settings =
     { cycles : Int
     , relaxRetDuration : Milliseconds
     , breathingSpeed : BreathingSpeed
     , breathCount : BreathCount
+    , practiceFrequencyTarget : Int
     }
 
 
@@ -188,12 +194,23 @@ new props =
         }
 
 
+createSettings : Int -> Milliseconds -> BreathingSpeed -> BreathCount -> Int -> Settings
+createSettings cycles relaxRetDur breathingSpeed breathCnt practiceFreqTarget =
+    { cycles = cycles
+    , relaxRetDuration = relaxRetDur
+    , breathingSpeed = breathingSpeed
+    , breathCount = breathCnt
+    , practiceFrequencyTarget = practiceFreqTarget
+    }
+
+
 defaultSettings : Settings
 defaultSettings =
     { cycles = 3
     , relaxRetDuration = Millis.fromSeconds 15
     , breathingSpeed = Medium
     , breathCount = Thirty
+    , practiceFrequencyTarget = 4
     }
 
 
@@ -392,12 +409,14 @@ fieldnames :
     , relaxRetDuration : String
     , breathingSpeed : String
     , breathCount : String
+    , practiceFrequencyTarget : String
     }
 fieldnames =
     { cycles = "cycles"
     , relaxRetDuration = "relaxRetDur"
     , breathingSpeed = "breathSpeed"
     , breathCount = "breathCount"
+    , practiceFrequencyTarget = "practiceFreqTarget"
     }
 
 
@@ -415,6 +434,7 @@ settingsEncoder settings =
         , ( fieldnames.relaxRetDuration, Json.Encode.int (Millis.toSeconds settings.relaxRetDuration) )
         , ( fieldnames.breathingSpeed, Json.Encode.string <| breathingSpeedToString settings.breathingSpeed )
         , ( fieldnames.breathCount, Json.Encode.int <| breathCountInt settings.breathCount )
+        , ( fieldnames.practiceFrequencyTarget, Json.Encode.int settings.practiceFrequencyTarget )
         ]
 
 
@@ -501,9 +521,19 @@ relaxRetDecoder =
 
 settingsDecoder : Json.Decode.Decoder Settings
 settingsDecoder =
-    Json.Decode.map4
-        Settings
-        (Json.Decode.field fieldnames.cycles Json.Decode.int)
-        (Json.Decode.field fieldnames.relaxRetDuration relaxRetDecoder)
-        (Json.Decode.field fieldnames.breathingSpeed breathingSpeedDecoder)
-        (Json.Decode.field fieldnames.breathCount breathCountDecoder)
+    let
+        defaults =
+            defaultSettings
+    in
+    -- Json.Decode.map4
+    --     Settings
+    --     (Json.Decode.field fieldnames.cycles Json.Decode.int)
+    --     (Json.Decode.field fieldnames.relaxRetDuration relaxRetDecoder)
+    --     (Json.Decode.field fieldnames.breathingSpeed breathingSpeedDecoder)
+    --     (Json.Decode.field fieldnames.breathCount breathCountDecoder)
+    Json.Decode.succeed createSettings
+        |> optional fieldnames.cycles Json.Decode.int defaults.cycles
+        |> optional fieldnames.relaxRetDuration relaxRetDecoder defaults.relaxRetDuration
+        |> optional fieldnames.breathingSpeed breathingSpeedDecoder defaults.breathingSpeed
+        |> optional fieldnames.breathCount breathCountDecoder defaults.breathCount
+        |> optional fieldnames.practiceFrequencyTarget Json.Decode.int defaults.practiceFrequencyTarget
