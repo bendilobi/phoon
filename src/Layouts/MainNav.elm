@@ -295,7 +295,7 @@ viewNavBar shared route =
     row
         ([ width fill
          , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
-         , paddingEach { top = 4, left = 0, right = 0, bottom = 35 }
+         , paddingEach { top = 5, left = 0, right = 0, bottom = 35 }
          , spaceEvenly
          ]
             ++ CS.navbar shared.colorScheme
@@ -327,8 +327,8 @@ viewNavButton colorScheme route label icon path =
         )
     <|
         column
-            [ Font.size 11
-            , spacing 4
+            [ Font.size 10
+            , spacing 5
             , Font.semiBold
             , pointer
             , Events.onClick <| NavButtonClicked path
@@ -336,6 +336,6 @@ viewNavButton colorScheme route label icon path =
             [ el [ centerX ] <|
                 html <|
                     FeatherIcons.toHtml [] <|
-                        FeatherIcons.withSize 29 icon
+                        FeatherIcons.withSize 27 icon
             , el [ centerX ] <| text label
             ]
