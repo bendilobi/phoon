@@ -202,7 +202,6 @@ viewMotivationData model deviceInfo today motData colorScheme =
                             text <|
                                 String.fromInt <|
                                     daysSinceLastSession
-                                        - 1
 
         -- , paragraph
         --     [ width fill
@@ -249,10 +248,11 @@ viewMotivationData model deviceInfo today motData colorScheme =
                         |> (\freezes ->
                                 if not seriesContinued then
                                     if daysSinceLastSession - 1 == 1 then
-                                        text <| "Tag seit letzter Serie"
+                                        --TODO: Das gibts jetzt eigentlich nicht mehr, oder?
+                                        text <| "Tag seit letzter Übung"
 
                                     else
-                                        text <| "Tage seit letzter Serie... Auf geht's!"
+                                        text <| "Tage seit letzter Übung... Auf geht's!"
 
                                 else if freezes < 0 then
                                     text <| "0 Freezes übrig"

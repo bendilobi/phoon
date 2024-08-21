@@ -422,11 +422,17 @@ view shared model =
 
 viewIntroduction : Shared.Model -> Model -> Element Msg
 viewIntroduction shared model =
-    column [ width fill, spacing 10, Font.center ]
+    column
+        [ width fill
+        , spacing 15
+
+        -- , Font.center
+        ]
         [ paragraph
-            [ Font.size 25
+            [ Font.size 23
             , Font.bold
             , Font.color <| CS.guideColor shared.colorScheme
+            , Font.center
             ]
             [ text "Zoff - Wim Hof Atmung mit dem Hauch von Zen" ]
         , paragraph [] [ text """
@@ -725,6 +731,7 @@ viewSettings shared model pagePadding =
           paragraph
             [ Font.size 13
             , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
+            , Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
             ]
             [ text "Dauer der Atemphase: "
             , el
@@ -876,6 +883,7 @@ viewSettings shared model pagePadding =
             --TODO: Styling mit dem obigen zusammenführen ("Dauer der Atemphase"...)
             [ Font.size 13
             , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
+            , Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
             ]
             [ text "Das Übungsziel bestimmt, wie häufig \"Schutzringe\" für die Fortsetzung der Serie hinzukommen. \"4 mal pro Woche\" bedeutet beispielsweise, dass für vier Übungen drei Ringe hinzukommen. Es können also drei von sieben Tagen freigenommen werden." ]
 
