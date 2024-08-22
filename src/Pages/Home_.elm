@@ -186,8 +186,13 @@ viewMotivationData model deviceInfo today motData colorScheme =
                                     * 0.8
                                     |> round
                         in
-                        viewStreak colorScheme streakWidgetSize remainingFreezes <| MotivationData.series data
-                        -- viewStreak colorScheme streakWidgetSize 4 35
+                        viewStreak
+                            colorScheme
+                            streakWidgetSize
+                            remainingFreezes
+                            (daysSinceLastSession > 0)
+                        <|
+                            MotivationData.series data
 
                     else
                         el
@@ -288,8 +293,8 @@ viewMotivationData model deviceInfo today motData colorScheme =
         ]
 
 
-viewStreak : ColorScheme -> Int -> Int -> Int -> Element msg
-viewStreak colorScheme size freezes streak =
+viewStreak : ColorScheme -> Int -> Int -> Bool -> Int -> Element msg
+viewStreak colorScheme size freezes freezeInDanger streak =
     let
         ringSizes =
             List.foldl (\ringNumber sizes -> size - (ringNumber * 20) :: sizes) [] <|
@@ -303,8 +308,23 @@ viewStreak colorScheme size freezes streak =
                 , width <| px ringSize
                 , height <| px ringSize
                 , Border.rounded <| ringSize // 2
-                , Border.color <| CS.primaryMotivationCopyColor colorScheme
-                , Border.width 3
+                , Border.color <|
+                    -- if ringSize == size && freezeInDanger then
+                    --     rgb255 167 170 189
+                    --     -- interactInactive
+                    -- else
+                    CS.primaryMotivationCopyColor colorScheme
+                , Border.width <|
+                    if ringSize == size && freezeInDanger then
+                        1
+
+                    else
+                        3
+
+                -- , if ringSize == size && freezeInDanger then
+                --     Border.dashed
+                --   else
+                --     Border.solid
                 ]
                 content
 

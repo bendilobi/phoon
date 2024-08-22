@@ -245,7 +245,8 @@ viewHeader headerText =
 
          --  , padding 10
          , paddingEach { bottom = 10, top = 0, left = 0, right = 0 }
-         , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+
+         --  , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
          ]
             ++ CS.primary
         )

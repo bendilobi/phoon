@@ -1,6 +1,7 @@
 module Pages.Information exposing (Model, Msg, page)
 
 import Api
+import Browser.Dom
 import Browser.Events
 import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
