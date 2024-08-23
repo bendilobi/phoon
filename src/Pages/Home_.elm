@@ -113,12 +113,6 @@ viewMotivationData model deviceInfo today motData colorScheme =
 
         seriesContinued =
             (daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays motData)) < 2
-
-        -- seriesColor =
-        --     if seriesContinued then
-        --         CS.seriesGoodColor colorScheme
-        --     else
-        --         CS.seriesBadColor colorScheme
     in
     column
         [ width fill
@@ -136,35 +130,6 @@ viewMotivationData model deviceInfo today motData colorScheme =
                     , Events.onClick DebugInfoToggled
                     ]
                 <|
-                    --     el
-                    --         [ width <| px 200
-                    --         , height <| px 200
-                    --         , Border.rounded 100
-                    --         , Border.color <| rgb 1 1 1
-                    --         , Border.width 7
-                    --         , centerX
-                    --         ]
-                    --     <|
-                    --         el
-                    --             [ width <| px 160
-                    --             , height <| px 160
-                    --             , Font.center
-                    --             , Font.size 70
-                    --             , Font.color seriesColor
-                    --             , Font.bold
-                    --             , Border.rounded 80
-                    --             , Border.color <| rgb 1 1 1
-                    --             , Border.width 7
-                    --             , centerX
-                    --             , centerY
-                    --             ]
-                    --         <|
-                    --             el [ centerX, centerY ] <|
-                    --                 text <|
-                    --                     if seriesContinued then
-                    --                         String.fromInt <| MotivationData.series data
-                    --                     else
-                    --                         String.fromInt <| daysSinceLastSession - 1
                     if seriesContinued then
                         let
                             remainingFreezes =
@@ -309,22 +274,14 @@ viewStreak colorScheme size freezes freezeInDanger streak =
                 , height <| px ringSize
                 , Border.rounded <| ringSize // 2
                 , Border.color <|
-                    -- if ringSize == size && freezeInDanger then
-                    --     rgb255 167 170 189
-                    --     -- interactInactive
-                    -- else
                     CS.primaryMotivationCopyColor colorScheme
                 , Border.width <|
-                    if ringSize == size && freezeInDanger then
+                    if ringSize == (List.head ringSizes |> Maybe.withDefault 0) && freezeInDanger then
+                        --TODO: In Kommentar erklären, warum inneren Ring nicht äußeren
                         1
 
                     else
                         3
-
-                -- , if ringSize == size && freezeInDanger then
-                --     Border.dashed
-                --   else
-                --     Border.solid
                 ]
                 content
 
