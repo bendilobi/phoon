@@ -1,5 +1,6 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
+import Components.Dialog as Dialog
 import Date
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -29,15 +30,52 @@ page shared route =
         , subscriptions = subscriptions
         , view = view shared
         }
-        |> Page.withLayout toLayout
+        |> Page.withLayout (toLayout shared)
 
 
-toLayout : Model -> Layouts.Layout Msg
-toLayout model =
+toLayout : Shared.Model -> Model -> Layouts.Layout Msg
+toLayout shared model =
     Layouts.MainNav
         { header = Just "Motivation finden"
         , enableScrolling = False
         , fadeOut = NoFade
+        , modalDialog =
+            if model.debugInfoHidden then
+                Nothing
+
+            else
+                let
+                    daysSinceLastSession =
+                        shared.motivationData
+                            |> Maybe.map MotivationData.lastSessionDate
+                            |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
+                            |> Maybe.withDefault 0
+                in
+                Just
+                    (Dialog.new
+                        { header = "Infos zur Serie:"
+                        , message =
+                            paragraph []
+                                [ text "Freezes: "
+                                , text <|
+                                    case shared.motivationData of
+                                        Nothing ->
+                                            ""
+
+                                        Just data ->
+                                            String.fromFloat <| MotivationData.streakFreezeDays data
+                                , text "; Tage seit letzter Sitzung: "
+                                , text <| String.fromInt daysSinceLastSession
+                                ]
+                        , choices =
+                            [ Dialog.choice
+                                { label = "Ok"
+                                , onChoose = DebugInfoToggled
+                                }
+                            ]
+                        }
+                        |> Dialog.view shared.colorScheme
+                    )
         }
 
 
@@ -218,8 +256,7 @@ viewMotivationData model deviceInfo today motData colorScheme =
                         |> (\freezes ->
                                 if not seriesContinued then
                                     if daysSinceLastSession - 1 == 1 then
-                                        --TODO: Das gibts jetzt eigentlich nicht mehr, oder?
-                                        text <| "Tag seit letzter Übung"
+                                        text <| "Tage seit letzter Übung"
 
                                     else
                                         text <| "Tage seit letzter Übung... Auf geht's!"
@@ -236,25 +273,24 @@ viewMotivationData model deviceInfo today motData colorScheme =
                                     none
                            )
             ]
-        , paragraph
-            [ width fill
 
-            -- , Font.bold
-            -- , Font.size 20
-            , Font.center
-            , transparent model.debugInfoHidden
-            ]
-            [ text "Freezes: "
-            , text <|
-                case motData of
-                    Nothing ->
-                        ""
-
-                    Just data ->
-                        String.fromFloat <| MotivationData.streakFreezeDays data
-            , text "; Tage seit letzter Sitzung: "
-            , text <| String.fromInt daysSinceLastSession
-            ]
+        -- , paragraph
+        --     [ width fill
+        --     -- , Font.bold
+        --     -- , Font.size 20
+        --     , Font.center
+        --     , transparent model.debugInfoHidden
+        --     ]
+        --     [ text "Freezes: "
+        --     , text <|
+        --         case motData of
+        --             Nothing ->
+        --                 ""
+        --             Just data ->
+        --                 String.fromFloat <| MotivationData.streakFreezeDays data
+        --     , text "; Tage seit letzter Sitzung: "
+        --     , text <| String.fromInt daysSinceLastSession
+        --     ]
         ]
 
 

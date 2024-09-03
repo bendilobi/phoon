@@ -40,6 +40,7 @@ toLayout model =
         { header = Just "Sitzung vorbereiten"
         , enableScrolling = False
         , fadeOut = model.fadeOut
+        , modalDialog = Nothing
         }
 
 

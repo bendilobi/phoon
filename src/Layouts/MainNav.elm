@@ -1,4 +1,6 @@
-module Layouts.MainNav exposing (Model, Msg, Props, layout)
+module Layouts.MainNav exposing (Model, Msg, Props, layout, map)
+
+--TODO: Will ich nicht eigentlich Button statt AnimatedButton nehmen?
 
 import Browser.Events
 import Components.AnimatedButton as Button
@@ -24,14 +26,15 @@ import Time
 import View exposing (View)
 
 
-type alias Props =
+type alias Props contentMsg =
     { header : Maybe String
     , enableScrolling : Bool
     , fadeOut : Fading.Trigger
+    , modalDialog : Maybe (Element contentMsg)
     }
 
 
-layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
+layout : Props contentMsg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
 layout props shared route =
     Layout.new
         { init = init shared
@@ -39,6 +42,17 @@ layout props shared route =
         , view = view props shared route
         , subscriptions = subscriptions
         }
+
+
+map : (msg1 -> msg2) -> Props msg1 -> Props msg2
+map fn props =
+    { header = props.header
+    , enableScrolling = props.enableScrolling
+    , fadeOut = props.fadeOut
+    , modalDialog =
+        props.modalDialog
+            |> Maybe.map (E.map fn)
+    }
 
 
 
@@ -153,7 +167,7 @@ subscriptions model =
 -- VIEW
 
 
-view : Props -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view : Props contentMsg -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared route { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
     , attributes = [ Font.size 17 ]
@@ -178,27 +192,44 @@ view props shared route { toContentMsg, model, content } =
                         ++ [ width fill
                            , height fill
                            , inFront <|
-                                case shared.updateState of
-                                    JustUpdated ->
-                                        viewUpdateResult shared
-                                            model
-                                            { color = CS.successColor shared.colorScheme
-                                            , message = "Update auf Version " ++ Shared.appVersion ++ " erfolgreich!"
-                                            , label = "Fertig"
-                                            }
-                                            |> E.map toContentMsg
+                                case props.modalDialog of
+                                    Just dialog ->
+                                        el
+                                            [ width fill
+                                            , height fill
+                                            , inFront <| dialog
+                                            ]
+                                        <|
+                                            el
+                                                [ width fill
+                                                , height fill
+                                                , alpha 0.3
+                                                , BG.color <| rgb 0 0 0
+                                                ]
+                                                none
 
-                                    UpdateFailed errorMessage ->
-                                        viewUpdateResult shared
-                                            model
-                                            { color = CS.actionNeededColor shared.colorScheme
-                                            , message = errorMessage
-                                            , label = "Später versuchen"
-                                            }
-                                            |> E.map toContentMsg
+                                    Nothing ->
+                                        case shared.updateState of
+                                            JustUpdated ->
+                                                viewUpdateResult shared
+                                                    model
+                                                    { color = CS.successColor shared.colorScheme
+                                                    , message = "Update auf Version " ++ Shared.appVersion ++ " erfolgreich!"
+                                                    , label = "Fertig"
+                                                    }
+                                                    |> E.map toContentMsg
 
-                                    _ ->
-                                        Fading.fadeOverlay props.fadeOut model.fadeState
+                                            UpdateFailed errorMessage ->
+                                                viewUpdateResult shared
+                                                    model
+                                                    { color = CS.actionNeededColor shared.colorScheme
+                                                    , message = errorMessage
+                                                    , label = "Später versuchen"
+                                                    }
+                                                    |> E.map toContentMsg
+
+                                            _ ->
+                                                Fading.fadeOverlay props.fadeOut model.fadeState
                            ]
                     )
                     [ case props.header of

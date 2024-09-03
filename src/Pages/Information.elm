@@ -51,6 +51,7 @@ toLayout model =
         { header = Just "Übung optimieren"
         , enableScrolling = True
         , fadeOut = model.fadeOut
+        , modalDialog = Nothing
         }
 
 
