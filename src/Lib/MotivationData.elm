@@ -23,6 +23,7 @@ type MotivationData
     = MotivationData
         { streak : Int
         , streakFreezeDays : Float
+        , streakInitialTarget : Int
         , lastSessionDate : Date.Date
         , meanRetentiontimes : List Milliseconds
         , maxRetention : Milliseconds
@@ -33,11 +34,12 @@ type MotivationData
 -- CREATION
 
 
-create : Int -> Float -> Date.Date -> List Milliseconds -> Milliseconds -> MotivationData
-create streak streakFreezeD lastSessDate meanRetentiontimes maxRet =
+create : Int -> Float -> Int -> Date.Date -> List Milliseconds -> Milliseconds -> MotivationData
+create streak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes maxRet =
     MotivationData
         { streak = streak
         , streakFreezeDays = streakFreezeD
+        , streakInitialTarget = streakInitTarget
         , lastSessionDate = lastSessDate
         , meanRetentiontimes = meanRetentiontimes
         , maxRetention = maxRet
@@ -62,6 +64,16 @@ update results today practiceFrequencyTarget motivationData =
                 |> Maybe.andThen List.maximum
                 |> Maybe.withDefault 0
                 |> Millis.fromSeconds
+
+        target =
+            practiceFrequencyTarget |> toFloat
+
+        freezeIncrement =
+            -- target is max 7 (as per the upper bound of the IntCrementer
+            -- used in the settings). More than once per day doesn't work with
+            -- the current using of one freeze per day...
+            ((7 - target) / target)
+                |> Round.ceilingNum 2
     in
     case meanRetTime of
         Nothing ->
@@ -81,7 +93,8 @@ update results today practiceFrequencyTarget motivationData =
                     Just <|
                         MotivationData
                             { streak = 1
-                            , streakFreezeDays = 0.7
+                            , streakFreezeDays = freezeIncrement
+                            , streakInitialTarget = practiceFrequencyTarget
                             , lastSessionDate = today
                             , meanRetentiontimes = [ mean ]
                             , maxRetention = maxTime
@@ -127,17 +140,16 @@ update results today practiceFrequencyTarget motivationData =
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
                                 , streakFreezeDays =
-                                    let
-                                        target =
-                                            practiceFrequencyTarget |> toFloat
-
-                                        freezeIncrement =
-                                            -- target is max 7 (as per the upper bound of the IntCrementer
-                                            -- used in the settings). More than once per day doesn't work with
-                                            -- the current using of one freeze per day...
-                                            ((7 - target) / target)
-                                                |> Round.ceilingNum 2
-                                    in
+                                    -- let
+                                    --     target =
+                                    --         practiceFrequencyTarget |> toFloat
+                                    --     freezeIncrement =
+                                    --         -- target is max 7 (as per the upper bound of the IntCrementer
+                                    --         -- used in the settings). More than once per day doesn't work with
+                                    --         -- the current using of one freeze per day...
+                                    --         ((7 - target) / target)
+                                    --             |> Round.ceilingNum 2
+                                    -- in
                                     -- if remainingStreakFreeze > 8.2 then
                                     --     -- allow no more than 8 streak freezes
                                     --     8.9
@@ -149,6 +161,13 @@ update results today practiceFrequencyTarget motivationData =
 
                                     else
                                         remainingStreakFreeze + freezeIncrement
+                                , streakInitialTarget =
+                                    if streakEnded then
+                                        {- Only when we begin a new streak, we save the current practice target -}
+                                        practiceFrequencyTarget
+
+                                    else
+                                        motData.streakInitialTarget
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
@@ -191,6 +210,7 @@ streakFreezeDays (MotivationData motData) =
 fieldnames :
     { series : String
     , streakFreezeDays : String
+    , streakInitialTarget : String
     , lastSessionDate : String
     , meanRetentiontimes : String
     , maxRetention : String
@@ -198,6 +218,7 @@ fieldnames :
 fieldnames =
     { series = "series"
     , streakFreezeDays = "streakFreezeDays"
+    , streakInitialTarget = "streakInitialTarget"
     , lastSessionDate = "lastSessionDate"
     , meanRetentiontimes = "meanRetentiontimes"
     , maxRetention = "maxRetention"
@@ -209,6 +230,7 @@ encoder (MotivationData motData) =
     Json.Encode.object
         [ ( fieldnames.series, Json.Encode.int motData.streak )
         , ( fieldnames.streakFreezeDays, Json.Encode.float motData.streakFreezeDays )
+        , ( fieldnames.streakInitialTarget, Json.Encode.int motData.streakInitialTarget )
         , ( fieldnames.lastSessionDate, Json.Encode.int <| Date.toRataDie motData.lastSessionDate )
         , ( fieldnames.meanRetentiontimes
           , Json.Encode.list Json.Encode.int
@@ -225,6 +247,7 @@ decoder =
     Json.Decode.succeed create
         |> optional fieldnames.series Json.Decode.int 0
         |> optional fieldnames.streakFreezeDays Json.Decode.float 0
+        |> optional fieldnames.streakInitialTarget Json.Decode.int 4
         |> required fieldnames.lastSessionDate (Json.Decode.map Date.fromRataDie Json.Decode.int)
         |> required fieldnames.meanRetentiontimes
             (Json.Decode.list

@@ -1,7 +1,5 @@
 module Layouts.MainNav exposing (Model, Msg, Props, layout, map)
 
---TODO: Will ich nicht eigentlich Button statt AnimatedButton nehmen?
-
 import Browser.Events
 import Components.AnimatedButton as Button
 import Delay
@@ -203,7 +201,7 @@ view props shared route { toContentMsg, model, content } =
                                             el
                                                 [ width fill
                                                 , height fill
-                                                , alpha 0.3
+                                                , alpha 0.5
                                                 , BG.color <| rgb 0 0 0
                                                 ]
                                                 none

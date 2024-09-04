@@ -66,14 +66,22 @@ toLayout shared model =
                                             String.fromFloat <| MotivationData.streakFreezeDays data
                                 , text "; Tage seit letzter Sitzung: "
                                 , text <| String.fromInt daysSinceLastSession
+                                , text "; Übungsziel: "
+                                , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
                                 ]
                         , choices =
                             [ Dialog.choice
                                 { label = "Ok"
                                 , onChoose = DebugInfoToggled
                                 }
+
+                            -- , Dialog.choice
+                            --     { label = "Nö"
+                            --     , onChoose = NoOp
+                            --     }
                             ]
                         }
+                        |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
                         |> Dialog.view shared.colorScheme
                     )
         }
@@ -103,6 +111,10 @@ type Msg
     | DebugInfoToggled
 
 
+
+-- | NoOp
+
+
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
@@ -118,6 +130,8 @@ update msg model =
 
 
 
+-- NoOp ->
+--     ( model, Effect.none )
 -- SUBSCRIPTIONS
 
 
