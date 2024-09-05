@@ -5,6 +5,7 @@ import Browser.Dom
 import Browser.Events
 import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
+import Components.Dialog as Dialog
 import Components.IntCrementer as IntCrementer
 import Components.RadioGroup as RadioGroup
 import Components.RetentionChart as RetentionChart
@@ -42,16 +43,49 @@ page shared route =
         , subscriptions = subscriptions shared
         , view = view shared
         }
-        |> Page.withLayout toLayout
+        |> Page.withLayout (toLayout shared)
 
 
-toLayout : Model -> Layouts.Layout Msg
-toLayout model =
+toLayout : Shared.Model -> Model -> Layouts.Layout Msg
+toLayout shared model =
     Layouts.MainNav
         { header = Just "Übung optimieren"
         , enableScrolling = True
         , fadeOut = model.fadeOut
-        , modalDialog = Nothing
+        , modalDialog =
+            if not model.practiceTargetWarningShown then
+                Nothing
+
+            else
+                let
+                    initialFrequency =
+                        shared.motivationData
+                            |> Maybe.map MotivationData.streakInitialTarget
+                            |> Maybe.withDefault 4
+                            |> String.fromInt
+                in
+                Dialog.new
+                    { header = "Serie beenden?"
+                    , message =
+                        paragraph []
+                            [ text "Wenn Du das Übungsziel niedriger ansetzt als zu Beginn der Serie ("
+                            , text initialFrequency
+                            , text " Tage pro Woche), beginnt die Serie mit der nächsten Übung neu!"
+                            ]
+                    , choices =
+                        [ Dialog.choice
+                            { label = "Serie beenden"
+                            , onChoose = OnDialogRestartStreak True
+                            }
+                        , Dialog.choice
+                            { label = "Ziel auf " ++ initialFrequency ++ " lassen"
+                            , onChoose = OnDialogRestartStreak False
+                            }
+                        ]
+                    }
+                    |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
+                    |> Dialog.view shared.colorScheme
+                    |> Just
         }
 
 
@@ -73,6 +107,7 @@ type alias Model =
     , cycleCrementer : IntCrementer.Model
     , relaxRetDurCrementer : IntCrementer.Model
     , practiceFreqCrementer : IntCrementer.Model
+    , practiceTargetWarningShown : Bool
     , copyButton : Button.Model
     , pasteButton : Button.Model
     , updateButton : Button.Model
@@ -100,6 +135,7 @@ init shared () =
       , cycleCrementer = IntCrementer.init
       , relaxRetDurCrementer = IntCrementer.init
       , practiceFreqCrementer = IntCrementer.init
+      , practiceTargetWarningShown = False
       , copyButton = Button.init
       , pasteButton = Button.init
       , updateButton = Button.init
@@ -142,6 +178,7 @@ type Msg
     | DefaultCyclesChanged Int IntCrementer.Model
     | DefaultRelaxRetDurationChanged Int IntCrementer.Model
     | PracticeFreqTargetChanged Int IntCrementer.Model
+    | OnDialogRestartStreak Bool
     | DefaultBreathingSpeedChanged BreathingSpeed
     | DefaultBreathCountChanged BreathCount
     | SettingsItemShown SettingsItem
@@ -241,13 +278,44 @@ update shared msg model =
             let
                 settings =
                     shared.sessionSettings
+
+                initialFrequency =
+                    shared.motivationData
+                        |> Maybe.map MotivationData.streakInitialTarget
+                        |> Maybe.withDefault 4
             in
-            ( { model | practiceFreqCrementer = newState }
-            , if IntCrementer.wasTriggered newState then
-                Effect.updateSessionSettings { settings | practiceFrequencyTarget = frequency }
+            if IntCrementer.wasTriggered newState then
+                ( { model
+                    | practiceFreqCrementer = newState
+                    , practiceTargetWarningShown =
+                        (frequency < initialFrequency)
+                            {- We only want to show the dialog if the user decremented
+                               from the initialFrequency
+                            -}
+                            && (settings.practiceFrequencyTarget == initialFrequency)
+                  }
+                , Effect.updateSessionSettings { settings | practiceFrequencyTarget = frequency }
+                )
+
+            else
+                ( { model | practiceFreqCrementer = newState }, Effect.none )
+
+        OnDialogRestartStreak endStreak ->
+            let
+                settings =
+                    shared.sessionSettings
+
+                initialFrequency =
+                    shared.motivationData
+                        |> Maybe.map MotivationData.streakInitialTarget
+                        |> Maybe.withDefault 4
+            in
+            ( { model | practiceTargetWarningShown = False }
+            , if endStreak then
+                Effect.none
 
               else
-                Effect.none
+                Effect.updateSessionSettings { settings | practiceFrequencyTarget = initialFrequency }
             )
 
         DefaultBreathingSpeedChanged speed ->
@@ -835,9 +903,6 @@ viewSettings shared model pagePadding =
         --   <|
         --     text "Häufigkeit vereinbaren"
         , column settingsAttrs
-            --TODO: Merken (in MotivationData), mit welcher Einstellung der Streak begonnen
-            --      wurde und dann das als Untergrenze hier verwenden
-            --      Wenn Untergrenze erreicht => Dialog "Soll Streak beendet werden?"
             [ if model.settingsItemShown == PracticeFrequencyTarget then
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
@@ -887,7 +952,8 @@ viewSettings shared model pagePadding =
             , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
             , Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
             ]
-            [ text "Das Übungsziel bestimmt, wie häufig \"Schutzringe\" für die Fortsetzung der Serie hinzukommen. \"4 mal pro Woche\" bedeutet beispielsweise, dass für vier Übungen drei Ringe hinzukommen. Es können also drei von sieben Tagen freigenommen werden." ]
+            [ text "Das Übungsziel bestimmt, wie häufig \"Schutzringe\" für die Fortsetzung der Serie hinzukommen. \"4 mal pro Woche\" bedeutet beispielsweise, dass für vier Übungen drei Ringe hinzukommen. Es können also drei von sieben Tagen freigenommen werden."
+            ]
 
         --TODO: Erklärenden Text zum Übungsziel anzeigen
         , if model.settingsItemShown == AppControls then

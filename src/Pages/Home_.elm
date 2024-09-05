@@ -50,6 +50,12 @@ toLayout shared model =
                             |> Maybe.map MotivationData.lastSessionDate
                             |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
                             |> Maybe.withDefault 0
+
+                    initialTarget =
+                        shared.motivationData
+                            |> Maybe.map MotivationData.streakInitialTarget
+                            |> Maybe.withDefault 4
+                            |> String.fromInt
                 in
                 Just
                     (Dialog.new
@@ -68,6 +74,8 @@ toLayout shared model =
                                 , text <| String.fromInt daysSinceLastSession
                                 , text "; Übungsziel: "
                                 , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
+                                , text <| "; Übungsziel zu Beginn: "
+                                , text <| initialTarget
                                 ]
                         , choices =
                             [ Dialog.choice
@@ -150,21 +158,33 @@ view shared model =
     , attributes =
         CS.primaryMotivation shared.colorScheme
     , element =
-        viewMotivationData model shared.deviceInfo shared.today shared.motivationData shared.colorScheme
+        -- viewMotivationData model shared.deviceInfo shared.today shared.motivationData shared.colorScheme
+        viewMotivationData shared model
     }
 
 
-viewMotivationData : Model -> Utils.Device -> Date.Date -> Maybe MotivationData -> ColorScheme -> Element Msg
-viewMotivationData model deviceInfo today motData colorScheme =
+
+-- viewMotivationData : Model -> Utils.Device -> Date.Date -> Maybe MotivationData -> ColorScheme -> Element Msg
+-- viewMotivationData model deviceInfo today motData colorScheme =
+
+
+viewMotivationData : Shared.Model -> Model -> Element Msg
+viewMotivationData shared model =
+    --TODO: Diese ganze Funktion übersichtlicher aufbauen -> case für Motivationdata ganz am Anfang, etc.
     let
         daysSinceLastSession =
-            motData
+            shared.motivationData
                 |> Maybe.map MotivationData.lastSessionDate
-                |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date today)
+                |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
                 |> Maybe.withDefault 0
 
         seriesContinued =
-            (daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays motData)) < 2
+            ((daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays shared.motivationData))
+                < 2
+            )
+                && ((shared.motivationData |> Maybe.map MotivationData.streakInitialTarget |> Maybe.withDefault 4)
+                        <= shared.sessionSettings.practiceFrequencyTarget
+                   )
     in
     column
         [ width fill
@@ -172,7 +192,7 @@ viewMotivationData model deviceInfo today motData colorScheme =
         , spacing 20
         , centerY
         ]
-        [ case motData of
+        [ case shared.motivationData of
             Nothing ->
                 none
 
@@ -196,7 +216,7 @@ viewMotivationData model deviceInfo today motData colorScheme =
                                        )
 
                             window =
-                                deviceInfo.window
+                                shared.deviceInfo.window
 
                             streakWidgetSize =
                                 min window.width window.height
@@ -204,7 +224,7 @@ viewMotivationData model deviceInfo today motData colorScheme =
                                     |> round
                         in
                         viewStreak
-                            colorScheme
+                            shared.colorScheme
                             streakWidgetSize
                             remainingFreezes
                             (daysSinceLastSession > 0)
@@ -215,7 +235,7 @@ viewMotivationData model deviceInfo today motData colorScheme =
                         el
                             [ centerX
                             , centerY
-                            , Font.color <| CS.seriesBadColor colorScheme
+                            , Font.color <| CS.seriesBadColor shared.colorScheme
                             , Font.size 70
                             , Font.bold
                             , paddingXY 0 50
@@ -253,7 +273,7 @@ viewMotivationData model deviceInfo today motData colorScheme =
             , Font.center
             , Events.onClick DebugInfoToggled
             ]
-            [ case motData of
+            [ case shared.motivationData of
                 Nothing ->
                     text <| "Willkommen bei Zoff!!"
 

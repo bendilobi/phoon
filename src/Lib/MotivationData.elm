@@ -7,6 +7,7 @@ module Lib.MotivationData exposing
     , meanRetentionTimes
     , series
     , streakFreezeDays
+    , streakInitialTarget
     , update
     )
 
@@ -105,12 +106,17 @@ update results today practiceFrequencyTarget motivationData =
                         daysSinceLastSession =
                             Date.diff Date.Days motData.lastSessionDate today
 
+                        streakEndedBecauseOfTargetChange =
+                            motData.streakInitialTarget > practiceFrequencyTarget
+
                         streakEnded =
-                            (daysSinceLastSession - floor motData.streakFreezeDays) > 1
+                            (daysSinceLastSession - floor motData.streakFreezeDays)
+                                > 1
+                                || streakEndedBecauseOfTargetChange
 
                         remainingStreakFreeze =
-                            if daysSinceLastSession > 1 then
-                                -- Last session was not yesterday so we need to apply the freeze days
+                            if daysSinceLastSession > 0 && not streakEndedBecauseOfTargetChange then
+                                -- Last session was not today so we need to apply the freeze days
                                 motData.streakFreezeDays
                                     - (toFloat daysSinceLastSession - 1)
                                     |> (\freezeDays ->
@@ -201,6 +207,11 @@ maxRetention (MotivationData motData) =
 streakFreezeDays : MotivationData -> Float
 streakFreezeDays (MotivationData motData) =
     motData.streakFreezeDays
+
+
+streakInitialTarget : MotivationData -> Int
+streakInitialTarget (MotivationData motData) =
+    motData.streakInitialTarget
 
 
 
