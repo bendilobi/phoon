@@ -10,6 +10,7 @@ import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons exposing (alignCenter)
 import Layouts
+import Layouts.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading exposing (Trigger(..))
@@ -39,9 +40,9 @@ toLayout shared model =
         { header = Just "Motivation finden"
         , enableScrolling = False
         , fadeOut = NoFade
-        , modalDialog =
+        , overlay =
             if model.debugInfoHidden then
-                Nothing
+                Layouts.MainNav.NoOverlay
 
             else
                 let
@@ -57,41 +58,42 @@ toLayout shared model =
                             |> Maybe.withDefault 4
                             |> String.fromInt
                 in
-                Just
-                    (Dialog.new
-                        { header = "Infos zur Serie:"
-                        , message =
-                            paragraph []
-                                [ text "Freezes: "
-                                , text <|
-                                    case shared.motivationData of
-                                        Nothing ->
-                                            ""
+                Layouts.MainNav.InfoWindow
+                    { header = "Serie"
+                    , info =
+                        -- (Dialog.new
+                        --     { header = "Infos zur Serie:"
+                        --     , message =
+                        paragraph
+                            []
+                            [ text "Freezes: "
+                            , text <|
+                                case shared.motivationData of
+                                    Nothing ->
+                                        ""
 
-                                        Just data ->
-                                            String.fromFloat <| MotivationData.streakFreezeDays data
-                                , text "; Tage seit letzter Sitzung: "
-                                , text <| String.fromInt daysSinceLastSession
-                                , text "; Übungsziel: "
-                                , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
-                                , text <| "; Übungsziel zu Beginn: "
-                                , text <| initialTarget
-                                ]
-                        , choices =
-                            [ Dialog.choice
-                                { label = "Ok"
-                                , onChoose = DebugInfoToggled
-                                }
-
-                            -- , Dialog.choice
-                            --     { label = "Nö"
-                            --     , onChoose = NoOp
-                            --     }
+                                    Just data ->
+                                        String.fromFloat <| MotivationData.streakFreezeDays data
+                            , text "; Tage seit letzter Sitzung: "
+                            , text <| String.fromInt daysSinceLastSession
+                            , text "; Übungsziel: "
+                            , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
+                            , text <| "; Übungsziel zu Beginn: "
+                            , text <| initialTarget
                             ]
-                        }
-                        |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
-                        |> Dialog.view shared.colorScheme
-                    )
+                    , onClose = DebugInfoToggled
+                    }
+
+        --     , choices =
+        --         [ Dialog.choice
+        --             { label = "Ok"
+        --             , onChoose = DebugInfoToggled
+        --             }
+        --         ]
+        --     }
+        --     |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
+        --     |> Dialog.view shared.colorScheme
+        -- )
         }
 
 

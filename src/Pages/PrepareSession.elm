@@ -9,6 +9,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
+import Layouts.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -40,7 +41,7 @@ toLayout model =
         { header = Just "Sitzung vorbereiten"
         , enableScrolling = False
         , fadeOut = model.fadeOut
-        , modalDialog = Nothing
+        , overlay = Layouts.MainNav.NoOverlay
         }
 
 

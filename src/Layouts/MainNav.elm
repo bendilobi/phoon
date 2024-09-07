@@ -1,4 +1,4 @@
-module Layouts.MainNav exposing (Model, Msg, Props, layout, map)
+module Layouts.MainNav exposing (Model, Msg, Overlay(..), Props, layout, map)
 
 import Browser.Events
 import Components.AnimatedButton as Button
@@ -9,7 +9,9 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
+import Element.Input as Input
 import FeatherIcons
+import Html.Attributes
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
@@ -28,8 +30,20 @@ type alias Props contentMsg =
     { header : Maybe String
     , enableScrolling : Bool
     , fadeOut : Fading.Trigger
-    , modalDialog : Maybe (Element contentMsg)
+
+    --TODO: Wie mache ich das mit dem Schließen des InfoWindows? So wie in der Elm.land Doku beschrieben?
+    , overlay : Overlay contentMsg
     }
+
+
+type Overlay contentMsg
+    = NoOverlay
+    | ModalDialog (Element contentMsg)
+    | InfoWindow
+        { header : String
+        , info : Element contentMsg
+        , onClose : contentMsg
+        }
 
 
 layout : Props contentMsg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
@@ -47,9 +61,24 @@ map fn props =
     { header = props.header
     , enableScrolling = props.enableScrolling
     , fadeOut = props.fadeOut
-    , modalDialog =
-        props.modalDialog
-            |> Maybe.map (E.map fn)
+
+    -- , modalDialog =
+    --     props.modalDialog
+    --         |> Maybe.map (E.map fn)
+    , overlay =
+        case props.overlay of
+            NoOverlay ->
+                NoOverlay
+
+            ModalDialog lmnt ->
+                ModalDialog <| E.map fn lmnt
+
+            InfoWindow { header, info, onClose } ->
+                InfoWindow
+                    { header = header
+                    , info = E.map fn info
+                    , onClose = fn onClose
+                    }
     }
 
 
@@ -62,6 +91,7 @@ type alias Model =
     , updateButton : Button.Model
     , updateAcknowledged : Bool
     , fadeState : FadeState
+    , infoWindowMaximized : Bool
     }
 
 
@@ -71,6 +101,7 @@ init shared _ =
       , updateButton = Button.init
       , updateAcknowledged = False
       , fadeState = Fading.init shared.fadeIn
+      , infoWindowMaximized = False
       }
     , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
     )
@@ -92,6 +123,7 @@ type Msg
     | OnCloseUpdateButton Button.Model
     | UpdateFinished
     | ToggleFadeIn Fading.Trigger
+    | OnInfoWindowResize
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -155,6 +187,11 @@ update msg model =
             , Effect.sendCmd <| Fading.updateCmd fade ToggleFadeIn
             )
 
+        OnInfoWindowResize ->
+            ( { model | infoWindowMaximized = not model.infoWindowMaximized }
+            , Effect.none
+            )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -189,9 +226,10 @@ view props shared route { toContentMsg, model, content } =
                     (content.attributes
                         ++ [ width fill
                            , height fill
+                           , clip
                            , inFront <|
-                                case props.modalDialog of
-                                    Just dialog ->
+                                case props.overlay of
+                                    ModalDialog dialog ->
                                         el
                                             [ width fill
                                             , height fill
@@ -201,12 +239,12 @@ view props shared route { toContentMsg, model, content } =
                                             el
                                                 [ width fill
                                                 , height fill
-                                                , alpha 0.5
+                                                , alpha 0.3
                                                 , BG.color <| rgb 0 0 0
                                                 ]
                                                 none
 
-                                    Nothing ->
+                                    NoOverlay ->
                                         case shared.updateState of
                                             JustUpdated ->
                                                 viewUpdateResult shared
@@ -228,6 +266,94 @@ view props shared route { toContentMsg, model, content } =
 
                                             _ ->
                                                 Fading.fadeOverlay props.fadeOut model.fadeState
+
+                                    InfoWindow { header, info, onClose } ->
+                                        el
+                                            [ width fill
+                                            , height fill
+                                            , inFront <|
+                                                column
+                                                    [ centerX
+                                                    , centerY
+                                                    , BG.color <| rgba 1 1 1 0.5
+                                                    , Font.color <| rgb 0 0 0
+                                                    , paddingEach { top = 0, left = 20, right = 20, bottom = 20 }
+
+                                                    -- , spacing 10
+                                                    , Border.roundEach
+                                                        { topLeft = 25
+                                                        , topRight = 25
+                                                        , bottomLeft = 0
+                                                        , bottomRight = 0
+                                                        }
+
+                                                    --TODO: Prüfen, ob in iOS 18 dann die untere Variante funktioniert.let
+                                                    --      Anscheinend funktionierts nicht, wenn beide gleichzeitig gesetzt sind...
+                                                    --      Oder eine Weiche einbauen?
+                                                    , htmlAttribute <| Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(16px);"
+
+                                                    -- , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(16px);"
+                                                    , height <| px <| round <| shared.deviceInfo.window.height
+                                                    , moveDown <|
+                                                        if model.infoWindowMaximized then
+                                                            30
+
+                                                        else
+                                                            shared.deviceInfo.window.height / 2
+                                                    ]
+                                                    [ (el [ width fill ] <|
+                                                        Input.button
+                                                            [ centerX
+                                                            , height <| px 20
+                                                            , width <| px 200
+                                                            ]
+                                                            { onPress = Just OnInfoWindowResize
+                                                            , label =
+                                                                el
+                                                                    [ centerX
+                                                                    , centerY
+                                                                    , height <| px 5
+                                                                    , width <| px 40
+                                                                    , BG.color <| rgb 0.4 0.4 0.4
+                                                                    , Border.rounded 4
+                                                                    ]
+                                                                    none
+                                                            }
+                                                      )
+                                                        |> E.map toContentMsg
+                                                    , el
+                                                        [ width fill
+                                                        , Font.bold
+                                                        , Font.center
+                                                        , Font.size 20
+                                                        , inFront <|
+                                                            Input.button
+                                                                [ Font.size 25
+                                                                , moveLeft 5
+                                                                , moveUp 5
+                                                                ]
+                                                                { onPress = Just onClose
+                                                                , label =
+                                                                    html <|
+                                                                        FeatherIcons.toHtml [] <|
+                                                                            FeatherIcons.withSize 30
+                                                                                FeatherIcons.x
+                                                                }
+                                                        ]
+                                                      <|
+                                                        text header
+                                                    , el [ paddingXY 0 20 ] info
+                                                    ]
+                                            ]
+                                        <|
+                                            el
+                                                [ width fill
+                                                , height fill
+                                                , alpha 0.1
+                                                , BG.color <| rgb 0 0 0
+                                                , Events.onClick onClose
+                                                ]
+                                                none
                            ]
                     )
                     [ case props.header of

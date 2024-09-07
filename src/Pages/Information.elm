@@ -21,6 +21,7 @@ import Http
 import Json.Decode as Decode
 import Json.Encode
 import Layouts
+import Layouts.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -52,9 +53,9 @@ toLayout shared model =
         { header = Just "Übung optimieren"
         , enableScrolling = True
         , fadeOut = model.fadeOut
-        , modalDialog =
+        , overlay =
             if not model.practiceTargetWarningShown then
-                Nothing
+                Layouts.MainNav.NoOverlay
 
             else
                 let
@@ -85,7 +86,7 @@ toLayout shared model =
                     }
                     |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
                     |> Dialog.view shared.colorScheme
-                    |> Just
+                    |> Layouts.MainNav.ModalDialog
         }
 
 
