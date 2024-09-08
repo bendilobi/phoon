@@ -131,21 +131,19 @@ viewChoice : Choice msg -> Element msg
 viewChoice (ChoiceParams settings) =
     Input.button
         [ width fill
-        , BG.color <|
-            rgb 1 1 1
-
-        --TODO: anscheinend ist da die :active Pseudoclass dahinter. Funktioniert
-        --      mit Touch wohl nur mit einem Trick:
-        --      https://blog.tomoyukikashiro.me/post/how-to-set-active-style-to-button-in-mobile
-        --      https://stackoverflow.com/questions/8330559/hover-effects-using-css3-touch-events
-        --      https://dev.webonomic.nl/fixing-the-iphone-css-hover-problem-on-ios
-        --      https://www.sitepoint.com/5-ways-prevent-300ms-click-delay-mobile-devices/
-        --      aber wie baue ich das ein?
-        , mouseDown [ BG.color <| rgb 0.8 0.8 0.8 ]
-        , mouseOver [ BG.color <| rgb 0.8 0.8 0.8 ]
-
-        -- , htmlAttribute <| Html.Attributes.style "-webkit-tap-highlight-color" "rgba(0,0,0,0)"
         ]
         { onPress = Just settings.onChoose
-        , label = el [ centerX, paddingXY 5 15 ] <| text settings.label
+        , label =
+            el
+                [ width fill
+                , Font.center
+                , BG.color <| rgb 1 1 1
+
+                --TODO: Irgendwie funktioniert das nur beim ersten Button und nur manchmal...
+                --      Bug isolieren und in einem elm-ui forum fragen?
+                , mouseOver [ BG.color <| rgb 0.8 0.8 0.8 ]
+                , paddingXY 5 15
+                ]
+            <|
+                text settings.label
         }
