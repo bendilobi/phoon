@@ -37,7 +37,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.6.489", False )
+    ( "0.6.491", False )
 
 
 appVersion =
@@ -177,6 +177,7 @@ init flagsResult route =
       , baseApiUrl = "/version/"
       , safeAreaInset = decodedFlags.safeAreaInsets
       , fadeIn = NoFade
+      , infoWindowMaximized = False
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -382,6 +383,11 @@ update route msg model =
 
                 _ ->
                     Effect.none
+            )
+
+        Shared.Msg.SetInfoWindowMaximized maximized ->
+            ( { model | infoWindowMaximized = maximized }
+            , Effect.none
             )
 
 

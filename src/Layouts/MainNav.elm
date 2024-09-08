@@ -48,7 +48,7 @@ layout : Props contentMsg -> Shared.Model -> Route () -> Layout () Model Msg con
 layout props shared route =
     Layout.new
         { init = init shared
-        , update = update
+        , update = update shared
         , view = view props shared route
         , subscriptions = subscriptions
         }
@@ -89,7 +89,8 @@ type alias Model =
     , updateButton : Button.Model
     , updateAcknowledged : Bool
     , fadeState : FadeState
-    , infoWindowMaximized : Bool
+
+    -- , infoWindowMaximized : Bool
     }
 
 
@@ -99,7 +100,8 @@ init shared _ =
       , updateButton = Button.init
       , updateAcknowledged = False
       , fadeState = Fading.init shared.fadeIn
-      , infoWindowMaximized = False
+
+      --   , infoWindowMaximized = False
       }
     , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
     )
@@ -124,8 +126,8 @@ type Msg
     | OnInfoWindowResize
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update shared msg model =
     case msg of
         NavButtonClicked path ->
             ( model, Effect.navigate NoFade path )
@@ -186,8 +188,9 @@ update msg model =
             )
 
         OnInfoWindowResize ->
-            ( { model | infoWindowMaximized = not model.infoWindowMaximized }
-            , Effect.none
+            -- ( { model | infoWindowMaximized = not model.infoWindowMaximized }
+            ( model
+            , Effect.setInfoWindowMaximized <| not shared.infoWindowMaximized
             )
 
 
@@ -292,7 +295,7 @@ view props shared route { toContentMsg, model, content } =
                                                     -- , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(16px);"
                                                     , height <| px <| round <| shared.deviceInfo.window.height
                                                     , moveDown <|
-                                                        if model.infoWindowMaximized then
+                                                        if shared.infoWindowMaximized then
                                                             30
 
                                                         else

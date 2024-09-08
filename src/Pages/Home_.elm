@@ -9,6 +9,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import FeatherIcons exposing (alignCenter)
+import Html.Attributes
 import Layouts
 import Layouts.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -61,39 +62,51 @@ toLayout shared model =
                 Layouts.MainNav.InfoWindow
                     { header = "Serie"
                     , info =
-                        -- (Dialog.new
-                        --     { header = "Infos zur Serie:"
-                        --     , message =
-                        paragraph
-                            []
-                            [ text "Freezes: "
-                            , text <|
-                                case shared.motivationData of
-                                    Nothing ->
-                                        ""
+                        let
+                            --TODO: Das zu den Utils verschieben?
+                            bullet : Element msg -> Element msg
+                            bullet content =
+                                row [ spacing 8 ]
+                                    [ el [ alignTop, Font.bold ] <| text "•"
+                                    , content
+                                    ]
+                        in
+                        column [ spacing 20, Font.size 15 ]
+                            [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
+                            , column
+                                [ spacing 20
+                                , paddingXY 20 0
+                                ]
+                                [ bullet <|
+                                    paragraph []
+                                        [ text "Freezes: "
+                                        , text <|
+                                            case shared.motivationData of
+                                                Nothing ->
+                                                    ""
 
-                                    Just data ->
-                                        String.fromFloat <| MotivationData.streakFreezeDays data
-                            , text "; Tage seit letzter Sitzung: "
-                            , text <| String.fromInt daysSinceLastSession
-                            , text "; Übungsziel: "
-                            , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
-                            , text <| "; Übungsziel zu Beginn: "
-                            , text <| initialTarget
+                                                Just data ->
+                                                    String.fromFloat <| MotivationData.streakFreezeDays data
+                                        ]
+                                , bullet <|
+                                    paragraph []
+                                        [ text "Tage seit letzter Sitzung: "
+                                        , text <| String.fromInt daysSinceLastSession
+                                        ]
+                                , bullet <|
+                                    paragraph []
+                                        [ text "Übungsziel: "
+                                        , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
+                                        ]
+                                , bullet <|
+                                    paragraph []
+                                        [ text <| "Übungsziel zu Beginn: "
+                                        , text <| initialTarget
+                                        ]
+                                ]
                             ]
                     , onClose = DebugInfoToggled
                     }
-
-        --     , choices =
-        --         [ Dialog.choice
-        --             { label = "Ok"
-        --             , onChoose = DebugInfoToggled
-        --             }
-        --         ]
-        --     }
-        --     |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
-        --     |> Dialog.view shared.colorScheme
-        -- )
         }
 
 
@@ -135,7 +148,7 @@ update msg model =
 
         DebugInfoToggled ->
             ( { model | debugInfoHidden = not model.debugInfoHidden }
-            , Effect.none
+            , Effect.setInfoWindowMaximized False
             )
 
 

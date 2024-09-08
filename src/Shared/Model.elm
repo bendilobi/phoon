@@ -38,6 +38,11 @@ type alias Model =
     , baseApiUrl : String
     , safeAreaInset : SafeArea
     , fadeIn : Fading.Trigger
+
+    --TODO: Das ist hier in Shared, damit die Seiten es auf False setzten können
+    --      und es damit nicht maximiert ist, wenn das Infofenster neu gezeigt wird.
+    --      => Kann ich das besser lösen?
+    , infoWindowMaximized : Bool
     }
 
 
