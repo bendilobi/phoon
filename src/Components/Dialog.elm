@@ -142,6 +142,7 @@ viewChoice (ChoiceParams settings) =
         --      https://www.sitepoint.com/5-ways-prevent-300ms-click-delay-mobile-devices/
         --      aber wie baue ich das ein?
         , mouseDown [ BG.color <| rgb 0.8 0.8 0.8 ]
+        , mouseOver [ BG.color <| rgb 0.8 0.8 0.8 ]
 
         -- , htmlAttribute <| Html.Attributes.style "-webkit-tap-highlight-color" "rgba(0,0,0,0)"
         ]

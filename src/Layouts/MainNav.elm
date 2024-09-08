@@ -30,8 +30,6 @@ type alias Props contentMsg =
     { header : Maybe String
     , enableScrolling : Bool
     , fadeOut : Fading.Trigger
-
-    --TODO: Wie mache ich das mit dem Schließen des InfoWindows? So wie in der Elm.land Doku beschrieben?
     , overlay : Overlay contentMsg
     }
 
@@ -273,8 +271,7 @@ view props shared route { toContentMsg, model, content } =
                                             , height fill
                                             , inFront <|
                                                 column
-                                                    [ centerX
-                                                    , centerY
+                                                    [ width fill
                                                     , BG.color <| rgba 1 1 1 0.5
                                                     , Font.color <| rgb 0 0 0
                                                     , paddingEach { top = 0, left = 20, right = 20, bottom = 20 }
