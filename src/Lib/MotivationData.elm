@@ -7,6 +7,7 @@ module Lib.MotivationData exposing
     , meanRetentionTimes
     , series
     , streakFreezeDays
+    , streakInfo
     , streakInitialTarget
     , update
     )
@@ -103,28 +104,29 @@ update results today practiceFrequencyTarget motivationData =
 
                 Just (MotivationData motData) ->
                     let
-                        daysSinceLastSession =
-                            Date.diff Date.Days motData.lastSessionDate today
+                        -- daysSinceLastSession =
+                        --     Date.diff Date.Days motData.lastSessionDate today
+                        { streakValid, daysSinceLastSession } =
+                            streakInfo today practiceFrequencyTarget (MotivationData motData)
 
                         streakEndedBecauseOfTargetChange =
                             motData.streakInitialTarget > practiceFrequencyTarget
 
-                        streakEnded =
-                            (daysSinceLastSession - floor motData.streakFreezeDays)
-                                > 1
-                                || streakEndedBecauseOfTargetChange
-
+                        -- streakEnded =
+                        --     (daysSinceLastSession - floor motData.streakFreezeDays)
+                        --         > 1
+                        --         || streakEndedBecauseOfTargetChange
                         remainingStreakFreeze =
                             if daysSinceLastSession > 0 && not streakEndedBecauseOfTargetChange then
                                 -- Last session was not today so we need to apply the freeze days
                                 motData.streakFreezeDays
                                     - (toFloat daysSinceLastSession - 1)
                                     |> (\freezeDays ->
-                                            if streakEnded then
-                                                0
+                                            if streakValid then
+                                                freezeDays
 
                                             else
-                                                freezeDays
+                                                0
                                        )
 
                             else
@@ -134,14 +136,12 @@ update results today practiceFrequencyTarget motivationData =
                         MotivationData
                             { motData
                                 | streak =
-                                    if streakEnded then
-                                        -- Begin a new streak since streak freeze doesn't cover all missed days
-                                        1
-                                        -- else if motData.lastSessionDate == today then
-                                        --     motData.streak
+                                    if streakValid then
+                                        motData.streak + 1
 
                                     else
-                                        motData.streak + 1
+                                        -- Begin a new streak since streak freeze doesn't cover all missed days
+                                        1
 
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
@@ -168,12 +168,12 @@ update results today practiceFrequencyTarget motivationData =
                                     else
                                         remainingStreakFreeze + freezeIncrement
                                 , streakInitialTarget =
-                                    if streakEnded then
-                                        {- Only when we begin a new streak, we save the current practice target -}
-                                        practiceFrequencyTarget
+                                    if streakValid then
+                                        motData.streakInitialTarget
 
                                     else
-                                        motData.streakInitialTarget
+                                        {- Only when we begin a new streak, we save the current practice target -}
+                                        practiceFrequencyTarget
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
@@ -212,6 +212,19 @@ streakFreezeDays (MotivationData motData) =
 streakInitialTarget : MotivationData -> Int
 streakInitialTarget (MotivationData motData) =
     motData.streakInitialTarget
+
+
+streakInfo : Date.Date -> Int -> MotivationData -> { streakValid : Bool, daysSinceLastSession : Int }
+streakInfo today practiceFrequencyTarget (MotivationData motData) =
+    let
+        daysSinceLastSession =
+            Date.diff Date.Days motData.lastSessionDate today
+    in
+    { streakValid =
+        ((daysSinceLastSession - floor motData.streakFreezeDays) < 2)
+            && (motData.streakInitialTarget <= practiceFrequencyTarget)
+    , daysSinceLastSession = daysSinceLastSession
+    }
 
 
 

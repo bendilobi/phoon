@@ -174,19 +174,25 @@ viewMotivationData : Shared.Model -> Model -> Element Msg
 viewMotivationData shared model =
     --TODO: Diese ganze Funktion übersichtlicher aufbauen -> case für Motivationdata ganz am Anfang, etc.
     let
-        daysSinceLastSession =
-            shared.motivationData
-                |> Maybe.map MotivationData.lastSessionDate
-                |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
-                |> Maybe.withDefault 0
+        -- daysSinceLastSession =
+        --     shared.motivationData
+        --         |> Maybe.map MotivationData.lastSessionDate
+        --         |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
+        --         |> Maybe.withDefault 0
+        -- streakValid =
+        --     ((daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays shared.motivationData))
+        --         < 2
+        --     )
+        --         && ((shared.motivationData |> Maybe.map MotivationData.streakInitialTarget |> Maybe.withDefault 4)
+        --                 <= shared.sessionSettings.practiceFrequencyTarget
+        --            )
+        { streakValid, daysSinceLastSession } =
+            case shared.motivationData of
+                Nothing ->
+                    { streakValid = False, daysSinceLastSession = 0 }
 
-        seriesContinued =
-            ((daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays shared.motivationData))
-                < 2
-            )
-                && ((shared.motivationData |> Maybe.map MotivationData.streakInitialTarget |> Maybe.withDefault 4)
-                        <= shared.sessionSettings.practiceFrequencyTarget
-                   )
+                Just motData ->
+                    MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
     in
     column
         [ width fill
@@ -204,7 +210,7 @@ viewMotivationData shared model =
                     , Events.onClick DebugInfoToggled
                     ]
                 <|
-                    if seriesContinued then
+                    if streakValid then
                         let
                             remainingFreezes =
                                 MotivationData.streakFreezeDays data
@@ -290,7 +296,7 @@ viewMotivationData shared model =
                                     freezes
                            )
                         |> (\freezes ->
-                                if not seriesContinued then
+                                if not streakValid then
                                     if daysSinceLastSession - 1 == 1 then
                                         text <| "Tage seit letzter Übung"
 

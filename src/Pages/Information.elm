@@ -289,7 +289,18 @@ update shared msg model =
                 ( { model
                     | practiceFreqCrementer = newState
                     , practiceTargetWarningShown =
-                        (frequency < initialFrequency)
+                        let
+                            streakValid =
+                                case shared.motivationData of
+                                    Nothing ->
+                                        False
+
+                                    Just motData ->
+                                        MotivationData.streakInfo shared.today settings.practiceFrequencyTarget motData
+                                            |> .streakValid
+                        in
+                        streakValid
+                            && (frequency < initialFrequency)
                             {- We only want to show the dialog if the user decremented
                                from the initialFrequency
                             -}
