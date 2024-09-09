@@ -59,10 +59,6 @@ map fn props =
     { header = props.header
     , enableScrolling = props.enableScrolling
     , fadeOut = props.fadeOut
-
-    -- , modalDialog =
-    --     props.modalDialog
-    --         |> Maybe.map (E.map fn)
     , overlay =
         case props.overlay of
             NoOverlay ->
@@ -89,8 +85,6 @@ type alias Model =
     , updateButton : Button.Model
     , updateAcknowledged : Bool
     , fadeState : FadeState
-
-    -- , infoWindowMaximized : Bool
     }
 
 
@@ -100,8 +94,6 @@ init shared _ =
       , updateButton = Button.init
       , updateAcknowledged = False
       , fadeState = Fading.init shared.fadeIn
-
-      --   , infoWindowMaximized = False
       }
     , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
     )
@@ -188,7 +180,6 @@ update shared msg model =
             )
 
         OnInfoWindowResize ->
-            -- ( { model | infoWindowMaximized = not model.infoWindowMaximized }
             ( model
             , Effect.setInfoWindowMaximized <| not shared.infoWindowMaximized
             )
@@ -268,92 +259,115 @@ view props shared route { toContentMsg, model, content } =
                                             _ ->
                                                 Fading.fadeOverlay props.fadeOut model.fadeState
 
-                                    InfoWindow { header, info, onClose } ->
+                                    InfoWindow { onClose } ->
                                         el
+                                            {- Transparent black overlay -}
                                             [ width fill
                                             , height fill
-                                            , inFront <|
-                                                column
-                                                    [ width fill
-                                                    , BG.color <| rgba 1 1 1 0.5
-                                                    , Font.color <| rgb 0 0 0
-                                                    , paddingEach { top = 0, left = 20, right = 20, bottom = 20 }
-
-                                                    -- , spacing 10
-                                                    , Border.roundEach
-                                                        { topLeft = 25
-                                                        , topRight = 25
-                                                        , bottomLeft = 0
-                                                        , bottomRight = 0
-                                                        }
-
-                                                    --TODO: Prüfen, ob in iOS 18 dann die untere Variante funktioniert.let
-                                                    --      Anscheinend funktionierts nicht, wenn beide gleichzeitig gesetzt sind...
-                                                    --      Oder eine Weiche einbauen?
-                                                    , htmlAttribute <| Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(16px);"
-
-                                                    -- , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(16px);"
-                                                    , height <| px <| round <| shared.deviceInfo.window.height
-                                                    , moveDown <|
-                                                        if shared.infoWindowMaximized then
-                                                            30
-
-                                                        else
-                                                            shared.deviceInfo.window.height / 2
-                                                    ]
-                                                    [ (el [ width fill ] <|
-                                                        Input.button
-                                                            [ centerX
-                                                            , height <| px 20
-                                                            , width <| px 200
-                                                            ]
-                                                            { onPress = Just OnInfoWindowResize
-                                                            , label =
-                                                                el
-                                                                    [ centerX
-                                                                    , centerY
-                                                                    , height <| px 5
-                                                                    , width <| px 40
-                                                                    , BG.color <| rgb 0.4 0.4 0.4
-                                                                    , Border.rounded 4
-                                                                    ]
-                                                                    none
-                                                            }
-                                                      )
-                                                        |> E.map toContentMsg
-                                                    , el
-                                                        [ width fill
-                                                        , Font.bold
-                                                        , Font.center
-                                                        , Font.size 20
-                                                        , inFront <|
-                                                            Input.button
-                                                                [ Font.size 25
-                                                                , moveLeft 5
-                                                                , moveUp 5
-                                                                ]
-                                                                { onPress = Just onClose
-                                                                , label =
-                                                                    html <|
-                                                                        FeatherIcons.toHtml [] <|
-                                                                            FeatherIcons.withSize 30
-                                                                                FeatherIcons.x
-                                                                }
-                                                        ]
-                                                      <|
-                                                        text header
-                                                    , el [ paddingXY 0 20 ] info
-                                                    ]
+                                            , alpha 0.1
+                                            , BG.color <| rgb 0 0 0
+                                            , Events.onClick onClose
                                             ]
-                                        <|
-                                            el
-                                                [ width fill
-                                                , height fill
-                                                , alpha 0.1
-                                                , BG.color <| rgb 0 0 0
-                                                , Events.onClick onClose
+                                            none
+                           , below <|
+                                {- Info Window -}
+                                column
+                                    [ width fill
+                                    , BG.color <| rgba 1 1 1 0.5
+                                    , Font.color <| rgb 0 0 0
+                                    , paddingEach { top = 0, left = 20, right = 20, bottom = 20 }
+
+                                    -- , spacing 10
+                                    , Border.roundEach
+                                        { topLeft = 25
+                                        , topRight = 25
+                                        , bottomLeft = 0
+                                        , bottomRight = 0
+                                        }
+
+                                    --TODO: Prüfen, ob in iOS 18 dann die untere Variante funktioniert.let
+                                    --      Anscheinend funktionierts nicht, wenn beide gleichzeitig gesetzt sind...
+                                    --      Oder eine Weiche einbauen?
+                                    , htmlAttribute <| Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(16px);"
+
+                                    -- , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(16px);"
+                                    , height <| px <| round <| shared.deviceInfo.window.height
+                                    , htmlAttribute <| Transition.properties [ Transition.transform 500 [ Transition.easeOutCirc ] ]
+                                    , moveUp <|
+                                        case props.overlay of
+                                            InfoWindow _ ->
+                                                if shared.infoWindowMaximized then
+                                                    shared.deviceInfo.window.height - 35
+
+                                                else
+                                                    shared.deviceInfo.window.height / 2
+
+                                            _ ->
+                                                0
+                                    ]
+                                    [ (el [ width fill ] <|
+                                        {- Resize-button -}
+                                        Input.button
+                                            [ centerX
+                                            , height <| px 20
+                                            , width <| px 200
+                                            ]
+                                            { onPress = Just OnInfoWindowResize
+                                            , label =
+                                                el
+                                                    [ centerX
+                                                    , centerY
+                                                    , height <| px 5
+                                                    , width <| px 40
+                                                    , BG.color <| rgb 0.4 0.4 0.4
+                                                    , Border.rounded 4
+                                                    ]
+                                                    none
+                                            }
+                                      )
+                                        |> E.map toContentMsg
+                                    , el
+                                        {- Header and close button -}
+                                        [ width fill
+                                        , Font.bold
+                                        , Font.center
+                                        , Font.size 20
+                                        , inFront <|
+                                            Input.button
+                                                [ Font.size 25
+                                                , moveLeft 5
+                                                , moveUp 5
                                                 ]
+                                                { onPress =
+                                                    case props.overlay of
+                                                        InfoWindow { onClose } ->
+                                                            Just onClose
+
+                                                        _ ->
+                                                            Nothing
+                                                , label =
+                                                    html <|
+                                                        FeatherIcons.toHtml [] <|
+                                                            FeatherIcons.withSize 30
+                                                                FeatherIcons.x
+                                                }
+                                        ]
+                                      <|
+                                        case props.overlay of
+                                            InfoWindow { header } ->
+                                                text header
+
+                                            _ ->
                                                 none
+                                    , el [ paddingXY 0 20 ] <|
+                                        {- Information content -}
+                                        case props.overlay of
+                                            InfoWindow { info } ->
+                                                info
+
+                                            _ ->
+                                                none
+                                    ]
                            ]
                     )
                     [ case props.header of
@@ -397,11 +411,7 @@ viewHeader headerText =
         ([ width fill
          , Font.center
          , Font.bold
-
-         --  , padding 10
          , paddingEach { bottom = 10, top = 0, left = 0, right = 0 }
-
-         --  , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
          ]
             ++ CS.primary
         )
