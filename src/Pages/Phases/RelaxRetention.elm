@@ -32,7 +32,7 @@ page shared route =
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.SessionControls
-        { showCurrentCycle = Just <| SessionResults.finishedCycles shared.results
+        { currentCycle = SessionResults.finishedCycles shared.results
         , controlsTop = []
         , controlsBottom = [ viewCancelButton shared model ]
         , fadeOut = NoFade

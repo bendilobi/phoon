@@ -14,6 +14,7 @@ import Layouts
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session
+import Lib.SessionResults as SessionResults
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
@@ -36,7 +37,7 @@ page shared route =
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.SessionControls
-        { showCurrentCycle = Nothing
+        { currentCycle = SessionResults.finishedCycles shared.results
         , controlsTop = []
         , controlsBottom = [ viewCancelButton shared model ]
         , fadeOut = model.fadeOut
@@ -109,12 +110,9 @@ update shared msg model =
                 , fadeOut =
                     if shared.previousPath == Session.phasePath Session.End then
                         NoFade
-                        -- else
-                        -- newState == Button.Triggered
 
                     else if newState == Button.Triggered then
                         FadeWith Fading.sessionFadingColor
-                        --CS.primaryColors.primary
 
                     else
                         NoFade
@@ -124,7 +122,6 @@ update shared msg model =
                     Effect.cancelSession shared.session
 
                 else
-                    -- Effect.navigate True shared.previousPath
                     Effect.sendCmd <| Delay.after Fading.duration FadeOutFinished
 
               else
@@ -166,26 +163,22 @@ view shared model =
         CS.phaseSessionStart shared.colorScheme
     , element =
         column [ width fill, height fill, spacing 100 ]
-            [ row
-                [ spacing 100
-                , centerX
-                , paddingEach { top = 150, bottom = 0, left = 0, right = 0 }
-                ]
-                [ el
+            [ -- row
+              -- [ spacing 100
+              -- , centerX
+              -- , paddingEach { top = 150, bottom = 0, left = 0, right = 0 }
+              -- ]
+              -- [
+              el [ height fill, width fill ] <|
+                el
                     [ centerX
-                    , centerY
-                    , transparent <| model.ticks < 2
+                    , transparent <| model.ticks < 1
+                    , alignBottom
                     ]
-                  <|
+                <|
                     viewReminder shared FeatherIcons.volume2
-                , el
-                    [ centerX
-                    , centerY
-                    , transparent <| model.ticks < 4
-                    ]
-                  <|
-                    viewReminder shared FeatherIcons.bellOff
-                ]
+
+            -- ]
             , el [ width fill, height fill ] <|
                 if model.fadeInFinished then
                     el [ centerX ] <|
@@ -206,39 +199,50 @@ view shared model =
 
                 else
                     none
-            , viewHints model
+
+            -- , viewHints model
+            , el [ width fill, height fill ] <|
+                el
+                    [ centerX
+
+                    -- , centerY
+                    , transparent <| model.ticks < 2
+                    ]
+                <|
+                    viewReminder shared FeatherIcons.bellOff
             ]
     }
 
 
-viewHints : Model -> Element msg
-viewHints model =
-    let
-        bullet : String -> Element msg
-        bullet content =
-            row [ spacing 8 ]
-                [ el [ alignTop, Font.bold ] <| text "•"
-                , paragraph
-                    [ --- This is a bugfix for (it seems) a bug in elm-ui...
-                      --- See https://github.com/mdgriffith/elm-ui/issues/124
-                      --- Without this, the button that is overlayed on swipe in the
-                      --- SessionControls is not clickable at first, only on the second
-                      --- tap...
-                      htmlAttribute <| Html.Attributes.style "pointer-events" "none"
-                    ]
-                    [ text content ]
-                ]
-    in
-    column
-        [ spacing 20
-        , paddingEach { left = 70, right = 70, top = 0, bottom = 100 }
-        , Font.size 15
-        , transparent <| model.ticks < 8
-        ]
-        [ bullet "Tippe mit drei Fingern, um jeweils zur nächsten Übungsphase zu gehen"
-        , bullet "Wische mit einem Finger von links nach rechts, um Optionen anzuzeigen"
-        , bullet "Teste hier den Sound durch Tipp mit einem Finger"
-        ]
+
+-- viewHints : Model -> Element msg
+-- viewHints model =
+--     let
+--         bullet : String -> Element msg
+--         bullet content =
+--             row [ spacing 8 ]
+--                 [ el [ alignTop, Font.bold ] <| text "•"
+--                 , paragraph
+--                     [ --- This is a bugfix for (it seems) a bug in elm-ui...
+--                       --- See https://github.com/mdgriffith/elm-ui/issues/124
+--                       --- Without this, the button that is overlayed on swipe in the
+--                       --- SessionControls is not clickable at first, only on the second
+--                       --- tap...
+--                       htmlAttribute <| Html.Attributes.style "pointer-events" "none"
+--                     ]
+--                     [ text content ]
+--                 ]
+--     in
+--     column
+--         [ spacing 20
+--         , paddingEach { left = 70, right = 70, top = 0, bottom = 100 }
+--         , Font.size 15
+--         , transparent <| model.ticks < 8
+--         ]
+--         [ bullet "Tippe mit drei Fingern, um jeweils zur nächsten Übungsphase zu gehen"
+--         , bullet "Wische mit einem Finger von links nach rechts, um Optionen anzuzeigen"
+--         , bullet "Teste hier den Sound durch Tipp mit einem Finger"
+--         ]
 
 
 viewReminder : Shared.Model -> FeatherIcons.Icon -> Element msg
