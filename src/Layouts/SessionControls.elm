@@ -239,111 +239,73 @@ view props shared route { toContentMsg, model, content } =
                     ]
             ]
         <|
-            column
+            el
                 [ width fill
                 , height fill
-                ]
-                [ --     el
-                  --     ([ width fill
-                  --      , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                  --      ]
-                  --         ++ CS.primary
-                  --     )
-                  --   <|
-                  --     el
-                  --         [ centerX
-                  --         , paddingEach { bottom = 10, top = 0, left = 0, right = 0 }
-                  --         , Font.size 30
-                  --         ]
-                  --     <|
-                  --         text <|
-                  --             case props.showCurrentCycle of
-                  --                 Nothing ->
-                  --                     let
-                  --                         remainingCycles =
-                  --                             Session.remainingCycles shared.session
-                  --                         cycles =
-                  --                             String.fromInt <|
-                  --                                 if remainingCycles > 0 then
-                  --                                     remainingCycles
-                  --                                 else
-                  --                                     SessionResults.finishedCycles shared.results
-                  --                     in
-                  --                     cycles ++ " Runden"
-                  --                 Just cycle ->
-                  --                     "Runde "
-                  --                         ++ String.fromInt cycle
-                  let
-                    viewCycle : Bool -> Bool -> Element msg
-                    viewCycle completed final =
-                        let
-                            color =
-                                if completed then
-                                    CS.primaryColors.font
+                , inFront <|
+                    let
+                        viewCycle : Bool -> Bool -> Element msg
+                        viewCycle completed final =
+                            let
+                                color =
+                                    if completed then
+                                        CS.primaryColors.font
 
-                                else
-                                    rgb 0.3 0.3 0.3
-                        in
-                        row [ width fill, centerY ]
-                            [ el
-                                [ width fill
-                                , centerY
-                                , height <| px 14
-                                , Border.rounded 7
-                                , BG.color color
+                                    else
+                                        rgb 0.3 0.3 0.3
+                            in
+                            row [ width fill, centerY ]
+                                [ el
+                                    [ width fill
+                                    , centerY
+                                    , height <| px 14
+                                    , Border.rounded 7
+                                    , BG.color color
+                                    ]
+                                    none
+                                , el
+                                    [ width <| px 15
+                                    , centerY
+                                    , height <| px 1
+                                    , BG.color color
+
+                                    {- The rightmost connector will be transparent and its width must be
+                                       subtracted from the right padding => all the cycle-symbols will be the
+                                       same size by using width fill.
+                                    -}
+                                    , transparent final
+                                    ]
+                                    none
                                 ]
-                                none
-                            , el
-                                [ width <| px 15
-                                , centerY
-                                , height <| px 1
-                                , BG.color color
-
-                                {- The rightmost connector will be transparent and its width must be
-                                   subtracted from the right padding => all the cycle-symbols will be the
-                                   same size by using width fill.
-                                -}
-                                , transparent final
-                                ]
-                                none
-                            ]
-                  in
-                  el
-                    ([ width fill
-
-                     --  , height <| px 30
-                     , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                     ]
-                        ++ CS.primary
-                    )
-                  <|
-                    (row
-                        [ width fill
-                        , height fill
-                        , paddingEach { left = 30, right = 15, top = 5, bottom = 15 }
-                        ]
-                     <|
-                        (--TODO: Kann ich die erledigten Cycles im SessionStart anzeigen, wenn eine Runde angehängt wird
-                         --  let
-                         --     cycle =
-                         --         SessionResults.finishedCycles shared.results + 1
-                         --  in
-                         List.map
-                            (\cycleNr ->
-                                viewCycle True
-                                    (Session.remainingCycles shared.session == 0 && cycleNr == props.currentCycle)
-                            )
-                         <|
-                            List.range 1 props.currentCycle
+                    in
+                    el
+                        ([ width fill
+                         , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                         ]
+                            ++ CS.primary
                         )
-                            ++ (List.map (\cycleNr -> viewCycle False (cycleNr == Session.remainingCycles shared.session)) <|
-                                    List.range 1 <|
-                                        Session.remainingCycles shared.session
-                               )
-                     -- [ viewCycle True False, viewCycle True False, viewCycle False False, viewCycle False True ]
-                    )
-                , content.element
+                    <|
+                        (row
+                            [ width fill
+                            , height fill
+                            , paddingEach { left = 30, right = 15, top = 5, bottom = 15 }
+                            ]
+                         <|
+                            (List.map
+                                (\cycleNr ->
+                                    viewCycle True
+                                        (Session.remainingCycles shared.session == 0 && cycleNr == props.currentCycle)
+                                )
+                             <|
+                                List.range 1 props.currentCycle
+                            )
+                                ++ (List.map (\cycleNr -> viewCycle False (cycleNr == Session.remainingCycles shared.session)) <|
+                                        List.range 1 <|
+                                            Session.remainingCycles shared.session
+                                   )
+                        )
                 ]
+                content.element
     }
 
 
