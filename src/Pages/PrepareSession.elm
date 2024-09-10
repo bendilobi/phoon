@@ -109,7 +109,7 @@ update shared msg model =
                         FadeWith Fading.sessionFadingColor
 
                     else
-                        NoFade
+                        NoFade 
               }
             , case newState of
                 Button.Triggered ->
