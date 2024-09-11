@@ -822,7 +822,7 @@ viewSettings shared model pagePadding =
                 ]
               <|
                 text <|
-                    Millis.toString millis
+                    Millis.toString False millis
             , if Millis.toSeconds millis < 60 then
                 text " Sekunden"
 
@@ -896,7 +896,7 @@ viewSettings shared model pagePadding =
                 ]
               <|
                 text <|
-                    Millis.toString duration
+                    Millis.toString False duration
             , text <|
                 if Millis.toMinutes duration < 60 then
                     " Minuten"

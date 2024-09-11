@@ -111,7 +111,7 @@ view (Settings settings) =
                 , CA.color <| Utils.colorToHex settings.copyColor
                 , CA.ellipsis labelWidth 50
                 ]
-                [ Svg.text <| Millis.toString <| Millis.fromSeconds <| round max ]
+                [ Svg.text <| Millis.toString True <| Millis.fromSeconds <| round max ]
             ]
             |> html
         )

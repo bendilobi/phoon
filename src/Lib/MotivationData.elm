@@ -4,6 +4,7 @@ module Lib.MotivationData exposing
     , encoder
     , lastSessionDate
     , maxRetention
+    , maxStreak
     , meanRetentionTimes
     , series
     , streakFreezeDays
@@ -29,6 +30,7 @@ type MotivationData
         , lastSessionDate : Date.Date
         , meanRetentiontimes : List Milliseconds
         , maxRetention : Milliseconds
+        , maxStreak : Int
         }
 
 
@@ -36,8 +38,8 @@ type MotivationData
 -- CREATION
 
 
-create : Int -> Float -> Int -> Date.Date -> List Milliseconds -> Milliseconds -> MotivationData
-create streak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes maxRet =
+create : Int -> Float -> Int -> Date.Date -> List Milliseconds -> Milliseconds -> Int -> MotivationData
+create streak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes maxRet maxStrk =
     MotivationData
         { streak = streak
         , streakFreezeDays = streakFreezeD
@@ -45,6 +47,7 @@ create streak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes max
         , lastSessionDate = lastSessDate
         , meanRetentiontimes = meanRetentiontimes
         , maxRetention = maxRet
+        , maxStreak = maxStrk
         }
 
 
@@ -100,6 +103,7 @@ update results today practiceFrequencyTarget motivationData =
                             , lastSessionDate = today
                             , meanRetentiontimes = [ mean ]
                             , maxRetention = maxTime
+                            , maxStreak = 1
                             }
 
                 Just (MotivationData motData) ->
@@ -131,17 +135,19 @@ update results today practiceFrequencyTarget motivationData =
 
                             else
                                 motData.streakFreezeDays
+
+                        streak =
+                            if streakValid then
+                                motData.streak + 1
+
+                            else
+                                -- Begin a new streak since streak freeze doesn't cover all missed days
+                                1
                     in
                     Just <|
                         MotivationData
                             { motData
-                                | streak =
-                                    if streakValid then
-                                        motData.streak + 1
-
-                                    else
-                                        -- Begin a new streak since streak freeze doesn't cover all missed days
-                                        1
+                                | streak = streak
 
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
@@ -177,6 +183,7 @@ update results today practiceFrequencyTarget motivationData =
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
+                                , maxStreak = max streak motData.streak
                             }
 
 
@@ -202,6 +209,11 @@ meanRetentionTimes (MotivationData motData) =
 maxRetention : MotivationData -> Milliseconds
 maxRetention (MotivationData motData) =
     motData.maxRetention
+
+
+maxStreak : MotivationData -> Int
+maxStreak (MotivationData motData) =
+    motData.maxStreak
 
 
 streakFreezeDays : MotivationData -> Float
@@ -238,6 +250,7 @@ fieldnames :
     , lastSessionDate : String
     , meanRetentiontimes : String
     , maxRetention : String
+    , maxStreak : String
     }
 fieldnames =
     { series = "series"
@@ -246,6 +259,7 @@ fieldnames =
     , lastSessionDate = "lastSessionDate"
     , meanRetentiontimes = "meanRetentiontimes"
     , maxRetention = "maxRetention"
+    , maxStreak = "maxStreak"
     }
 
 
@@ -263,6 +277,7 @@ encoder (MotivationData motData) =
                 )
           )
         , ( fieldnames.maxRetention, Json.Encode.int (motData.maxRetention |> Millis.toSeconds) )
+        , ( fieldnames.maxStreak, Json.Encode.int motData.maxStreak )
         ]
 
 
@@ -280,3 +295,4 @@ decoder =
                 )
             )
         |> required fieldnames.maxRetention (Json.Decode.int |> Json.Decode.map Millis.fromSeconds)
+        |> optional fieldnames.maxStreak Json.Decode.int 0

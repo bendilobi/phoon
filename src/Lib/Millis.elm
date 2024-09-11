@@ -46,8 +46,8 @@ sum list =
     list |> List.map toInt |> List.sum |> fromInt
 
 
-toString : Milliseconds -> String
-toString millis =
+toString : Bool -> Milliseconds -> String
+toString minutesMandatory millis =
     let
         sec =
             toSeconds millis
@@ -74,6 +74,11 @@ toString millis =
             else if minutes > 0 then
                 [ String.fromInt minutes
                 , pad <| String.fromInt seconds
+                ]
+
+            else if minutesMandatory then
+                [ "0"
+                , String.fromInt seconds
                 ]
 
             else

@@ -104,7 +104,7 @@ view shared model =
         el [ width fill, height fill ] <|
             el [ Font.size 30, centerX, centerY ] <|
                 text <|
-                    Millis.toString <|
+                    Millis.toString False <|
                         Millis.fromSeconds <|
                             SessionResults.currentRetentionTime shared.results
     }

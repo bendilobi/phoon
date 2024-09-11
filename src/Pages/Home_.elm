@@ -10,6 +10,7 @@ import Element.Font as Font
 import Layouts
 import Layouts.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Utils as Utils
@@ -77,6 +78,31 @@ toLayout shared model =
                                     , paddingXY 20 0
                                     ]
                                     [ bullet <|
+                                        paragraph []
+                                            [ text "Bisher längste Serie: "
+                                            , text <|
+                                                case shared.motivationData of
+                                                    Nothing ->
+                                                        ""
+
+                                                    Just data ->
+                                                        MotivationData.maxStreak data
+                                                            |> String.fromInt
+                                            ]
+                                    , bullet <|
+                                        paragraph []
+                                            [ text "Bisher längste Retention: "
+                                            , text <|
+                                                case shared.motivationData of
+                                                    Nothing ->
+                                                        ""
+
+                                                    Just data ->
+                                                        MotivationData.maxRetention data
+                                                            |> Millis.toString True
+                                            , text " Minuten"
+                                            ]
+                                    , bullet <|
                                         paragraph []
                                             [ text "Freezes: "
                                             , text <|
