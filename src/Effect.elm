@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowMaximized, setMotivationData, setUpdateState, setWakeLock, soundEncoder, updateApp, updateSessionSettings, writeToClipboard
+    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, updateApp, updateSessionSettings, writeToClipboard
     )
 
 {-|
@@ -325,9 +325,9 @@ setMotivationData motData =
     SendSharedMsg <| Shared.Msg.SetMotivationData motData
 
 
-setInfoWindowMaximized : Bool -> Effect msg
-setInfoWindowMaximized maximized =
-    SendSharedMsg <| Shared.Msg.SetInfoWindowMaximized maximized
+setInfoWindowState : Shared.Model.InfoWindowState -> Effect msg
+setInfoWindowState state =
+    SendSharedMsg <| Shared.Msg.SetInfoWindowState state
 
 
 

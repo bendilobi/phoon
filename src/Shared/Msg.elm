@@ -40,4 +40,4 @@ type Msg
     | SetUpdateState Shared.Model.UpdateState
     | ReceivedVersionOnServer (Result Http.Error String)
     | SetMotivationData (Maybe MotivationData)
-    | SetInfoWindowMaximized Bool
+    | SetInfoWindowState Shared.Model.InfoWindowState

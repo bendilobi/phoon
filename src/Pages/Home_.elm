@@ -1,6 +1,5 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
-import Components.Dialog as Dialog
 import Date
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -8,8 +7,6 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
-import FeatherIcons exposing (alignCenter)
-import Html.Attributes
 import Layouts
 import Layouts.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -20,6 +17,7 @@ import Maybe
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
+import Shared.Model
 import Task
 import View exposing (View)
 
@@ -28,7 +26,7 @@ page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
         { init = init
-        , update = update
+        , update = update shared
         , subscriptions = subscriptions
         , view = view shared
         }
@@ -42,71 +40,72 @@ toLayout shared model =
         , enableScrolling = False
         , fadeOut = NoFade
         , overlay =
-            if model.debugInfoHidden then
-                Layouts.MainNav.NoOverlay
+            case shared.infoWindowState of
+                Shared.Model.Closed ->
+                    Layouts.MainNav.NoOverlay
 
-            else
-                let
-                    daysSinceLastSession =
-                        shared.motivationData
-                            |> Maybe.map MotivationData.lastSessionDate
-                            |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
-                            |> Maybe.withDefault 0
+                _ ->
+                    let
+                        daysSinceLastSession =
+                            shared.motivationData
+                                |> Maybe.map MotivationData.lastSessionDate
+                                |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
+                                |> Maybe.withDefault 0
 
-                    initialTarget =
-                        shared.motivationData
-                            |> Maybe.map MotivationData.streakInitialTarget
-                            |> Maybe.withDefault 4
-                            |> String.fromInt
-                in
-                Layouts.MainNav.InfoWindow
-                    { header = "Serie"
-                    , info =
-                        let
-                            --TODO: Das zu den Utils verschieben?
-                            bullet : Element msg -> Element msg
-                            bullet content =
-                                row [ spacing 8 ]
-                                    [ el [ alignTop, Font.bold ] <| text "•"
-                                    , content
+                        initialTarget =
+                            shared.motivationData
+                                |> Maybe.map MotivationData.streakInitialTarget
+                                |> Maybe.withDefault 4
+                                |> String.fromInt
+                    in
+                    Layouts.MainNav.InfoWindow
+                        { header = "Serie"
+                        , info =
+                            let
+                                --TODO: Das zu den Utils verschieben?
+                                bullet : Element msg -> Element msg
+                                bullet content =
+                                    row [ spacing 8 ]
+                                        [ el [ alignTop, Font.bold ] <| text "•"
+                                        , content
+                                        ]
+                            in
+                            column [ spacing 20, Font.size 15 ]
+                                [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
+                                , column
+                                    [ spacing 20
+                                    , paddingXY 20 0
                                     ]
-                        in
-                        column [ spacing 20, Font.size 15 ]
-                            [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
-                            , column
-                                [ spacing 20
-                                , paddingXY 20 0
-                                ]
-                                [ bullet <|
-                                    paragraph []
-                                        [ text "Freezes: "
-                                        , text <|
-                                            case shared.motivationData of
-                                                Nothing ->
-                                                    ""
+                                    [ bullet <|
+                                        paragraph []
+                                            [ text "Freezes: "
+                                            , text <|
+                                                case shared.motivationData of
+                                                    Nothing ->
+                                                        ""
 
-                                                Just data ->
-                                                    String.fromFloat <| MotivationData.streakFreezeDays data
-                                        ]
-                                , bullet <|
-                                    paragraph []
-                                        [ text "Tage seit letzter Sitzung: "
-                                        , text <| String.fromInt daysSinceLastSession
-                                        ]
-                                , bullet <|
-                                    paragraph []
-                                        [ text "Übungsziel: "
-                                        , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
-                                        ]
-                                , bullet <|
-                                    paragraph []
-                                        [ text <| "Übungsziel zu Beginn: "
-                                        , text <| initialTarget
-                                        ]
+                                                    Just data ->
+                                                        String.fromFloat <| MotivationData.streakFreezeDays data
+                                            ]
+                                    , bullet <|
+                                        paragraph []
+                                            [ text "Tage seit letzter Sitzung: "
+                                            , text <| String.fromInt daysSinceLastSession
+                                            ]
+                                    , bullet <|
+                                        paragraph []
+                                            [ text "Übungsziel: "
+                                            , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
+                                            ]
+                                    , bullet <|
+                                        paragraph []
+                                            [ text <| "Übungsziel zu Beginn: "
+                                            , text <| initialTarget
+                                            ]
+                                    ]
                                 ]
-                            ]
-                    , onClose = DebugInfoToggled
-                    }
+                        , onClose = DebugInfoToggled
+                        }
         }
 
 
@@ -115,12 +114,12 @@ toLayout shared model =
 
 
 type alias Model =
-    { debugInfoHidden : Bool }
+    {}
 
 
 init : () -> ( Model, Effect Msg )
 init () =
-    ( { debugInfoHidden = True }
+    ( {}
     , Effect.sendCmd <| Task.perform TodayIs Date.today
     )
 
@@ -138,8 +137,8 @@ type Msg
 -- | NoOp
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update shared msg model =
     case msg of
         TodayIs date ->
             ( model
@@ -147,14 +146,17 @@ update msg model =
             )
 
         DebugInfoToggled ->
-            ( { model | debugInfoHidden = not model.debugInfoHidden }
-            , Effect.setInfoWindowMaximized False
+            ( model
+            , case shared.infoWindowState of
+                Shared.Model.Closed ->
+                    Effect.setInfoWindowState Shared.Model.Half
+
+                _ ->
+                    Effect.setInfoWindowState Shared.Model.Closed
             )
 
 
 
--- NoOp ->
---     ( model, Effect.none )
 -- SUBSCRIPTIONS
 
 
@@ -173,32 +175,14 @@ view shared model =
     , attributes =
         CS.primaryMotivation shared.colorScheme
     , element =
-        -- viewMotivationData model shared.deviceInfo shared.today shared.motivationData shared.colorScheme
         viewMotivationData shared model
     }
-
-
-
--- viewMotivationData : Model -> Utils.Device -> Date.Date -> Maybe MotivationData -> ColorScheme -> Element Msg
--- viewMotivationData model deviceInfo today motData colorScheme =
 
 
 viewMotivationData : Shared.Model -> Model -> Element Msg
 viewMotivationData shared model =
     --TODO: Diese ganze Funktion übersichtlicher aufbauen -> case für Motivationdata ganz am Anfang, etc.
     let
-        -- daysSinceLastSession =
-        --     shared.motivationData
-        --         |> Maybe.map MotivationData.lastSessionDate
-        --         |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
-        --         |> Maybe.withDefault 0
-        -- streakValid =
-        --     ((daysSinceLastSession - (floor <| Maybe.withDefault 0 <| Maybe.map MotivationData.streakFreezeDays shared.motivationData))
-        --         < 2
-        --     )
-        --         && ((shared.motivationData |> Maybe.map MotivationData.streakInitialTarget |> Maybe.withDefault 4)
-        --                 <= shared.sessionSettings.practiceFrequencyTarget
-        --            )
         { streakValid, daysSinceLastSession } =
             case shared.motivationData of
                 Nothing ->
@@ -265,28 +249,6 @@ viewMotivationData shared model =
                             text <|
                                 String.fromInt <|
                                     daysSinceLastSession
-
-        -- , paragraph
-        --     [ width fill
-        --     , Font.bold
-        --     , Font.size 20
-        --     , Font.center
-        --     ]
-        --     [ text <|
-        --         case motData of
-        --             Nothing ->
-        --                 "Keine Motivationsdaten gespeichert"
-        --             Just data ->
-        --                 if seriesContinued then
-        --                     if MotivationData.series data == 1 then
-        --                         "...Tag praktiziert!"
-        --                     else
-        --                         "...Tage durchgehend praktiziert! Super!"
-        --                 else if daysSinceLastSession - 1 == 1 then
-        --                     "...Tag ausgelassen..."
-        --                 else
-        --                     "...Tage ausgelassen... hm..."
-        --     ]
         , paragraph
             [ width fill
             , Font.bold
@@ -328,24 +290,6 @@ viewMotivationData shared model =
                                     none
                            )
             ]
-
-        -- , paragraph
-        --     [ width fill
-        --     -- , Font.bold
-        --     -- , Font.size 20
-        --     , Font.center
-        --     , transparent model.debugInfoHidden
-        --     ]
-        --     [ text "Freezes: "
-        --     , text <|
-        --         case motData of
-        --             Nothing ->
-        --                 ""
-        --             Just data ->
-        --                 String.fromFloat <| MotivationData.streakFreezeDays data
-        --     , text "; Tage seit letzter Sitzung: "
-        --     , text <| String.fromInt daysSinceLastSession
-        --     ]
         ]
 
 

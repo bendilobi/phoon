@@ -1,4 +1,4 @@
-module Shared.Model exposing (Model, UpdateState(..))
+module Shared.Model exposing (InfoWindowState(..), Model, UpdateState(..))
 
 import Api
 import Date
@@ -42,8 +42,14 @@ type alias Model =
     --TODO: Das ist hier in Shared, damit die Seiten es auf False setzten können
     --      und es damit nicht maximiert ist, wenn das Infofenster neu gezeigt wird.
     --      => Kann ich das besser lösen?
-    , infoWindowMaximized : Bool
+    , infoWindowState : InfoWindowState
     }
+
+
+type InfoWindowState
+    = Closed
+    | Half
+    | Max
 
 
 type UpdateState

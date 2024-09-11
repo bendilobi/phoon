@@ -87,6 +87,8 @@ type alias Model =
     , updateAcknowledged : Bool
     , fadeState : FadeState
     , swipeGesture : Swipe.Gesture
+    , swipeInitialY : Maybe Float
+    , swipeLocationY : Maybe Float
     }
 
 
@@ -97,6 +99,8 @@ init shared _ =
       , updateAcknowledged = False
       , fadeState = Fading.init shared.fadeIn
       , swipeGesture = Swipe.blanco
+      , swipeInitialY = Nothing
+      , swipeLocationY = Nothing
       }
     , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
     )
@@ -119,6 +123,7 @@ type Msg
     | UpdateFinished
     | ToggleFadeIn Fading.Trigger
     | OnInfoWindowResize
+    | SwipeStart Swipe.Event
     | Swipe Swipe.Event
     | SwipeEnd Swipe.Event
 
@@ -186,19 +191,77 @@ update shared msg model =
 
         OnInfoWindowResize ->
             ( model
-            , Effect.setInfoWindowMaximized <| not shared.infoWindowMaximized
+            , case shared.infoWindowState of
+                Shared.Model.Half ->
+                    Effect.setInfoWindowState Shared.Model.Max
+
+                Shared.Model.Max ->
+                    Effect.setInfoWindowState Shared.Model.Half
+
+                Shared.Model.Closed ->
+                    Effect.none
+            )
+
+        SwipeStart touch ->
+            ( { model
+                | swipeGesture = Swipe.record touch model.swipeGesture
+                , swipeInitialY = Just <| .y <| Swipe.locate touch
+              }
+            , Effect.none
             )
 
         Swipe touch ->
-            --TODO: Position des InfoWindow mitführen
-            ( { model | swipeGesture = Swipe.record touch model.swipeGesture }
+            ( { model
+                | swipeGesture = Swipe.record touch model.swipeGesture
+                , swipeLocationY = Swipe.locate touch |> .y |> Just
+              }
             , Effect.none
             )
 
         SwipeEnd touch ->
-            --TODO: Wenn upSwipe über der Schwelle -> maximieren
-            --      wenn downSwipe über Schwelle -> close oder half
-            ( { model | swipeGesture = Swipe.blanco }, Effect.none )
+            let
+                gesture =
+                    Swipe.record touch model.swipeGesture
+
+                swipeThreshold =
+                    shared.deviceInfo.window.height / 4
+
+                switchDown =
+                    Swipe.isDownSwipe swipeThreshold gesture
+
+                switchUp =
+                    Swipe.isUpSwipe swipeThreshold gesture
+            in
+            ( { model
+                | swipeGesture = Swipe.blanco
+                , swipeInitialY = Nothing
+                , swipeLocationY = Nothing
+              }
+            , if switchDown then
+                case shared.infoWindowState of
+                    Shared.Model.Max ->
+                        Effect.setInfoWindowState Shared.Model.Half
+
+                    Shared.Model.Half ->
+                        Effect.setInfoWindowState Shared.Model.Closed
+
+                    Shared.Model.Closed ->
+                        Effect.none
+
+              else if switchUp then
+                case shared.infoWindowState of
+                    Shared.Model.Max ->
+                        Effect.none
+
+                    Shared.Model.Half ->
+                        Effect.setInfoWindowState Shared.Model.Max
+
+                    Shared.Model.Closed ->
+                        Effect.none
+
+              else
+                Effect.none
+            )
 
 
 subscriptions : Model -> Sub Msg
@@ -276,16 +339,21 @@ view props shared route { toContentMsg, model, content } =
                                                 Fading.fadeOverlay props.fadeOut model.fadeState
 
                                     InfoWindow { onClose } ->
-                                        el
-                                            {- Transparent black overlay -}
-                                            [ width fill
-                                            , height fill
-                                            , alpha 0.1
-                                            , BG.color <| rgb 0 0 0
-                                            , Events.onClick onClose
-                                            ]
-                                            none
-                           , below <| viewInfoWindow props shared toContentMsg
+                                        case shared.infoWindowState of
+                                            Shared.Model.Closed ->
+                                                none
+
+                                            _ ->
+                                                el
+                                                    {- Transparent black overlay -}
+                                                    [ width fill
+                                                    , height fill
+                                                    , alpha 0.1
+                                                    , BG.color <| rgb 0 0 0
+                                                    , Events.onClick onClose
+                                                    ]
+                                                    none
+                           , below <| viewInfoWindow props shared model toContentMsg
                            ]
                     )
                     [ case props.header of
@@ -425,8 +493,8 @@ viewNavButton colorScheme route label icon path =
             ]
 
 
-viewInfoWindow : Props contentMsg -> Shared.Model -> (Msg -> contentMsg) -> Element contentMsg
-viewInfoWindow props shared toContentMsg =
+viewInfoWindow : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg) -> Element contentMsg
+viewInfoWindow props shared model toContentMsg =
     column
         [ width fill
         , BG.color <| rgba 1 1 1 0.5
@@ -452,11 +520,33 @@ viewInfoWindow props shared toContentMsg =
         , moveUp <|
             case props.overlay of
                 InfoWindow _ ->
-                    if shared.infoWindowMaximized then
-                        shared.deviceInfo.window.height - 35
+                    let
+                        dragDistance =
+                            case ( model.swipeInitialY, model.swipeLocationY ) of
+                                ( Just initialY, Just currentY ) ->
+                                    currentY - initialY
 
-                    else
-                        shared.deviceInfo.window.height / 2
+                                ( _, _ ) ->
+                                    0
+
+                        topmostPos =
+                            shared.deviceInfo.window.height - 35
+
+                        middlePos =
+                            shared.deviceInfo.window.height / 2
+                    in
+                    (case shared.infoWindowState of
+                        Shared.Model.Max ->
+                            topmostPos - dragDistance
+
+                        Shared.Model.Half ->
+                            middlePos - dragDistance
+
+                        Shared.Model.Closed ->
+                            0
+                    )
+                        |> min topmostPos
+                        |> max 0
 
                 _ ->
                     0
@@ -465,7 +555,7 @@ viewInfoWindow props shared toContentMsg =
                 [ (el
                     [ width fill
                     , height fill
-                    , htmlAttribute <| Swipe.onStart Swipe
+                    , htmlAttribute <| Swipe.onStart SwipeStart
                     , htmlAttribute <| Swipe.onMove Swipe
                     , htmlAttribute <| Swipe.onEnd SwipeEnd
 
@@ -478,18 +568,22 @@ viewInfoWindow props shared toContentMsg =
                         {- Resize-button -}
                         Input.button
                             [ centerX
-                            , height <| px 20
-                            , width <| px 200
+                            , height <| px 25
+
+                            -- , width <| px 200
+                            , width fill
+
+                            -- , BG.color <| rgb 1 0 0
+                            , padding 5
                             ]
                             { onPress = Just OnInfoWindowResize
                             , label =
                                 el
-                                    [ centerX
-                                    , centerY
-                                    , height <| px 5
+                                    [ height <| px 5
                                     , width <| px 40
                                     , BG.color <| rgb 0.4 0.4 0.4
                                     , Border.rounded 4
+                                    , alignTop
                                     ]
                                     none
                             }
@@ -515,32 +609,12 @@ viewInfoWindow props shared toContentMsg =
                 ]
         ]
         [ el
-            {- Header and close button -}
+            {- Header -}
             [ width fill
             , Font.bold
             , Font.center
             , Font.size 20
             , padding 20
-
-            -- , inFront <|
-            --     --TODO: Einen Weg finden, den Button über dem Swipe-Overlay anzuzeigen
-            --     Input.button
-            --         [ Font.size 25
-            --         , moveLeft 5
-            --         , moveUp 5
-            --         ]
-            --         { onPress =
-            --             case props.overlay of
-            --                 InfoWindow { onClose } ->
-            --                     Just onClose
-            --                 _ ->
-            --                     Nothing
-            --         , label =
-            --             html <|
-            --                 FeatherIcons.toHtml [] <|
-            --                     FeatherIcons.withSize 30
-            --                         FeatherIcons.x
-            --         }
             ]
           <|
             case props.overlay of
