@@ -13,6 +13,7 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading exposing (Trigger(..))
+import Lib.SafeArea as SafeArea exposing (SafeArea)
 import Lib.Utils as Utils
 import Maybe
 import Page exposing (Page)
@@ -251,7 +252,8 @@ viewMotivationData shared model =
 
                             streakWidgetSize =
                                 min window.width window.height
-                                    * 0.8
+                                    |> (\size -> size - (SafeArea.maxX shared.safeAreaInset |> toFloat))
+                                    |> (*) 0.8
                                     |> round
                         in
                         viewStreak
@@ -323,6 +325,7 @@ viewStreak : ColorScheme -> Int -> Int -> Bool -> Int -> Element msg
 viewStreak colorScheme size freezes freezeInDanger streak =
     let
         ringSizes =
+            --TODO: Statt statischen Größen auf "width fill" und entsprechendem Padding basieren?
             List.foldl (\ringNumber sizes -> size - (ringNumber * 20) :: sizes) [] <|
                 List.range 0 (freezes - 1)
 

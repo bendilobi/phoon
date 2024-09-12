@@ -379,7 +379,7 @@ view props shared route { toContentMsg, model, content } =
                     , el
                         ([ height fill
                          , width fill
-                         , paddingEach <| SafeArea.paddingX shared.safeAreaInset
+                         , paddingEach <| SafeArea.paddingEach shared.safeAreaInset
                          ]
                             ++ (if props.enableScrolling then
                                     --- Continuous scrolling by flicking on touch devices
@@ -510,18 +510,18 @@ viewNavButton colorScheme route label icon path =
 viewInfoWindow : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg) -> Element contentMsg
 viewInfoWindow props shared model toContentMsg =
     column
-        [ width fill
-        , BG.color <| rgba 1 1 1 0.5
-        , Font.color <| rgb 0 0 0
+        [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
+        , centerX
+        , Font.color <| CS.primaryColors.primary
+        , BG.color <| rgba255 241 241 230 0.5
         , paddingEach { top = 0, left = 20, right = 20, bottom = 20 }
-
-        -- , spacing 10
         , Border.roundEach
             { topLeft = 25
             , topRight = 25
             , bottomLeft = 0
             , bottomRight = 0
             }
+        , clip
 
         --TODO: Prüfen, ob in iOS 18 dann die untere Variante funktioniert.let
         --      Anscheinend funktionierts nicht, wenn beide gleichzeitig gesetzt sind...
@@ -572,8 +572,6 @@ viewInfoWindow props shared model toContentMsg =
                     , htmlAttribute <| Swipe.onStart SwipeStart
                     , htmlAttribute <| Swipe.onMove Swipe
                     , htmlAttribute <| Swipe.onEnd SwipeEnd
-
-                    -- , BG.color <| rgb 1 0 0
                     ]
                    <|
                     el
@@ -583,11 +581,7 @@ viewInfoWindow props shared model toContentMsg =
                         Input.button
                             [ centerX
                             , height <| px 25
-
-                            -- , width <| px 200
                             , width fill
-
-                            -- , BG.color <| rgb 1 0 0
                             , padding 5
                             ]
                             { onPress = Just OnInfoWindowResize
@@ -595,7 +589,7 @@ viewInfoWindow props shared model toContentMsg =
                                 el
                                     [ height <| px 5
                                     , width <| px 40
-                                    , BG.color <| rgb 0.4 0.4 0.4
+                                    , BG.color <| CS.greyOverTransparencyColor shared.colorScheme
                                     , Border.rounded 4
                                     , alignTop
                                     ]
@@ -604,8 +598,10 @@ viewInfoWindow props shared model toContentMsg =
                   )
                     |> E.map toContentMsg
                 , el [ paddingXY 15 0, moveUp <| shared.deviceInfo.window.height - 45 ] <|
+                    {- Close button -}
                     Input.button
                         [ Font.size 25
+                        , Font.color <| CS.greyOverTransparencyColor shared.colorScheme
                         ]
                         { onPress =
                             case props.overlay of
@@ -615,10 +611,10 @@ viewInfoWindow props shared model toContentMsg =
                                 _ ->
                                     Nothing
                         , label =
-                            html <|
-                                FeatherIcons.toHtml [] <|
-                                    FeatherIcons.withSize 30
-                                        FeatherIcons.x
+                            FeatherIcons.withSize 30 FeatherIcons.x
+                                |> FeatherIcons.withStrokeWidth 1.5
+                                |> FeatherIcons.toHtml []
+                                |> html
                         }
                 ]
         ]
@@ -644,4 +640,19 @@ viewInfoWindow props shared model toContentMsg =
 
             _ ->
                 none
+        , let
+            { top, bottom, left, right } =
+                SafeArea.paddingEach shared.safeAreaInset
+          in
+          paragraph [ paddingXY 0 20, Font.size 15 ]
+            [ el [ Font.bold ] <| text "Safe Area: "
+            , text "top: "
+            , text <| String.fromInt top
+            , text ", bottom : "
+            , text <| String.fromInt bottom
+            , text ", left: "
+            , text <| String.fromInt left
+            , text ", right: "
+            , text <| String.fromInt right
+            ]
         ]

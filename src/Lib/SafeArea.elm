@@ -24,6 +24,7 @@ paddingX : SafeArea -> Edges
 paddingX (Settings settings) =
     -- { settings | top = 0, bottom = 0 }
     --TODO: es hat immer nur maximal "left" einen Wert... Bug bei mir oder iOS?
+    --      => Scheint in iOS gewesen zu sein, beim iPhone 15, iOS 17.x gibts alle Werte
     { settings | top = 0, bottom = 0, right = settings.left }
 
 
@@ -53,7 +54,9 @@ decoder =
                 --TODO: Können eventuelle Fehler besser behandelt werden?
                 |> Maybe.withDefault 0
                 --- It seems Apple adds 15 pixels to the actual size of the notch (iPhone XR...)
-                |> (\sa -> sa - 15)
+                --- This seems to be due to the "island" being more spacious than the notch, since
+                --- it looks fine on iPhone 15
+                -- |> (\sa -> sa - 15)
                 |> max 0
 
         -- |> Maybe.map (\sal -> sal - 15)
