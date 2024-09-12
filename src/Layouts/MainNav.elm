@@ -388,7 +388,12 @@ view props shared route { toContentMsg, model, content } =
                     , el
                         ([ height fill
                          , width fill
-                         , paddingEach <| SafeArea.paddingEach shared.safeAreaInset
+                         , paddingEach <|
+                            if shared.deviceInfo.orientation == Portrait then
+                                { top = 0, bottom = 0, left = 0, right = 0 }
+
+                            else
+                                SafeArea.paddingEach shared.safeAreaInset
                          ]
                             ++ (if props.enableScrolling then
                                     --- Continuous scrolling by flicking on touch devices

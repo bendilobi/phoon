@@ -162,26 +162,40 @@ view shared model =
     , attributes =
         CS.phaseSessionStart shared.colorScheme
     , element =
-        column [ width fill, height fill, spacing 100 ]
+        let
+            container =
+                if shared.deviceInfo.orientation == Portrait then
+                    column
+
+                else
+                    row
+        in
+        container
+            [ width fill
+            , height fill
+            , spacing 100
+            ]
             [ -- row
               -- [ spacing 100
               -- , centerX
               -- , paddingEach { top = 150, bottom = 0, left = 0, right = 0 }
               -- ]
               -- [
-              el [ height fill, width fill ] <|
-                el
-                    [ centerX
-                    , transparent <| model.ticks < 1
-                    , alignBottom
-                    ]
-                <|
-                    viewReminder shared FeatherIcons.volume2
+              el [ height fill, width fill ] none
+            , el
+                [ centerX
+                , centerY
+                , transparent <| model.ticks < 1
+
+                -- , alignBottom
+                ]
+              <|
+                viewReminder shared FeatherIcons.volume2
 
             -- ]
             , el [ width fill, height fill ] <|
                 if model.fadeInFinished then
-                    el [ centerX ] <|
+                    el [ centerX, centerY ] <|
                         (Bubble.new
                             { model = model.bubble
                             , size =
@@ -201,15 +215,14 @@ view shared model =
                     none
 
             -- , viewHints model
-            , el [ width fill, height fill ] <|
-                el
-                    [ centerX
-
-                    -- , centerY
-                    , transparent <| model.ticks < 2
-                    ]
-                <|
-                    viewReminder shared FeatherIcons.bellOff
+            , el
+                [ centerX
+                , centerY
+                , transparent <| model.ticks < 2
+                ]
+              <|
+                viewReminder shared FeatherIcons.bellOff
+            , el [ width fill, height fill ] none
             ]
     }
 
