@@ -147,7 +147,14 @@ update shared msg model =
             )
 
         HiddenAt time ->
-            ( { model | lastHide = Just time }
+            ( { model
+                | lastHide = Just time
+
+                -- {- If the window gets hidden while swiping, forget the swipe state: -}
+                -- , swipeGesture = Swipe.blanco
+                -- , swipeInitialY = Nothing
+                -- , swipeLocationY = Nothing
+              }
             , Effect.none
             )
 
@@ -533,6 +540,13 @@ viewNavButton colorScheme route label icon iconFilled path =
 
 viewInfoWindow : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg) -> Element contentMsg
 viewInfoWindow props shared model toContentMsg =
+    let
+        topmostPos =
+            shared.deviceInfo.window.height - 35
+
+        middlePos =
+            (shared.deviceInfo.window.height / 2) + 25
+    in
     column
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
         , centerX
@@ -566,12 +580,6 @@ viewInfoWindow props shared model toContentMsg =
 
                                 ( _, _ ) ->
                                     0
-
-                        topmostPos =
-                            shared.deviceInfo.window.height - 35
-
-                        middlePos =
-                            shared.deviceInfo.window.height / 2
                     in
                     (case shared.infoWindowState of
                         Shared.Model.Max ->
@@ -589,7 +597,36 @@ viewInfoWindow props shared model toContentMsg =
                 _ ->
                     0
         , inFront <|
-            column [ width fill, height fill ]
+            {- Overlay for receiving touch events; with resize and close buttons in front -}
+            let
+                safeAreaBottom =
+                    SafeArea.paddingEach shared.safeAreaInset
+                        |> .bottom
+                        |> toFloat
+
+                touchAreaHeight =
+                    {- This is needed because of the "swipe from the bottom" - gesture in iOS:
+                       If the touch area covers everything including the safeAreaInset.bottom, touch events
+                       are triggered when the user does this gesture, but a swipeEnd event isn't happening
+                       so the gesture model isn't reset and the InfoWindow stays in the swiped-up position...
+                    -}
+                    case shared.infoWindowState of
+                        Shared.Model.Max ->
+                            topmostPos - safeAreaBottom
+
+                        Shared.Model.Half ->
+                            middlePos - safeAreaBottom
+
+                        Shared.Model.Closed ->
+                            0
+            in
+            column
+                [ width fill
+                , height <|
+                    px <|
+                        round <|
+                            touchAreaHeight
+                ]
                 [ (el
                     [ width fill
                     , height fill
@@ -621,7 +658,7 @@ viewInfoWindow props shared model toContentMsg =
                             }
                   )
                     |> E.map toContentMsg
-                , el [ paddingXY 15 0, moveUp <| shared.deviceInfo.window.height - 45 ] <|
+                , el [ paddingXY 15 0, moveUp <| touchAreaHeight - 45 ] <|
                     {- Close button -}
                     Input.button
                         [ Font.size 25
@@ -678,5 +715,11 @@ viewInfoWindow props shared model toContentMsg =
             , text <| String.fromInt left
             , text ", right: "
             , text <| String.fromInt right
+            ]
+        , paragraph [ Font.size 15 ]
+            [ text "SwipeInitial: "
+            , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY
+            , text ", CurrentY: "
+            , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeLocationY
             ]
         ]
