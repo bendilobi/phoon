@@ -226,8 +226,14 @@ update shared msg model =
                 swipeThreshold =
                     shared.deviceInfo.window.height / 4
 
+                bigSwipeThreshold =
+                    shared.deviceInfo.window.height - swipeThreshold
+
                 switchDown =
                     Swipe.isDownSwipe swipeThreshold gesture
+
+                switchCompletelyDown =
+                    Swipe.isDownSwipe bigSwipeThreshold gesture
 
                 switchUp =
                     Swipe.isUpSwipe swipeThreshold gesture
@@ -237,7 +243,15 @@ update shared msg model =
                 , swipeInitialY = Nothing
                 , swipeLocationY = Nothing
               }
-            , if switchDown then
+            , if switchCompletelyDown then
+                case shared.infoWindowState of
+                    Shared.Model.Max ->
+                        Effect.setInfoWindowState Shared.Model.Closed
+
+                    _ ->
+                        Effect.none
+
+              else if switchDown then
                 case shared.infoWindowState of
                     Shared.Model.Max ->
                         Effect.setInfoWindowState Shared.Model.Half
