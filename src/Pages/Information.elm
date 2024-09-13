@@ -54,50 +54,114 @@ toLayout shared model =
         , enableScrolling = True
         , fadeOut = model.fadeOut
         , overlay =
-            if not model.practiceTargetWarningShown then
-                Layouts.MainNav.NoOverlay
+            case model.dialogShown of
+                NoDialog ->
+                    Layouts.MainNav.NoOverlay
 
-            else
-                let
-                    initialFrequency =
-                        shared.motivationData
-                            |> Maybe.map MotivationData.streakInitialTarget
-                            |> Maybe.withDefault 4
-                            |> String.fromInt
-                in
-                Dialog.new
-                    { header = "Serie beenden?"
-                    , message =
-                        paragraph []
-                            [ text "Wenn Du das Übungsziel niedriger ansetzt als zu Beginn der Serie ("
-                            , text initialFrequency
-                            , text " Tage pro Woche), beginnt die Serie mit der nächsten Übung neu!"
+                PracticeTargetWarning ->
+                    let
+                        initialFrequency =
+                            shared.motivationData
+                                |> Maybe.map MotivationData.streakInitialTarget
+                                |> Maybe.withDefault 4
+                                |> String.fromInt
+                    in
+                    Dialog.new
+                        { header = "Serie beenden?"
+                        , message =
+                            paragraph []
+                                [ text "Wenn Du das Übungsziel niedriger ansetzt als zu Beginn der Serie ("
+                                , text initialFrequency
+                                , text " Tage pro Woche), beginnt die Serie mit der nächsten Übung neu!"
+                                ]
+                        , choices =
+                            [ Dialog.choice
+                                { label = "Serie beenden"
+                                , onChoose = OnDialogRestartStreak True
+                                }
+                            , Dialog.choice
+                                { label = "Ziel auf " ++ initialFrequency ++ " lassen"
+                                , onChoose = OnDialogRestartStreak False
+                                }
                             ]
-                    , choices =
-                        [ Dialog.choice
-                            { label = "Serie beenden"
-                            , onChoose = OnDialogRestartStreak True
-                            }
-                        , Dialog.choice
-                            { label = "Ziel auf " ++ initialFrequency ++ " lassen"
-                            , onChoose = OnDialogRestartStreak False
-                            }
-                        ]
-                    }
-                    |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
-                    |> Dialog.view shared.colorScheme
-                    |> Layouts.MainNav.ModalDialog
+                        }
+                        |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
+                        |> Dialog.view shared.colorScheme
+                        |> Layouts.MainNav.ModalDialog
+
+                DataPasteConfirmation motData ->
+                    Dialog.new
+                        { header = "Daten importieren?"
+                        , message =
+                            column [ width fill, spacing 20, padding 20 ]
+                                [ let
+                                    meanTimes =
+                                        MotivationData.meanRetentionTimes motData
+                                  in
+                                  if List.length meanTimes < 2 then
+                                    none
+
+                                  else
+                                    column [ width fill, spacing 10 ]
+                                        [ el [ centerX ] <| text "Retentionstrend:"
+                                        , column [ centerX ]
+                                            [ el [ centerX ] <|
+                                                (RetentionChart.new
+                                                    { width =
+                                                        (shared.deviceInfo.window.width * 0.8)
+                                                            - 40
+                                                            |> round
+
+                                                    -- (shared.deviceInfo.window.width |> round)
+                                                    --     - (SafeArea.maxX shared.safeAreaInset * 2)
+                                                    --     - (pagePadding + (hPad * 2))
+                                                    , height = 200
+                                                    , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
+                                                    , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
+                                                    , meanRetentionColor = CS.guideColor shared.colorScheme
+                                                    , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
+                                                    , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
+                                                    }
+                                                    |> RetentionChart.view
+                                                )
+                                            ]
+                                        ]
+                                ]
+                        , choices =
+                            [ Dialog.choice
+                                { label = "Importieren"
+                                , onChoose = OnReplaceMotivationData motData
+                                }
+                            , Dialog.choice
+                                { label = "Verwerfen"
+                                , onChoose = OnDialogCancel
+                                }
+                            ]
+                        }
+                        --TODO: Breite im Dialog selbst bestimmen
+                        |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
+                        |> Dialog.view shared.colorScheme
+                        |> Layouts.MainNav.ModalDialog
+
+                DataPasteFailure error ->
+                    Dialog.new
+                        { header = "Einfügen nicht möglich"
+                        , message = paragraph [] [ text "Das scheinen leider keine validen Ergebnisdaten zu sein..." ]
+                        , choices =
+                            [ Dialog.choice
+                                { label = "Schließen"
+                                , onChoose = OnDialogCancel
+                                }
+                            ]
+                        }
+                        |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
+                        |> Dialog.view shared.colorScheme
+                        |> Layouts.MainNav.ModalDialog
         }
 
 
 
 -- INIT
-
-
-type ClipboardData value
-    = NoData
-    | Success value
-    | Failure Decode.Error
 
 
 type alias Model =
@@ -108,18 +172,24 @@ type alias Model =
     , cycleCrementer : IntCrementer.Model
     , relaxRetDurCrementer : IntCrementer.Model
     , practiceFreqCrementer : IntCrementer.Model
-    , practiceTargetWarningShown : Bool
+    , dialogShown : DialogShown
     , copyButton : Button.Model
     , pasteButton : Button.Model
     , updateButton : Button.Model
     , reloadButton : Button.Model
-    , pastedMotivationData : ClipboardData MotivationData
     , replaceMotDataButton : Button.Model
     , fadeOut : Fading.Trigger
 
     -- , scaleTest : Bool
     -- , testButton : Button.Model
     }
+
+
+type DialogShown
+    = NoDialog
+    | PracticeTargetWarning
+    | DataPasteConfirmation MotivationData
+    | DataPasteFailure Decode.Error
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
@@ -136,12 +206,11 @@ init shared () =
       , cycleCrementer = IntCrementer.init
       , relaxRetDurCrementer = IntCrementer.init
       , practiceFreqCrementer = IntCrementer.init
-      , practiceTargetWarningShown = False
+      , dialogShown = NoDialog
       , copyButton = Button.init
       , pasteButton = Button.init
       , updateButton = Button.init
       , reloadButton = Button.init
-      , pastedMotivationData = NoData
       , replaceMotDataButton = Button.init
       , fadeOut = NoFade
 
@@ -186,11 +255,12 @@ type Msg
     | OnResetSettingsButton Button.Model
     | OnResetItemStatusButton Button.Model
     | ReceivedNewestVersionString (Result Http.Error String)
-    | OnReplaceMotivationDataButton MotivationData Button.Model
+    | OnReplaceMotivationData MotivationData
     | OnCopyButton Button.Model
     | OnPasteButton Button.Model
     | ReceivedClipboard Decode.Value
     | FadedOutBeforeUpdate
+    | OnDialogCancel
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -288,7 +358,7 @@ update shared msg model =
             if IntCrementer.wasTriggered newState then
                 ( { model
                     | practiceFreqCrementer = newState
-                    , practiceTargetWarningShown =
+                    , dialogShown =
                         let
                             streakValid =
                                 case shared.motivationData of
@@ -299,12 +369,18 @@ update shared msg model =
                                         MotivationData.streakInfo shared.today settings.practiceFrequencyTarget motData
                                             |> .streakValid
                         in
-                        streakValid
-                            && (frequency < initialFrequency)
-                            {- We only want to show the dialog if the user decremented
-                               from the initialFrequency
-                            -}
-                            && (settings.practiceFrequencyTarget == initialFrequency)
+                        if
+                            streakValid
+                                && (frequency < initialFrequency)
+                                {- We only want to show the dialog if the user decremented
+                                   from the initialFrequency
+                                -}
+                                && (settings.practiceFrequencyTarget == initialFrequency)
+                        then
+                            PracticeTargetWarning
+
+                        else
+                            NoDialog
                   }
                 , Effect.updateSessionSettings { settings | practiceFrequencyTarget = frequency }
                 )
@@ -322,7 +398,7 @@ update shared msg model =
                         |> Maybe.map MotivationData.streakInitialTarget
                         |> Maybe.withDefault 4
             in
-            ( { model | practiceTargetWarningShown = False }
+            ( { model | dialogShown = NoDialog }
             , if endStreak then
                 Effect.none
 
@@ -391,13 +467,9 @@ update shared msg model =
             , Effect.none
             )
 
-        OnReplaceMotivationDataButton motData newState ->
-            ( { model | replaceMotDataButton = newState }
-            , if newState == Button.Triggered then
-                Effect.setMotivationData <| Just motData
-
-              else
-                Effect.none
+        OnReplaceMotivationData motData ->
+            ( { model | dialogShown = NoDialog }
+            , Effect.setMotivationData <| Just motData
             )
 
         OnCopyButton newState ->
@@ -442,16 +514,21 @@ update shared msg model =
 
                         Ok string ->
                             string
-
-                pastedMotivationData =
+            in
+            ( { model
+                | dialogShown =
                     case Decode.decodeString MotivationData.decoder clipContent of
                         Err e ->
-                            Failure e
+                            DataPasteFailure e
 
                         Ok motDat ->
-                            Success motDat
-            in
-            ( { model | pastedMotivationData = pastedMotivationData }
+                            DataPasteConfirmation motDat
+              }
+            , Effect.none
+            )
+
+        OnDialogCancel ->
+            ( { model | dialogShown = NoDialog }
             , Effect.none
             )
 
@@ -496,7 +573,7 @@ view shared model =
             [ viewIntroduction shared model
             , viewUpdate shared model
             , viewRetentionTrend shared <| pagePadding * 2
-            , viewSettings shared model <| pagePadding * 2
+            , viewSettings shared model
             , viewTechInfo shared model
             ]
     }
@@ -636,8 +713,8 @@ viewRetentionTrend shared parentPadding =
                     ]
 
 
-viewSettings : Shared.Model -> Model -> Int -> Element Msg
-viewSettings shared model pagePadding =
+viewSettings : Shared.Model -> Model -> Element Msg
+viewSettings shared model =
     let
         hPad =
             20
@@ -905,15 +982,6 @@ viewSettings shared model pagePadding =
                     " Stunden"
             ]
         , el [ height <| px 15 ] none
-
-        --TODO: Eigene Überschrift? Dann muss "Zurücksetzen" aber unabhängig vom obigen möglich sein...
-        -- , el
-        --     [ Font.bold
-        --     , Font.size 20
-        --     , Font.color <| CS.guideColor shared.colorScheme
-        --     ]
-        --   <|
-        --     text "Häufigkeit vereinbaren"
         , column settingsAttrs
             [ if model.settingsItemShown == PracticeFrequencyTarget then
                 el lastItemAttrs <|
@@ -966,8 +1034,6 @@ viewSettings shared model pagePadding =
             ]
             [ text "Das Übungsziel bestimmt, wie häufig \"Schutzringe\" für die Fortsetzung der Serie hinzukommen. \"4 mal pro Woche\" bedeutet beispielsweise, dass für vier Übungen drei Ringe hinzukommen. Es können also drei von sieben Tagen freigenommen werden."
             ]
-
-        --TODO: Erklärenden Text zum Übungsziel anzeigen
         , if model.settingsItemShown == AppControls then
             --TODO: Was, wenn noch keine Motivationsdaten vorhanden?
             --      Buttons deaktivieren oder gar nicht anzeigen?
@@ -990,69 +1056,6 @@ viewSettings shared model pagePadding =
                                 }
                                 |> Button.withLightColor
                                 |> Button.view shared.colorScheme
-                            , case model.pastedMotivationData of
-                                NoData ->
-                                    none
-
-                                Failure err ->
-                                    paragraph [ Font.color <| CS.actionNeededColor shared.colorScheme ]
-                                        [ text "Das scheinen leider keine validen Ergebnisdaten zu sein..."
-                                        ]
-
-                                Success motData ->
-                                    column [ width fill, spacing 20 ]
-                                        [ el
-                                            [ Font.color <| CS.successColor shared.colorScheme
-                                            , Font.bold
-                                            ]
-                                          <|
-                                            text "Daten erfolgreich importiert!"
-
-                                        --TODO: Was sonst noch über die Daten zeigen?
-                                        , let
-                                            meanTimes =
-                                                MotivationData.meanRetentionTimes motData
-                                          in
-                                          if List.length meanTimes < 2 then
-                                            none
-
-                                          else
-                                            column [ width fill, spacing 10 ]
-                                                [ text "Retentionstrend:"
-                                                , column [ centerX ]
-                                                    [ el [ centerX ] <|
-                                                        (RetentionChart.new
-                                                            { width =
-                                                                (shared.deviceInfo.window.width |> round)
-                                                                    - (SafeArea.maxX shared.safeAreaInset * 2)
-                                                                    - (pagePadding + (hPad * 2))
-                                                            , height = 200
-                                                            , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
-                                                            , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
-                                                            , meanRetentionColor = CS.guideColor shared.colorScheme
-                                                            , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
-                                                            , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
-                                                            }
-                                                            |> RetentionChart.view
-                                                        )
-                                                    , el
-                                                        [ Font.size 15
-                                                        , centerX
-                                                        , paddingXY 0 50
-                                                        ]
-                                                      <|
-                                                        (Button.new
-                                                            { onPress = OnReplaceMotivationDataButton motData
-                                                            , label = text "Eingefügte Ergebnisse übernehmen"
-                                                            , model = model.replaceMotDataButton
-                                                            }
-                                                            |> Button.withLightColor
-                                                            |> Button.withTransparent
-                                                            |> Button.view shared.colorScheme
-                                                        )
-                                                    ]
-                                                ]
-                                        ]
                             ]
                     , el lastItemAttrs <|
                         (Button.new
@@ -1088,10 +1091,6 @@ viewSettingsItem { item, label, value, attributes } colorScheme =
         [ text label
         , el [ alignRight, Font.color <| CS.interactInactiveDarkerColor colorScheme ] <| text value
         ]
-
-
-
--- }
 
 
 viewTechInfo : Shared.Model -> Model -> Element Msg

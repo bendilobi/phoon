@@ -263,6 +263,8 @@ viewControlsBottom shared model =
     if SessionResults.finishedCycles shared.results > 0 then
         if model.confirmDialogShown then
             [ paragraph [ Font.center ] [ text "Retentionsdaten dieser Sitzung wirklich verwerfen?" ]
+
+            --TODO: Das hier stattdessen in einem Dialog-Overlay anbieten:
             , Button.new
                 { model = model.confirmButton
                 , label = text "Ja"
