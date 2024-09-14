@@ -2,19 +2,15 @@ module Components.Dialog exposing
     ( choice
     , new
     , view
-    , withWidth
     )
 
-import Chart.Attributes exposing (border)
 import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Html.Attributes
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Simple.Transition exposing (borderColor)
 
 
 
@@ -25,7 +21,7 @@ type Dialog msg
     = Settings
         { header : String
         , message : Element msg
-        , width : Length
+        , screenWidth : Float
         , choices : List (Choice msg)
         }
 
@@ -45,6 +41,7 @@ new :
     { header : String
     , message : Element msg
     , choices : List (Choice msg)
+    , screenWidth : Float
     }
     -> Dialog msg
 new props =
@@ -52,7 +49,7 @@ new props =
         { header = props.header
         , message = props.message
         , choices = props.choices
-        , width = px 300
+        , screenWidth = props.screenWidth
         }
 
 
@@ -70,14 +67,9 @@ choice props =
 
 
 -- MODIFIERS
-
-
-withWidth : Length -> Dialog msg -> Dialog msg
-withWidth length (Settings settings) =
-    Settings { settings | width = length }
-
-
-
+-- withWidth : Length -> Dialog msg -> Dialog msg
+-- withWidth length (Settings settings) =
+--     Settings { settings | screenWidth = length }
 -- VIEW
 
 
@@ -90,7 +82,7 @@ view colorScheme (Settings settings) =
     column
         [ centerX
         , centerY
-        , width settings.width
+        , width (shrink |> maximum (settings.screenWidth * 0.8 |> round))
         , BG.color <| rgb 1 1 1
         , Border.rounded 15
         , clip

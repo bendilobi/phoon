@@ -1,7 +1,6 @@
 module Pages.Information exposing (Model, Msg, page)
 
 import Api
-import Browser.Dom
 import Browser.Events
 import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
@@ -68,6 +67,7 @@ toLayout shared model =
                     in
                     Dialog.new
                         { header = "Serie beenden?"
+                        , screenWidth = shared.deviceInfo.window.width
                         , message =
                             paragraph []
                                 [ text "Wenn Du das Übungsziel niedriger ansetzt als zu Beginn der Serie ("
@@ -85,13 +85,13 @@ toLayout shared model =
                                 }
                             ]
                         }
-                        |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
                         |> Dialog.view shared.colorScheme
                         |> Layouts.MainNav.ModalDialog
 
                 DataPasteConfirmation motData ->
                     Dialog.new
                         { header = "Daten importieren?"
+                        , screenWidth = shared.deviceInfo.window.width
                         , message =
                             column
                                 [ width fill
@@ -143,14 +143,13 @@ toLayout shared model =
                                 }
                             ]
                         }
-                        --TODO: Breite im Dialog selbst bestimmen
-                        |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
                         |> Dialog.view shared.colorScheme
                         |> Layouts.MainNav.ModalDialog
 
                 DataPasteFailure error ->
                     Dialog.new
                         { header = "Einfügen nicht möglich"
+                        , screenWidth = shared.deviceInfo.window.width
                         , message = paragraph [] [ text "Das scheinen leider keine validen Ergebnisdaten zu sein..." ]
                         , choices =
                             [ Dialog.choice
@@ -159,7 +158,6 @@ toLayout shared model =
                                 }
                             ]
                         }
-                        |> Dialog.withWidth (shrink |> maximum (shared.deviceInfo.window.width * 0.8 |> round))
                         |> Dialog.view shared.colorScheme
                         |> Layouts.MainNav.ModalDialog
         }

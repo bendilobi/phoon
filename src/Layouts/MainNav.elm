@@ -22,7 +22,7 @@ import Route.Path
 import Shared
 import Shared.Model exposing (UpdateState(..))
 import Simple.Transition as Transition
-import Svg exposing (Svg, svg)
+import Svg
 import Svg.Attributes
 import Task
 import Time
