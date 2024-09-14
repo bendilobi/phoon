@@ -37,7 +37,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.6.554", False )
+    ( "0.6.555", False )
 
 
 appVersion =
@@ -183,6 +183,11 @@ init flagsResult route =
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
         , Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
         , Effect.checkVersion Shared.Msg.ReceivedVersionOnServer
+
+        {- Getting the safe area insets via flag at startup doesn't seem to work (they are always 0),
+           so we to this here:
+        -}
+        , Effect.getSafeArea
         ]
     )
 
