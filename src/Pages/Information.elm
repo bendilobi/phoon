@@ -93,7 +93,12 @@ toLayout shared model =
                     Dialog.new
                         { header = "Daten importieren?"
                         , message =
-                            column [ width fill, spacing 20, padding 20 ]
+                            column
+                                [ width fill
+
+                                -- , spacing 20
+                                , padding 20
+                                ]
                                 [ let
                                     meanTimes =
                                         MotivationData.meanRetentionTimes motData
@@ -108,14 +113,14 @@ toLayout shared model =
                                             [ el [ centerX ] <|
                                                 (RetentionChart.new
                                                     { width =
-                                                        (shared.deviceInfo.window.width * 0.8)
+                                                        (shared.deviceInfo.window.width * 0.9)
                                                             - 40
                                                             |> round
 
                                                     -- (shared.deviceInfo.window.width |> round)
                                                     --     - (SafeArea.maxX shared.safeAreaInset * 2)
                                                     --     - (pagePadding + (hPad * 2))
-                                                    , height = 200
+                                                    , height = 170
                                                     , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
                                                     , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
                                                     , meanRetentionColor = CS.guideColor shared.colorScheme

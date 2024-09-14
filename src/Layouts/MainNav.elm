@@ -550,7 +550,8 @@ viewInfoWindow props shared model toContentMsg =
             shared.deviceInfo.window.height - 35
 
         middlePos =
-            (shared.deviceInfo.window.height / 2) + 25
+            {- The +7 is to position the window nicely below the streak number -}
+            (shared.deviceInfo.window.height / 2) + 7
     in
     column
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
@@ -721,10 +722,11 @@ viewInfoWindow props shared model toContentMsg =
             , text ", right: "
             , text <| String.fromInt right
             ]
-        , paragraph [ Font.size 15 ]
-            [ text "SwipeInitial: "
-            , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY
-            , text ", CurrentY: "
-            , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeLocationY
-            ]
+
+        -- , paragraph [ Font.size 15 ]
+        --     [ text "SwipeInitial: "
+        --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY
+        --     , text ", CurrentY: "
+        --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeLocationY
+        --     ]
         ]

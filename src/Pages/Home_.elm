@@ -306,9 +306,6 @@ viewMotivationData shared model =
                                     else
                                         text <| "Tage seit letzter Übung... Auf geht's!"
 
-                                else if freezes < 0 then
-                                    text <| "0 Freezes übrig"
-
                                 else if freezes == 0 && daysSinceLastSession > 0 && MotivationData.series data > 1 then
                                     -- Last freeze will be used up if no practice today
                                     text <| "Praktiziere noch heute, um Deinen Streak zu erhalten!"

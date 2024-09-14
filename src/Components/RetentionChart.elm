@@ -64,7 +64,9 @@ view (Settings settings) =
         ]
         (C.chart
             [ CA.width <| toFloat <| settings.width - (labelWidth * 2)
-            , CA.height 200
+
+            -- , CA.height 200
+            , CA.height <| toFloat settings.height
 
             -- , CA.margin { left = labelWidth, right = labelWidth, top = 0, bottom = 0 }
             -- , CA.padding { left = 0, right = 0, top = 0, bottom = 0 }
