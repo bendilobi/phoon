@@ -199,7 +199,7 @@ subscriptions model =
 view : Props contentMsg -> Shared.Model -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared { toContentMsg, model, content } =
     { title = content.title ++ " | Zoff"
-    , attributes = [ Font.size 15 ]
+    , attributes = []
     , element =
         el
             (content.attributes

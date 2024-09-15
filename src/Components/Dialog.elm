@@ -129,6 +129,7 @@ viewChoice (ChoiceParams settings) =
             el
                 [ width fill
                 , Font.center
+                , Font.size 17
                 , BG.color <| rgb 1 1 1
 
                 --TODO: Irgendwie funktioniert das nur beim ersten Button und nur manchmal...

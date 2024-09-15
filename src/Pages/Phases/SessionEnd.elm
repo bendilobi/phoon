@@ -1,6 +1,7 @@
 module Pages.Phases.SessionEnd exposing (Model, Msg, page)
 
 import Components.AnimatedButton as Button
+import Components.Dialog as Dialog
 import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -38,7 +39,28 @@ toLayout shared model =
         , controlsTop = [ viewAddCycleButton shared model ]
         , controlsBottom = viewControlsBottom shared model
         , fadeOut = model.fadeOut
-        , overlay = Layouts.BaseLayout.NoOverlay
+        , overlay =
+            if model.confirmDialogShown then
+                Dialog.new
+                    { header = "Retentionsdaten verwerfen?"
+                    , screenWidth = shared.deviceInfo.window.width
+                    , message = paragraph [] [ text "Retentionsdaten aus dieser Sitzung wirklich verwerfen?" ]
+                    , choices =
+                        [ Dialog.choice
+                            { label = "Verwerfen"
+                            , onChoose = OnConfirmButton
+                            }
+                        , Dialog.choice
+                            { label = "Behalten"
+                            , onChoose = OnDialogCancel
+                            }
+                        ]
+                    }
+                    |> Dialog.view shared.colorScheme
+                    |> Layouts.BaseLayout.ModalDialog
+
+            else
+                Layouts.BaseLayout.NoOverlay
         }
 
 
@@ -83,8 +105,9 @@ init shared () =
 
 type Msg
     = OnAddCycleButton Button.Model
-    | OnConfirmButton Button.Model
     | OnDiscardButton Button.Model
+    | OnDialogCancel
+    | OnConfirmButton
     | OnCancelButton Button.Model
     | FadeOutFinished Session.EndType
 
@@ -109,33 +132,24 @@ update shared msg model =
                 Effect.none
             )
 
-        OnConfirmButton newState ->
+        OnConfirmButton ->
             ( { model
-                | confirmButton = newState
-                , fadeOut =
-                    if newState == Button.Triggered then
-                        FadeWith Fading.sessionFadingColor
-
-                    else
-                        NoFade
+                | fadeOut = FadeWith Fading.sessionFadingColor
+                , confirmDialogShown = False
               }
-            , if newState == Button.Triggered then
-                Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Discarded
-
-              else
-                Effect.none
+            , Effect.sendCmd <| Delay.after Fading.duration <| FadeOutFinished Session.Discarded
             )
 
         OnDiscardButton newState ->
             ( { model
                 | discardButton = newState
-                , confirmDialogShown =
-                    if newState == Button.Triggered then
-                        not model.confirmDialogShown
-
-                    else
-                        model.confirmDialogShown
+                , confirmDialogShown = newState == Button.Triggered
               }
+            , Effect.none
+            )
+
+        OnDialogCancel ->
+            ( { model | confirmDialogShown = False }
             , Effect.none
             )
 
@@ -263,39 +277,15 @@ viewAddCycleButton shared model =
 viewControlsBottom : Shared.Model -> Model -> List (Element Msg)
 viewControlsBottom shared model =
     if SessionResults.finishedCycles shared.results > 0 then
-        if model.confirmDialogShown then
-            [ paragraph [ Font.center ] [ text "Retentionsdaten dieser Sitzung wirklich verwerfen?" ]
-
-            --TODO: Das hier stattdessen in einem Dialog-Overlay anbieten:
-            , Button.new
-                { model = model.confirmButton
-                , label = text "Ja"
-                , onPress = OnConfirmButton
-                }
-                |> Button.withLightColor
-                |> Button.view shared.colorScheme
-
-            -- , el [ height <| px 10 ] none
-            , Button.new
-                { model = model.discardButton
-                , label = text "Zurück"
-                , onPress = OnDiscardButton
-                }
-                |> Button.withLightColor
-                |> Button.withTransparent
-                |> Button.view shared.colorScheme
-            ]
-
-        else
-            [ Button.new
-                { model = model.discardButton
-                , label = text "Sitzung verwerfen"
-                , onPress = OnDiscardButton
-                }
-                |> Button.withTransparent
-                |> Button.withLightColor
-                |> Button.view shared.colorScheme
-            ]
+        [ Button.new
+            { model = model.discardButton
+            , label = text "Sitzung verwerfen"
+            , onPress = OnDiscardButton
+            }
+            |> Button.withTransparent
+            |> Button.withLightColor
+            |> Button.view shared.colorScheme
+        ]
 
     else
         [ Button.new
