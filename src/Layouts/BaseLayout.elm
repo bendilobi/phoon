@@ -206,49 +206,51 @@ view props shared { toContentMsg, model, content } =
                 ++ [ width fill
                    , height fill
                    , clip
-                   , inFront <|
-                        case props.overlay of
-                            ModalDialog dialog ->
-                                el
-                                    [ width fill
-                                    , height fill
-                                    , inFront <| dialog
-                                    ]
-                                <|
-                                    el
-                                        [ width fill
-                                        , height fill
-                                        , alpha 0.3
-                                        , BG.color <| rgb 0 0 0
-                                        ]
-                                        none
-
-                            NoOverlay ->
-                                none
-
-                            InfoWindow { onClose } ->
-                                case shared.infoWindowState of
-                                    Shared.Model.Closed ->
-                                        none
-
-                                    _ ->
-                                        --TODO: sobald hier ein element ist funktioniert die Transition beim Erscheinen
-                                        --      nicht mehr. Mit "none" gehts... Warum?
-                                        -- el []
-                                        --     none
-                                        el
-                                            {- Transparent black overlay -}
-                                            [ width fill
-                                            , height fill
-                                            , alpha 0.1
-                                            , BG.color <| rgb 0 0 0
-                                            , Events.onClick onClose
-                                            ]
-                                            none
                    , below <| viewInfoWindow props shared model toContentMsg
                    ]
             )
-            content.element
+        <|
+            el
+                [ width fill
+                , height fill
+                , inFront <|
+                    case props.overlay of
+                        ModalDialog dialog ->
+                            el
+                                [ width fill
+                                , height fill
+                                , inFront <| dialog
+                                ]
+                            <|
+                                el
+                                    [ width fill
+                                    , height fill
+                                    , alpha 0.3
+                                    , BG.color <| rgb 0 0 0
+                                    ]
+                                    none
+
+                        NoOverlay ->
+                            none
+
+                        InfoWindow { onClose } ->
+                            case shared.infoWindowState of
+                                Shared.Model.Closed ->
+                                    none
+
+                                _ ->
+                                    el
+                                        {- Transparent black overlay -}
+                                        [ width fill
+                                        , height fill
+                                        , alpha 0.1
+                                        , BG.color <| rgb 0 0 0
+                                        , Events.onClick onClose
+                                        ]
+                                        none
+                ]
+            <|
+                content.element
     }
 
 
@@ -431,7 +433,6 @@ viewInfoWindow props shared model toContentMsg =
             , text ", right: "
             , text <| String.fromInt right
             ]
-        , text "Warum sieht man's nicht?"
 
         -- , paragraph [ Font.size 15 ]
         --     [ text "SwipeInitial: "
