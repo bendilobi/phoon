@@ -1,4 +1,4 @@
-module Layouts.SessionControls exposing (Model, Msg, Props, layout, map)
+module Layouts.BaseLayout.SessionControls exposing (Model, Msg, Props, layout, map)
 
 import Date
 import Delay
@@ -9,6 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Layout exposing (Layout)
+import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
 import Lib.Session as Session
@@ -25,10 +26,11 @@ type alias Props contentMsg =
     , controlsTop : List (Element contentMsg)
     , controlsBottom : List (Element contentMsg)
     , fadeOut : Fading.Trigger
+    , overlay : Layouts.BaseLayout.Overlay contentMsg
     }
 
 
-layout : Props contentMsg -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
+layout : Props contentMsg -> Shared.Model -> Route () -> Layout (Layouts.BaseLayout.Props contentMsg) Model Msg contentMsg
 layout props shared route =
     Layout.new
         { init = init shared
@@ -36,6 +38,7 @@ layout props shared route =
         , view = view props shared route
         , subscriptions = subscriptions
         }
+        |> Layout.withParentProps { overlay = props.overlay }
 
 
 map : (msg1 -> msg2) -> Props msg1 -> Props msg2
@@ -44,6 +47,20 @@ map fn props =
     , controlsTop = List.map (E.map fn) props.controlsTop
     , controlsBottom = List.map (E.map fn) props.controlsBottom
     , fadeOut = props.fadeOut
+    , overlay =
+        case props.overlay of
+            Layouts.BaseLayout.NoOverlay ->
+                Layouts.BaseLayout.NoOverlay
+
+            Layouts.BaseLayout.ModalDialog lmnt ->
+                Layouts.BaseLayout.ModalDialog <| E.map fn lmnt
+
+            Layouts.BaseLayout.InfoWindow { header, info, onClose } ->
+                Layouts.BaseLayout.InfoWindow
+                    { header = header
+                    , info = E.map fn info
+                    , onClose = fn onClose
+                    }
     }
 
 

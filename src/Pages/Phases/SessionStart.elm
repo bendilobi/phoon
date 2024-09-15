@@ -11,6 +11,7 @@ import Element.Font as Font
 import FeatherIcons
 import Html.Attributes
 import Layouts
+import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session
@@ -36,11 +37,12 @@ page shared route =
 
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
-    Layouts.SessionControls
+    Layouts.BaseLayout_SessionControls
         { currentCycle = SessionResults.finishedCycles shared.results
         , controlsTop = []
         , controlsBottom = [ viewCancelButton shared model ]
         , fadeOut = model.fadeOut
+        , overlay = Layouts.BaseLayout.NoOverlay
         }
 
 

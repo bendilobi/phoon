@@ -8,6 +8,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
+import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
@@ -32,11 +33,12 @@ page shared route =
 
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
-    Layouts.SessionControls
+    Layouts.BaseLayout_SessionControls
         { currentCycle = SessionResults.finishedCycles shared.results + 1
         , controlsTop = []
         , controlsBottom = [ viewCancelButton shared model ]
         , fadeOut = NoFade
+        , overlay = Layouts.BaseLayout.NoOverlay
         }
 
 
