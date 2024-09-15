@@ -20,7 +20,7 @@ import Http
 import Json.Decode as Decode
 import Json.Encode
 import Layouts
-import Layouts.MainNav
+import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -48,14 +48,14 @@ page shared route =
 
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
-    Layouts.MainNav
+    Layouts.BaseLayout_MainNav
         { header = Just "Übung optimieren"
         , enableScrolling = True
         , fadeOut = model.fadeOut
         , overlay =
             case model.dialogShown of
                 NoDialog ->
-                    Layouts.MainNav.NoOverlay
+                    Layouts.BaseLayout.NoOverlay
 
                 PracticeTargetWarning ->
                     let
@@ -86,7 +86,7 @@ toLayout shared model =
                             ]
                         }
                         |> Dialog.view shared.colorScheme
-                        |> Layouts.MainNav.ModalDialog
+                        |> Layouts.BaseLayout.ModalDialog
 
                 DataPasteConfirmation motData ->
                     Dialog.new
@@ -144,7 +144,7 @@ toLayout shared model =
                             ]
                         }
                         |> Dialog.view shared.colorScheme
-                        |> Layouts.MainNav.ModalDialog
+                        |> Layouts.BaseLayout.ModalDialog
 
                 DataPasteFailure error ->
                     Dialog.new
@@ -159,7 +159,7 @@ toLayout shared model =
                             ]
                         }
                         |> Dialog.view shared.colorScheme
-                        |> Layouts.MainNav.ModalDialog
+                        |> Layouts.BaseLayout.ModalDialog
         }
 
 

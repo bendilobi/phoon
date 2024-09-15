@@ -8,7 +8,8 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Layouts
-import Layouts.MainNav
+import Layouts.BaseLayout
+import Layouts.BaseLayout.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -37,14 +38,14 @@ page shared route =
 
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
-    Layouts.MainNav
+    Layouts.BaseLayout_MainNav
         { header = Just "Motivation finden"
         , enableScrolling = False
         , fadeOut = NoFade
         , overlay =
             case shared.infoWindowState of
                 Shared.Model.Closed ->
-                    Layouts.MainNav.NoOverlay
+                    Layouts.BaseLayout.NoOverlay
 
                 _ ->
                     let
@@ -60,7 +61,7 @@ toLayout shared model =
                                 |> Maybe.withDefault 4
                                 |> String.fromInt
                     in
-                    Layouts.MainNav.InfoWindow
+                    Layouts.BaseLayout.InfoWindow
                         { header = "Serie"
                         , info =
                             let

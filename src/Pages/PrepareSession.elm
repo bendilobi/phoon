@@ -9,7 +9,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Layouts
-import Layouts.MainNav
+import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -37,11 +37,11 @@ page shared route =
 
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
-    Layouts.MainNav
+    Layouts.BaseLayout_MainNav
         { header = Just "Sitzung vorbereiten"
         , enableScrolling = False
         , fadeOut = model.fadeOut
-        , overlay = Layouts.MainNav.NoOverlay
+        , overlay = Layouts.BaseLayout.NoOverlay
         }
 
 
@@ -109,7 +109,7 @@ update shared msg model =
                         FadeWith Fading.sessionFadingColor
 
                     else
-                        NoFade 
+                        NoFade
               }
             , case newState of
                 Button.Triggered ->
