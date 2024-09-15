@@ -9,7 +9,6 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import FeatherIcons
-import Html.Attributes
 import Layouts
 import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -177,24 +176,14 @@ view shared model =
             , height fill
             , spacing 100
             ]
-            [ -- row
-              -- [ spacing 100
-              -- , centerX
-              -- , paddingEach { top = 150, bottom = 0, left = 0, right = 0 }
-              -- ]
-              -- [
-              el [ height fill, width fill ] none
+            [ el [ height fill, width fill ] none
             , el
                 [ centerX
                 , centerY
                 , transparent <| model.ticks < 1
-
-                -- , alignBottom
                 ]
               <|
                 viewReminder shared FeatherIcons.volume2
-
-            -- ]
             , el [ width fill, height fill ] <|
                 if model.fadeInFinished then
                     el [ centerX, centerY ] <|

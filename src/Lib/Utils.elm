@@ -1,8 +1,9 @@
-module Lib.Utils exposing (Device, animatedColumn, animatedEl, classifyDevice, colorToHex)
+module Lib.Utils exposing (Device, animatedColumn, animatedEl, bullet, classifyDevice, colorToHex)
 
 import Color
 import Color.Convert
 import Element exposing (..)
+import Element.Font as Font
 import Simple.Animation exposing (Animation)
 import Simple.Animation.Animated as Animated
 
@@ -53,6 +54,14 @@ colorToHex color =
         |> toRgb
         |> Color.fromRgba
         |> Color.Convert.colorToHex
+
+
+bullet : Element msg -> Element msg
+bullet content =
+    row [ spacing 8 ]
+        [ el [ alignTop, Font.bold ] <| text "•"
+        , content
+        ]
 
 
 

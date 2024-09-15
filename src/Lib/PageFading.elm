@@ -80,12 +80,6 @@ sessionFadingColor =
     CS.primaryColors.primary
 
 
-
---TODO: Unterschiedliche Geschwindigkeiten -> Müsste als Parameter ans Layout gegeben werden
--- slow =
---     1000
-
-
 fadeOverlay : Trigger -> FadeState -> Element msg
 fadeOverlay fadeOutTrigger state =
     let

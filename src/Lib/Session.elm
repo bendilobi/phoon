@@ -525,12 +525,6 @@ settingsDecoder =
         defaults =
             defaultSettings
     in
-    -- Json.Decode.map4
-    --     Settings
-    --     (Json.Decode.field fieldnames.cycles Json.Decode.int)
-    --     (Json.Decode.field fieldnames.relaxRetDuration relaxRetDecoder)
-    --     (Json.Decode.field fieldnames.breathingSpeed breathingSpeedDecoder)
-    --     (Json.Decode.field fieldnames.breathCount breathCountDecoder)
     Json.Decode.succeed createSettings
         |> optional fieldnames.cycles Json.Decode.int defaults.cycles
         |> optional fieldnames.relaxRetDuration relaxRetDecoder defaults.relaxRetDuration

@@ -51,15 +51,12 @@ decoder =
                 |> String.split "px"
                 |> List.head
                 |> Maybe.andThen String.toInt
-                --TODO: Können eventuelle Fehler besser behandelt werden?
                 |> Maybe.withDefault 0
                 --- It seems Apple adds 15 pixels to the actual size of the notch (iPhone XR...)
                 --- This seems to be due to the "island" being more spacious than the notch, since
                 --- it looks fine on iPhone 15
-                -- |> (\sa -> sa - 15)
                 |> max 0
 
-        -- |> Maybe.map (\sal -> sal - 15)
         sizeExtractor : String -> String -> String -> String -> SafeArea
         sizeExtractor top bottom left right =
             Settings <|

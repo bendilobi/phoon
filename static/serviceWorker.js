@@ -16,7 +16,6 @@ const PRECACHE_URLS = [
     "/audio/relaxRetention.mp3",
     "/audio/breathing.mp3",
     "/audio/breathingEnd.mp3",
-    // TODO: Bringt es etwas, die Icons zu cachen?
     "/img/logo/favicon.png",
     "/img/logo/favicon-192x192.png",
     "/manifest.json",

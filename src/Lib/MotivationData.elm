@@ -152,21 +152,6 @@ update results today practiceFrequencyTarget motivationData =
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
                                 , streakFreezeDays =
-                                    -- let
-                                    --     target =
-                                    --         practiceFrequencyTarget |> toFloat
-                                    --     freezeIncrement =
-                                    --         -- target is max 7 (as per the upper bound of the IntCrementer
-                                    --         -- used in the settings). More than once per day doesn't work with
-                                    --         -- the current using of one freeze per day...
-                                    --         ((7 - target) / target)
-                                    --             |> Round.ceilingNum 2
-                                    -- in
-                                    -- if remainingStreakFreeze > 8.2 then
-                                    --     -- allow no more than 8 streak freezes
-                                    --     8.9
-                                    -- else
-                                    --     remainingStreakFreeze + 0.7
                                     if remainingStreakFreeze >= 9 - freezeIncrement then
                                         -- allow no more than 8 streak freezes
                                         8.99

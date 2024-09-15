@@ -5,7 +5,6 @@ module Shared.Msg exposing (Msg(..))
 import Browser.Dom
 import Browser.Events
 import Date
-import Element exposing (Color)
 import Http
 import Json.Decode
 import Lib.MotivationData exposing (MotivationData)
