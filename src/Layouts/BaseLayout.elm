@@ -281,9 +281,8 @@ viewInfoWindow props shared model toContentMsg =
         --TODO: Prüfen, ob in iOS 18 dann die untere Variante funktioniert.let
         --      Anscheinend funktionierts nicht, wenn beide gleichzeitig gesetzt sind...
         --      Oder eine Weiche einbauen?
-        , htmlAttribute <| Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(16px);"
-
-        -- , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(16px);"
+        -- , htmlAttribute <| Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(16px);"
+        , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(16px);"
         , height <| px <| round <| shared.deviceInfo.window.height
         , htmlAttribute <| Transition.properties [ Transition.transform 500 [ Transition.easeOutCirc ] ]
         , moveUp <|
@@ -418,22 +417,22 @@ viewInfoWindow props shared model toContentMsg =
 
             _ ->
                 none
-        , let
-            { top, bottom, left, right } =
-                SafeArea.paddingEach shared.safeAreaInset
-          in
-          paragraph [ paddingXY 0 20, Font.size 15 ]
-            [ el [ Font.bold ] <| text "Safe Area: "
-            , text "top: "
-            , text <| String.fromInt top
-            , text ", bottom : "
-            , text <| String.fromInt bottom
-            , text ", left: "
-            , text <| String.fromInt left
-            , text ", right: "
-            , text <| String.fromInt right
-            ]
 
+        -- , let
+        --     { top, bottom, left, right } =
+        --         SafeArea.paddingEach shared.safeAreaInset
+        --   in
+        --   paragraph [ paddingXY 0 20, Font.size 15 ]
+        --     [ el [ Font.bold ] <| text "Safe Area: "
+        --     , text "top: "
+        --     , text <| String.fromInt top
+        --     , text ", bottom : "
+        --     , text <| String.fromInt bottom
+        --     , text ", left: "
+        --     , text <| String.fromInt left
+        --     , text ", right: "
+        --     , text <| String.fromInt right
+        --     ]
         -- , paragraph [ Font.size 15 ]
         --     [ text "SwipeInitial: "
         --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY

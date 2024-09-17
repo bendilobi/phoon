@@ -27,7 +27,7 @@ import View exposing (View)
 page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
+        { init = init shared
         , update = update shared
         , subscriptions = subscriptions
         , view = view shared
@@ -60,70 +60,77 @@ toLayout shared model =
                                 |> Maybe.withDefault 4
                                 |> String.fromInt
                     in
-                    Layouts.BaseLayout.InfoWindow
-                        { header = "Serie"
-                        , info =
-                            column [ spacing 20, Font.size 15 ]
-                                [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
-                                , column
-                                    [ spacing 20
-                                    , paddingXY 20 0
-                                    ]
-                                    [ bullet <|
-                                        paragraph []
-                                            [ text "Bisher längste Serie: "
-                                            , text <|
-                                                case shared.motivationData of
-                                                    Nothing ->
-                                                        ""
+                    case shared.motivationData of
+                        Nothing ->
+                            Layouts.BaseLayout.InfoWindow
+                                { header = "Herzlich willkommen bei Zoff"
+                                , info =
+                                    column [ spacing 25, paddingXY 20 10 ]
+                                        [ paragraph [] [ text """
+                                    Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
+                                    Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
+                                    weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit drei Fingern irgendwo auf den Bildschirm.
+                                    """ ]
+                                        , paragraph [] [ text """
+                                Zoff hilft Dir auch dabei, eine regelmäßige Übungspraxis aufrechtzuerhalten: Hier wird erfasst, wie oft Du in Serie
+                                Die Atemübungen gemacht hast. Und unter "Optimieren" kannst Du festlegen, wie oft pro Woche Du üben willst - so 
+                                kannst Du auch hier und dort mal einen Tag auslassen, ohne Deine Serie zu verlieren!
+                                """ ]
+                                        ]
+                                , onClose = DebugInfoToggled
+                                }
 
-                                                    Just data ->
-                                                        MotivationData.maxStreak data
-                                                            |> String.fromInt
+                        Just motData ->
+                            Layouts.BaseLayout.InfoWindow
+                                { header = "Serie"
+                                , info =
+                                    column [ spacing 20, Font.size 15 ]
+                                        [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
+                                        , column
+                                            [ spacing 20
+                                            , paddingXY 20 0
                                             ]
-                                    , bullet <|
-                                        paragraph []
-                                            [ text "Bisher längste Retention: "
-                                            , text <|
-                                                case shared.motivationData of
-                                                    Nothing ->
-                                                        ""
-
-                                                    Just data ->
-                                                        MotivationData.maxRetention data
-                                                            |> Millis.toString True
-                                            , text " Minuten"
+                                            [ bullet <|
+                                                paragraph []
+                                                    [ text "Bisher längste Serie: "
+                                                    , text <|
+                                                        String.fromInt <|
+                                                            MotivationData.maxStreak motData
+                                                    ]
+                                            , bullet <|
+                                                paragraph []
+                                                    [ text "Bisher längste Retention: "
+                                                    , text <|
+                                                        Millis.toString True <|
+                                                            MotivationData.maxRetention motData
+                                                    , text " Minuten"
+                                                    ]
+                                            , bullet <|
+                                                paragraph []
+                                                    [ text "Freezes: "
+                                                    , text <|
+                                                        String.fromFloat <|
+                                                            MotivationData.streakFreezeDays motData
+                                                    ]
+                                            , bullet <|
+                                                paragraph []
+                                                    [ text "Tage seit letzter Sitzung: "
+                                                    , text <| String.fromInt daysSinceLastSession
+                                                    ]
+                                            , bullet <|
+                                                paragraph []
+                                                    [ text "Übungsziel: "
+                                                    , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
+                                                    ]
+                                            , bullet <|
+                                                paragraph []
+                                                    [ text <| "Übungsziel zu Beginn: "
+                                                    , text <| initialTarget
+                                                    ]
                                             ]
-                                    , bullet <|
-                                        paragraph []
-                                            [ text "Freezes: "
-                                            , text <|
-                                                case shared.motivationData of
-                                                    Nothing ->
-                                                        ""
-
-                                                    Just data ->
-                                                        String.fromFloat <| MotivationData.streakFreezeDays data
-                                            ]
-                                    , bullet <|
-                                        paragraph []
-                                            [ text "Tage seit letzter Sitzung: "
-                                            , text <| String.fromInt daysSinceLastSession
-                                            ]
-                                    , bullet <|
-                                        paragraph []
-                                            [ text "Übungsziel: "
-                                            , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
-                                            ]
-                                    , bullet <|
-                                        paragraph []
-                                            [ text <| "Übungsziel zu Beginn: "
-                                            , text <| initialTarget
-                                            ]
-                                    ]
-                                ]
-                        , onClose = DebugInfoToggled
-                        }
+                                        ]
+                                , onClose = DebugInfoToggled
+                                }
         }
 
 
@@ -135,10 +142,23 @@ type alias Model =
     {}
 
 
-init : () -> ( Model, Effect Msg )
-init () =
+init : Shared.Model -> () -> ( Model, Effect Msg )
+init shared () =
     ( {}
-    , Effect.sendCmd <| Task.perform TodayIs Date.today
+    , Effect.batch
+        [ Effect.sendCmd <| Task.perform TodayIs Date.today
+        , case shared.motivationData of
+            Nothing ->
+                case shared.updateState of
+                    Shared.Model.NotUpdating ->
+                        Effect.sendMsg DebugInfoToggled
+
+                    _ ->
+                        Effect.none
+
+            Just _ ->
+                Effect.none
+        ]
     )
 
 
