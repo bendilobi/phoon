@@ -65,7 +65,7 @@ toLayout shared model =
                             Layouts.BaseLayout.InfoWindow
                                 { header = "Herzlich willkommen bei Zoff"
                                 , info =
-                                    column [ spacing 25, paddingXY 20 10 ]
+                                    column [ spacing 25 ]
                                         [ paragraph [] [ text """
                                     Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
                                     Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
@@ -84,7 +84,7 @@ toLayout shared model =
                             Layouts.BaseLayout.InfoWindow
                                 { header = "Serie"
                                 , info =
-                                    column [ spacing 20, Font.size 15 ]
+                                    column [ spacing 20 ]
                                         [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
                                         , column
                                             [ spacing 20

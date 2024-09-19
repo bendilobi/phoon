@@ -133,7 +133,7 @@ update props shared route msg model =
                         && (Swipe.maxFingers gesture == 1)
 
                 swipeSize =
-                    shared.deviceInfo.window.width * 0.9
+                    shared.deviceInfo.window.width * 0.8
             in
             ( { model
                 | gesture = Swipe.blanco

@@ -112,7 +112,7 @@ newSunrise =
         , navbarCopy = rgb255 91 101 96
         , settings = rgb 1 1 1 --rgb 0.9 0.9 0.9
         , settingsDarker = rgb 0.7 0.7 0.7
-        , greyOverTransparency = rgb 0.3 0.3 0.3
+        , greyOverTransparency = rgb 0.35 0.35 0.35
         }
 
 
@@ -151,7 +151,7 @@ newDaylight =
         , navbarCopy = rgb255 120 139 138 --120 126 139 --101 106 117 --123 145 188 --141 149 168 --164 171 189
         , settings = rgb 1 1 1 --rgb 0.9 0.9 0.9
         , settingsDarker = rgb 0.7 0.7 0.7
-        , greyOverTransparency = rgb 0.5 0.5 0.5
+        , greyOverTransparency = rgb 0.55 0.55 0.55
         }
 
 

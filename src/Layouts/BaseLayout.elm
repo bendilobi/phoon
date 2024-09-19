@@ -214,40 +214,62 @@ view props shared { toContentMsg, model, content } =
                 [ width fill
                 , height fill
                 , inFront <|
-                    case props.overlay of
-                        ModalDialog dialog ->
-                            el
-                                [ width fill
-                                , height fill
-                                , inFront <| dialog
-                                ]
-                            <|
-                                el
-                                    [ width fill
-                                    , height fill
-                                    , alpha 0.3
-                                    , BG.color <| rgb 0 0 0
-                                    ]
-                                    none
-
-                        NoOverlay ->
-                            none
-
-                        InfoWindow { onClose } ->
-                            case shared.infoWindowState of
-                                Shared.Model.Closed ->
-                                    none
+                    {- This is the semi-transparent overlay that covers the screen if a dialog or an info window is shown.
+                       CSS transitions are used to make it appear and disappear smoothly without having to manage state.
+                       To this behalf, it always exists and is moved out of the screen in case it isn't needed.
+                    -}
+                    el
+                        ([ width fill
+                         , height fill
+                         , inFront <|
+                            case props.overlay of
+                                ModalDialog dialog ->
+                                    dialog
 
                                 _ ->
-                                    el
-                                        {- Transparent black overlay -}
-                                        [ width fill
-                                        , height fill
-                                        , alpha 0.1
-                                        , BG.color <| rgb 0 0 0
-                                        , Events.onClick onClose
+                                    none
+                         ]
+                            ++ (case props.overlay of
+                                    NoOverlay ->
+                                        [ moveUp shared.deviceInfo.window.height
+
+                                        {- Here we basically slow down the disappearance of the overlay so that the user
+                                           is able to see the opacity transition. The "transform" transition is set to move
+                                           slowly enough that it is transparent before the user would see the movement:
+                                        -}
+                                        , htmlAttribute <| Transition.properties [ Transition.transform 550 [ Transition.easeInExpo ] ]
                                         ]
-                                        none
+
+                                    _ ->
+                                        [ moveUp 0 ]
+                               )
+                        )
+                    <|
+                        el
+                            ([ width fill
+                             , height fill
+                             , BG.color <| rgb 0 0 0
+                             , alpha <|
+                                case props.overlay of
+                                    ModalDialog _ ->
+                                        0.3
+
+                                    InfoWindow _ ->
+                                        0.1
+
+                                    NoOverlay ->
+                                        0
+                             , htmlAttribute <| Transition.properties [ Transition.opacity 300 [ Transition.easeOut ] ]
+                             ]
+                                ++ (case props.overlay of
+                                        InfoWindow { onClose } ->
+                                            [ Events.onClick onClose ]
+
+                                        _ ->
+                                            []
+                                   )
+                            )
+                            none
                 ]
             <|
                 content.element
@@ -257,10 +279,10 @@ view props shared { toContentMsg, model, content } =
 viewInfoWindow : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg) -> Element contentMsg
 viewInfoWindow props shared model toContentMsg =
     let
-        topmostPos =
+        maxHeight =
             shared.deviceInfo.window.height - 35
 
-        middlePos =
+        halfHeight =
             {- The +7 is to position the window nicely below the streak number -}
             (shared.deviceInfo.window.height / 2) + 7
     in
@@ -268,8 +290,9 @@ viewInfoWindow props shared model toContentMsg =
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
         , centerX
         , Font.color <| CS.primaryColors.primary
+        , Font.size 14
         , BG.color <| rgba255 241 241 230 0.5
-        , paddingEach { top = 0, left = 20, right = 20, bottom = 20 }
+        , paddingEach { top = 0, left = 23, right = 23, bottom = 20 }
         , Border.roundEach
             { topLeft = 25
             , topRight = 25
@@ -278,13 +301,12 @@ viewInfoWindow props shared model toContentMsg =
             }
         , clip
 
-        --TODO: Prüfen, ob in iOS 18 dann die untere Variante funktioniert.let
-        --      Anscheinend funktionierts nicht, wenn beide gleichzeitig gesetzt sind...
-        --      Oder eine Weiche einbauen?
+        --TODO: Recherchieren, ob einfach eine Weiche für iOS < 18 umgesetzt werden kann, weil diese
+        --      Versionen die Variante mit -webkit- brauchen:
         -- , htmlAttribute <| Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(16px);"
         , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(16px);"
         , height <| px <| round <| shared.deviceInfo.window.height
-        , htmlAttribute <| Transition.properties [ Transition.transform 500 [ Transition.easeOutCirc ] ]
+        , htmlAttribute <| Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
         , moveUp <|
             case props.overlay of
                 InfoWindow _ ->
@@ -299,15 +321,15 @@ viewInfoWindow props shared model toContentMsg =
                     in
                     (case shared.infoWindowState of
                         Shared.Model.Max ->
-                            topmostPos - dragDistance
+                            maxHeight - dragDistance
 
                         Shared.Model.Half ->
-                            middlePos - dragDistance
+                            halfHeight - dragDistance
 
                         Shared.Model.Closed ->
                             0
                     )
-                        |> min topmostPos
+                        |> min maxHeight
                         |> max 0
 
                 _ ->
@@ -328,13 +350,10 @@ viewInfoWindow props shared model toContentMsg =
                     -}
                     case shared.infoWindowState of
                         Shared.Model.Max ->
-                            topmostPos - safeAreaBottom
+                            maxHeight - safeAreaBottom
 
-                        Shared.Model.Half ->
-                            middlePos - safeAreaBottom
-
-                        Shared.Model.Closed ->
-                            0
+                        _ ->
+                            halfHeight - safeAreaBottom
             in
             column
                 [ width fill
@@ -374,11 +393,14 @@ viewInfoWindow props shared model toContentMsg =
                             }
                   )
                     |> E.map toContentMsg
-                , el [ paddingXY 15 0, moveUp <| touchAreaHeight - 45 ] <|
+                , el
+                    [ paddingXY 15 0
+                    , moveUp <| touchAreaHeight - 45
+                    ]
+                  <|
                     {- Close button -}
                     Input.button
-                        [ Font.size 25
-                        , Font.color <| CS.greyOverTransparencyColor shared.colorScheme
+                        [ Font.color <| CS.greyOverTransparencyColor shared.colorScheme
                         ]
                         { onPress =
                             case props.overlay of
@@ -388,8 +410,8 @@ viewInfoWindow props shared model toContentMsg =
                                 _ ->
                                     Nothing
                         , label =
-                            FeatherIcons.withSize 30 FeatherIcons.x
-                                |> FeatherIcons.withStrokeWidth 1.5
+                            FeatherIcons.withSize 32 FeatherIcons.x
+                                |> FeatherIcons.withStrokeWidth 1.3
                                 |> FeatherIcons.toHtml []
                                 |> html
                         }
@@ -400,13 +422,13 @@ viewInfoWindow props shared model toContentMsg =
             [ width fill
             , Font.bold
             , Font.center
-            , Font.size 20
-            , padding 20
+            , Font.size 18
+            , paddingEach { left = 30, top = 21, right = 30, bottom = 30 }
             ]
           <|
             case props.overlay of
                 InfoWindow { header } ->
-                    text header
+                    paragraph [] [ text header ]
 
                 _ ->
                     none
