@@ -229,104 +229,110 @@ viewMotivationData shared model =
                 Just motData ->
                     MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
     in
-    column
+    el
         [ width fill
-        , padding 20
-        , spacing 20
-        , centerY
+        , height fill
+        , Events.onClick DebugInfoToggled
         ]
-        [ case shared.motivationData of
-            Nothing ->
-                none
-
-            Just data ->
-                el
-                    [ width fill
-                    , Events.onClick DebugInfoToggled
-                    ]
-                <|
-                    if streakValid then
-                        let
-                            remainingFreezes =
-                                MotivationData.streakFreezeDays data
-                                    |> floor
-                                    |> (\freezes ->
-                                            if daysSinceLastSession > 1 then
-                                                freezes - (daysSinceLastSession - 1)
-
-                                            else
-                                                freezes
-                                       )
-
-                            window =
-                                shared.deviceInfo.window
-
-                            streakWidgetSize =
-                                min window.width window.height
-                                    |> (\size -> size - (SafeArea.maxX shared.safeAreaInset |> toFloat))
-                                    |> (*) 0.8
-                                    |> round
-                        in
-                        viewStreak
-                            shared.colorScheme
-                            streakWidgetSize
-                            remainingFreezes
-                            (daysSinceLastSession > 0)
-                        <|
-                            MotivationData.series data
-
-                    else
-                        el
-                            [ centerX
-                            , centerY
-                            , Font.color <| CS.seriesBadColor shared.colorScheme
-                            , Font.size 70
-                            , Font.bold
-                            , paddingXY 0 50
-                            ]
-                        <|
-                            text <|
-                                String.fromInt <|
-                                    daysSinceLastSession
-        , paragraph
+    <|
+        column
             [ width fill
-            , Font.bold
-            , Font.size 20
-            , Font.center
-            , Events.onClick DebugInfoToggled
+            , padding 20
+            , spacing 20
+            , centerY
             ]
             [ case shared.motivationData of
                 Nothing ->
-                    text <| "Willkommen bei Zoff!!"
+                    none
 
                 Just data ->
-                    MotivationData.streakFreezeDays data
-                        |> floor
-                        |> (\freezes ->
-                                if daysSinceLastSession > 1 then
-                                    freezes - (daysSinceLastSession - 1)
+                    el
+                        [ width fill
+                        ]
+                    <|
+                        if streakValid then
+                            let
+                                remainingFreezes =
+                                    MotivationData.streakFreezeDays data
+                                        |> floor
+                                        |> (\freezes ->
+                                                if daysSinceLastSession > 1 then
+                                                    freezes - (daysSinceLastSession - 1)
 
-                                else
-                                    freezes
-                           )
-                        |> (\freezes ->
-                                if not streakValid then
-                                    if daysSinceLastSession - 1 == 1 then
-                                        text <| "Tage seit letzter Übung"
+                                                else
+                                                    freezes
+                                           )
+
+                                window =
+                                    shared.deviceInfo.window
+
+                                streakWidgetSize =
+                                    min window.width window.height
+                                        |> (\size -> size - (SafeArea.maxX shared.safeAreaInset |> toFloat))
+                                        |> (*) 0.8
+                                        |> round
+                            in
+                            viewStreak
+                                shared.colorScheme
+                                streakWidgetSize
+                                remainingFreezes
+                                (daysSinceLastSession > 0)
+                            <|
+                                MotivationData.series data
+
+                        else
+                            el
+                                [ centerX
+                                , centerY
+                                , Font.color <| CS.seriesBadColor shared.colorScheme
+                                , Font.size 70
+                                , Font.bold
+                                , paddingXY 0 50
+                                ]
+                            <|
+                                text <|
+                                    String.fromInt <|
+                                        daysSinceLastSession
+            , paragraph
+                [ width fill
+                , Font.bold
+                , Font.size 20
+                , Font.center
+
+                -- , Events.onClick DebugInfoToggled
+                ]
+                [ case shared.motivationData of
+                    Nothing ->
+                        text <| "Willkommen bei Zoff!!"
+
+                    Just data ->
+                        MotivationData.streakFreezeDays data
+                            |> floor
+                            |> (\freezes ->
+                                    if daysSinceLastSession > 1 then
+                                        freezes - (daysSinceLastSession - 1)
 
                                     else
-                                        text <| "Tage seit letzter Übung... Auf geht's!"
+                                        freezes
+                               )
+                            |> (\freezes ->
+                                    if not streakValid then
+                                        if daysSinceLastSession - 1 == 1 then
+                                            text <| "Tage seit letzter Übung"
 
-                                else if freezes == 0 && daysSinceLastSession > 0 && MotivationData.series data > 1 then
-                                    -- Last freeze will be used up if no practice today
-                                    text <| "Praktiziere noch heute, um Deinen Streak zu erhalten!"
+                                        else
+                                            text <| "Tage seit letzter Übung... Auf geht's!"
 
-                                else
-                                    -- String.fromInt freezes ++ " Freezes übrig"
-                                    none
-                           )
+                                    else if freezes == 0 && daysSinceLastSession > 0 && MotivationData.series data > 1 then
+                                        -- Last freeze will be used up if no practice today
+                                        text <| "Praktiziere noch heute, um Deinen Streak zu erhalten!"
+
+                                    else
+                                        -- String.fromInt freezes ++ " Freezes übrig"
+                                        none
+                               )
+                ]
             ]
-        ]
 
 
 viewStreak : ColorScheme -> Int -> Int -> Bool -> Int -> Element msg

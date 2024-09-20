@@ -234,10 +234,9 @@ view props shared { toContentMsg, model, content } =
                                         [ moveUp shared.deviceInfo.window.height
 
                                         {- Here we basically slow down the disappearance of the overlay so that the user
-                                           is able to see the opacity transition. The "transform" transition is set to move
-                                           slowly enough that it is transparent before the user would see the movement:
+                                           is able to see the opacity transition:
                                         -}
-                                        , htmlAttribute <| Transition.properties [ Transition.transform 550 [ Transition.easeInExpo ] ]
+                                        , htmlAttribute <| Transition.properties [ Transition.transform 0 [ Transition.delay 200 ] ]
                                         ]
 
                                     _ ->
@@ -259,7 +258,7 @@ view props shared { toContentMsg, model, content } =
 
                                     NoOverlay ->
                                         0
-                             , htmlAttribute <| Transition.properties [ Transition.opacity 300 [ Transition.easeOut ] ]
+                             , htmlAttribute <| Transition.properties [ Transition.opacity 200 [ Transition.easeOut ] ]
                              ]
                                 ++ (case props.overlay of
                                         InfoWindow { onClose } ->
@@ -291,7 +290,7 @@ viewInfoWindow props shared model toContentMsg =
         , centerX
         , Font.color <| CS.primaryColors.primary
         , Font.size 14
-        , BG.color <| rgba255 241 241 230 0.5
+        , BG.color <| rgba255 241 241 230 0.55
         , paddingEach { top = 0, left = 23, right = 23, bottom = 20 }
         , Border.roundEach
             { topLeft = 25
@@ -304,9 +303,15 @@ viewInfoWindow props shared model toContentMsg =
         --TODO: Recherchieren, ob einfach eine Weiche für iOS < 18 umgesetzt werden kann, weil diese
         --      Versionen die Variante mit -webkit- brauchen:
         -- , htmlAttribute <| Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(16px);"
-        , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(16px);"
+        , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
         , height <| px <| round <| shared.deviceInfo.window.height
-        , htmlAttribute <| Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
+        , htmlAttribute <|
+            case model.swipeInitialY of
+                Nothing ->
+                    Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
+
+                _ ->
+                    Html.Attributes.hidden False
         , moveUp <|
             case props.overlay of
                 InfoWindow _ ->
