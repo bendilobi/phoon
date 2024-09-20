@@ -574,8 +574,8 @@ view shared model =
             , Font.size 15
             ]
             [ --viewIntroduction shared model
-              viewUpdate shared model
-            , viewRetentionTrend shared <| pagePadding * 2
+              viewRetentionTrend shared <| pagePadding * 2
+            , viewUpdate shared model
             , viewSettings shared model
             , viewTechInfo shared model
             ]
