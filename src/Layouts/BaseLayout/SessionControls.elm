@@ -30,7 +30,7 @@ type alias Props contentMsg =
     , fadeOut : Fading.Trigger
     , overlay : Layouts.BaseLayout.Overlay contentMsg
 
-    --TODO: Doch hier Callbacks für die Touch-Events übergeben
+    --TODO: Doch hier die Effecte für die Touch-Events übergeben
     }
 
 
@@ -165,7 +165,7 @@ update props shared route msg model =
                         && (Swipe.maxFingers gesture == 1)
 
                 swipeSize =
-                    shared.deviceInfo.window.width * 0.8
+                    shared.deviceInfo.window.width * 0.9
             in
             ( { model
                 | gesture = Swipe.blanco
