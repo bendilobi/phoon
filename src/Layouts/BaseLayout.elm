@@ -111,26 +111,26 @@ update shared msg model =
                     Effect.none
             )
 
-        SwipeStart touch ->
+        SwipeStart event ->
             ( { model
-                | swipeGesture = Swipe.record touch model.swipeGesture
-                , swipeInitialY = Just <| .y <| Swipe.locate touch
+                | swipeGesture = Swipe.record event model.swipeGesture
+                , swipeInitialY = Just <| .y <| Swipe.locate event
               }
             , Effect.none
             )
 
-        Swipe touch ->
+        Swipe event ->
             ( { model
-                | swipeGesture = Swipe.record touch model.swipeGesture
-                , swipeLocationY = Swipe.locate touch |> .y |> Just
+                | swipeGesture = Swipe.record event model.swipeGesture
+                , swipeLocationY = Swipe.locate event |> .y |> Just
               }
             , Effect.none
             )
 
-        SwipeEnd touch ->
+        SwipeEnd event ->
             let
                 gesture =
-                    Swipe.record touch model.swipeGesture
+                    Swipe.record event model.swipeGesture
 
                 swipeThreshold =
                     shared.deviceInfo.window.height / 4
