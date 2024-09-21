@@ -72,7 +72,7 @@ updateCmd trigger msg =
 
 
 duration =
-    500
+    700
 
 
 sessionFadingColor : Color
@@ -92,30 +92,29 @@ fadeOverlay fadeOutTrigger state =
                     state
     in
     el
-        ((htmlAttribute <|
-            Transition.properties
-                [ Transition.opacity duration [ Transition.easeInOutCirc ] --Transition.easeInOutQuint ] -- Transition.easeInQuart ]
+        -- ((htmlAttribute <| Transition.properties [ Transition.opacity duration [ Transition.easeInOutCirc ] ])
+        --     ::
+        ((case fadeState of
+            PreparingFadeIn color ->
+                [ BG.color color
+                , alpha 1
+                ]
+
+            FadingIn color ->
+                [ BG.color color
+                , alpha 0
+                , htmlAttribute <| Transition.properties [ Transition.opacity duration [ Transition.easeInCirc ] ]
+                ]
+
+            PreparingFadeOut ->
+                [ alpha 0 ]
+
+            FadingOut color ->
+                [ BG.color color
+                , alpha 1
+                , htmlAttribute <| Transition.properties [ Transition.opacity duration [ Transition.easeOutCirc ] ]
                 ]
          )
-            :: (case fadeState of
-                    PreparingFadeIn color ->
-                        [ BG.color color
-                        , alpha 1
-                        ]
-
-                    FadingIn color ->
-                        [ BG.color color
-                        , alpha 0
-                        ]
-
-                    PreparingFadeOut ->
-                        [ alpha 0 ]
-
-                    FadingOut color ->
-                        [ BG.color color
-                        , alpha 1
-                        ]
-               )
             ++ (case fadeState of
                     PreparingFadeOut ->
                         [ width <| px 0
