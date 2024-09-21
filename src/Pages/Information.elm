@@ -95,8 +95,6 @@ toLayout shared model =
                         , message =
                             column
                                 [ width fill
-
-                                -- , spacing 20
                                 , padding 20
                                 ]
                                 [ let
@@ -182,9 +180,6 @@ type alias Model =
     , reloadButton : Button.Model
     , replaceMotDataButton : Button.Model
     , fadeOut : Fading.Trigger
-
-    -- , scaleTest : Bool
-    -- , testButton : Button.Model
     }
 
 
@@ -216,9 +211,6 @@ init shared () =
       , reloadButton = Button.init
       , replaceMotDataButton = Button.init
       , fadeOut = NoFade
-
-      --   , scaleTest = True
-      --   , testButton = Button.init
       }
     , if shared.versionOnServer /= Api.Loading && shared.updateState /= JustUpdated then
         Effect.checkVersion ReceivedNewestVersionString
@@ -244,7 +236,6 @@ type SettingsItem
 
 type Msg
     = Tick Time.Posix
-      -- | OnTestButton Button.Model
     | OnReloadButton Button.Model
     | OnUpdateButton Button.Model
     | VisibilityChanged Browser.Events.Visibility
@@ -501,13 +492,6 @@ update shared msg model =
                 Effect.none
             )
 
-        -- OnTestButton newState ->
-        --     ( { model
-        --         | testButton = newState
-        --         , scaleTest = newState == Button.Triggered
-        --       }
-        --     , Effect.none
-        --     )
         ReceivedClipboard value ->
             let
                 clipContent =
@@ -573,75 +557,12 @@ view shared model =
             , paddingEach { left = pagePadding, right = pagePadding, top = 30, bottom = pagePadding }
             , Font.size 15
             ]
-            [ --viewIntroduction shared model
-              viewRetentionTrend shared <| pagePadding * 2
+            [ viewRetentionTrend shared <| pagePadding * 2
             , viewUpdate shared model
             , viewSettings shared model
             , viewTechInfo shared model
             ]
     }
-
-
-
--- viewIntroduction : Shared.Model -> Model -> Element Msg
--- viewIntroduction shared model =
---     column
---         [ width fill
---         , spacing 15
---         -- , Font.center
---         ]
---         [ paragraph
---             [ Font.size 23
---             , Font.bold
---             , Font.color <| CS.guideColor shared.colorScheme
---             , Font.center
---             ]
---             [ text "Zoff - Wim Hof Atmung mit dem Hauch von Zen" ]
---         , paragraph [] [ text """
---         Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
---         Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es
---         weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit drei Fingern irgendwo auf den Bildschirm.
---         """ ]
---         -- , column
---         --     [ width fill
---         --     , height <|
---         --         px <|
---         --             if model.scaleTest then
---         --                 200
---         --             else
---         --                 100
---         --     -- , scale <|
---         --     --     if model.scaleTest then
---         --     --         1
---         --     --     else
---         --     --         0.2
---         --     , BG.color <| rgb255 200 200 200
---         --     , htmlAttribute <|
---         --         Transition.properties
---         --             [ Transition.property "height" 1000 [ Transition.easeInOutCirc ] --Transition.easeInOutQuint ] -- Transition.easeInQuart ]
---         --             -- [ Transition.transform 1000 [ Transition.easeInOutCirc ] --Transition.easeInOutQuint ] -- Transition.easeInQuart ]
---         --             ]
---         --     ]
---         --     [ el [ width fill, height <| px 100 ] <|
---         --         (Button.new
---         --             { onPress = OnTestButton
---         --             , model = model.testButton
---         --             , label = text "blah"
---         --             }
---         --             |> Button.withLightColor
---         --             |> Button.view shared.colorScheme
---         --         )
---         --     , if model.scaleTest then
---         --         el
---         --             [ height <| px 100
---         --             , width fill
---         --             , BG.color <| rgb 0 0 1
---         --             ]
---         --             none
---         --       else
---         --         none
---         --     ]
---         ]
 
 
 viewUpdate : Shared.Model -> Model -> Element Msg

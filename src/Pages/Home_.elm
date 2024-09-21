@@ -47,90 +47,12 @@ toLayout shared model =
                     Layouts.BaseLayout.NoOverlay
 
                 _ ->
-                    let
-                        daysSinceLastSession =
-                            shared.motivationData
-                                |> Maybe.map MotivationData.lastSessionDate
-                                |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
-                                |> Maybe.withDefault 0
-
-                        initialTarget =
-                            shared.motivationData
-                                |> Maybe.map MotivationData.streakInitialTarget
-                                |> Maybe.withDefault 4
-                                |> String.fromInt
-                    in
                     case shared.motivationData of
                         Nothing ->
-                            Layouts.BaseLayout.InfoWindow
-                                { header = "Herzlich willkommen bei Zoff"
-                                , info =
-                                    column [ spacing 25 ]
-                                        [ paragraph [] [ text """
-                                    Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
-                                    Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
-                                    weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit drei Fingern irgendwo auf den Bildschirm.
-                                    """ ]
-                                        , paragraph [] [ text """
-                                Zoff hilft Dir auch dabei, eine regelmäßige Übungspraxis aufrechtzuerhalten: Hier wird erfasst, wie oft Du in Serie
-                                Die Atemübungen gemacht hast. Und unter "Optimieren" kannst Du festlegen, wie oft pro Woche Du üben willst - so 
-                                kannst Du auch hier und dort mal einen Tag auslassen, ohne Deine Serie zu verlieren!
-                                """ ]
-                                        ]
-                                , onClose = DebugInfoToggled
-                                }
+                            viewWelcomeInfo
 
                         Just motData ->
-                            Layouts.BaseLayout.InfoWindow
-                                { header = "Serie"
-                                , info =
-                                    column [ spacing 20 ]
-                                        [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
-                                        , column
-                                            [ spacing 20
-                                            , paddingXY 20 0
-                                            ]
-                                            [ bullet <|
-                                                paragraph []
-                                                    [ text "Bisher längste Serie: "
-                                                    , text <|
-                                                        String.fromInt <|
-                                                            MotivationData.maxStreak motData
-                                                    ]
-                                            , bullet <|
-                                                paragraph []
-                                                    [ text "Bisher längste Retention: "
-                                                    , text <|
-                                                        Millis.toString True <|
-                                                            MotivationData.maxRetention motData
-                                                    , text " Minuten"
-                                                    ]
-                                            , bullet <|
-                                                paragraph []
-                                                    [ text "Freezes: "
-                                                    , text <|
-                                                        String.fromFloat <|
-                                                            MotivationData.streakFreezeDays motData
-                                                    ]
-                                            , bullet <|
-                                                paragraph []
-                                                    [ text "Tage seit letzter Sitzung: "
-                                                    , text <| String.fromInt daysSinceLastSession
-                                                    ]
-                                            , bullet <|
-                                                paragraph []
-                                                    [ text "Übungsziel: "
-                                                    , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
-                                                    ]
-                                            , bullet <|
-                                                paragraph []
-                                                    [ text <| "Übungsziel zu Beginn: "
-                                                    , text <| initialTarget
-                                                    ]
-                                            ]
-                                        ]
-                                , onClose = DebugInfoToggled
-                                }
+                            viewMotivationInfo shared motData
         }
 
 
@@ -378,3 +300,91 @@ viewStreak colorScheme size freezes freezeInDanger streak =
                     String.fromInt streak
     in
     List.foldl viewRing viewStreakNumber ringSizes
+
+
+viewWelcomeInfo : Layouts.BaseLayout.Overlay Msg
+viewWelcomeInfo =
+    Layouts.BaseLayout.InfoWindow
+        { header = "Herzlich willkommen bei Zoff"
+        , info =
+            column [ spacing 25 ]
+                [ paragraph [] [ text """
+                                    Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
+                                    Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
+                                    weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit drei Fingern irgendwo auf den Bildschirm.
+                                    """ ]
+                , paragraph [] [ text """
+                                Zoff hilft Dir auch dabei, eine regelmäßige Übungspraxis aufrechtzuerhalten: Hier wird erfasst, wie oft Du in Serie
+                                Die Atemübungen gemacht hast. Und unter "Optimieren" kannst Du festlegen, wie oft pro Woche Du üben willst - so 
+                                kannst Du auch hier und dort mal einen Tag auslassen, ohne Deine Serie zu verlieren!
+                                """ ]
+                ]
+        , onClose = DebugInfoToggled
+        }
+
+
+viewMotivationInfo : Shared.Model -> MotivationData.MotivationData -> Layouts.BaseLayout.Overlay Msg
+viewMotivationInfo shared motData =
+    let
+        daysSinceLastSession =
+            shared.motivationData
+                |> Maybe.map MotivationData.lastSessionDate
+                |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
+                |> Maybe.withDefault 0
+
+        initialTarget =
+            shared.motivationData
+                |> Maybe.map MotivationData.streakInitialTarget
+                |> Maybe.withDefault 4
+                |> String.fromInt
+    in
+    Layouts.BaseLayout.InfoWindow
+        { header = "Serie"
+        , info =
+            column [ spacing 20 ]
+                [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
+                , column
+                    [ spacing 20
+                    , paddingXY 20 0
+                    ]
+                    [ bullet <|
+                        paragraph []
+                            [ text "Bisher längste Serie: "
+                            , text <|
+                                String.fromInt <|
+                                    MotivationData.maxStreak motData
+                            ]
+                    , bullet <|
+                        paragraph []
+                            [ text "Bisher längste Retention: "
+                            , text <|
+                                Millis.toString True <|
+                                    MotivationData.maxRetention motData
+                            , text " Minuten"
+                            ]
+                    , bullet <|
+                        paragraph []
+                            [ text "Freezes: "
+                            , text <|
+                                String.fromFloat <|
+                                    MotivationData.streakFreezeDays motData
+                            ]
+                    , bullet <|
+                        paragraph []
+                            [ text "Tage seit letzter Sitzung: "
+                            , text <| String.fromInt daysSinceLastSession
+                            ]
+                    , bullet <|
+                        paragraph []
+                            [ text "Übungsziel: "
+                            , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
+                            ]
+                    , bullet <|
+                        paragraph []
+                            [ text <| "Übungsziel zu Beginn: "
+                            , text <| initialTarget
+                            ]
+                    ]
+                ]
+        , onClose = DebugInfoToggled
+        }
