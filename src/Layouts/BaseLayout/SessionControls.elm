@@ -29,6 +29,8 @@ type alias Props contentMsg =
     , controlsBottom : List (Element contentMsg)
     , fadeOut : Fading.Trigger
     , overlay : Layouts.BaseLayout.Overlay contentMsg
+
+    --TODO: Doch hier Callbacks für die Touch-Events übergeben
     }
 
 
@@ -190,7 +192,12 @@ update props shared route msg model =
             )
 
         SessionFadedOut ->
-            ( model, Effect.sessionEnded Session.Finished )
+            ( model
+            , Effect.batch
+                [ Effect.playSound Session.EndSound
+                , Effect.sessionEnded Session.Finished
+                ]
+            )
 
         ReleaseDebounceBlock ->
             ( { model | debounceBlock = False }, Effect.none )
@@ -218,11 +225,6 @@ update props shared route msg model =
             )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
 multitouchEffects : Shared.Model -> Route () -> List (Effect Msg)
 multitouchEffects shared route =
     [ if route.path == Session.phasePath Session.Retention then
@@ -236,6 +238,11 @@ multitouchEffects shared route =
         Effect.none
     , Effect.navigateNext shared.session
     ]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 

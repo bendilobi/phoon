@@ -173,7 +173,7 @@ update shared msg model =
         FadeOutFinished endType ->
             ( model
             , Effect.batch
-                [ Effect.playSound Session.StartSound
+                [ Effect.playSound Session.EndSound
                 , Effect.sessionEnded endType
                 ]
             )
