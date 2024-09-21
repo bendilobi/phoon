@@ -10,6 +10,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Layouts.BaseLayout
+import Layouts.BaseLayout.SessionControls as SessionControls
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading as Fading exposing (Trigger(..))
@@ -61,6 +62,11 @@ toLayout shared model =
 
             else
                 Layouts.BaseLayout.NoOverlay
+        , multitouchEffects =
+            [ Effect.sendCmd <| Delay.after Fading.duration SessionControls.SessionFadedOut
+            , Effect.navigateNext shared.session
+            ]
+        , singleTapEffects = []
         }
 
 

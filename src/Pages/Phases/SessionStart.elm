@@ -42,6 +42,8 @@ toLayout shared model =
         , controlsBottom = [ viewCancelButton shared model ]
         , fadeOut = model.fadeOut
         , overlay = Layouts.BaseLayout.NoOverlay
+        , multitouchEffects = [ Effect.navigateNext shared.session ]
+        , singleTapEffects = [ Effect.playSound Session.StartSound ]
         }
 
 

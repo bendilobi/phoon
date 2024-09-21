@@ -1,4 +1,4 @@
-module Layouts.BaseLayout.SessionControls exposing (Model, Msg, Props, layout, map)
+module Layouts.BaseLayout.SessionControls exposing (Model, Msg(..), Props, layout, map)
 
 import Date
 import Delay
@@ -14,7 +14,6 @@ import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
 import Lib.Session as Session
-import Lib.SessionResults as SessionResults
 import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Shared
@@ -29,8 +28,8 @@ type alias Props contentMsg =
     , controlsBottom : List (Element contentMsg)
     , fadeOut : Fading.Trigger
     , overlay : Layouts.BaseLayout.Overlay contentMsg
-
-    --TODO: Doch hier die Effecte für die Touch-Events übergeben
+    , multitouchEffects : List (Effect Msg)
+    , singleTapEffects : List (Effect Msg)
     }
 
 
@@ -65,6 +64,8 @@ map fn props =
                     , info = E.map fn info
                     , onClose = fn onClose
                     }
+    , multitouchEffects = props.multitouchEffects
+    , singleTapEffects = props.singleTapEffects
     }
 
 
@@ -179,16 +180,25 @@ update props shared route msg model =
               --       Was aktuell zu passieren scheint: Beim Lupfen eines Fingers wird ein End Event
               --       ausgelöst. Wenn sich dann die zwei liegengebliebenen Finger kurz bewegen, gibts
               --       ein zweites End Event...
-            , if multitouchRegistered then
-                Effect.batch <|
-                    (Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock)
-                        :: multitouchEffects shared route
+            , Effect.batch <|
+                (if multitouchRegistered then
+                    Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock
 
-              else if singleTapRegistered && route.path == Session.phasePath Session.Start then
-                Effect.playSound Session.StartSound
+                 else
+                    Effect.none
+                )
+                    :: (if multitouchRegistered then
+                            props.multitouchEffects
 
-              else
-                Effect.none
+                        else
+                            []
+                       )
+                    ++ (if singleTapRegistered then
+                            props.singleTapEffects
+
+                        else
+                            []
+                       )
             )
 
         SessionFadedOut ->
@@ -213,7 +223,7 @@ update props shared route msg model =
         MouseNavTap ->
             ( { model | controlsShown = False }
             , if not model.controlsShown then
-                Effect.batch <| multitouchEffects shared route
+                Effect.batch <| props.multitouchEffects
 
               else
                 Effect.none
@@ -223,21 +233,6 @@ update props shared route msg model =
             ( { model | fadeState = Fading.update fade }
             , Effect.sendCmd <| Fading.updateCmd fade ToggleFadeIn
             )
-
-
-multitouchEffects : Shared.Model -> Route () -> List (Effect Msg)
-multitouchEffects shared route =
-    [ if route.path == Session.phasePath Session.Retention then
-        --- The user left the retention by multitouch, so we add the data
-        Effect.resultsUpdated <| SessionResults.addRetention shared.results
-
-      else if route.path == Session.phasePath Session.End then
-        Effect.sendCmd <| Delay.after Fading.duration SessionFadedOut
-
-      else
-        Effect.none
-    , Effect.navigateNext shared.session
-    ]
 
 
 subscriptions : Model -> Sub Msg
