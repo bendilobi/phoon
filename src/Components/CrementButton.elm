@@ -190,7 +190,7 @@ view colorScheme (Settings settings) =
                                         settings.onPress settings.number Released
 
                                     Triggered ->
-                                        settings.onPress settings.number Triggered
+                                        settings.onPress settings.number Cancelled
                    , htmlAttribute <|
                         HEvents.on "pointerup" <|
                             Decode.succeed <|
