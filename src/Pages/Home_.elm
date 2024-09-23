@@ -135,126 +135,88 @@ view shared model =
     , attributes =
         CS.primaryMotivation shared.colorScheme
     , element =
-        viewMotivationData shared model
+        el
+            [ width fill
+            , height fill
+            , Events.onClick DebugInfoToggled
+            , Font.bold
+            ]
+        <|
+            case shared.motivationData of
+                Nothing ->
+                    viewWelcome
+
+                Just motData ->
+                    viewMotivationData shared model motData
     }
 
 
-viewMotivationData : Shared.Model -> Model -> Element Msg
-viewMotivationData shared model =
-    --TODO: Diese ganze Funktion übersichtlicher aufbauen -> case für Motivationdata ganz am Anfang, etc.
+viewMotivationData : Shared.Model -> Model -> MotivationData -> Element Msg
+viewMotivationData shared model motData =
     let
-        { streakValid, daysSinceLastSession } =
-            case shared.motivationData of
-                Nothing ->
-                    { streakValid = False, daysSinceLastSession = 0, sessionsUntilNextFreeze = Just 0 }
-
-                Just motData ->
-                    MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
+        { streakValid, daysSinceLastSession, remainingFreezes } =
+            MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
     in
     el
         [ width fill
-        , height fill
-        , Events.onClick DebugInfoToggled
-        ]
-    <|
-        column
-            [ width fill
-            , padding 20
-            , spacing 20
-            , centerY
-            ]
-            [ case shared.motivationData of
-                Nothing ->
-                    none
-
-                Just data ->
-                    el
-                        [ width fill
-                        ]
-                    <|
-                        if streakValid then
-                            let
-                                remainingFreezes =
-                                    MotivationData.streakFreezes data
-                                        |> floor
-                                        |> (\freezes ->
-                                                if daysSinceLastSession > 1 then
-                                                    freezes - (daysSinceLastSession - 1)
-
-                                                else
-                                                    freezes
-                                           )
-
-                                window =
-                                    shared.deviceInfo.window
-
-                                streakWidgetSize =
-                                    min window.width window.height
-                                        |> (\size -> size - (SafeArea.maxX shared.safeAreaInset |> toFloat))
-                                        |> (*) 0.8
-                                        |> round
-                            in
-                            viewStreak
-                                shared.colorScheme
-                                streakWidgetSize
-                                remainingFreezes
-                                (daysSinceLastSession > 0)
-                            <|
-                                MotivationData.series data
-
-                        else
-                            el
-                                [ centerX
-                                , centerY
-                                , Font.color <| CS.seriesBadColor shared.colorScheme
-                                , Font.size 70
-                                , Font.bold
-                                , paddingXY 0 50
-                                ]
-                            <|
-                                text <|
-                                    String.fromInt <|
-                                        daysSinceLastSession
-            , paragraph
+        , centerY
+        , Font.size 70
+        , moveUp 40
+        , below <|
+            paragraph
                 [ width fill
-                , Font.bold
                 , Font.size 20
                 , Font.center
-
-                -- , Events.onClick DebugInfoToggled
+                , paddingXY 20 30
                 ]
-                [ case shared.motivationData of
-                    Nothing ->
-                        text <| "Willkommen bei Zoff!!"
+                [ if not streakValid then
+                    if daysSinceLastSession - 1 == 1 then
+                        text <| "Tage seit letzter Übung"
 
-                    Just data ->
-                        MotivationData.streakFreezes data
-                            |> floor
-                            |> (\freezes ->
-                                    if daysSinceLastSession > 1 then
-                                        freezes - (daysSinceLastSession - 1)
+                    else
+                        text <| "Tage seit letzter Übung... Auf geht's!"
 
-                                    else
-                                        freezes
-                               )
-                            |> (\freezes ->
-                                    if not streakValid then
-                                        if daysSinceLastSession - 1 == 1 then
-                                            text <| "Tage seit letzter Übung"
+                  else if remainingFreezes == 0 && daysSinceLastSession > 0 && MotivationData.series motData > 1 then
+                    -- Last freeze will be used up if no practice today
+                    text <| "Praktiziere noch heute, um Deinen Streak zu erhalten!"
 
-                                        else
-                                            text <| "Tage seit letzter Übung... Auf geht's!"
-
-                                    else if freezes == 0 && daysSinceLastSession > 0 && MotivationData.series data > 1 then
-                                        -- Last freeze will be used up if no practice today
-                                        text <| "Praktiziere noch heute, um Deinen Streak zu erhalten!"
-
-                                    else
-                                        -- String.fromInt freezes ++ " Freezes übrig"
-                                        none
-                               )
+                  else
+                    none
                 ]
-            ]
+        ]
+    <|
+        if streakValid then
+            let
+                window =
+                    shared.deviceInfo.window
+
+                streakWidgetSize =
+                    min window.width window.height
+                        |> (\size -> size - (SafeArea.maxX shared.safeAreaInset |> toFloat))
+                        |> (*) 0.8
+                        |> round
+            in
+            viewStreak
+                shared.colorScheme
+                streakWidgetSize
+                remainingFreezes
+                (daysSinceLastSession > 0)
+            <|
+                MotivationData.series motData
+
+        else
+            el
+                [ centerX
+                , Font.color <| CS.seriesBadColor shared.colorScheme
+                ]
+            <|
+                text <|
+                    String.fromInt <|
+                        daysSinceLastSession
+
+
+
+-- ]
 
 
 viewStreak : ColorScheme -> Int -> Int -> Bool -> Int -> Element msg
@@ -289,10 +251,6 @@ viewStreak colorScheme size freezes freezeInDanger streak =
             el
                 [ centerX
                 , centerY
-
-                --TODO: Berechnen aus Freezes-Anzahl, d.h. proportional zur Menge der Ringe?
-                , Font.size 70
-                , Font.bold
                 , Font.color <| CS.seriesGoodColor colorScheme
                 ]
             <|
@@ -300,6 +258,18 @@ viewStreak colorScheme size freezes freezeInDanger streak =
                     String.fromInt streak
     in
     List.foldl viewRing viewStreakNumber ringSizes
+
+
+viewWelcome : Element msg
+viewWelcome =
+    paragraph
+        [ width fill
+        , centerY
+        , Font.center
+        , Font.size 25
+        , moveUp 40
+        ]
+        [ text <| "Willkommen bei Zoff!!" ]
 
 
 viewWelcomeInfo : Layouts.BaseLayout.Overlay Msg
@@ -326,12 +296,7 @@ viewWelcomeInfo =
 viewMotivationInfo : Shared.Model -> MotivationData.MotivationData -> Layouts.BaseLayout.Overlay Msg
 viewMotivationInfo shared motData =
     let
-        -- daysSinceLastSession =
-        --     shared.motivationData
-        --         |> Maybe.map MotivationData.lastSessionDate
-        --         |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
-        --         |> Maybe.withDefault 0
-        { sessionsUntilNextFreeze, daysSinceLastSession } =
+        { sessionsUntilNextFreeze, daysSinceLastSession, remainingFreezes, streakValid } =
             MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
 
         initialTarget =
@@ -371,6 +336,24 @@ viewMotivationInfo shared motData =
                                 String.fromFloat <|
                                     MotivationData.streakFreezes motData
                             ]
+                    , if streakValid then
+                        bullet <|
+                            paragraph []
+                                [ text "Um die Serie zu erhalten, übe spätestens am "
+                                , shared.today
+                                    |> Date.add Date.Days (remainingFreezes + 1)
+                                    |> Date.weekday
+                                    |> Utils.weekdayToGerman
+                                    |> text
+                                , if remainingFreezes > 7 then
+                                    text " nächste Woche"
+
+                                  else
+                                    none
+                                ]
+
+                      else
+                        none
                     , case sessionsUntilNextFreeze of
                         Nothing ->
                             none
@@ -385,8 +368,6 @@ viewMotivationInfo shared motData =
 
                                         else
                                             "der nächsten Übung"
-
-                                    --TODO: Ausrechnen, in wievielen Tagen der nächste Ring kommt
                                     ]
                     , bullet <|
                         paragraph []

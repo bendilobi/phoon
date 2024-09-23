@@ -282,8 +282,7 @@ viewInfoWindow props shared model toContentMsg =
             shared.deviceInfo.window.height - 35
 
         halfHeight =
-            {- The +7 is to position the window nicely below the streak number -}
-            (shared.deviceInfo.window.height / 2) + 7
+            shared.deviceInfo.window.height / 2 + 37
     in
     column
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)

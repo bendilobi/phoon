@@ -1,4 +1,4 @@
-module Lib.Utils exposing (Device, animatedColumn, animatedEl, bullet, classifyDevice, colorToHex)
+module Lib.Utils exposing (Device, animatedColumn, animatedEl, bullet, classifyDevice, colorToHex, weekdayToGerman)
 
 import Color
 import Color.Convert
@@ -6,6 +6,7 @@ import Element exposing (..)
 import Element.Font as Font
 import Simple.Animation exposing (Animation)
 import Simple.Animation.Animated as Animated
+import Time exposing (Weekday(..))
 
 
 type alias Device =
@@ -62,6 +63,31 @@ bullet content =
         [ el [ alignTop, Font.bold ] <| text "•"
         , content
         ]
+
+
+weekdayToGerman : Time.Weekday -> String
+weekdayToGerman day =
+    case day of
+        Mon ->
+            "Montag"
+
+        Tue ->
+            "Dienstag"
+
+        Wed ->
+            "Mittwoch"
+
+        Thu ->
+            "Donnerstag"
+
+        Fri ->
+            "Freitag"
+
+        Sat ->
+            "Samstag"
+
+        Sun ->
+            "Sonntag"
 
 
 

@@ -34,6 +34,14 @@ type MotivationData
         }
 
 
+type alias StreakInfo =
+    { streakValid : Bool
+    , daysSinceLastSession : Int
+    , sessionsUntilNextFreeze : Maybe Int
+    , remainingFreezes : Int
+    }
+
+
 
 {- target frame is max 7 (as per the upper bound of the IntCrementer
    used in the settings). More than once per day doesn't work with
@@ -231,11 +239,7 @@ streakInfo :
     Date.Date
     -> Int
     -> MotivationData
-    ->
-        { streakValid : Bool
-        , daysSinceLastSession : Int
-        , sessionsUntilNextFreeze : Maybe Int
-        }
+    -> StreakInfo
 streakInfo today practiceFrequencyTarget (MotivationData motData) =
     let
         daysSinceLastSession =
@@ -264,6 +268,16 @@ streakInfo today practiceFrequencyTarget (MotivationData motData) =
                 |> (\v -> v / freezeIncrement practiceFrequencyTarget)
                 |> ceiling
                 |> Just
+    , remainingFreezes =
+        motData.streakFreezes
+            |> floor
+            |> (\freezes ->
+                    if daysSinceLastSession > 1 then
+                        freezes - (daysSinceLastSession - 1)
+
+                    else
+                        freezes
+               )
     }
 
 
