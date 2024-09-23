@@ -146,7 +146,7 @@ viewMotivationData shared model =
         { streakValid, daysSinceLastSession } =
             case shared.motivationData of
                 Nothing ->
-                    { streakValid = False, daysSinceLastSession = 0 }
+                    { streakValid = False, daysSinceLastSession = 0, sessionsUntilNextFreeze = 0 }
 
                 Just motData ->
                     MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
@@ -175,7 +175,7 @@ viewMotivationData shared model =
                         if streakValid then
                             let
                                 remainingFreezes =
-                                    MotivationData.streakFreezeDays data
+                                    MotivationData.streakFreezes data
                                         |> floor
                                         |> (\freezes ->
                                                 if daysSinceLastSession > 1 then
@@ -228,7 +228,7 @@ viewMotivationData shared model =
                         text <| "Willkommen bei Zoff!!"
 
                     Just data ->
-                        MotivationData.streakFreezeDays data
+                        MotivationData.streakFreezes data
                             |> floor
                             |> (\freezes ->
                                     if daysSinceLastSession > 1 then
@@ -326,11 +326,13 @@ viewWelcomeInfo =
 viewMotivationInfo : Shared.Model -> MotivationData.MotivationData -> Layouts.BaseLayout.Overlay Msg
 viewMotivationInfo shared motData =
     let
-        daysSinceLastSession =
-            shared.motivationData
-                |> Maybe.map MotivationData.lastSessionDate
-                |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
-                |> Maybe.withDefault 0
+        -- daysSinceLastSession =
+        --     shared.motivationData
+        --         |> Maybe.map MotivationData.lastSessionDate
+        --         |> Maybe.andThen (\date -> Just <| Date.diff Date.Days date shared.today)
+        --         |> Maybe.withDefault 0
+        { sessionsUntilNextFreeze, daysSinceLastSession } =
+            MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
 
         initialTarget =
             shared.motivationData
@@ -367,7 +369,19 @@ viewMotivationInfo shared motData =
                             [ text "Freezes: "
                             , text <|
                                 String.fromFloat <|
-                                    MotivationData.streakFreezeDays motData
+                                    MotivationData.streakFreezes motData
+                            ]
+                    , bullet <|
+                        paragraph []
+                            [ text "Nächster Ring kommt nach "
+                            , text <|
+                                if sessionsUntilNextFreeze > 1 then
+                                    String.fromInt sessionsUntilNextFreeze ++ " Übungen"
+
+                                else
+                                    "der nächsten Übung"
+
+                            --TODO: Ausrechnen, in wievielen Tagen der nächste Ring kommt
                             ]
                     , bullet <|
                         paragraph []

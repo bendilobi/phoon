@@ -223,7 +223,7 @@ update props shared route msg model =
         MouseNavTap ->
             ( { model | controlsShown = False }
             , if not model.controlsShown then
-                Effect.batch <| props.multitouchEffects
+                Effect.batch props.multitouchEffects
 
               else
                 Effect.none

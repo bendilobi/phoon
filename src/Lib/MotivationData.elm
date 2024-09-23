@@ -7,14 +7,14 @@ module Lib.MotivationData exposing
     , maxStreak
     , meanRetentionTimes
     , series
-    , streakFreezeDays
+    , streakFreezes
     , streakInfo
     , streakInitialTarget
     , update
     )
 
 import Date
-import Json.Decode exposing (float)
+import Json.Decode
 import Json.Decode.Pipeline exposing (optional, required)
 import Json.Encode
 import Lib.Millis as Millis exposing (Milliseconds)
@@ -25,7 +25,7 @@ import Round
 type MotivationData
     = MotivationData
         { streak : Int
-        , streakFreezeDays : Float
+        , streakFreezes : Float
         , streakInitialTarget : Int
         , lastSessionDate : Date.Date
         , meanRetentiontimes : List Milliseconds
@@ -42,7 +42,7 @@ create : Int -> Float -> Int -> Date.Date -> List Milliseconds -> Milliseconds -
 create streak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes maxRet maxStrk =
     MotivationData
         { streak = streak
-        , streakFreezeDays = streakFreezeD
+        , streakFreezes = streakFreezeD
         , streakInitialTarget = streakInitTarget
         , lastSessionDate = lastSessDate
         , meanRetentiontimes = meanRetentiontimes
@@ -70,15 +70,15 @@ update results today practiceFrequencyTarget motivationData =
                 |> Maybe.withDefault 0
                 |> Millis.fromSeconds
 
-        target =
-            practiceFrequencyTarget |> toFloat
-
-        freezeIncrement =
-            -- target is max 7 (as per the upper bound of the IntCrementer
-            -- used in the settings). More than once per day doesn't work with
-            -- the current using of one freeze per day...
-            ((7 - target) / target)
-                |> Round.ceilingNum 2
+        -- target =
+        --     practiceFrequencyTarget |> toFloat
+        -- freezeIncrement =
+        --     {- target is max 7 (as per the upper bound of the IntCrementer
+        --        used in the settings). More than once per day doesn't work with
+        --        the current using of one freeze per day...
+        --     -}
+        --     ((7 - target) / target)
+        --         |> Round.ceilingNum 2
     in
     case meanRetTime of
         Nothing ->
@@ -98,7 +98,7 @@ update results today practiceFrequencyTarget motivationData =
                     Just <|
                         MotivationData
                             { streak = 1
-                            , streakFreezeDays = freezeIncrement
+                            , streakFreezes = freezeIncrement practiceFrequencyTarget
                             , streakInitialTarget = practiceFrequencyTarget
                             , lastSessionDate = today
                             , meanRetentiontimes = [ mean ]
@@ -108,22 +108,16 @@ update results today practiceFrequencyTarget motivationData =
 
                 Just (MotivationData motData) ->
                     let
-                        -- daysSinceLastSession =
-                        --     Date.diff Date.Days motData.lastSessionDate today
                         { streakValid, daysSinceLastSession } =
                             streakInfo today practiceFrequencyTarget (MotivationData motData)
 
                         streakEndedBecauseOfTargetChange =
                             motData.streakInitialTarget > practiceFrequencyTarget
 
-                        -- streakEnded =
-                        --     (daysSinceLastSession - floor motData.streakFreezeDays)
-                        --         > 1
-                        --         || streakEndedBecauseOfTargetChange
                         remainingStreakFreeze =
                             if daysSinceLastSession > 0 && not streakEndedBecauseOfTargetChange then
                                 -- Last session was not today so we need to apply the freeze days
-                                motData.streakFreezeDays
+                                motData.streakFreezes
                                     - (toFloat daysSinceLastSession - 1)
                                     |> (\freezeDays ->
                                             if streakValid then
@@ -134,7 +128,7 @@ update results today practiceFrequencyTarget motivationData =
                                        )
 
                             else
-                                motData.streakFreezeDays
+                                motData.streakFreezes
 
                         streak =
                             if streakValid then
@@ -151,13 +145,13 @@ update results today practiceFrequencyTarget motivationData =
 
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
-                                , streakFreezeDays =
-                                    if remainingStreakFreeze >= 9 - freezeIncrement then
+                                , streakFreezes =
+                                    if remainingStreakFreeze >= 9 - freezeIncrement practiceFrequencyTarget then
                                         -- allow no more than 8 streak freezes
                                         8.99
 
                                     else
-                                        remainingStreakFreeze + freezeIncrement
+                                        remainingStreakFreeze + freezeIncrement practiceFrequencyTarget
                                 , streakInitialTarget =
                                     if streakValid then
                                         motData.streakInitialTarget
@@ -170,6 +164,20 @@ update results today practiceFrequencyTarget motivationData =
                                 , maxRetention = Millis.max maxTime motData.maxRetention
                                 , maxStreak = max streak motData.streak
                             }
+
+
+freezeIncrement : Int -> Float
+freezeIncrement practiceFrequencyTarget =
+    let
+        target =
+            practiceFrequencyTarget |> toFloat
+    in
+    {- target is max 7 (as per the upper bound of the IntCrementer
+       used in the settings). More than once per day doesn't work with
+       the current using of one freeze per day...
+    -}
+    ((7 - target) / target)
+        |> Round.ceilingNum 2
 
 
 
@@ -201,9 +209,9 @@ maxStreak (MotivationData motData) =
     motData.maxStreak
 
 
-streakFreezeDays : MotivationData -> Float
-streakFreezeDays (MotivationData motData) =
-    motData.streakFreezeDays
+streakFreezes : MotivationData -> Float
+streakFreezes (MotivationData motData) =
+    motData.streakFreezes
 
 
 streakInitialTarget : MotivationData -> Int
@@ -211,16 +219,38 @@ streakInitialTarget (MotivationData motData) =
     motData.streakInitialTarget
 
 
-streakInfo : Date.Date -> Int -> MotivationData -> { streakValid : Bool, daysSinceLastSession : Int }
+streakInfo :
+    Date.Date
+    -> Int
+    -> MotivationData
+    ->
+        { streakValid : Bool
+        , daysSinceLastSession : Int
+        , sessionsUntilNextFreeze : Int
+        }
 streakInfo today practiceFrequencyTarget (MotivationData motData) =
     let
         daysSinceLastSession =
             Date.diff Date.Days motData.lastSessionDate today
     in
     { streakValid =
-        ((daysSinceLastSession - floor motData.streakFreezeDays) < 2)
+        ((daysSinceLastSession - floor motData.streakFreezes) < 2)
             && (motData.streakInitialTarget <= practiceFrequencyTarget)
     , daysSinceLastSession = daysSinceLastSession
+    , sessionsUntilNextFreeze =
+        motData.streakFreezes
+            |> ceiling
+            |> toFloat
+            |> (\v ->
+                    if v == motData.streakFreezes then
+                        v + 1
+
+                    else
+                        v
+               )
+            |> (\v -> v - motData.streakFreezes)
+            |> (\v -> v / freezeIncrement practiceFrequencyTarget)
+            |> ceiling
     }
 
 
@@ -252,7 +282,7 @@ encoder : MotivationData -> Json.Encode.Value
 encoder (MotivationData motData) =
     Json.Encode.object
         [ ( fieldnames.series, Json.Encode.int motData.streak )
-        , ( fieldnames.streakFreezeDays, Json.Encode.float motData.streakFreezeDays )
+        , ( fieldnames.streakFreezeDays, Json.Encode.float motData.streakFreezes )
         , ( fieldnames.streakInitialTarget, Json.Encode.int motData.streakInitialTarget )
         , ( fieldnames.lastSessionDate, Json.Encode.int <| Date.toRataDie motData.lastSessionDate )
         , ( fieldnames.meanRetentiontimes
