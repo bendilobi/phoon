@@ -23,7 +23,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "feathericons/elm-feather": "1.5.0",
-            "justinmimbs/date": "4.0.1",
+            "justinmimbs/date": "4.1.0",
             "mdgriffith/elm-animator": "1.1.1",
             "mdgriffith/elm-ui": "1.1.8",
             "mpizenberg/elm-pointer-events": "4.0.2",
@@ -41,9 +41,9 @@
             "elm/virtual-dom": "1.0.3",
             "fredcy/elm-parseint": "2.0.1",
             "ianmackenzie/elm-units": "2.10.0",
-            "justinmimbs/time-extra": "1.1.1",
+            "justinmimbs/time-extra": "1.2.0",
             "ryannhg/date-format": "2.3.0",
-            "terezka/intervals": "2.0.1"
+            "terezka/intervals": "2.0.2"
         }
     },
     "test-dependencies": {
