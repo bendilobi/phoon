@@ -35,6 +35,28 @@ type MotivationData
 
 
 
+{- target frame is max 7 (as per the upper bound of the IntCrementer
+   used in the settings). More than once per day doesn't work with
+   the current using of one freeze per day...
+-}
+
+
+frequencyTargetFrame : Float
+frequencyTargetFrame =
+    7
+
+
+freezeIncrement : Int -> Float
+freezeIncrement practiceFrequencyTarget =
+    let
+        target =
+            practiceFrequencyTarget |> toFloat
+    in
+    ((frequencyTargetFrame - target) / target)
+        |> Round.ceilingNum 2
+
+
+
 -- CREATION
 
 
@@ -166,20 +188,6 @@ update results today practiceFrequencyTarget motivationData =
                             }
 
 
-freezeIncrement : Int -> Float
-freezeIncrement practiceFrequencyTarget =
-    let
-        target =
-            practiceFrequencyTarget |> toFloat
-    in
-    {- target is max 7 (as per the upper bound of the IntCrementer
-       used in the settings). More than once per day doesn't work with
-       the current using of one freeze per day...
-    -}
-    ((7 - target) / target)
-        |> Round.ceilingNum 2
-
-
 
 -- ACCESS
 
@@ -226,7 +234,7 @@ streakInfo :
     ->
         { streakValid : Bool
         , daysSinceLastSession : Int
-        , sessionsUntilNextFreeze : Int
+        , sessionsUntilNextFreeze : Maybe Int
         }
 streakInfo today practiceFrequencyTarget (MotivationData motData) =
     let
@@ -238,19 +246,24 @@ streakInfo today practiceFrequencyTarget (MotivationData motData) =
             && (motData.streakInitialTarget <= practiceFrequencyTarget)
     , daysSinceLastSession = daysSinceLastSession
     , sessionsUntilNextFreeze =
-        motData.streakFreezes
-            |> ceiling
-            |> toFloat
-            |> (\v ->
-                    if v == motData.streakFreezes then
-                        v + 1
+        if practiceFrequencyTarget == (frequencyTargetFrame |> round) then
+            Nothing
 
-                    else
-                        v
-               )
-            |> (\v -> v - motData.streakFreezes)
-            |> (\v -> v / freezeIncrement practiceFrequencyTarget)
-            |> ceiling
+        else
+            motData.streakFreezes
+                |> ceiling
+                |> toFloat
+                |> (\v ->
+                        if v == motData.streakFreezes then
+                            v + 1
+
+                        else
+                            v
+                   )
+                |> (\v -> v - motData.streakFreezes)
+                |> (\v -> v / freezeIncrement practiceFrequencyTarget)
+                |> ceiling
+                |> Just
     }
 
 

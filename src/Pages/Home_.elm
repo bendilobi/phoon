@@ -146,7 +146,7 @@ viewMotivationData shared model =
         { streakValid, daysSinceLastSession } =
             case shared.motivationData of
                 Nothing ->
-                    { streakValid = False, daysSinceLastSession = 0, sessionsUntilNextFreeze = 0 }
+                    { streakValid = False, daysSinceLastSession = 0, sessionsUntilNextFreeze = Just 0 }
 
                 Just motData ->
                     MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
@@ -371,18 +371,23 @@ viewMotivationInfo shared motData =
                                 String.fromFloat <|
                                     MotivationData.streakFreezes motData
                             ]
-                    , bullet <|
-                        paragraph []
-                            [ text "Nächster Ring kommt nach "
-                            , text <|
-                                if sessionsUntilNextFreeze > 1 then
-                                    String.fromInt sessionsUntilNextFreeze ++ " Übungen"
+                    , case sessionsUntilNextFreeze of
+                        Nothing ->
+                            none
 
-                                else
-                                    "der nächsten Übung"
+                        Just sessions ->
+                            bullet <|
+                                paragraph []
+                                    [ text "Nächster Ring kommt nach "
+                                    , text <|
+                                        if sessions > 1 then
+                                            String.fromInt sessions ++ " Übungen"
 
-                            --TODO: Ausrechnen, in wievielen Tagen der nächste Ring kommt
-                            ]
+                                        else
+                                            "der nächsten Übung"
+
+                                    --TODO: Ausrechnen, in wievielen Tagen der nächste Ring kommt
+                                    ]
                     , bullet <|
                         paragraph []
                             [ text "Tage seit letzter Sitzung: "
