@@ -16,6 +16,7 @@
           packages = (with pkgs.elmPackages; [
             elm
             elm-format
+            elm-json
           ]) ++ (with pkgs; [
             elm2nix
             nodejs_18
