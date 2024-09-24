@@ -34,21 +34,10 @@ type MotivationData
         }
 
 
-type alias StreakInfo =
-    { streakValid : Bool
-    , daysSinceLastSession : Int
-    , sessionsUntilNextFreeze : Maybe Int
-    , remainingFreezes : Int
-    }
-
-
-
-{- target frame is max 7 (as per the upper bound of the IntCrementer
-   used in the settings). More than once per day doesn't work with
-   the current using of one freeze per day...
+{-| target frame is max 7 (as per the upper bound of the IntCrementer
+used in the settings). More than once per day doesn't work with
+the current using of one freeze per day...
 -}
-
-
 frequencyTargetFrame : Float
 frequencyTargetFrame =
     7
@@ -99,16 +88,6 @@ update results today practiceFrequencyTarget motivationData =
                 |> Maybe.andThen List.maximum
                 |> Maybe.withDefault 0
                 |> Millis.fromSeconds
-
-        -- target =
-        --     practiceFrequencyTarget |> toFloat
-        -- freezeIncrement =
-        --     {- target is max 7 (as per the upper bound of the IntCrementer
-        --        used in the settings). More than once per day doesn't work with
-        --        the current using of one freeze per day...
-        --     -}
-        --     ((7 - target) / target)
-        --         |> Round.ceilingNum 2
     in
     case meanRetTime of
         Nothing ->
@@ -192,7 +171,7 @@ update results today practiceFrequencyTarget motivationData =
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
-                                , maxStreak = max streak motData.streak
+                                , maxStreak = max streak motData.maxStreak
                             }
 
 
@@ -239,32 +218,50 @@ streakInfo :
     Date.Date
     -> Int
     -> MotivationData
-    -> StreakInfo
+    ->
+        { streakValid : Bool
+        , daysSinceLastSession : Int
+        , sessionsUntilNextFreeze : Maybe Int
+        , remainingFreezes : Int
+        }
 streakInfo today practiceFrequencyTarget (MotivationData motData) =
     let
         daysSinceLastSession =
             Date.diff Date.Days motData.lastSessionDate today
+
+        streakValid =
+            ((daysSinceLastSession - floor motData.streakFreezes) < 2)
+                && (motData.streakInitialTarget <= practiceFrequencyTarget)
     in
-    { streakValid =
-        ((daysSinceLastSession - floor motData.streakFreezes) < 2)
-            && (motData.streakInitialTarget <= practiceFrequencyTarget)
+    { streakValid = streakValid
     , daysSinceLastSession = daysSinceLastSession
     , sessionsUntilNextFreeze =
         if practiceFrequencyTarget == (frequencyTargetFrame |> round) then
             Nothing
 
         else
-            motData.streakFreezes
+            let
+                freezes =
+                    if streakValid then
+                        motData.streakFreezes
+
+                    else
+                        0
+            in
+            freezes
                 |> ceiling
                 |> toFloat
                 |> (\v ->
-                        if v == motData.streakFreezes then
+                        if v == freezes then
+                            {- freezes was a full integer (e.g. 3.0)
+                               so ceiling didn't round up
+                            -}
                             v + 1
 
                         else
                             v
                    )
-                |> (\v -> v - motData.streakFreezes)
+                |> (\v -> v - freezes)
                 |> (\v -> v / freezeIncrement practiceFrequencyTarget)
                 |> ceiling
                 |> Just

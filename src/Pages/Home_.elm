@@ -298,93 +298,120 @@ viewMotivationInfo shared motData =
     let
         { sessionsUntilNextFreeze, daysSinceLastSession, remainingFreezes, streakValid } =
             MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
-
-        initialTarget =
-            shared.motivationData
-                |> Maybe.map MotivationData.streakInitialTarget
-                |> Maybe.withDefault 4
-                |> String.fromInt
     in
     Layouts.BaseLayout.InfoWindow
         { header = "Serie"
         , info =
-            column [ spacing 20 ]
-                [ paragraph [] [ text "Informationen zur Serie, vorerst zu Debugging-Zwecken:" ]
-                , column
-                    [ spacing 20
-                    , paddingXY 20 0
-                    ]
-                    [ bullet <|
-                        paragraph []
+            column
+                [ spacing 20
+                , paddingXY 20 0
+                ]
+                [ let
+                    maxStreak =
+                        MotivationData.maxStreak motData
+                  in
+                  bullet <|
+                    paragraph [] <|
+                        if maxStreak == MotivationData.series motData then
+                            [ text "Du hast gerade Deine längste Serie bisher! Gute Arbeit!" ]
+
+                        else
                             [ text "Bisher längste Serie: "
                             , text <|
                                 String.fromInt <|
                                     MotivationData.maxStreak motData
                             ]
-                    , bullet <|
-                        paragraph []
-                            [ text "Bisher längste Retention: "
-                            , text <|
-                                Millis.toString True <|
-                                    MotivationData.maxRetention motData
-                            , text " Minuten"
-                            ]
-                    , bullet <|
-                        paragraph []
-                            [ text "Freezes: "
-                            , text <|
-                                String.fromFloat <|
-                                    MotivationData.streakFreezes motData
-                            ]
-                    , if streakValid then
-                        bullet <|
-                            paragraph []
+
+                -- , bullet <|
+                --     let
+                --         maxRet =
+                --             MotivationData.maxRetention motData
+                --     in
+                --     paragraph []
+                --         [ text "Bisher längste Retention: "
+                --         , text <|
+                --             Millis.toString False maxRet
+                --         , if Millis.toSeconds maxRet < 60 then
+                --             text " Sekunden"
+                --           else
+                --             text " Minuten"
+                --         ]
+                , if streakValid && not (daysSinceLastSession > 0 && remainingFreezes == 0) then
+                    let
+                        daysUntilStreakEnd =
+                            remainingFreezes
+                                + (if daysSinceLastSession == 0 then
+                                    1
+
+                                   else
+                                    0
+                                  )
+                    in
+                    bullet <|
+                        paragraph [] <|
+                            if daysUntilStreakEnd == 1 then
+                                [ text "Um die Serie zu erhalten, übe morgen wieder!" ]
+
+                            else
                                 [ text "Um die Serie zu erhalten, übe spätestens am "
                                 , shared.today
-                                    |> Date.add Date.Days (remainingFreezes + 1)
+                                    |> Date.add Date.Days daysUntilStreakEnd
                                     |> Date.weekday
                                     |> Utils.weekdayToGerman
                                     |> text
-                                , if remainingFreezes > 7 then
+                                , if daysUntilStreakEnd > 6 then
                                     text " nächste Woche"
 
                                   else
                                     none
                                 ]
 
-                      else
+                  else
+                    none
+                , case sessionsUntilNextFreeze of
+                    Nothing ->
                         none
-                    , case sessionsUntilNextFreeze of
-                        Nothing ->
-                            none
 
-                        Just sessions ->
-                            bullet <|
-                                paragraph []
-                                    [ text "Nächster Ring kommt nach "
-                                    , text <|
-                                        if sessions > 1 then
-                                            String.fromInt sessions ++ " Übungen"
+                    Just sessions ->
+                        bullet <|
+                            paragraph []
+                                [ text "Nächster Ring kommt nach "
+                                , text <|
+                                    if sessions > 1 then
+                                        String.fromInt sessions ++ " Übungen"
 
-                                        else
-                                            "der nächsten Übung"
-                                    ]
-                    , bullet <|
+                                    else
+                                        "der nächsten Übung"
+                                ]
+                , if streakValid && daysSinceLastSession > 1 then
+                    bullet <|
                         paragraph []
                             [ text "Tage seit letzter Sitzung: "
                             , text <| String.fromInt daysSinceLastSession
                             ]
-                    , bullet <|
-                        paragraph []
-                            [ text "Übungsziel: "
-                            , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
-                            ]
-                    , bullet <|
-                        paragraph []
-                            [ text <| "Übungsziel zu Beginn: "
-                            , text <| initialTarget
-                            ]
-                    ]
+
+                  else
+                    none
+
+                -- , bullet <|
+                --     paragraph []
+                --         [ text "Übungsziel: "
+                --         , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
+                --         ]
+                -- , bullet <|
+                --     paragraph []
+                --         [ text <| "Übungsziel zu Beginn: "
+                --         , text <| initialTarget
+                --         ]
+                -- , bullet <|
+                --     paragraph []
+                --         [ text "Debug-Info: "
+                --         , text "Freezes: "
+                --         , text <|
+                --             String.fromFloat <|
+                --                 MotivationData.streakFreezes motData
+                --         , text ""
+                --         ]
                 ]
         , onClose = DebugInfoToggled
         }
