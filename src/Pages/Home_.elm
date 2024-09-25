@@ -308,10 +308,23 @@ viewMotivationInfo shared motData =
         { header = "Serie"
         , info =
             column
-                [ spacing 20
-                , paddingXY 20 0
+                [ width fill
+                , spacing 20
                 ]
-                [ let
+                [ row
+                    [ width fill ]
+                    [ viewKPI shared.colorScheme "Letzte Serie" <| MotivationData.previousStreak motData
+                    , el [ width fill ] none
+                    , viewKPI shared.colorScheme "Längste Serie" <| Just <| MotivationData.maxStreak motData
+                    , el [ width fill ] none
+                    , viewKPI shared.colorScheme "Aktuelle Serie" <|
+                        if streakValid then
+                            Just <| MotivationData.series motData
+
+                        else
+                            Nothing
+                    ]
+                , let
                     diffToMaxStreak =
                         MotivationData.maxStreak motData
                             - (if streakValid then
@@ -339,11 +352,12 @@ viewMotivationInfo shared motData =
                             [ text "Du hast gerade Deine längste Serie bisher! Super!!" ]
 
                   else
-                    bullet <|
-                        paragraph []
-                            [ text "Längste Serie bisher: "
-                            , text <| String.fromInt <| MotivationData.maxStreak motData
-                            ]
+                    -- bullet <|
+                    --     paragraph []
+                    --         [ text "Längste Serie bisher: "
+                    --         , text <| String.fromInt <| MotivationData.maxStreak motData
+                    --         ]
+                    none
                 , case MotivationData.previousStreak motData of
                     Nothing ->
                         none
@@ -352,10 +366,6 @@ viewMotivationInfo shared motData =
                         if previousStreak == MotivationData.maxStreak motData then
                             {- This case is handled above -}
                             none
-                            -- else if MotivationData.series motData > previousStreak then
-                            --     none
-                            -- else if MotivationData.series motData == previousStreak then
-                            --     bullet <| paragraph [] [ text "Du hast deine letzte Serie eingeholt!" ]
 
                         else
                             let
@@ -386,11 +396,12 @@ viewMotivationInfo shared motData =
                                         [ text "Du hast Deine letzte Serie eingeholt! Super!!" ]
 
                             else
-                                bullet <|
-                                    paragraph []
-                                        [ text "Letzte Serie: "
-                                        , text <| String.fromInt previousStreak
-                                        ]
+                                -- bullet <|
+                                --     paragraph []
+                                --         [ text "Letzte Serie: "
+                                --         , text <| String.fromInt previousStreak
+                                --         ]
+                                none
 
                 -- , bullet <|
                 --     let
@@ -486,3 +497,27 @@ viewMotivationInfo shared motData =
                 ]
         , onClose = DebugInfoToggled
         }
+
+
+viewKPI : ColorScheme -> String -> Maybe Int -> Element msg
+viewKPI colorScheme caption kpi =
+    column
+        [ spacing 5
+        , Border.rounded 13
+
+        -- , BG.color <| CS.primaryColors.font
+        -- , Font.color <| CS.guideColor colorScheme
+        , Border.width 1
+        , padding 10
+        , width <| px 100
+        ]
+        [ el [ centerX, Font.size 27, Font.extraBold ] <|
+            text <|
+                case kpi of
+                    Nothing ->
+                        "X"
+
+                    Just n ->
+                        String.fromInt n
+        , paragraph [ width fill, Font.center, Font.size 11 ] [ text caption ]
+        ]

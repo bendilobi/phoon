@@ -59,7 +59,7 @@ colorToHex color =
 
 bullet : Element msg -> Element msg
 bullet content =
-    row [ spacing 8 ]
+    row [ spacing 8, paddingXY 20 0 ]
         [ el [ alignTop, Font.bold ] <| text "•"
         , content
         ]
