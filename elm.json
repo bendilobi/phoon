@@ -22,6 +22,7 @@
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
+            "elm-community/json-extra": "4.3.0",
             "feathericons/elm-feather": "1.5.0",
             "justinmimbs/date": "4.1.0",
             "mdgriffith/elm-animator": "1.1.1",
@@ -42,6 +43,7 @@
             "fredcy/elm-parseint": "2.0.1",
             "ianmackenzie/elm-units": "2.10.0",
             "justinmimbs/time-extra": "1.2.0",
+            "rtfeldman/elm-iso8601-date-strings": "1.1.4",
             "ryannhg/date-format": "2.3.0",
             "terezka/intervals": "2.0.2"
         }

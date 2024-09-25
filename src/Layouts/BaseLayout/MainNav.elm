@@ -238,8 +238,8 @@ view props shared route { toContentMsg, model, content } =
                         Just headerText ->
                             viewHeader headerText |> E.map toContentMsg
                     , el
-                        ([ height fill
-                         , width fill
+                        ([ width fill
+                         , height fill
                          , paddingEach <|
                             if shared.deviceInfo.orientation == Portrait then
                                 { top = 0, bottom = 0, left = 0, right = 0 }
@@ -255,6 +255,9 @@ view props shared route { toContentMsg, model, content } =
                                     --- This leads to broken appearance of the new page
                                     --- if it is scrollable. So we enable scrollbars only
                                     --- on pages that need them.
+                                    --TODO: Das funktioniert in Chromium nicht mehr. Ist das ein Bug dort?
+                                    --      Selbst wenn ich height festsetze und clip dazu, ist der content-
+                                    --      Bereicht so groß wie der Inhalt und die gesamte App scrollt...
                                     [ scrollbarY ]
 
                                 else

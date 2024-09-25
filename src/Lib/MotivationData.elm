@@ -6,6 +6,7 @@ module Lib.MotivationData exposing
     , maxRetention
     , maxStreak
     , meanRetentionTimes
+    , previousStreak
     , series
     , streakFreezes
     , streakInfo
@@ -15,8 +16,10 @@ module Lib.MotivationData exposing
 
 import Date
 import Json.Decode
+import Json.Decode.Extra
 import Json.Decode.Pipeline exposing (optional, required)
 import Json.Encode
+import Json.Encode.Extra
 import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Round
@@ -25,6 +28,7 @@ import Round
 type MotivationData
     = MotivationData
         { streak : Int
+        , previousStreak : Maybe Int
         , streakFreezes : Float
         , streakInitialTarget : Int
         , lastSessionDate : Date.Date
@@ -57,10 +61,11 @@ freezeIncrement practiceFrequencyTarget =
 -- CREATION
 
 
-create : Int -> Float -> Int -> Date.Date -> List Milliseconds -> Milliseconds -> Int -> MotivationData
-create streak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes maxRet maxStrk =
+create : Int -> Maybe Int -> Float -> Int -> Date.Date -> List Milliseconds -> Milliseconds -> Int -> MotivationData
+create streak prevStreak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes maxRet maxStrk =
     MotivationData
         { streak = streak
+        , previousStreak = prevStreak
         , streakFreezes = streakFreezeD
         , streakInitialTarget = streakInitTarget
         , lastSessionDate = lastSessDate
@@ -107,6 +112,7 @@ update results today practiceFrequencyTarget motivationData =
                     Just <|
                         MotivationData
                             { streak = 1
+                            , previousStreak = Nothing
                             , streakFreezes = freezeIncrement practiceFrequencyTarget
                             , streakInitialTarget = practiceFrequencyTarget
                             , lastSessionDate = today
@@ -151,6 +157,12 @@ update results today practiceFrequencyTarget motivationData =
                         MotivationData
                             { motData
                                 | streak = streak
+                                , previousStreak =
+                                    if streakValid then
+                                        motData.previousStreak
+
+                                    else
+                                        Just motData.streak
 
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
@@ -182,6 +194,11 @@ update results today practiceFrequencyTarget motivationData =
 series : MotivationData -> Int
 series (MotivationData motData) =
     motData.streak
+
+
+previousStreak : MotivationData -> Maybe Int
+previousStreak (MotivationData motData) =
+    motData.previousStreak
 
 
 lastSessionDate : MotivationData -> Date.Date
@@ -284,6 +301,7 @@ streakInfo today practiceFrequencyTarget (MotivationData motData) =
 
 fieldnames :
     { series : String
+    , previousStreak : String
     , streakFreezeDays : String
     , streakInitialTarget : String
     , lastSessionDate : String
@@ -293,6 +311,7 @@ fieldnames :
     }
 fieldnames =
     { series = "series"
+    , previousStreak = "previousStreak"
     , streakFreezeDays = "streakFreezeDays"
     , streakInitialTarget = "streakInitialTarget"
     , lastSessionDate = "lastSessionDate"
@@ -306,6 +325,7 @@ encoder : MotivationData -> Json.Encode.Value
 encoder (MotivationData motData) =
     Json.Encode.object
         [ ( fieldnames.series, Json.Encode.int motData.streak )
+        , ( fieldnames.previousStreak, Json.Encode.Extra.maybe Json.Encode.int motData.previousStreak )
         , ( fieldnames.streakFreezeDays, Json.Encode.float motData.streakFreezes )
         , ( fieldnames.streakInitialTarget, Json.Encode.int motData.streakInitialTarget )
         , ( fieldnames.lastSessionDate, Json.Encode.int <| Date.toRataDie motData.lastSessionDate )
@@ -324,6 +344,9 @@ decoder : Json.Decode.Decoder MotivationData
 decoder =
     Json.Decode.succeed create
         |> optional fieldnames.series Json.Decode.int 0
+        |> optional fieldnames.previousStreak
+            (Json.Decode.Extra.optionalNullableField fieldnames.previousStreak Json.Decode.int)
+            Nothing
         |> optional fieldnames.streakFreezeDays Json.Decode.float 0
         |> optional fieldnames.streakInitialTarget Json.Decode.int 4
         |> required fieldnames.lastSessionDate (Json.Decode.map Date.fromRataDie Json.Decode.int)

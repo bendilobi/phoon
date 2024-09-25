@@ -11,7 +11,7 @@ import Layouts
 import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
-import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.MotivationData as MotivationData exposing (MotivationData, previousStreak)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea exposing (SafeArea)
 import Lib.Utils as Utils exposing (bullet)
@@ -342,8 +342,55 @@ viewMotivationInfo shared motData =
                     bullet <|
                         paragraph []
                             [ text "Längste Serie bisher: "
-                            , text <| String.fromInt <| MotivationData.series motData
+                            , text <| String.fromInt <| MotivationData.maxStreak motData
                             ]
+                , case MotivationData.previousStreak motData of
+                    Nothing ->
+                        none
+
+                    Just previousStreak ->
+                        if previousStreak == MotivationData.maxStreak motData then
+                            {- This case is handled above -}
+                            none
+                            -- else if MotivationData.series motData > previousStreak then
+                            --     none
+                            -- else if MotivationData.series motData == previousStreak then
+                            --     bullet <| paragraph [] [ text "Du hast deine letzte Serie eingeholt!" ]
+
+                        else
+                            let
+                                diffToPreviousStreak =
+                                    previousStreak
+                                        - (if streakValid then
+                                            MotivationData.series motData
+
+                                           else
+                                            0
+                                          )
+                            in
+                            if diffToPreviousStreak < 4 && diffToPreviousStreak > 0 then
+                                bullet <|
+                                    paragraph []
+                                        [ text "Nur noch "
+                                        , text <| String.fromInt diffToPreviousStreak
+                                        , text " Übungen bis Du Deine letzte Serie eingeholt hast!"
+                                        ]
+
+                            else if diffToPreviousStreak == 0 then
+                                --TODO: Besonderen Text, wenn der Serienrekord gerade eingestellt wurde...
+                                --      Dafür muss ich aber die gespeicherten Daten erweitern, oder?
+                                --      Oder doch nur direkt nach der Übung eine Meldung zeigen, beim
+                                --      Neustart der App aber nicht mehr? => Wert im Shared.Model ...
+                                bullet <|
+                                    paragraph []
+                                        [ text "Du hast Deine letzte Serie eingeholt! Super!!" ]
+
+                            else
+                                bullet <|
+                                    paragraph []
+                                        [ text "Letzte Serie: "
+                                        , text <| String.fromInt previousStreak
+                                        ]
 
                 -- , bullet <|
                 --     let
