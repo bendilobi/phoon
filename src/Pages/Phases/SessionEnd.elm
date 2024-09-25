@@ -2,6 +2,7 @@ module Pages.Phases.SessionEnd exposing (Model, Msg, page)
 
 import Components.AnimatedButton as Button
 import Components.Dialog as Dialog
+import Components.RetentionChart as RetentionChart
 import Delay
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -12,8 +13,10 @@ import Layouts
 import Layouts.BaseLayout
 import Layouts.BaseLayout.SessionControls as SessionControls
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading as Fading exposing (Trigger(..))
+import Lib.SafeArea as SafeArea
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults exposing (SessionResults)
 import Page exposing (Page)
@@ -204,64 +207,98 @@ view shared model =
     , attributes =
         CS.phaseSessionEnd shared.colorScheme
     , element =
+        -- el [ height fill, width fill ] <|
         column
             [ width fill
-            , height fill
+            , centerY
             , spacing 30
             ]
-            [ el
+        <|
+            (el
                 [ centerX
-                , centerY
+
+                -- , centerY
                 , Font.bold
                 , Font.size 40
                 ]
-              <|
+             <|
                 text "Sitzung beendet!"
-            , viewRetentionTimes shared.results
-            ]
+            )
+                :: (case ( SessionResults.getRetentionTimes shared.results, SessionResults.meanRetentionTime shared.results ) of
+                        ( Just times, Just meanTime ) ->
+                            [ viewRetentionTimes times meanTime
+                            , case shared.motivationData of
+                                Nothing ->
+                                    none
+
+                                Just motData ->
+                                    el [ centerX, Font.size 15 ] <|
+                                        (RetentionChart.new
+                                            { width = (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2) - 40
+                                            , height = 200
+                                            , meanRetentionTimes = MotivationData.meanRetentionTimes motData |> List.reverse |> List.map Millis.toSeconds
+                                            , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
+                                            , meanRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                                            , maxRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                                            , copyColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                                            }
+                                            |> RetentionChart.view
+                                        )
+                            , paragraph
+                                [ Font.center
+                                , paddingXY 30 0
+                                , Font.size 15
+                                ]
+                                [ text "Mittlere Retentionsdauern der letzten Übungen (max 30)" ]
+                            ]
+
+                        ( _, _ ) ->
+                            []
+                   )
     }
 
 
-viewRetentionTimes : SessionResults -> Element msg
-viewRetentionTimes results =
-    case SessionResults.getRetentionTimes results of
-        Nothing ->
-            none
+viewRetentionTimes : List Int -> Int -> Element msg
+viewRetentionTimes times meanTime =
+    -- case SessionResults.getRetentionTimes results of
+    --     Nothing ->
+    --         none
+    --     Just times ->
+    column
+        [ spacing 10
+        , centerX
 
-        Just times ->
-            column
-                [ spacing 10
-                , centerX
-                , centerY
-                , Font.alignRight
-                ]
-            <|
-                List.map2
-                    (\i t ->
-                        row [ width fill ]
-                            [ el [ width fill ] <| text <| "Runde " ++ String.fromInt i ++ ": "
-                            , el [ Font.bold ] <| text <| formatRetentionTime t
-                            ]
-                    )
-                    (List.range 1 (List.length times))
-                    times
-                    ++ [ row
-                            [ width fill
-                            , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
-                            , paddingXY 0 7
-                            ]
-                            [ el [ width fill ] <| text "Durchschnitt: "
-                            , el
-                                [ Font.bold
-                                ]
-                              <|
-                                text <|
-                                    (SessionResults.meanRetentionTime results
-                                        |> Maybe.withDefault 0
-                                        |> formatRetentionTime
-                                    )
-                            ]
-                       ]
+        -- , centerY
+        , Font.alignRight
+        ]
+    <|
+        List.map2
+            (\i t ->
+                row [ width fill ]
+                    [ el [ width fill ] <| text <| "Runde " ++ String.fromInt i ++ ": "
+                    , el [ Font.bold ] <| text <| formatRetentionTime t
+                    ]
+            )
+            (List.range 1 (List.length times))
+            times
+            ++ [ row
+                    [ width fill
+                    , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
+                    , paddingXY 0 7
+                    ]
+                    [ el [ width fill ] <| text "Durchschnitt: "
+                    , el
+                        [ Font.bold
+                        ]
+                      <|
+                        text <|
+                            (-- SessionResults.meanRetentionTime results
+                             -- |> Maybe.withDefault 0
+                             meanTime
+                                |> formatRetentionTime
+                            )
+                    ]
+               ]
 
 
 formatRetentionTime : Int -> String

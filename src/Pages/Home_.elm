@@ -181,7 +181,7 @@ viewMotivationData shared model motData =
                     else
                         text <| "Tage seit letzter Übung... Auf geht's!"
 
-                  else if remainingFreezes == 0 && daysSinceLastSession > 0 && MotivationData.series motData > 1 then
+                  else if remainingFreezes == 0 && daysSinceLastSession > 0 && MotivationData.streak motData > 1 then
                     -- Last freeze will be used up if no practice today
                     text <| "Praktiziere noch heute, um Deine Serie zu erhalten!"
 
@@ -207,7 +207,7 @@ viewMotivationData shared model motData =
                 remainingFreezes
                 (daysSinceLastSession > 0)
             <|
-                MotivationData.series motData
+                MotivationData.streak motData
 
         else
             el
@@ -319,7 +319,7 @@ viewMotivationInfo shared motData =
                     , el [ width fill ] none
                     , viewKPI shared.colorScheme "Aktuelle Serie" <|
                         if streakValid then
-                            Just <| MotivationData.series motData
+                            Just <| MotivationData.streak motData
 
                         else
                             Nothing
@@ -328,7 +328,7 @@ viewMotivationInfo shared motData =
                     diffToMaxStreak =
                         MotivationData.maxStreak motData
                             - (if streakValid then
-                                MotivationData.series motData
+                                MotivationData.streak motData
 
                                else
                                 0
@@ -372,7 +372,7 @@ viewMotivationInfo shared motData =
                                 diffToPreviousStreak =
                                     previousStreak
                                         - (if streakValid then
-                                            MotivationData.series motData
+                                            MotivationData.streak motData
 
                                            else
                                             0

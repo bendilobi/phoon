@@ -7,7 +7,7 @@ module Lib.MotivationData exposing
     , maxStreak
     , meanRetentionTimes
     , previousStreak
-    , series
+    , streak
     , streakFreezes
     , streakInfo
     , streakInitialTarget
@@ -62,9 +62,9 @@ freezeIncrement practiceFrequencyTarget =
 
 
 create : Int -> Maybe Int -> Float -> Int -> Date.Date -> List Milliseconds -> Milliseconds -> Int -> MotivationData
-create streak prevStreak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes maxRet maxStrk =
+create strk prevStreak streakFreezeD streakInitTarget lastSessDate meanRetentiontimes maxRet maxStrk =
     MotivationData
-        { streak = streak
+        { streak = strk
         , previousStreak = prevStreak
         , streakFreezes = streakFreezeD
         , streakInitialTarget = streakInitTarget
@@ -145,7 +145,7 @@ update results today practiceFrequencyTarget motivationData =
                             else
                                 motData.streakFreezes
 
-                        streak =
+                        newStreak =
                             if streakValid then
                                 motData.streak + 1
 
@@ -156,7 +156,7 @@ update results today practiceFrequencyTarget motivationData =
                     Just <|
                         MotivationData
                             { motData
-                                | streak = streak
+                                | streak = newStreak
                                 , previousStreak =
                                     if streakValid then
                                         motData.previousStreak
@@ -183,7 +183,7 @@ update results today practiceFrequencyTarget motivationData =
                                 , lastSessionDate = today
                                 , meanRetentiontimes = (mean :: motData.meanRetentiontimes) |> List.take 30
                                 , maxRetention = Millis.max maxTime motData.maxRetention
-                                , maxStreak = max streak motData.maxStreak
+                                , maxStreak = max newStreak motData.maxStreak
                             }
 
 
@@ -191,8 +191,8 @@ update results today practiceFrequencyTarget motivationData =
 -- ACCESS
 
 
-series : MotivationData -> Int
-series (MotivationData motData) =
+streak : MotivationData -> Int
+streak (MotivationData motData) =
     motData.streak
 
 

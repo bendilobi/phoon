@@ -15,6 +15,7 @@ module Lib.ColorScheme exposing
     , phaseBreathing
     , phaseBreathingColor
     , phaseRelaxRetention
+    , phaseRelaxRetentionColor
     , phaseRetention
     , phaseSessionEnd
     , phaseSessionStart
@@ -315,6 +316,11 @@ phaseSessionEnd (ColorScheme colors) =
     -- , Font.color colors.phaseSessionEndCopy
     , Font.color colors.phaseRelaxRetention
     ]
+
+
+phaseRelaxRetentionColor : ColorScheme -> Color
+phaseRelaxRetentionColor (ColorScheme colors) =
+    colors.phaseRelaxRetention
 
 
 settingsColor : ColorScheme -> Color
