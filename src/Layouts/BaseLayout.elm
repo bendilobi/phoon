@@ -342,6 +342,8 @@ viewInfoWindow props shared model toContentMsg =
             {- Overlay for receiving touch events; with resize and close buttons in front -}
             let
                 safeAreaBottom =
+                    --TODO: Offenbar ist der Wert hin und wieder fälschlicherweise 0...
+                    --      => in diesem Fall einen Default setzen?
                     SafeArea.paddingEach shared.safeAreaInset
                         |> .bottom
                         |> toFloat
@@ -443,22 +445,23 @@ viewInfoWindow props shared model toContentMsg =
 
             _ ->
                 none
+        , let
+            { top, bottom, left, right } =
+                SafeArea.paddingEach shared.safeAreaInset
+          in
+          --   paragraph [ paddingXY 0 20, Font.size 15 ]
+          --     [ el [ Font.bold ] <| text "Safe Area: "
+          --     , text "top: "
+          --     , text <| String.fromInt top
+          --     , text ", bottom : "
+          --     , text <| String.fromInt bottom
+          --     , text ", left: "
+          --     , text <| String.fromInt left
+          --     , text ", right: "
+          --     , text <| String.fromInt right
+          --     ]
+          el [ width fill, paddingXY 0 30 ] <| el [ alignRight ] <| text <| String.fromInt bottom
 
-        -- , let
-        --     { top, bottom, left, right } =
-        --         SafeArea.paddingEach shared.safeAreaInset
-        --   in
-        --   paragraph [ paddingXY 0 20, Font.size 15 ]
-        --     [ el [ Font.bold ] <| text "Safe Area: "
-        --     , text "top: "
-        --     , text <| String.fromInt top
-        --     , text ", bottom : "
-        --     , text <| String.fromInt bottom
-        --     , text ", left: "
-        --     , text <| String.fromInt left
-        --     , text ", right: "
-        --     , text <| String.fromInt right
-        --     ]
         -- , paragraph [ Font.size 15 ]
         --     [ text "SwipeInitial: "
         --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY

@@ -161,7 +161,12 @@ viewMotivationData shared model motData =
         [ width fill
         , centerY
         , Font.size 70
-        , moveUp 40
+        , moveUp <|
+            if shared.deviceInfo.orientation == Portrait then
+                40
+
+            else
+                0
         , below <|
             paragraph
                 [ width fill
@@ -178,7 +183,7 @@ viewMotivationData shared model motData =
 
                   else if remainingFreezes == 0 && daysSinceLastSession > 0 && MotivationData.series motData > 1 then
                     -- Last freeze will be used up if no practice today
-                    text <| "Praktiziere noch heute, um Deinen Streak zu erhalten!"
+                    text <| "Praktiziere noch heute, um Deine Serie zu erhalten!"
 
                   else
                     none
@@ -307,19 +312,37 @@ viewMotivationInfo shared motData =
                 , paddingXY 20 0
                 ]
                 [ let
-                    maxStreak =
+                    diffToMaxStreak =
                         MotivationData.maxStreak motData
-                  in
-                  bullet <|
-                    paragraph [] <|
-                        if maxStreak == MotivationData.series motData then
-                            [ text "Du hast gerade Deine längste Serie bisher! Gute Arbeit!" ]
+                            - (if streakValid then
+                                MotivationData.series motData
 
-                        else
-                            [ text "Bisher längste Serie: "
-                            , text <|
-                                String.fromInt <|
-                                    MotivationData.maxStreak motData
+                               else
+                                0
+                              )
+                  in
+                  if diffToMaxStreak < 4 && diffToMaxStreak > 0 then
+                    bullet <|
+                        paragraph []
+                            [ text "Nur noch "
+                            , text <| String.fromInt diffToMaxStreak
+                            , text " Übungen bis Du Deine längste Serie eingeholt hast!"
+                            ]
+
+                  else if diffToMaxStreak == 0 then
+                    --TODO: Besonderen Text, wenn der Serienrekord gerade eingestellt wurde...
+                    --      Dafür muss ich aber die gespeicherten Daten erweitern, oder?
+                    --      Oder doch nur direkt nach der Übung eine Meldung zeigen, beim
+                    --      Neustart der App aber nicht mehr? => Wert im Shared.Model ...
+                    bullet <|
+                        paragraph []
+                            [ text "Du hast gerade Deine längste Serie bisher! Super!!" ]
+
+                  else
+                    bullet <|
+                        paragraph []
+                            [ text "Längste Serie bisher: "
+                            , text <| String.fromInt <| MotivationData.series motData
                             ]
 
                 -- , bullet <|
@@ -350,7 +373,7 @@ viewMotivationInfo shared motData =
                     bullet <|
                         paragraph [] <|
                             if daysUntilStreakEnd == 1 then
-                                [ text "Um die Serie zu erhalten, übe morgen wieder!" ]
+                                [ text "Um die Serie zu erhalten, übe spätestens morgen wieder!" ]
 
                             else
                                 [ text "Um die Serie zu erhalten, übe spätestens am "
@@ -386,8 +409,9 @@ viewMotivationInfo shared motData =
                 , if streakValid && daysSinceLastSession > 1 then
                     bullet <|
                         paragraph []
-                            [ text "Tage seit letzter Sitzung: "
+                            [ text "Deine letzte Übung war vor "
                             , text <| String.fromInt daysSinceLastSession
+                            , text " Tagen"
                             ]
 
                   else
