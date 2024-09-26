@@ -22,9 +22,6 @@ new edges =
 
 paddingX : SafeArea -> Edges
 paddingX (Settings settings) =
-    -- { settings | top = 0, bottom = 0 }
-    --TODO: es hat immer nur maximal "left" einen Wert... Bug bei mir oder iOS?
-    --      => Scheint in iOS gewesen zu sein, beim iPhone 15, iOS 17.x gibts alle Werte
     { settings | top = 0, bottom = 0, right = settings.left }
 
 

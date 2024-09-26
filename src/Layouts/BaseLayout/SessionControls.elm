@@ -13,6 +13,7 @@ import Layout exposing (Layout)
 import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
+import Lib.SafeArea as SafeArea
 import Lib.Session as Session
 import Lib.Swipe as Swipe
 import Route exposing (Route)
@@ -269,9 +270,19 @@ view props shared route { toContentMsg, model, content } =
                 el
                     [ width fill
                     , height fill
+
+                    {- To compensate for the header which is "inFront": -}
+                    , paddingEach { top = 35, left = 0, right = 0, bottom = 0 }
                     , inFront <| viewHeaderAndTouchOverlay props shared model toContentMsg
                     ]
-                    content.element
+                <|
+                    el
+                        [ width fill
+                        , height fill
+                        , paddingEach <| SafeArea.paddingEach shared.safeAreaInset
+                        ]
+                    <|
+                        content.element
     }
 
 

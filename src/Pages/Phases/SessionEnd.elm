@@ -207,7 +207,6 @@ view shared model =
     , attributes =
         CS.phaseSessionEnd shared.colorScheme
     , element =
-        -- el [ height fill, width fill ] <|
         column
             [ width fill
             , centerY
@@ -216,8 +215,6 @@ view shared model =
         <|
             (el
                 [ centerX
-
-                -- , centerY
                 , Font.bold
                 , Font.size 40
                 ]
