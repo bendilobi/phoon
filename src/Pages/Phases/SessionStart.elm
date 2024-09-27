@@ -53,6 +53,7 @@ toLayout shared model =
         , multitouchEffects = [ Effect.navigateNext shared.session ]
         , singleTapEffects = [ Effect.playSound Session.StartSound ]
         , sessionHints = viewSessionHints
+        , nudgeSessionHints = True
         }
 
 

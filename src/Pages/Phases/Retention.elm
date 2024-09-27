@@ -46,6 +46,7 @@ toLayout shared model =
             ]
         , singleTapEffects = []
         , sessionHints = viewSessionHints
+        , nudgeSessionHints = False
         }
 
 

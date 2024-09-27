@@ -43,6 +43,7 @@ toLayout shared model =
         , multitouchEffects = [ Effect.navigateNext shared.session ]
         , singleTapEffects = []
         , sessionHints = viewSessionHints
+        , nudgeSessionHints = False
         }
 
 

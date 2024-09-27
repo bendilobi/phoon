@@ -1,6 +1,5 @@
 module Layouts.BaseLayout.SessionControls exposing (Model, Msg(..), Props, layout, map, sessionHintsID)
 
-import Browser.Dom
 import Date
 import Delay
 import Effect exposing (Effect)
@@ -34,13 +33,14 @@ type alias Props contentMsg =
     , multitouchEffects : List (Effect Msg)
     , singleTapEffects : List (Effect Msg)
     , sessionHints : Element contentMsg
+    , nudgeSessionHints : Bool
     }
 
 
 layout : Props contentMsg -> Shared.Model -> Route () -> Layout (Layouts.BaseLayout.Props contentMsg) Model Msg contentMsg
 layout props shared route =
     Layout.new
-        { init = init shared
+        { init = init props shared
         , update = update props shared route
         , view = view props shared route
         , subscriptions = subscriptions
@@ -71,6 +71,7 @@ map fn props =
     , multitouchEffects = props.multitouchEffects
     , singleTapEffects = props.singleTapEffects
     , sessionHints = E.map fn props.sessionHints
+    , nudgeSessionHints = props.nudgeSessionHints
     }
 
 
@@ -88,11 +89,13 @@ type alias Model =
     , swipeLocationX : Maybe Float
     , swipeLocationY : Maybe Float
     , swipeDirectionY : Maybe Bool
+    , sessionHintsNudge : Float
+    , sessionHintsNudgeToggle : Bool
     }
 
 
-init : Shared.Model -> () -> ( Model, Effect Msg )
-init shared _ =
+init : Props contentMsg -> Shared.Model -> () -> ( Model, Effect Msg )
+init props shared _ =
     ( { gesture = Swipe.blanco
       , controlsShown = False
       , debounceBlock = False
@@ -102,10 +105,17 @@ init shared _ =
       , swipeLocationX = Nothing
       , swipeLocationY = Nothing
       , swipeDirectionY = Nothing
+      , sessionHintsNudge = 0
+      , sessionHintsNudgeToggle = False
       }
     , Effect.batch
         [ Effect.setWakeLock
         , Effect.sendCmd <| Task.perform AdjustToday Date.today
+        , if props.nudgeSessionHints then
+            Effect.sendCmd <| Delay.after 3000 NudgeSessionHints
+
+          else
+            Effect.none
         , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
         ]
     )
@@ -128,6 +138,7 @@ type Msg
     | AdjustToday Date.Date
     | ToggleFadeIn Fading.Trigger
     | SessionFadedOut
+    | NudgeSessionHints
       -- To simulate gestures via buttons for debugging in desktop browser:
     | MouseNavTap
     | MouseNavSwipe
@@ -273,6 +284,39 @@ update props shared route msg model =
         ToggleFadeIn fade ->
             ( { model | fadeState = Fading.update fade }
             , Effect.sendCmd <| Fading.updateCmd fade ToggleFadeIn
+            )
+
+        NudgeSessionHints ->
+            let
+                toggleSize =
+                    15
+
+                delay =
+                    if model.sessionHintsNudge == toggleSize && model.sessionHintsNudgeToggle then
+                        3000
+
+                    else
+                        200
+            in
+            ( { model
+                | sessionHintsNudge =
+                    if model.sessionHintsNudge == 0 then
+                        toggleSize
+
+                    else
+                        0
+                , sessionHintsNudgeToggle =
+                    if model.sessionHintsNudge == 0 then
+                        not model.sessionHintsNudgeToggle
+
+                    else
+                        model.sessionHintsNudgeToggle
+              }
+            , if props.nudgeSessionHints then
+                Effect.sendCmd <| Delay.after delay NudgeSessionHints
+
+              else
+                Effect.none
             )
 
 
@@ -586,6 +630,12 @@ viewSessionHints props shared model =
                  , moveDown <|
                     toFloat sessionHeader.height
                         + min hintsHeight (max dragDistance 0)
+                        + (if props.nudgeSessionHints && dragDistance == 0 then
+                            model.sessionHintsNudge
+
+                           else
+                            0
+                          )
                  , htmlAttribute <|
                     case model.swipeInitialPosition of
                         Nothing ->
@@ -593,7 +643,7 @@ viewSessionHints props shared model =
 
                         _ ->
                             Html.Attributes.hidden False
-                 , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 70, bottomRight = 70 }
+                 , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 80, bottomRight = 80 }
                  , padding 30
                  , below <|
                     el [ centerX, Font.color CS.primaryColors.primary ] <|
