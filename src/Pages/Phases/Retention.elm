@@ -144,8 +144,6 @@ viewSessionHints : Element msg
 viewSessionHints =
     column
         [ spacing 20
-
-        -- , paddingEach { left = 70, right = 70, top = 100, bottom = 0 }
         , Font.size 15
         ]
         [ bullet <| text "Halte die Luft an bis Du nicht mehr kannst"

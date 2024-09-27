@@ -9,6 +9,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
+import FeatherIcons
 import Html.Attributes
 import Layout exposing (Layout)
 import Layouts.BaseLayout
@@ -176,7 +177,7 @@ update props shared route msg model =
                                     model.swipeDirectionY
 
                                 Just { x, y } ->
-                                    if abs (x - location.x) < abs (y - location.y) then
+                                    if (location.x - x) < (location.y - y) then
                                         Just True
 
                                     else
@@ -312,7 +313,7 @@ view props shared route { toContentMsg, model, content } =
 
                     {- To compensate for the header which is "inFront": -}
                     , if shared.deviceInfo.orientation == Landscape then
-                        paddingEach { top = 35, left = 0, right = 0, bottom = 0 }
+                        paddingEach { top = sessionHeader.height, left = 0, right = 0, bottom = 0 }
 
                       else
                         padding 0
@@ -446,6 +447,35 @@ viewControls props shared model toContentMsg =
         ]
 
 
+sessionHeader :
+    { border : Int
+    , padTop : Int
+    , padBot : Int
+    , pillHeight : Int
+    , height : Int
+    }
+sessionHeader =
+    let
+        border =
+            1
+
+        padTop =
+            5
+
+        padBot =
+            15
+
+        pillHeight =
+            14
+    in
+    { border = border
+    , padTop = padTop
+    , padBot = padBot
+    , pillHeight = pillHeight
+    , height = border + padTop + padBot + pillHeight
+    }
+
+
 viewHeaderAndTouchOverlay : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg) -> Element contentMsg
 viewHeaderAndTouchOverlay props shared model toContentMsg =
     let
@@ -463,7 +493,7 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
                 [ el
                     [ width fill
                     , centerY
-                    , height <| px 14
+                    , height <| px sessionHeader.pillHeight
                     , Border.rounded 7
                     , BG.color color
                     ]
@@ -490,7 +520,8 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
         ]
         [ el
             ([ width fill
-             , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+             , height <| px sessionHeader.height
+             , Border.widthEach { bottom = sessionHeader.border, top = 0, left = 0, right = 0 }
              ]
                 ++ CS.primary
             )
@@ -498,7 +529,7 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
             (row
                 [ width fill
                 , height fill
-                , paddingEach { left = 30, right = 15, top = 5, bottom = 15 }
+                , paddingEach { left = 30, right = 15, top = sessionHeader.padTop, bottom = sessionHeader.padBot }
                 ]
              <|
                 (List.map
@@ -553,7 +584,7 @@ viewSessionHints props shared model =
                 ([ width fill
                  , htmlAttribute <| Html.Attributes.id sessionHintsID
                  , moveDown <|
-                    35
+                    toFloat sessionHeader.height
                         + min hintsHeight (max dragDistance 0)
                  , htmlAttribute <|
                     case model.swipeInitialPosition of
@@ -562,8 +593,16 @@ viewSessionHints props shared model =
 
                         _ ->
                             Html.Attributes.hidden False
-                 , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 30, bottomRight = 30 }
+                 , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 70, bottomRight = 70 }
                  , padding 30
+                 , below <|
+                    el [ centerX, Font.color CS.primaryColors.primary ] <|
+                        (FeatherIcons.chevronDown
+                            |> FeatherIcons.withSize 40
+                            |> FeatherIcons.withStrokeWidth 1
+                            |> FeatherIcons.toHtml []
+                            |> html
+                        )
                  ]
                     ++ CS.primary
                 )

@@ -94,7 +94,10 @@ update shared msg model =
 
         BubbleFinished ->
             ( { model | breathingFinished = True }
-            , Effect.playSound Session.BreathingEndSound
+            , Effect.batch
+                [ Effect.playSound Session.BreathingEndSound
+                , Effect.getSessionHintsHeight SessionControls.sessionHintsID
+                ]
             )
 
         OnCancelButton newState ->
@@ -173,8 +176,6 @@ viewSessionHints model =
     if model.breathingFinished then
         column
             [ spacing 20
-
-            -- , paddingEach { left = 70, right = 70, top = 70, bottom = 0 }
             , Font.size 15
             ]
             [ bullet <| text "Atme noch einmal tief ein und lass' dann den Atem los"
@@ -185,8 +186,6 @@ viewSessionHints model =
     else
         column
             [ spacing 20
-
-            -- , paddingEach { left = 70, right = 70, top = 10, bottom = 0 }
             , Font.size 15
             ]
             [ bullet <| text "Atme tief ein und aus im Rhythmus der Animation bis die Glocke klingt"

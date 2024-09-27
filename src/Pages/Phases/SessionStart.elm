@@ -234,50 +234,19 @@ view shared model =
                 , height fill
                 ]
                 none
-
-            -- , viewHints shared
             ]
     }
 
 
 viewSessionHints : Element msg
 viewSessionHints =
-    -- let
-    --     bullet : String -> Element msg
-    --     bullet content =
-    --         row [ spacing 8 ]
-    --             [ el [ alignTop, Font.bold ] <| text "•"
-    --             , paragraph
-    --                 [ --- This is a bugfix for (it seems) a bug in elm-ui...
-    --                   --- See https://github.com/mdgriffith/elm-ui/issues/124
-    --                   --- Without this, the button that is overlayed on swipe in the
-    --                   --- SessionControls is not clickable at first, only on the second
-    --                   --- tap...
-    --                   htmlAttribute <| Html.Attributes.style "pointer-events" "none"
-    --                 ]
-    --                 [ text content ]
-    --             ]
-    -- in
     column
         [ spacing 20
-
-        -- , paddingEach { left = 70, right = 70, top = 0, bottom = 0 }
         , Font.size 15
         ]
-        -- [ bullet "Tippe mit drei Fingern, um mit der Übung zu beginnen"
-        -- , bullet "Wische mit einem Finger, um Optionen anzuzeigen"
         [ bullet <| text "Tippe mit drei Fingern, um mit der Übung zu beginnen"
         , bullet <| text "Wische mit einem Finger, um Optionen anzuzeigen"
-
-        -- , bullet "Teste hier den Sound durch Tipp mit einem Finger"
         ]
-
-
-
--- [ text "Tippe mit drei Fingern, um jeweils zur nächsten Übungsphase zu gehen"
--- , text "Wische mit einem Finger von links nach rechts, um Optionen anzuzeigen"
--- , text "Teste hier den Sound durch Tipp mit einem Finger"
--- ]
 
 
 viewReminder : Shared.Model -> FeatherIcons.Icon -> Element msg

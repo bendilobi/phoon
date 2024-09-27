@@ -65,6 +65,11 @@ bullet content =
         , paragraph
             [ Font.alignLeft
 
+            --- This is a bugfix for (it seems) a bug in elm-ui...
+            --- See https://github.com/mdgriffith/elm-ui/issues/124
+            --- Without this, the button that is overlayed on swipe in the
+            --- SessionControls is not clickable at first, only on the second
+            --- tap...
             -- , htmlAttribute <| Html.Attributes.style "pointer-events" "none"
             ]
             [ content ]

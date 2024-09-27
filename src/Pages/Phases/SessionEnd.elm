@@ -260,15 +260,9 @@ view shared model =
 
 viewRetentionTimes : List Int -> Int -> Element msg
 viewRetentionTimes times meanTime =
-    -- case SessionResults.getRetentionTimes results of
-    --     Nothing ->
-    --         none
-    --     Just times ->
     column
         [ spacing 10
         , centerX
-
-        -- , centerY
         , Font.alignRight
         ]
     <|
@@ -292,11 +286,8 @@ viewRetentionTimes times meanTime =
                         ]
                       <|
                         text <|
-                            (-- SessionResults.meanRetentionTime results
-                             -- |> Maybe.withDefault 0
-                             meanTime
-                                |> formatRetentionTime
-                            )
+                            formatRetentionTime <|
+                                meanTime
                     ]
                ]
 
