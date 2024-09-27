@@ -42,6 +42,7 @@ toLayout shared model =
         , overlay = Layouts.BaseLayout.NoOverlay
         , multitouchEffects = [ Effect.navigateNext shared.session ]
         , singleTapEffects = []
+        , sessionHints = viewSessionHints model
         }
 
 
@@ -130,20 +131,6 @@ view shared model =
                     , centerY
                     , Font.size 40
                     , Font.center
-                    , inFront <|
-                        column
-                            [ spacing 20
-
-                            -- , paddingEach { left = 70, right = 70, top = 70, bottom = 0 }
-                            , paddingXY 30 70
-                            , Font.size 15
-                            , moveDown 40
-                            , transparent True
-                            ]
-                            [ bullet <| text "Atme noch einmal tief ein und lass' dann den Atem los"
-                            , bullet <| text "Halte die Luft an"
-                            , bullet <| text "Dann tippe mit drei Fingern um die Retention zu beginnen"
-                            ]
                     ]
                 <|
                     text "Retention \nvorbereiten"
@@ -152,30 +139,15 @@ view shared model =
                 let
                     window =
                         shared.deviceInfo.window
-
-                    bubbleSize =
-                        min window.width window.height * 0.9 |> round
                 in
                 el
                     [ centerX
                     , centerY
-                    , inFront <|
-                        column
-                            [ spacing 20
-
-                            -- , paddingEach { left = 70, right = 70, top = 10, bottom = 0 }
-                            , paddingXY 30 10
-                            , Font.size 15
-                            , moveDown <| toFloat bubbleSize
-                            , transparent True
-                            ]
-                            [ bullet <| text "Atme tief ein und aus im Rhythmus der Animation bis die Glocke klingt"
-                            ]
                     ]
                 <|
                     (Bubble.new
                         { model = model.bubble
-                        , size = bubbleSize
+                        , size = min window.width window.height * 0.9 |> round
                         , bubbleColor = CS.phaseSessionStartColor shared.colorScheme
                         , bgColor = CS.phaseBreathingColor shared.colorScheme
                         }
@@ -192,3 +164,28 @@ viewCancelButton shared model =
         , onPress = OnCancelButton
         }
         |> Button.view shared.colorScheme
+
+
+viewSessionHints : Model -> Element msg
+viewSessionHints model =
+    if model.breathingFinished then
+        column
+            [ spacing 20
+
+            -- , paddingEach { left = 70, right = 70, top = 70, bottom = 0 }
+            , Font.size 15
+            ]
+            [ bullet <| text "Atme noch einmal tief ein und lass' dann den Atem los"
+            , bullet <| text "Halte die Luft an"
+            , bullet <| text "Dann tippe mit drei Fingern um die Retention zu beginnen"
+            ]
+
+    else
+        column
+            [ spacing 20
+
+            -- , paddingEach { left = 70, right = 70, top = 10, bottom = 0 }
+            , Font.size 15
+            ]
+            [ bullet <| text "Atme tief ein und aus im Rhythmus der Animation bis die Glocke klingt"
+            ]

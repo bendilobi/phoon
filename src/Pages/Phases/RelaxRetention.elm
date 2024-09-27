@@ -41,6 +41,7 @@ toLayout shared model =
         , overlay = Layouts.BaseLayout.NoOverlay
         , multitouchEffects = [ Effect.navigateNext shared.session ]
         , singleTapEffects = []
+        , sessionHints = viewSessionHints
         }
 
 
@@ -156,17 +157,6 @@ view shared model =
                 -- , centerX
                 , Font.center
                 , width fill
-                , inFront <|
-                    column
-                        [ spacing 20
-
-                        -- , paddingEach { left = 70, right = 70, top = 200, bottom = 0 }
-                        , paddingXY 30 200
-                        , Font.size 15
-                        , transparent True
-                        ]
-                        [ bullet <| text "Halte die Luft an bis der Timer abgelaufen ist und die Glocke klingt"
-                        ]
                 , centerY
                 ]
             <|
@@ -189,3 +179,15 @@ viewCancelButton shared model =
         }
         |> Button.withLightColor
         |> Button.view shared.colorScheme
+
+
+viewSessionHints : Element msg
+viewSessionHints =
+    column
+        [ spacing 20
+
+        -- , paddingEach { left = 70, right = 70, top = 200, bottom = 0 }
+        , Font.size 15
+        ]
+        [ bullet <| text "Halte die Luft an bis der Timer abgelaufen ist und die Glocke klingt"
+        ]

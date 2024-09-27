@@ -48,6 +48,7 @@ toLayout shared model =
         , overlay = Layouts.BaseLayout.NoOverlay
         , multitouchEffects = [ Effect.navigateNext shared.session ]
         , singleTapEffects = [ Effect.playSound Session.StartSound ]
+        , sessionHints = viewSessionHints
         }
 
 
@@ -212,7 +213,6 @@ view shared model =
                     none
             , el
                 [ width fill
-                , inFront <| viewHints shared
                 ]
               <|
                 el
@@ -233,8 +233,8 @@ view shared model =
     }
 
 
-viewHints : Shared.Model -> Element msg
-viewHints shared =
+viewSessionHints : Element msg
+viewSessionHints =
     -- let
     --     bullet : String -> Element msg
     --     bullet content =
@@ -255,10 +255,7 @@ viewHints shared =
         [ spacing 20
 
         -- , paddingEach { left = 70, right = 70, top = 0, bottom = 0 }
-        , paddingXY 30 0
         , Font.size 15
-        , moveUp 50
-        , transparent True
         ]
         -- [ bullet "Tippe mit drei Fingern, um mit der Übung zu beginnen"
         -- , bullet "Wische mit einem Finger, um Optionen anzuzeigen"

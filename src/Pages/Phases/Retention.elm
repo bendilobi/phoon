@@ -44,6 +44,7 @@ toLayout shared model =
             , Effect.navigateNext shared.session
             ]
         , singleTapEffects = []
+        , sessionHints = viewSessionHints
         }
 
 
@@ -115,18 +116,6 @@ view shared model =
                 , width fill
                 , Font.center
                 , centerY
-                , inFront <|
-                    column
-                        [ spacing 20
-
-                        -- , paddingEach { left = 70, right = 70, top = 100, bottom = 0 }
-                        , paddingXY 30 150
-                        , Font.size 15
-                        , transparent True
-                        ]
-                        [ bullet <| text "Halte die Luft an bis Du nicht mehr kannst"
-                        , bullet <| text "Dann atme tief ein und tippe mit drei Fingern"
-                        ]
                 ]
             <|
                 text <|
@@ -145,3 +134,16 @@ viewCancelButton shared model =
         }
         |> Button.withLightColor
         |> Button.view shared.colorScheme
+
+
+viewSessionHints : Element msg
+viewSessionHints =
+    column
+        [ spacing 20
+
+        -- , paddingEach { left = 70, right = 70, top = 100, bottom = 0 }
+        , Font.size 15
+        ]
+        [ bullet <| text "Halte die Luft an bis Du nicht mehr kannst"
+        , bullet <| text "Dann atme tief ein und tippe mit drei Fingern"
+        ]

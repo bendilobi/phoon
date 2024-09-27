@@ -31,6 +31,7 @@ type alias Props contentMsg =
     , overlay : Layouts.BaseLayout.Overlay contentMsg
     , multitouchEffects : List (Effect Msg)
     , singleTapEffects : List (Effect Msg)
+    , sessionHints : Element contentMsg
     }
 
 
@@ -67,6 +68,7 @@ map fn props =
                     }
     , multitouchEffects = props.multitouchEffects
     , singleTapEffects = props.singleTapEffects
+    , sessionHints = E.map fn props.sessionHints
     }
 
 
@@ -80,8 +82,10 @@ type alias Model =
     , debounceBlock : Bool
     , fadeState : FadeState
     , doSessionEndFadeOut : Bool
-    , swipeInitialX : Maybe Float
+    , swipeInitialPosition : Maybe Swipe.Position
     , swipeLocationX : Maybe Float
+    , swipeLocationY : Maybe Float
+    , swipeDirectionY : Maybe Bool
     }
 
 
@@ -92,8 +96,10 @@ init shared _ =
       , debounceBlock = False
       , fadeState = Fading.init shared.fadeIn
       , doSessionEndFadeOut = False
-      , swipeInitialX = Nothing
+      , swipeInitialPosition = Nothing
       , swipeLocationX = Nothing
+      , swipeLocationY = Nothing
+      , swipeDirectionY = Nothing
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -126,7 +132,7 @@ update props shared route msg model =
         SwipeStart event ->
             ( { model
                 | gesture = Swipe.record event model.gesture
-                , swipeInitialX = Just <| .x <| Swipe.locate event
+                , swipeInitialPosition = Just <| Swipe.locate event
               }
             , Effect.none
             )
@@ -138,15 +144,40 @@ update props shared route msg model =
 
                 isSingleFinger =
                     Swipe.maxFingers gesture == 1
+
+                location =
+                    Swipe.locate event
             in
             ( { model
                 | gesture = gesture
                 , swipeLocationX =
                     if isSingleFinger then
-                        Just <| .x <| Swipe.locate event
+                        Just <| .x location
 
                     else
                         Nothing
+                , swipeLocationY =
+                    if isSingleFinger then
+                        Just <| .y location
+
+                    else
+                        Nothing
+                , swipeDirectionY =
+                    case model.swipeDirectionY of
+                        Nothing ->
+                            case model.swipeInitialPosition of
+                                Nothing ->
+                                    model.swipeDirectionY
+
+                                Just { x, y } ->
+                                    if abs (x - location.x) < abs (y - location.y) then
+                                        Just True
+
+                                    else
+                                        Just False
+
+                        Just _ ->
+                            model.swipeDirectionY
               }
             , Effect.none
             )
@@ -171,8 +202,10 @@ update props shared route msg model =
             in
             ( { model
                 | gesture = Swipe.blanco
-                , swipeInitialX = Nothing
+                , swipeInitialPosition = Nothing
                 , swipeLocationX = Nothing
+                , swipeLocationY = Nothing
+                , swipeDirectionY = Nothing
                 , controlsShown = Swipe.isRightSwipe swipeSize gesture
                 , debounceBlock = model.debounceBlock || multitouchRegistered
                 , doSessionEndFadeOut = model.doSessionEndFadeOut || multitouchRegistered && route.path == Session.phasePath Session.End
@@ -342,12 +375,16 @@ viewControls props shared model toContentMsg =
         , moveLeft <|
             let
                 dragDistance =
-                    case ( model.swipeInitialX, model.swipeLocationX ) of
-                        ( Just initialX, Just currentX ) ->
-                            currentX - initialX
+                    if model.swipeDirectionY == Just False then
+                        case ( model.swipeInitialPosition, model.swipeLocationX ) of
+                            ( Just initialPos, Just currentX ) ->
+                                currentX - initialPos.x
 
-                        ( _, _ ) ->
-                            0
+                            ( _, _ ) ->
+                                0
+
+                    else
+                        0
             in
             if model.controlsShown then
                 0
@@ -355,7 +392,7 @@ viewControls props shared model toContentMsg =
             else
                 shared.deviceInfo.window.width - dragDistance
         , htmlAttribute <|
-            case model.swipeInitialX of
+            case model.swipeInitialPosition of
                 Nothing ->
                     Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
 
@@ -440,7 +477,11 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
                     none
                 ]
     in
-    column [ width fill, height fill ]
+    column
+        [ width fill
+        , height fill
+        , behindContent <| viewSessionHints props model
+        ]
         [ el
             ([ width fill
              , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
@@ -474,3 +515,57 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
             viewTouchOverlay Shared.showDebugButtons
                 |> E.map toContentMsg
         ]
+
+
+viewSessionHints : Props contentMsg -> Model -> Element contentMsg
+viewSessionHints props model =
+    let
+        hintsHeight =
+            --TODO: Das aus der tatsächlichen Fenstergröße ermitteln?
+            200
+
+        dragDistance =
+            if model.swipeDirectionY == Just True then
+                case ( model.swipeInitialPosition, model.swipeLocationY ) of
+                    ( Just initialPos, Just currentY ) ->
+                        currentY - initialPos.y
+
+                    ( _, _ ) ->
+                        0
+
+            else
+                0
+    in
+    el
+        [ width fill
+        , above <|
+            el
+                ([ width fill
+                 , height <| px hintsHeight
+                 , moveDown <|
+                    -- min hintsHeight <| abs (35 + dragDistance)
+                    35
+                        + min hintsHeight (max dragDistance 0)
+                 , htmlAttribute <|
+                    case model.swipeInitialPosition of
+                        Nothing ->
+                            Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
+
+                        _ ->
+                            Html.Attributes.hidden False
+                 , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 25, bottomRight = 25 }
+                 , paddingEach { top = 0, bottom = 30, left = 30, right = 30 }
+
+                 --  , below <| text <| String.fromFloat dragDistance
+                 ]
+                    ++ CS.primary
+                )
+            <|
+                el
+                    [ width fill
+                    , alignBottom
+                    ]
+                <|
+                    props.sessionHints
+        ]
+        none
