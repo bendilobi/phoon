@@ -19,6 +19,7 @@ import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults exposing (SessionResults)
+import Lib.Utils exposing (bullet)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -229,18 +230,32 @@ view shared model =
                                     none
 
                                 Just motData ->
-                                    el [ centerX, Font.size 15 ] <|
-                                        (RetentionChart.new
-                                            { width = (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2) - 40
-                                            , height = 200
-                                            , meanRetentionTimes = MotivationData.meanRetentionTimes motData |> List.reverse |> List.map Millis.toSeconds
-                                            , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
-                                            , meanRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
-                                            , maxRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
-                                            , copyColor = CS.phaseRelaxRetentionColor shared.colorScheme
-                                            }
-                                            |> RetentionChart.view
-                                        )
+                                    if True then
+                                        el [ centerX, Font.size 15 ] <|
+                                            (RetentionChart.new
+                                                { width = (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2) - 40
+                                                , height = 200
+                                                , meanRetentionTimes = MotivationData.meanRetentionTimes motData |> List.reverse |> List.map Millis.toSeconds
+                                                , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
+                                                , meanRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                                                , maxRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                                                , copyColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                                                }
+                                                |> RetentionChart.view
+                                            )
+
+                                    else
+                                        column
+                                            [ spacing 20
+
+                                            -- , paddingEach { left = 70, right = 70, top = 50, bottom = 0 }
+                                            , paddingXY 30 0
+                                            , Font.size 15
+                                            , transparent True
+                                            ]
+                                            [ bullet <| text "Tippe mit drei Fingern um die Sitzung zu speichern."
+                                            , bullet <| text "Wenn Du die Sitzung nicht speichern möchtest, wische mit einem Finger, um die Optionen zu zeigen."
+                                            ]
                             , paragraph
                                 [ Font.center
                                 , paddingXY 30 0

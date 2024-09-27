@@ -12,6 +12,7 @@ import Lib.Millis as Millis
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
+import Lib.Utils exposing (bullet)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -151,7 +152,21 @@ view shared model =
             el
                 [ Font.size 120
                 , Font.bold
-                , centerX
+
+                -- , centerX
+                , Font.center
+                , width fill
+                , inFront <|
+                    column
+                        [ spacing 20
+
+                        -- , paddingEach { left = 70, right = 70, top = 200, bottom = 0 }
+                        , paddingXY 30 200
+                        , Font.size 15
+                        , transparent True
+                        ]
+                        [ bullet <| text "Halte die Luft an bis der Timer abgelaufen ist und die Glocke klingt"
+                        ]
                 , centerY
                 ]
             <|

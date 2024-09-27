@@ -200,6 +200,8 @@ view (Settings settings) =
     el
         [ width <| px settings.size
         , height <| px settings.size
+
+        --TODO: centerX und centerY sollte nicht in der Komponente passieren...
         , centerX
         , centerY
         ]

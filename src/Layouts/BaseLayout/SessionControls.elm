@@ -272,7 +272,11 @@ view props shared route { toContentMsg, model, content } =
                     , height fill
 
                     {- To compensate for the header which is "inFront": -}
-                    , paddingEach { top = 35, left = 0, right = 0, bottom = 0 }
+                    , if shared.deviceInfo.orientation == Landscape then
+                        paddingEach { top = 35, left = 0, right = 0, bottom = 0 }
+
+                      else
+                        padding 0
                     , inFront <| viewHeaderAndTouchOverlay props shared model toContentMsg
                     ]
                 <|

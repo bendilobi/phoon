@@ -4,6 +4,7 @@ import Color
 import Color.Convert
 import Element exposing (..)
 import Element.Font as Font
+import Html.Attributes
 import Simple.Animation exposing (Animation)
 import Simple.Animation.Animated as Animated
 import Time exposing (Weekday(..))
@@ -61,7 +62,12 @@ bullet : Element msg -> Element msg
 bullet content =
     row [ spacing 8, paddingXY 20 0 ]
         [ el [ alignTop, Font.bold ] <| text "•"
-        , content
+        , paragraph
+            [ Font.alignLeft
+
+            -- , htmlAttribute <| Html.Attributes.style "pointer-events" "none"
+            ]
+            [ content ]
         ]
 
 

@@ -183,7 +183,7 @@ viewMotivationData shared model motData =
 
                   else if remainingFreezes == 0 && daysSinceLastSession > 0 && MotivationData.streak motData > 1 then
                     -- Last freeze will be used up if no practice today
-                    text <| "Praktiziere noch heute, um Deine Serie zu erhalten!"
+                    text <| "Praktiziere noch heute, um Deine Serie fortzusetzen!"
 
                   else
                     none
@@ -337,9 +337,9 @@ viewMotivationInfo shared motData =
                   if diffToMaxStreak < 4 && diffToMaxStreak > 0 then
                     bullet <|
                         paragraph []
-                            [ text "Nur noch "
+                            [ text "Übe noch "
                             , text <| String.fromInt diffToMaxStreak
-                            , text " Übungen bis Du Deine längste Serie eingeholt hast!"
+                            , text " mal und Du hast Deine längste Serie eingeholt!"
                             ]
 
                   else if diffToMaxStreak == 0 then
@@ -381,9 +381,9 @@ viewMotivationInfo shared motData =
                             if diffToPreviousStreak < 4 && diffToPreviousStreak > 0 then
                                 bullet <|
                                     paragraph []
-                                        [ text "Nur noch "
+                                        [ text "Übe noch "
                                         , text <| String.fromInt diffToPreviousStreak
-                                        , text " Übungen bis Du Deine letzte Serie eingeholt hast!"
+                                        , text " mal und Du hast Deine letzte Serie eingeholt!"
                                         ]
 
                             else if diffToPreviousStreak == 0 then
@@ -431,10 +431,10 @@ viewMotivationInfo shared motData =
                     bullet <|
                         paragraph [] <|
                             if daysUntilStreakEnd == 1 then
-                                [ text "Um die Serie zu erhalten, übe spätestens morgen wieder!" ]
+                                [ text "Um die Serie fortzusetzen, übe spätestens morgen wieder!" ]
 
                             else
-                                [ text "Um die Serie zu erhalten, übe spätestens am "
+                                [ text "Um die Serie fortzusetzen, übe spätestens am "
                                 , shared.today
                                     |> Date.add Date.Days daysUntilStreakEnd
                                     |> Date.weekday

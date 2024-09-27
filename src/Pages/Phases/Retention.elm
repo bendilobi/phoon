@@ -12,6 +12,7 @@ import Lib.Millis as Millis
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
+import Lib.Utils exposing (bullet)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -109,7 +110,25 @@ view shared model =
         CS.phaseRetention shared.colorScheme
     , element =
         el [ width fill, height fill ] <|
-            el [ Font.size 30, centerX, centerY ] <|
+            el
+                [ Font.size 30
+                , width fill
+                , Font.center
+                , centerY
+                , inFront <|
+                    column
+                        [ spacing 20
+
+                        -- , paddingEach { left = 70, right = 70, top = 100, bottom = 0 }
+                        , paddingXY 30 150
+                        , Font.size 15
+                        , transparent True
+                        ]
+                        [ bullet <| text "Halte die Luft an bis Du nicht mehr kannst"
+                        , bullet <| text "Dann atme tief ein und tippe mit drei Fingern"
+                        ]
+                ]
+            <|
                 text <|
                     Millis.toString False <|
                         Millis.fromSeconds <|

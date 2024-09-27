@@ -13,6 +13,7 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
+import Lib.Utils exposing (bullet)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -125,10 +126,24 @@ view shared model =
         el [ width fill, height fill ] <|
             if model.breathingFinished then
                 el
-                    [ centerX
+                    [ width fill
                     , centerY
                     , Font.size 40
                     , Font.center
+                    , inFront <|
+                        column
+                            [ spacing 20
+
+                            -- , paddingEach { left = 70, right = 70, top = 70, bottom = 0 }
+                            , paddingXY 30 70
+                            , Font.size 15
+                            , moveDown 40
+                            , transparent True
+                            ]
+                            [ bullet <| text "Atme noch einmal tief ein und lass' dann den Atem los"
+                            , bullet <| text "Halte die Luft an"
+                            , bullet <| text "Dann tippe mit drei Fingern um die Retention zu beginnen"
+                            ]
                     ]
                 <|
                     text "Retention \nvorbereiten"
@@ -137,14 +152,35 @@ view shared model =
                 let
                     window =
                         shared.deviceInfo.window
+
+                    bubbleSize =
+                        min window.width window.height * 0.9 |> round
                 in
-                Bubble.new
-                    { model = model.bubble
-                    , size = min window.width window.height * 0.9 |> round
-                    , bubbleColor = CS.phaseSessionStartColor shared.colorScheme
-                    , bgColor = CS.phaseBreathingColor shared.colorScheme
-                    }
-                    |> Bubble.view
+                el
+                    [ centerX
+                    , centerY
+                    , inFront <|
+                        column
+                            [ spacing 20
+
+                            -- , paddingEach { left = 70, right = 70, top = 10, bottom = 0 }
+                            , paddingXY 30 10
+                            , Font.size 15
+                            , moveDown <| toFloat bubbleSize
+                            , transparent True
+                            ]
+                            [ bullet <| text "Atme tief ein und aus im Rhythmus der Animation bis die Glocke klingt"
+                            ]
+                    ]
+                <|
+                    (Bubble.new
+                        { model = model.bubble
+                        , size = bubbleSize
+                        , bubbleColor = CS.phaseSessionStartColor shared.colorScheme
+                        , bgColor = CS.phaseBreathingColor shared.colorScheme
+                        }
+                        |> Bubble.view
+                    )
     }
 
 
