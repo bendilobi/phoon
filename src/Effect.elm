@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, navigate, navigateNext, playSound, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, updateApp, updateSessionSettings, writeToClipboard
+    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, updateApp, updateSessionSettings, writeToClipboard
     )
 
 {-|
@@ -18,6 +18,7 @@ port module Effect exposing
 
 -}
 
+import Browser.Dom
 import Browser.Navigation
 import Date
 import Dict exposing (Dict)
@@ -328,6 +329,11 @@ setMotivationData motData =
 setInfoWindowState : Shared.Model.InfoWindowState -> Effect msg
 setInfoWindowState state =
     SendSharedMsg <| Shared.Msg.SetInfoWindowState state
+
+
+getSessionHintsHeight : String -> Effect msg
+getSessionHintsHeight id =
+    SendSharedMsg <| Shared.Msg.SessionHintsHeightRequested id
 
 
 

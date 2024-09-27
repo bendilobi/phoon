@@ -7,6 +7,7 @@ import Element.Background as BG
 import Element.Font as Font
 import Layouts
 import Layouts.BaseLayout
+import Layouts.BaseLayout.SessionControls as SessionControls
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.PageFading exposing (Trigger(..))
@@ -59,7 +60,10 @@ type alias Model =
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( { cancelButton = Button.init }
-    , Effect.playSound Session.RetentionSound
+    , Effect.batch
+        [ Effect.playSound Session.RetentionSound
+        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
+        ]
     )
 
 

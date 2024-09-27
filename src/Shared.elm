@@ -37,7 +37,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.6.688", False )
+    ( "0.6.694", True )
 
 
 appVersion =
@@ -178,6 +178,7 @@ init flagsResult route =
       , safeAreaInset = decodedFlags.safeAreaInsets
       , fadeIn = NoFade
       , infoWindowState = Shared.Model.Closed
+      , sessionHintsHeight = Nothing
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -392,6 +393,23 @@ update route msg model =
 
         Shared.Msg.SetInfoWindowState state ->
             ( { model | infoWindowState = state }
+            , Effect.none
+            )
+
+        Shared.Msg.SessionHintsHeightRequested id ->
+            ( model
+            , Effect.sendCmd <| Task.attempt Shared.Msg.ReceivedSessionHintsElement <| Browser.Dom.getElement id
+            )
+
+        Shared.Msg.ReceivedSessionHintsElement (Ok { element }) ->
+            ( { model
+                | sessionHintsHeight = Just element.height
+              }
+            , Effect.none
+            )
+
+        Shared.Msg.ReceivedSessionHintsElement (Err _) ->
+            ( { model | sessionHintsHeight = Nothing }
             , Effect.none
             )
 

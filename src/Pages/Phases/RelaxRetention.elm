@@ -7,6 +7,7 @@ import Element.Background as BG
 import Element.Font as Font
 import Layouts
 import Layouts.BaseLayout
+import Layouts.BaseLayout.SessionControls as SessionControls
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.PageFading exposing (Trigger(..))
@@ -79,6 +80,7 @@ init () =
       }
     , Effect.batch
         [ Effect.playSound Session.RelaxRetentionSound
+        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
         , Effect.sendMsg <| Tick <| Time.millisToPosix 0
         ]
     )

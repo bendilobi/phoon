@@ -100,6 +100,7 @@ init shared () =
       }
     , Effect.batch
         [ Effect.playSound Session.EndSound
+        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
         , Effect.setMotivationData <|
             MotivationData.update
                 shared.results

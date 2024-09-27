@@ -1,5 +1,6 @@
-module Layouts.BaseLayout.SessionControls exposing (Model, Msg(..), Props, layout, map)
+module Layouts.BaseLayout.SessionControls exposing (Model, Msg(..), Props, layout, map, sessionHintsID)
 
+import Browser.Dom
 import Date
 import Delay
 import Effect exposing (Effect)
@@ -107,6 +108,11 @@ init shared _ =
         , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
         ]
     )
+
+
+sessionHintsID : String
+sessionHintsID =
+    "sessionHints"
 
 
 
@@ -480,7 +486,7 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
     column
         [ width fill
         , height fill
-        , behindContent <| viewSessionHints props model
+        , behindContent <| viewSessionHints props shared model
         ]
         [ el
             ([ width fill
@@ -517,12 +523,16 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
         ]
 
 
-viewSessionHints : Props contentMsg -> Model -> Element contentMsg
-viewSessionHints props model =
+viewSessionHints : Props contentMsg -> Shared.Model -> Model -> Element contentMsg
+viewSessionHints props shared model =
     let
         hintsHeight =
-            --TODO: Das aus der tatsächlichen Fenstergröße ermitteln?
-            200
+            case shared.sessionHintsHeight of
+                Nothing ->
+                    200
+
+                Just height ->
+                    height
 
         dragDistance =
             if model.swipeDirectionY == Just True then
@@ -541,9 +551,8 @@ viewSessionHints props model =
         , above <|
             el
                 ([ width fill
-                 , height <| px hintsHeight
+                 , htmlAttribute <| Html.Attributes.id sessionHintsID
                  , moveDown <|
-                    -- min hintsHeight <| abs (35 + dragDistance)
                     35
                         + min hintsHeight (max dragDistance 0)
                  , htmlAttribute <|
@@ -553,10 +562,8 @@ viewSessionHints props model =
 
                         _ ->
                             Html.Attributes.hidden False
-                 , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 25, bottomRight = 25 }
-                 , paddingEach { top = 0, bottom = 30, left = 30, right = 30 }
-
-                 --  , below <| text <| String.fromFloat dragDistance
+                 , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 30, bottomRight = 30 }
+                 , padding 30
                  ]
                     ++ CS.primary
                 )

@@ -9,6 +9,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Layouts
 import Layouts.BaseLayout
+import Layouts.BaseLayout.SessionControls as SessionControls
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
@@ -66,6 +67,7 @@ init shared () =
       }
     , Effect.batch
         [ Effect.playSound Session.BreathingSound
+        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
         ]
     )
 

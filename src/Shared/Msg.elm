@@ -40,3 +40,5 @@ type Msg
     | ReceivedVersionOnServer (Result Http.Error String)
     | SetMotivationData (Maybe MotivationData)
     | SetInfoWindowState Shared.Model.InfoWindowState
+    | SessionHintsHeightRequested String
+    | ReceivedSessionHintsElement (Result Browser.Dom.Error Browser.Dom.Element)

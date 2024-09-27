@@ -43,6 +43,7 @@ type alias Model =
     --      und es damit nicht maximiert ist, wenn das Infofenster neu gezeigt wird.
     --      => Kann ich das besser lösen?
     , infoWindowState : InfoWindowState
+    , sessionHintsHeight : Maybe Float
     }
 
 
