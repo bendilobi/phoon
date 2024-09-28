@@ -365,10 +365,12 @@ view props shared route { toContentMsg, model, content } =
                     ]
                 <|
                     el
-                        [ width fill
-                        , height fill
-                        , paddingEach <| SafeArea.paddingEach shared.safeAreaInset
-                        ]
+                        ([ width fill
+                         , height fill
+                         , paddingEach <| SafeArea.paddingEach shared.safeAreaInset
+                         ]
+                            ++ content.attributes
+                        )
                     <|
                         content.element
     }
@@ -644,7 +646,7 @@ viewSessionHints props shared model =
                         _ ->
                             Html.Attributes.hidden False
                  , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 80, bottomRight = 80 }
-                 , padding 30
+                 , paddingEach { top = 15, left = 30, right = 30, bottom = 30 }
                  , below <|
                     el [ centerX, Font.color CS.primaryColors.primary ] <|
                         (FeatherIcons.chevronDown

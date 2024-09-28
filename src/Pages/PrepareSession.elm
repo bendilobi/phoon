@@ -39,6 +39,7 @@ toLayout : Model -> Layouts.Layout Msg
 toLayout model =
     Layouts.BaseLayout_MainNav
         { header = Just "Sitzung vorbereiten"
+        , headerIcon = Nothing
         , enableScrolling = False
         , fadeOut = model.fadeOut
         , subPage = Nothing

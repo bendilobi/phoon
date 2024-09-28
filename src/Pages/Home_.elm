@@ -39,6 +39,7 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.BaseLayout_MainNav
         { header = Just "Motivation finden"
+        , headerIcon = Nothing
         , enableScrolling = False
         , fadeOut = NoFade
         , subPage = Nothing

@@ -202,7 +202,8 @@ view props shared { toContentMsg, model, content } =
     , attributes = []
     , element =
         el
-            (content.attributes
+            -- content.attributes
+            (CS.primary
                 ++ [ width fill
                    , height fill
                    , clip
@@ -279,10 +280,10 @@ viewInfoWindow : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg
 viewInfoWindow props shared model toContentMsg =
     let
         maxHeight =
-            shared.deviceInfo.window.height - 35
+            shared.deviceInfo.window.height - 28
 
         halfHeight =
-            shared.deviceInfo.window.height / 2 + 37
+            shared.deviceInfo.window.height / 2 + 33
     in
     column
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)

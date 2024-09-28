@@ -35,6 +35,7 @@ type alias Props contentMsg =
     , enableScrolling : Bool
     , fadeOut : Fading.Trigger
     , subPage : Maybe (SubPage contentMsg)
+    , headerIcon : Maybe (Element contentMsg)
     , overlay : Layouts.BaseLayout.Overlay contentMsg
     }
 
@@ -73,6 +74,7 @@ map fn props =
                 }
             )
             props.subPage
+    , headerIcon = Maybe.map (\i -> E.map fn i) props.headerIcon
     , overlay =
         case props.overlay of
             Layouts.BaseLayout.NoOverlay ->
@@ -269,7 +271,7 @@ subscriptions model =
 view : Props contentMsg -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared route { toContentMsg, model, content } =
     { title = content.title
-    , attributes = [ Font.size 17 ]
+    , attributes = [ Font.size 15 ]
     , element =
         case shared.updateState of
             Updating _ ->
@@ -287,33 +289,32 @@ view props shared route { toContentMsg, model, content } =
 
             _ ->
                 column
-                    (content.attributes
-                        ++ [ width fill
-                           , height fill
-                           , inFront <|
-                                case shared.updateState of
-                                    JustUpdated ->
-                                        viewUpdateResult shared
-                                            model
-                                            { color = CS.successColor shared.colorScheme
-                                            , message = "Update auf Version " ++ Shared.appVersion ++ " erfolgreich!"
-                                            , label = "Fertig"
-                                            }
-                                            |> E.map toContentMsg
+                    [ width fill
+                    , height fill
+                    , Font.size 17
+                    , inFront <|
+                        case shared.updateState of
+                            JustUpdated ->
+                                viewUpdateResult shared
+                                    model
+                                    { color = CS.successColor shared.colorScheme
+                                    , message = "Update auf Version " ++ Shared.appVersion ++ " erfolgreich!"
+                                    , label = "Fertig"
+                                    }
+                                    |> E.map toContentMsg
 
-                                    UpdateFailed errorMessage ->
-                                        viewUpdateResult shared
-                                            model
-                                            { color = CS.actionNeededColor shared.colorScheme
-                                            , message = errorMessage
-                                            , label = "Später versuchen"
-                                            }
-                                            |> E.map toContentMsg
+                            UpdateFailed errorMessage ->
+                                viewUpdateResult shared
+                                    model
+                                    { color = CS.actionNeededColor shared.colorScheme
+                                    , message = errorMessage
+                                    , label = "Später versuchen"
+                                    }
+                                    |> E.map toContentMsg
 
-                                    _ ->
-                                        Fading.fadeOverlay props.fadeOut model.fadeState
-                           ]
-                    )
+                            _ ->
+                                Fading.fadeOverlay props.fadeOut model.fadeState
+                    ]
                     [ el
                         [ width fill
                         , height fill
@@ -325,7 +326,6 @@ view props shared route { toContentMsg, model, content } =
                             , height fill
                             , inFront <|
                                 {- Transparent overlay while subPage is shown -}
-                                -- if shared.subPageShown then
                                 let
                                     dragDistance =
                                         case ( model.swipeInitialX, model.swipeLocationX ) of
@@ -359,19 +359,27 @@ view props shared route { toContentMsg, model, content } =
                                                 Html.Attributes.hidden False
                                     ]
                                     none
-
-                            -- else
-                            --     none
                             ]
                             [ case props.header of
                                 Nothing ->
                                     none
 
                                 Just headerText ->
-                                    viewHeader headerText |> E.map toContentMsg
+                                    viewHeader headerText props.headerIcon
                             , el
                                 ([ width fill
                                  , height fill
+                                 , Border.roundEach <|
+                                    let
+                                        rad =
+                                            case shared.infoWindowState of
+                                                Shared.Model.Max ->
+                                                    10
+
+                                                _ ->
+                                                    0
+                                    in
+                                    { topLeft = rad, topRight = rad, bottomLeft = 0, bottomRight = 0 }
                                  , paddingEach <|
                                     if shared.deviceInfo.orientation == Portrait then
                                         { top = 0, bottom = 0, left = 0, right = 0 }
@@ -395,6 +403,7 @@ view props shared route { toContentMsg, model, content } =
                                         else
                                             []
                                        )
+                                    ++ content.attributes
                                 )
                                 content.element
                             ]
@@ -407,18 +416,29 @@ view props shared route { toContentMsg, model, content } =
     }
 
 
-viewHeader : String -> Element msg
-viewHeader headerText =
+viewHeader : String -> Maybe (Element contentMsg) -> Element contentMsg
+viewHeader headerText icon =
     el
         ([ width fill
          , Font.center
          , Font.bold
-         , paddingEach { bottom = 10, top = 0, left = 0, right = 0 }
+         , Font.size 17
+         , height <| px 40
+         , paddingEach { bottom = 10, top = 4, left = 0, right = 0 }
+         , inFront <|
+            el [ width fill, centerY ] <|
+                el
+                    [ alignRight
+                    , paddingEach { bottom = 5, top = 0, left = 0, right = 10 }
+                    ]
+                <|
+                    Maybe.withDefault none icon
          ]
             ++ CS.primary
         )
     <|
-        text headerText
+        el [ width fill, centerX, centerY ] <|
+            text headerText
 
 
 viewUpdateResult :

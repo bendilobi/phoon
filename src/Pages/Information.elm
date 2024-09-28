@@ -52,6 +52,17 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.BaseLayout_MainNav
         { header = Just "Übung optimieren"
+        , headerIcon =
+            Just <|
+                Input.button []
+                    { label =
+                        FeatherIcons.info
+                            |> FeatherIcons.withSize 25
+                            |> FeatherIcons.withStrokeWidth 1.5
+                            |> FeatherIcons.toHtml []
+                            |> html
+                    , onPress = Just OnToggleAppInfo
+                    }
         , enableScrolling = True
         , fadeOut = model.fadeOut
         , subPage =
@@ -464,24 +475,10 @@ view shared model =
             , spacing 60
             , paddingEach { left = pagePadding, right = pagePadding, top = 30, bottom = pagePadding }
             , Font.size 15
-            , inFront <|
-                el [ alignRight, padding 15 ] <|
-                    Input.button []
-                        { label =
-                            -- text "Blah"
-                            FeatherIcons.info
-                                |> FeatherIcons.withSize 30
-                                |> FeatherIcons.withStrokeWidth 1.5
-                                |> FeatherIcons.toHtml []
-                                |> html
-                        , onPress = Just OnToggleAppInfo
-                        }
             ]
             [ viewRetentionTrend shared <| pagePadding * 2
             , viewUpdate shared model
             , viewSettings shared model
-
-            -- , viewTechInfo shared model
             ]
     }
 
