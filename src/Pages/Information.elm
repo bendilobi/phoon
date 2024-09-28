@@ -52,112 +52,7 @@ toLayout shared model =
         { header = Just "Übung optimieren"
         , enableScrolling = True
         , fadeOut = model.fadeOut
-        , overlay =
-            case model.dialogShown of
-                NoDialog ->
-                    Layouts.BaseLayout.NoOverlay
-
-                PracticeTargetWarning ->
-                    let
-                        initialFrequency =
-                            shared.motivationData
-                                |> Maybe.map MotivationData.streakInitialTarget
-                                |> Maybe.withDefault 4
-                                |> String.fromInt
-                    in
-                    Dialog.new
-                        { header = "Serie beenden?"
-                        , screenWidth = shared.deviceInfo.window.width
-                        , message =
-                            paragraph []
-                                [ text "Wenn Du das Übungsziel niedriger ansetzt als zu Beginn der Serie ("
-                                , text initialFrequency
-                                , text " Tage pro Woche), beginnt die Serie mit der nächsten Übung neu!"
-                                ]
-                        , choices =
-                            [ Dialog.choice
-                                { label = "Serie beenden"
-                                , onChoose = OnDialogRestartStreak True
-                                }
-                            , Dialog.choice
-                                { label = "Ziel auf " ++ initialFrequency ++ " lassen"
-                                , onChoose = OnDialogRestartStreak False
-                                }
-                            ]
-                        }
-                        |> Dialog.view shared.colorScheme
-                        |> Layouts.BaseLayout.ModalDialog
-
-                DataPasteConfirmation motData ->
-                    Dialog.new
-                        { header = "Daten importieren?"
-                        , screenWidth = shared.deviceInfo.window.width
-                        , message =
-                            column
-                                [ width fill
-                                , padding 20
-                                ]
-                                [ let
-                                    meanTimes =
-                                        MotivationData.meanRetentionTimes motData
-                                  in
-                                  if List.length meanTimes < 2 then
-                                    none
-
-                                  else
-                                    column [ width fill, spacing 10 ]
-                                        [ el [ centerX ] <| text "Retentionstrend:"
-                                        , column [ centerX ]
-                                            [ el [ centerX ] <|
-                                                (RetentionChart.new
-                                                    { width =
-                                                        (shared.deviceInfo.window.width * 0.9)
-                                                            - 40
-                                                            |> round
-
-                                                    -- (shared.deviceInfo.window.width |> round)
-                                                    --     - (SafeArea.maxX shared.safeAreaInset * 2)
-                                                    --     - (pagePadding + (hPad * 2))
-                                                    , height = 170
-                                                    , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
-                                                    , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
-                                                    , meanRetentionColor = CS.guideColor shared.colorScheme
-                                                    , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
-                                                    , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
-                                                    }
-                                                    |> RetentionChart.view
-                                                )
-                                            ]
-                                        ]
-                                ]
-                        , choices =
-                            [ Dialog.choice
-                                { label = "Importieren"
-                                , onChoose = OnReplaceMotivationData motData
-                                }
-                            , Dialog.choice
-                                { label = "Verwerfen"
-                                , onChoose = OnDialogCancel
-                                }
-                            ]
-                        }
-                        |> Dialog.view shared.colorScheme
-                        |> Layouts.BaseLayout.ModalDialog
-
-                DataPasteFailure error ->
-                    Dialog.new
-                        { header = "Einfügen nicht möglich"
-                        , screenWidth = shared.deviceInfo.window.width
-                        , message = paragraph [] [ text "Das scheinen leider keine validen Ergebnisdaten zu sein..." ]
-                        , choices =
-                            [ Dialog.choice
-                                { label = "Schließen"
-                                , onChoose = OnDialogCancel
-                                }
-                            ]
-                        }
-                        |> Dialog.view shared.colorScheme
-                        |> Layouts.BaseLayout.ModalDialog
+        , overlay = viewDialog shared model
         }
 
 
@@ -565,39 +460,6 @@ view shared model =
     }
 
 
-viewUpdate : Shared.Model -> Model -> Element Msg
-viewUpdate shared model =
-    case shared.updateState of
-        UpdateAvailable versionOnServer ->
-            column
-                [ width fill
-                , spacing 10
-                , Border.rounded 10
-
-                --TODO: Ins colorScheme aufnehmen?
-                , BG.color <| rgb255 239 233 243 --243 233 236
-                , padding 20
-                ]
-                [ paragraph [ width fill, Font.center ]
-                    [ text <|
-                        "Ein Update ist verfügbar von Version "
-                            ++ Shared.appVersion
-                            ++ " auf "
-                            ++ versionOnServer
-                    ]
-                , Button.new
-                    { model = model.updateButton
-                    , label = text "Update jetzt laden"
-                    , onPress = OnUpdateButton
-                    }
-                    |> Button.withLightColor
-                    |> Button.view shared.colorScheme
-                ]
-
-        _ ->
-            none
-
-
 viewRetentionTrend : Shared.Model -> Int -> Element msg
 viewRetentionTrend shared parentPadding =
     case shared.motivationData of
@@ -634,6 +496,39 @@ viewRetentionTrend shared parentPadding =
                             |> RetentionChart.view
                         )
                     ]
+
+
+viewUpdate : Shared.Model -> Model -> Element Msg
+viewUpdate shared model =
+    case shared.updateState of
+        UpdateAvailable versionOnServer ->
+            column
+                [ width fill
+                , spacing 10
+                , Border.rounded 10
+
+                --TODO: Ins colorScheme aufnehmen?
+                , BG.color <| rgb255 239 233 243 --243 233 236
+                , padding 20
+                ]
+                [ paragraph [ width fill, Font.center ]
+                    [ text <|
+                        "Ein Update ist verfügbar von Version "
+                            ++ Shared.appVersion
+                            ++ " auf "
+                            ++ versionOnServer
+                    ]
+                , Button.new
+                    { model = model.updateButton
+                    , label = text "Update jetzt laden"
+                    , onPress = OnUpdateButton
+                    }
+                    |> Button.withLightColor
+                    |> Button.view shared.colorScheme
+                ]
+
+        _ ->
+            none
 
 
 viewSettings : Shared.Model -> Model -> Element Msg
@@ -1028,3 +923,112 @@ viewTechInfo shared model =
             text <|
                 "Zoff Version "
                     ++ Shared.appVersion
+
+
+viewDialog : Shared.Model -> Model -> Layouts.BaseLayout.Overlay Msg
+viewDialog shared model =
+    case model.dialogShown of
+        NoDialog ->
+            Layouts.BaseLayout.NoOverlay
+
+        PracticeTargetWarning ->
+            let
+                initialFrequency =
+                    shared.motivationData
+                        |> Maybe.map MotivationData.streakInitialTarget
+                        |> Maybe.withDefault 4
+                        |> String.fromInt
+            in
+            Dialog.new
+                { header = "Serie beenden?"
+                , screenWidth = shared.deviceInfo.window.width
+                , message =
+                    paragraph []
+                        [ text "Wenn Du das Übungsziel niedriger ansetzt als zu Beginn der Serie ("
+                        , text initialFrequency
+                        , text " Tage pro Woche), beginnt die Serie mit der nächsten Übung neu!"
+                        ]
+                , choices =
+                    [ Dialog.choice
+                        { label = "Serie beenden"
+                        , onChoose = OnDialogRestartStreak True
+                        }
+                    , Dialog.choice
+                        { label = "Ziel auf " ++ initialFrequency ++ " lassen"
+                        , onChoose = OnDialogRestartStreak False
+                        }
+                    ]
+                }
+                |> Dialog.view shared.colorScheme
+                |> Layouts.BaseLayout.ModalDialog
+
+        DataPasteConfirmation motData ->
+            Dialog.new
+                { header = "Daten importieren?"
+                , screenWidth = shared.deviceInfo.window.width
+                , message =
+                    column
+                        [ width fill
+                        , padding 20
+                        ]
+                        [ let
+                            meanTimes =
+                                MotivationData.meanRetentionTimes motData
+                          in
+                          if List.length meanTimes < 2 then
+                            none
+
+                          else
+                            column [ width fill, spacing 10 ]
+                                [ el [ centerX ] <| text "Retentionstrend:"
+                                , column [ centerX ]
+                                    [ el [ centerX ] <|
+                                        (RetentionChart.new
+                                            { width =
+                                                (shared.deviceInfo.window.width * 0.9)
+                                                    - 40
+                                                    |> round
+
+                                            -- (shared.deviceInfo.window.width |> round)
+                                            --     - (SafeArea.maxX shared.safeAreaInset * 2)
+                                            --     - (pagePadding + (hPad * 2))
+                                            , height = 170
+                                            , meanRetentionTimes = meanTimes |> List.reverse |> List.map Millis.toSeconds
+                                            , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
+                                            , meanRetentionColor = CS.guideColor shared.colorScheme
+                                            , maxRetentionColor = CS.seriesGoodColor shared.colorScheme
+                                            , copyColor = CS.interactInactiveDarkerColor shared.colorScheme
+                                            }
+                                            |> RetentionChart.view
+                                        )
+                                    ]
+                                ]
+                        ]
+                , choices =
+                    [ Dialog.choice
+                        { label = "Importieren"
+                        , onChoose = OnReplaceMotivationData motData
+                        }
+                    , Dialog.choice
+                        { label = "Verwerfen"
+                        , onChoose = OnDialogCancel
+                        }
+                    ]
+                }
+                |> Dialog.view shared.colorScheme
+                |> Layouts.BaseLayout.ModalDialog
+
+        DataPasteFailure error ->
+            Dialog.new
+                { header = "Einfügen nicht möglich"
+                , screenWidth = shared.deviceInfo.window.width
+                , message = paragraph [] [ text "Das scheinen leider keine validen Ergebnisdaten zu sein..." ]
+                , choices =
+                    [ Dialog.choice
+                        { label = "Schließen"
+                        , onChoose = OnDialogCancel
+                        }
+                    ]
+                }
+                |> Dialog.view shared.colorScheme
+                |> Layouts.BaseLayout.ModalDialog
