@@ -324,14 +324,24 @@ view props shared route { toContentMsg, model, content } =
                             [ width fill
                             , height fill
                             , inFront <|
+                                {- Transparent overlay while subPage is shown -}
                                 if shared.subPageShown then
+                                    let
+                                        dragDistance =
+                                            case ( model.swipeInitialX, model.swipeLocationX ) of
+                                                ( Just initialPos, Just currentX ) ->
+                                                    currentX - initialPos
+
+                                                ( _, _ ) ->
+                                                    0
+                                    in
                                     el
                                         [ width fill
                                         , height fill
                                         , BG.color <| rgb 0 0 0
                                         , alpha <|
                                             if shared.subPageShown && not model.subPageClosingInProgress then
-                                                0.2
+                                                0.3 - dragDistance * 0.3 / shared.deviceInfo.window.width
 
                                             else
                                                 0
@@ -512,58 +522,6 @@ viewNavButton colorScheme route label icon iconFilled path =
 
 viewSubpage : Shared.Model -> Model -> Maybe (SubPage contentMsg) -> (Msg -> contentMsg) -> Element contentMsg
 viewSubpage shared model subPage toContentMsg =
-    -- el
-    --     [ width fill
-    --     , height fill
-    -- <|
-    --     if shared.subPageShown then
-    --         fill
-    --     else
-    --         px 0
-    -- , behindContent <|
-    --     if shared.subPageShown && not model.subPageClosingInProgress then
-    --         el
-    --             [ width fill
-    --             , height fill
-    --             , BG.color <| rgb 0 0 0
-    --             , alpha <|
-    --                 if shared.subPageShown && not model.subPageClosingInProgress then
-    --                     0.5
-    --                 else
-    --                     0
-    --             , htmlAttribute <| Transition.properties [ Transition.opacity subPageClosingTime [ Transition.linear ] ]
-    --             ]
-    --             none
-    --     else
-    --         none
-    -- if shared.subPageShown && not model.subPageClosingInProgress then
-    --     rgba 0 0 0 0.5
-    -- else
-    --     rgba 0 0 0 0
-    -- , BG.color <| rgba 0 0 0 0.2
-    -- , alpha <|
-    --     if shared.subPageShown && not model.subPageClosingInProgress then
-    --         0.5
-    --     else
-    --         0
-    -- , htmlAttribute <| Transition.properties [ Transition.opacity subPageClosingTime [ Transition.linear ] ]
-    -- , inFront <|
-    --     if shared.subPageShown && not model.subPageClosingInProgress then
-    --         el
-    --             [ width fill
-    --             , height fill
-    --             , BG.color <| rgb 0 0 0
-    --             , alpha <|
-    --                 if shared.subPageShown && not model.subPageClosingInProgress then
-    --                     0.5
-    --                 else
-    --                     0
-    --             , htmlAttribute <| Transition.properties [ Transition.opacity subPageClosingTime [ Transition.linear ] ]
-    --             ]
-    --             none
-    --     else
-    --         none
-    -- , onRight <|
     column
         [ width fill
         , height fill
@@ -635,8 +593,3 @@ viewSubpage shared model subPage toContentMsg =
             Maybe.withDefault none <|
                 Maybe.map .content subPage
         ]
-
-
-
--- ]
--- none
