@@ -41,6 +41,7 @@ toLayout model =
         { header = Just "Sitzung vorbereiten"
         , enableScrolling = False
         , fadeOut = model.fadeOut
+        , subPage = Nothing
         , overlay = Layouts.BaseLayout.NoOverlay
         }
 

@@ -41,6 +41,7 @@ toLayout shared model =
         { header = Just "Motivation finden"
         , enableScrolling = False
         , fadeOut = NoFade
+        , subPage = Nothing
         , overlay =
             case shared.infoWindowState of
                 Shared.Model.Closed ->

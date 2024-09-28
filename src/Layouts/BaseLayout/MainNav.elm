@@ -1,4 +1,4 @@
-module Layouts.BaseLayout.MainNav exposing (Model, Msg, Props, layout, map)
+module Layouts.BaseLayout.MainNav exposing (Model, Msg, Props, SubPage, layout, map)
 
 import Browser.Events
 import Components.AnimatedButton as Button
@@ -16,6 +16,7 @@ import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
 import Lib.SafeArea as SafeArea
+import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Route.Path
 import Shared
@@ -32,7 +33,15 @@ type alias Props contentMsg =
     { header : Maybe String
     , enableScrolling : Bool
     , fadeOut : Fading.Trigger
+    , subPage : Maybe (SubPage contentMsg)
     , overlay : Layouts.BaseLayout.Overlay contentMsg
+    }
+
+
+type alias SubPage contentMsg =
+    { header : String
+    , content : Element contentMsg
+    , onBack : contentMsg
     }
 
 
@@ -52,6 +61,15 @@ map fn props =
     { header = props.header
     , enableScrolling = props.enableScrolling
     , fadeOut = props.fadeOut
+    , subPage =
+        Maybe.map
+            (\{ header, content, onBack } ->
+                { header = header
+                , content = E.map fn content
+                , onBack = fn onBack
+                }
+            )
+            props.subPage
     , overlay =
         case props.overlay of
             Layouts.BaseLayout.NoOverlay ->
@@ -78,6 +96,9 @@ type alias Model =
     , updateButton : Button.Model
     , updateAcknowledged : Bool
     , fadeState : FadeState
+    , swipeGesture : Swipe.Gesture
+    , swipeInitialX : Maybe Float
+    , swipeLocationX : Maybe Float
     }
 
 
@@ -87,6 +108,9 @@ init shared _ =
       , updateButton = Button.init
       , updateAcknowledged = False
       , fadeState = Fading.init shared.fadeIn
+      , swipeGesture = Swipe.blanco
+      , swipeInitialX = Nothing
+      , swipeLocationX = Nothing
       }
     , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
     )
@@ -108,6 +132,9 @@ type Msg
     | OnCloseUpdateButton Button.Model
     | UpdateFinished
     | ToggleFadeIn Fading.Trigger
+    | SwipeStart Swipe.Event
+    | Swipe Swipe.Event
+    | SwipeEnd Swipe.Event
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -173,6 +200,45 @@ update shared msg model =
             , Effect.sendCmd <| Fading.updateCmd fade ToggleFadeIn
             )
 
+        SwipeStart event ->
+            ( { model
+                | swipeGesture = Swipe.record event model.swipeGesture
+                , swipeInitialX = Just <| .x <| Swipe.locate event
+              }
+            , Effect.none
+            )
+
+        Swipe event ->
+            ( { model
+                | swipeGesture = Swipe.record event model.swipeGesture
+                , swipeLocationX = Swipe.locate event |> .x |> Just
+              }
+            , Effect.none
+            )
+
+        SwipeEnd event ->
+            let
+                gesture =
+                    Swipe.record event model.swipeGesture
+
+                swipeThreshold =
+                    shared.deviceInfo.window.width - (shared.deviceInfo.window.width / 4)
+
+                closeSubPage =
+                    Swipe.isRightSwipe swipeThreshold gesture
+            in
+            ( { model
+                | swipeGesture = Swipe.blanco
+                , swipeInitialX = Nothing
+                , swipeLocationX = Nothing
+              }
+            , if closeSubPage then
+                Effect.toggleSubPage
+
+              else
+                Effect.none
+            )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -231,40 +297,46 @@ view props shared route { toContentMsg, model, content } =
                                         Fading.fadeOverlay props.fadeOut model.fadeState
                            ]
                     )
-                    [ case props.header of
-                        Nothing ->
-                            none
+                    [ column
+                        [ width fill
+                        , height fill
+                        , inFront <| viewSubpage shared model props.subPage toContentMsg
+                        ]
+                        [ case props.header of
+                            Nothing ->
+                                none
 
-                        Just headerText ->
-                            viewHeader headerText |> E.map toContentMsg
-                    , el
-                        ([ width fill
-                         , height fill
-                         , paddingEach <|
-                            if shared.deviceInfo.orientation == Portrait then
-                                { top = 0, bottom = 0, left = 0, right = 0 }
-
-                            else
-                                SafeArea.paddingEach shared.safeAreaInset
-                         ]
-                            ++ (if props.enableScrolling then
-                                    --- Continuous scrolling by flicking on touch devices
-                                    --- seems to produce scrolling events even during page
-                                    --- change, so the new page continues the unfinished
-                                    --- scrolling process of the previous page
-                                    --- This leads to broken appearance of the new page
-                                    --- if it is scrollable. So we enable scrollbars only
-                                    --- on pages that need them.
-                                    --TODO: Das funktioniert in Chromium nicht mehr. Ist das ein Bug dort?
-                                    --      Selbst wenn ich height festsetze und clip dazu, ist der content-
-                                    --      Bereicht so groß wie der Inhalt und die gesamte App scrollt...
-                                    [ scrollbarY ]
+                            Just headerText ->
+                                viewHeader headerText |> E.map toContentMsg
+                        , el
+                            ([ width fill
+                             , height fill
+                             , paddingEach <|
+                                if shared.deviceInfo.orientation == Portrait then
+                                    { top = 0, bottom = 0, left = 0, right = 0 }
 
                                 else
-                                    []
-                               )
-                        )
-                        content.element
+                                    SafeArea.paddingEach shared.safeAreaInset
+                             ]
+                                ++ (if props.enableScrolling then
+                                        --- Continuous scrolling by flicking on touch devices
+                                        --- seems to produce scrolling events even during page
+                                        --- change, so the new page continues the unfinished
+                                        --- scrolling process of the previous page
+                                        --- This leads to broken appearance of the new page
+                                        --- if it is scrollable. So we enable scrollbars only
+                                        --- on pages that need them.
+                                        --TODO: Das funktioniert in Chromium nicht mehr. Ist das ein Bug dort?
+                                        --      Selbst wenn ich height festsetze und clip dazu, ist der content-
+                                        --      Bereicht so groß wie der Inhalt und die gesamte App scrollt...
+                                        [ scrollbarY ]
+
+                                    else
+                                        []
+                                   )
+                            )
+                            content.element
+                        ]
                     , if shared.deviceInfo.orientation == Portrait then
                         viewNavBar shared route |> E.map toContentMsg
 
@@ -396,3 +468,83 @@ viewNavButton colorScheme route label icon iconFilled path =
                                 icon
             , el [ centerX ] <| text label
             ]
+
+
+viewSubpage : Shared.Model -> Model -> Maybe (SubPage contentMsg) -> (Msg -> contentMsg) -> Element contentMsg
+viewSubpage shared model subPage toContentMsg =
+    column
+        [ width fill
+        , height fill
+        , moveRight <|
+            let
+                dragDistance =
+                    case ( model.swipeInitialX, model.swipeLocationX ) of
+                        ( Just initialPos, Just currentX ) ->
+                            currentX - initialPos
+
+                        ( _, _ ) ->
+                            0
+            in
+            -- case subPage of
+            --     Nothing ->
+            --         shared.deviceInfo.window.width
+            --     Just _ ->
+            --         0
+            if shared.subPageShown then
+                dragDistance
+
+            else
+                shared.deviceInfo.window.width
+        , htmlAttribute <|
+            -- case model.swipeInitialPosition of
+            --     Nothing ->
+            Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
+
+        -- _ ->
+        -- Html.Attributes.hidden False
+        , inFront <|
+            E.map toContentMsg <|
+                el
+                    [ height fill
+                    , width <| px 30
+                    , htmlAttribute <| Swipe.onStart SwipeStart
+                    , htmlAttribute <| Swipe.onMove Swipe
+                    , htmlAttribute <| Swipe.onEnd SwipeEnd
+                    ]
+                    none
+        ]
+        [ el
+            ([ width fill
+
+             -- , BG.color <| rgb 1 0 0
+             , height <| px 50
+             , paddingXY 20 0
+             , inFront <|
+                Input.button [ alignLeft, centerY ]
+                    { label =
+                        row []
+                            [ FeatherIcons.chevronLeft
+                                |> FeatherIcons.withSize 30
+                                |> FeatherIcons.toHtml []
+                                |> html
+                            , text "Zurück"
+                            ]
+                    , onPress = Maybe.map .onBack subPage
+                    }
+             ]
+                ++ CS.primary
+            )
+          <|
+            el [ centerX, centerY, Font.bold ] <|
+                text <|
+                    Maybe.withDefault "" <|
+                        Maybe.map .header subPage
+        , el
+            [ width fill
+            , height fill
+            , scrollbarY
+            ]
+          <|
+            Maybe.withDefault none <|
+                Maybe.map .content subPage
+        ]

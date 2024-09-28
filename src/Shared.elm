@@ -37,7 +37,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.6.709", False )
+    ( "0.6.716", False )
 
 
 appVersion =
@@ -179,6 +179,7 @@ init flagsResult route =
       , fadeIn = NoFade
       , infoWindowState = Shared.Model.Closed
       , sessionHintsHeight = Nothing
+      , subPageShown = False
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -410,6 +411,11 @@ update route msg model =
 
         Shared.Msg.ReceivedSessionHintsElement (Err _) ->
             ( { model | sessionHintsHeight = Nothing }
+            , Effect.none
+            )
+
+        Shared.Msg.OnToggleSubPage ->
+            ( { model | subPageShown = not model.subPageShown }
             , Effect.none
             )
 

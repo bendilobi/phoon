@@ -16,11 +16,13 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
+import FeatherIcons
 import Http
 import Json.Decode as Decode
 import Json.Encode
 import Layouts
 import Layouts.BaseLayout
+import Layouts.BaseLayout.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -52,6 +54,12 @@ toLayout shared model =
         { header = Just "Übung optimieren"
         , enableScrolling = True
         , fadeOut = model.fadeOut
+        , subPage =
+            if shared.subPageShown then
+                Just <| viewAppInfo shared model
+
+            else
+                Nothing
         , overlay = viewDialog shared model
         }
 
@@ -75,6 +83,8 @@ type alias Model =
     , reloadButton : Button.Model
     , replaceMotDataButton : Button.Model
     , fadeOut : Fading.Trigger
+
+    -- , appInfoShown : Bool
     }
 
 
@@ -106,6 +116,8 @@ init shared () =
       , reloadButton = Button.init
       , replaceMotDataButton = Button.init
       , fadeOut = NoFade
+
+      --   , appInfoShown = False
       }
     , if shared.versionOnServer /= Api.Loading && shared.updateState /= JustUpdated then
         Effect.checkVersion ReceivedNewestVersionString
@@ -150,6 +162,7 @@ type Msg
     | ReceivedClipboard Decode.Value
     | FadedOutBeforeUpdate
     | OnDialogCancel
+    | OnToggleAppInfo
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -414,6 +427,11 @@ update shared msg model =
             , Effect.none
             )
 
+        OnToggleAppInfo ->
+            ( model
+            , Effect.toggleSubPage
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -451,6 +469,17 @@ view shared model =
             , spacing 60
             , paddingEach { left = pagePadding, right = pagePadding, top = 30, bottom = pagePadding }
             , Font.size 15
+            , inFront <|
+                el [ alignRight, padding 20 ] <|
+                    Input.button []
+                        { label =
+                            -- text "Blah"
+                            FeatherIcons.info
+                                |> FeatherIcons.withSize 25
+                                |> FeatherIcons.toHtml []
+                                |> html
+                        , onPress = Just OnToggleAppInfo
+                        }
             ]
             [ viewRetentionTrend shared <| pagePadding * 2
             , viewUpdate shared model
@@ -599,6 +628,17 @@ viewSettings shared model =
                     |> Button.view shared.colorScheme
                 )
             ]
+
+        -- , Input.button []
+        --     { label =
+        --         text "Blah"
+        --     -- (FeatherIcons.info
+        --     --     |> FeatherIcons.withSize 25
+        --     --     |> FeatherIcons.toHtml []
+        --     --     |> html
+        --     -- )
+        --     , onPress = Just OnToggleAppInfo
+        --     }
         , column settingsAttrs
             [ if model.settingsItemShown == Cycles then
                 el lastItemAttrs <|
@@ -1032,3 +1072,45 @@ viewDialog shared model =
                 }
                 |> Dialog.view shared.colorScheme
                 |> Layouts.BaseLayout.ModalDialog
+
+
+viewAppInfo :
+    Shared.Model
+    -> Model
+    -> Layouts.BaseLayout.MainNav.SubPage Msg
+viewAppInfo shared model =
+    { header = "App Info"
+    , content =
+        column
+            ([ width fill
+             , height fill
+             , spacing 20
+             , padding 30
+             ]
+                ++ CS.primaryInformation shared.colorScheme
+            )
+            [ text "N bisschen Zeugs:"
+            , Button.new
+                { onPress = OnCopyButton
+                , label = text "Übungsergebnisse kopieren"
+                , model = model.copyButton
+                }
+                |> Button.withLightColor
+                |> Button.view shared.colorScheme
+            , Button.new
+                { model = model.pasteButton
+                , label = text "Übungsergebnisse einfügen"
+                , onPress = OnPasteButton
+                }
+                |> Button.withLightColor
+                |> Button.view shared.colorScheme
+            , Button.new
+                { onPress = OnReloadButton
+                , label = text "App neu laden"
+                , model = model.reloadButton
+                }
+                |> Button.withLightColor
+                |> Button.view shared.colorScheme
+            ]
+    , onBack = OnToggleAppInfo
+    }

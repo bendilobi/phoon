@@ -44,6 +44,7 @@ type alias Model =
     --      => Kann ich das besser lösen?
     , infoWindowState : InfoWindowState
     , sessionHintsHeight : Maybe Float
+    , subPageShown : Bool
     }
 
 

@@ -42,3 +42,4 @@ type Msg
     | SetInfoWindowState Shared.Model.InfoWindowState
     | SessionHintsHeightRequested String
     | ReceivedSessionHintsElement (Result Browser.Dom.Error Browser.Dom.Element)
+    | OnToggleSubPage
