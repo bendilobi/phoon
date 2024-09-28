@@ -1112,5 +1112,4 @@ viewAppInfo shared model =
                 |> Button.withLightColor
                 |> Button.view shared.colorScheme
             ]
-    , onBack = OnToggleAppInfo
     }

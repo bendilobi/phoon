@@ -11,6 +11,7 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
 import FeatherIcons
+import Html.Attributes
 import Layout exposing (Layout)
 import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -41,8 +42,11 @@ type alias Props contentMsg =
 type alias SubPage contentMsg =
     { header : String
     , content : Element contentMsg
-    , onBack : contentMsg
     }
+
+
+subPageClosingTime =
+    500
 
 
 layout : Props contentMsg -> Shared.Model -> Route () -> Layout (Layouts.BaseLayout.Props contentMsg) Model Msg contentMsg
@@ -63,10 +67,9 @@ map fn props =
     , fadeOut = props.fadeOut
     , subPage =
         Maybe.map
-            (\{ header, content, onBack } ->
+            (\{ header, content } ->
                 { header = header
                 , content = E.map fn content
-                , onBack = fn onBack
                 }
             )
             props.subPage
@@ -99,6 +102,7 @@ type alias Model =
     , swipeGesture : Swipe.Gesture
     , swipeInitialX : Maybe Float
     , swipeLocationX : Maybe Float
+    , subPageClosingInProgress : Bool
     }
 
 
@@ -111,6 +115,7 @@ init shared _ =
       , swipeGesture = Swipe.blanco
       , swipeInitialX = Nothing
       , swipeLocationX = Nothing
+      , subPageClosingInProgress = False
       }
     , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
     )
@@ -135,6 +140,8 @@ type Msg
     | SwipeStart Swipe.Event
     | Swipe Swipe.Event
     | SwipeEnd Swipe.Event
+    | OnSubPageBack
+    | CloseSubPage
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -237,6 +244,16 @@ update shared msg model =
 
               else
                 Effect.none
+            )
+
+        OnSubPageBack ->
+            ( { model | subPageClosingInProgress = True }
+            , Effect.sendCmd <| Delay.after subPageClosingTime CloseSubPage
+            )
+
+        CloseSubPage ->
+            ( { model | subPageClosingInProgress = False }
+            , Effect.toggleSubPage
             )
 
 
@@ -485,23 +502,19 @@ viewSubpage shared model subPage toContentMsg =
                         ( _, _ ) ->
                             0
             in
-            -- case subPage of
-            --     Nothing ->
-            --         shared.deviceInfo.window.width
-            --     Just _ ->
-            --         0
-            if shared.subPageShown then
+            if shared.subPageShown && not model.subPageClosingInProgress then
                 dragDistance
 
             else
                 shared.deviceInfo.window.width
         , htmlAttribute <|
-            -- case model.swipeInitialPosition of
-            --     Nothing ->
-            Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
+            case model.swipeInitialX of
+                {- Suppress animation while swiping -}
+                Nothing ->
+                    Transition.properties [ Transition.transform subPageClosingTime [ Transition.easeOutExpo ] ]
 
-        -- _ ->
-        -- Html.Attributes.hidden False
+                _ ->
+                    Html.Attributes.hidden False
         , inFront <|
             E.map toContentMsg <|
                 el
@@ -515,22 +528,21 @@ viewSubpage shared model subPage toContentMsg =
         ]
         [ el
             ([ width fill
-
-             -- , BG.color <| rgb 1 0 0
              , height <| px 50
              , paddingXY 20 0
              , inFront <|
-                Input.button [ alignLeft, centerY ]
-                    { label =
-                        row []
-                            [ FeatherIcons.chevronLeft
-                                |> FeatherIcons.withSize 30
-                                |> FeatherIcons.toHtml []
-                                |> html
-                            , text "Zurück"
-                            ]
-                    , onPress = Maybe.map .onBack subPage
-                    }
+                E.map toContentMsg <|
+                    Input.button [ alignLeft, centerY ]
+                        { label =
+                            row []
+                                [ FeatherIcons.chevronLeft
+                                    |> FeatherIcons.withSize 30
+                                    |> FeatherIcons.toHtml []
+                                    |> html
+                                , text "Zurück"
+                                ]
+                        , onPress = Just OnSubPageBack
+                        }
              ]
                 ++ CS.primary
             )

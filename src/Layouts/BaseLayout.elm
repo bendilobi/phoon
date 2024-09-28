@@ -306,6 +306,7 @@ viewInfoWindow props shared model toContentMsg =
         , height <| px <| round <| shared.deviceInfo.window.height
         , htmlAttribute <|
             case model.swipeInitialY of
+                {- Suppress animation while swiping -}
                 Nothing ->
                     Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
 
