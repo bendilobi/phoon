@@ -314,46 +314,69 @@ view props shared route { toContentMsg, model, content } =
                                         Fading.fadeOverlay props.fadeOut model.fadeState
                            ]
                     )
-                    [ column
+                    [ el
                         [ width fill
                         , height fill
                         , inFront <| viewSubpage shared model props.subPage toContentMsg
                         ]
-                        [ case props.header of
-                            Nothing ->
-                                none
+                      <|
+                        column
+                            [ width fill
+                            , height fill
+                            , inFront <|
+                                if shared.subPageShown then
+                                    el
+                                        [ width fill
+                                        , height fill
+                                        , BG.color <| rgb 0 0 0
+                                        , alpha <|
+                                            if shared.subPageShown && not model.subPageClosingInProgress then
+                                                0.2
 
-                            Just headerText ->
-                                viewHeader headerText |> E.map toContentMsg
-                        , el
-                            ([ width fill
-                             , height fill
-                             , paddingEach <|
-                                if shared.deviceInfo.orientation == Portrait then
-                                    { top = 0, bottom = 0, left = 0, right = 0 }
+                                            else
+                                                0
+                                        , htmlAttribute <| Transition.properties [ Transition.opacity subPageClosingTime [ Transition.linear ] ]
+                                        ]
+                                        none
 
                                 else
-                                    SafeArea.paddingEach shared.safeAreaInset
-                             ]
-                                ++ (if props.enableScrolling then
-                                        --- Continuous scrolling by flicking on touch devices
-                                        --- seems to produce scrolling events even during page
-                                        --- change, so the new page continues the unfinished
-                                        --- scrolling process of the previous page
-                                        --- This leads to broken appearance of the new page
-                                        --- if it is scrollable. So we enable scrollbars only
-                                        --- on pages that need them.
-                                        --TODO: Das funktioniert in Chromium nicht mehr. Ist das ein Bug dort?
-                                        --      Selbst wenn ich height festsetze und clip dazu, ist der content-
-                                        --      Bereicht so groß wie der Inhalt und die gesamte App scrollt...
-                                        [ scrollbarY ]
+                                    none
+                            ]
+                            [ case props.header of
+                                Nothing ->
+                                    none
+
+                                Just headerText ->
+                                    viewHeader headerText |> E.map toContentMsg
+                            , el
+                                ([ width fill
+                                 , height fill
+                                 , paddingEach <|
+                                    if shared.deviceInfo.orientation == Portrait then
+                                        { top = 0, bottom = 0, left = 0, right = 0 }
 
                                     else
-                                        []
-                                   )
-                            )
-                            content.element
-                        ]
+                                        SafeArea.paddingEach shared.safeAreaInset
+                                 ]
+                                    ++ (if props.enableScrolling then
+                                            --- Continuous scrolling by flicking on touch devices
+                                            --- seems to produce scrolling events even during page
+                                            --- change, so the new page continues the unfinished
+                                            --- scrolling process of the previous page
+                                            --- This leads to broken appearance of the new page
+                                            --- if it is scrollable. So we enable scrollbars only
+                                            --- on pages that need them.
+                                            --TODO: Das funktioniert in Chromium nicht mehr. Ist das ein Bug dort?
+                                            --      Selbst wenn ich height festsetze und clip dazu, ist der content-
+                                            --      Bereicht so groß wie der Inhalt und die gesamte App scrollt...
+                                            [ scrollbarY ]
+
+                                        else
+                                            []
+                                       )
+                                )
+                                content.element
+                            ]
                     , if shared.deviceInfo.orientation == Portrait then
                         viewNavBar shared route |> E.map toContentMsg
 
@@ -489,6 +512,58 @@ viewNavButton colorScheme route label icon iconFilled path =
 
 viewSubpage : Shared.Model -> Model -> Maybe (SubPage contentMsg) -> (Msg -> contentMsg) -> Element contentMsg
 viewSubpage shared model subPage toContentMsg =
+    -- el
+    --     [ width fill
+    --     , height fill
+    -- <|
+    --     if shared.subPageShown then
+    --         fill
+    --     else
+    --         px 0
+    -- , behindContent <|
+    --     if shared.subPageShown && not model.subPageClosingInProgress then
+    --         el
+    --             [ width fill
+    --             , height fill
+    --             , BG.color <| rgb 0 0 0
+    --             , alpha <|
+    --                 if shared.subPageShown && not model.subPageClosingInProgress then
+    --                     0.5
+    --                 else
+    --                     0
+    --             , htmlAttribute <| Transition.properties [ Transition.opacity subPageClosingTime [ Transition.linear ] ]
+    --             ]
+    --             none
+    --     else
+    --         none
+    -- if shared.subPageShown && not model.subPageClosingInProgress then
+    --     rgba 0 0 0 0.5
+    -- else
+    --     rgba 0 0 0 0
+    -- , BG.color <| rgba 0 0 0 0.2
+    -- , alpha <|
+    --     if shared.subPageShown && not model.subPageClosingInProgress then
+    --         0.5
+    --     else
+    --         0
+    -- , htmlAttribute <| Transition.properties [ Transition.opacity subPageClosingTime [ Transition.linear ] ]
+    -- , inFront <|
+    --     if shared.subPageShown && not model.subPageClosingInProgress then
+    --         el
+    --             [ width fill
+    --             , height fill
+    --             , BG.color <| rgb 0 0 0
+    --             , alpha <|
+    --                 if shared.subPageShown && not model.subPageClosingInProgress then
+    --                     0.5
+    --                 else
+    --                     0
+    --             , htmlAttribute <| Transition.properties [ Transition.opacity subPageClosingTime [ Transition.linear ] ]
+    --             ]
+    --             none
+    --     else
+    --         none
+    -- , onRight <|
     column
         [ width fill
         , height fill
@@ -560,3 +635,8 @@ viewSubpage shared model subPage toContentMsg =
             Maybe.withDefault none <|
                 Maybe.map .content subPage
         ]
+
+
+
+-- ]
+-- none
