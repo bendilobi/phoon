@@ -83,8 +83,6 @@ type alias Model =
     , reloadButton : Button.Model
     , replaceMotDataButton : Button.Model
     , fadeOut : Fading.Trigger
-
-    -- , appInfoShown : Bool
     }
 
 
@@ -116,8 +114,6 @@ init shared () =
       , reloadButton = Button.init
       , replaceMotDataButton = Button.init
       , fadeOut = NoFade
-
-      --   , appInfoShown = False
       }
     , if shared.versionOnServer /= Api.Loading && shared.updateState /= JustUpdated then
         Effect.checkVersion ReceivedNewestVersionString
@@ -138,7 +134,6 @@ type SettingsItem
     | BreathCount
     | RelaxRetDuration
     | PracticeFrequencyTarget
-    | AppControls
 
 
 type Msg
@@ -470,12 +465,13 @@ view shared model =
             , paddingEach { left = pagePadding, right = pagePadding, top = 30, bottom = pagePadding }
             , Font.size 15
             , inFront <|
-                el [ alignRight, padding 20 ] <|
+                el [ alignRight, padding 15 ] <|
                     Input.button []
                         { label =
                             -- text "Blah"
                             FeatherIcons.info
-                                |> FeatherIcons.withSize 25
+                                |> FeatherIcons.withSize 30
+                                |> FeatherIcons.withStrokeWidth 1.5
                                 |> FeatherIcons.toHtml []
                                 |> html
                         , onPress = Just OnToggleAppInfo
@@ -484,7 +480,8 @@ view shared model =
             [ viewRetentionTrend shared <| pagePadding * 2
             , viewUpdate shared model
             , viewSettings shared model
-            , viewTechInfo shared model
+
+            -- , viewTechInfo shared model
             ]
     }
 
@@ -628,17 +625,6 @@ viewSettings shared model =
                     |> Button.view shared.colorScheme
                 )
             ]
-
-        -- , Input.button []
-        --     { label =
-        --         text "Blah"
-        --     -- (FeatherIcons.info
-        --     --     |> FeatherIcons.withSize 25
-        --     --     |> FeatherIcons.toHtml []
-        --     --     |> html
-        --     -- )
-        --     , onPress = Just OnToggleAppInfo
-        --     }
         , column settingsAttrs
             [ if model.settingsItemShown == Cycles then
                 el lastItemAttrs <|
@@ -892,42 +878,6 @@ viewSettings shared model =
             ]
             [ text "Das Übungsziel bestimmt, wie häufig \"Schutzringe\" für die Fortsetzung der Serie hinzukommen. \"4 mal pro Woche\" bedeutet beispielsweise, dass für vier Übungen drei Ringe hinzukommen. Es können also drei von sieben Tagen freigenommen werden."
             ]
-        , if model.settingsItemShown == AppControls then
-            --TODO: Was, wenn noch keine Motivationsdaten vorhanden?
-            --      Buttons deaktivieren oder gar nicht anzeigen?
-            el [ width fill, paddingEach { top = 50, bottom = 0, left = 0, right = 0 } ] <|
-                column settingsAttrs
-                    [ el itemAttrs <|
-                        column [ width fill, spacing 20 ]
-                            [ activeItemLabel "Spezialwerkzeuge..."
-                            , Button.new
-                                { onPress = OnCopyButton
-                                , label = text "Übungsergebnisse kopieren"
-                                , model = model.copyButton
-                                }
-                                |> Button.withLightColor
-                                |> Button.view shared.colorScheme
-                            , Button.new
-                                { model = model.pasteButton
-                                , label = text "Übungsergebnisse einfügen"
-                                , onPress = OnPasteButton
-                                }
-                                |> Button.withLightColor
-                                |> Button.view shared.colorScheme
-                            ]
-                    , el lastItemAttrs <|
-                        (Button.new
-                            { onPress = OnReloadButton
-                            , label = text "App neu laden"
-                            , model = model.reloadButton
-                            }
-                            |> Button.withLightColor
-                            |> Button.view shared.colorScheme
-                        )
-                    ]
-
-          else
-            none
         ]
 
 
@@ -949,20 +899,6 @@ viewSettingsItem { item, label, value, attributes } colorScheme =
         [ text label
         , el [ alignRight, Font.color <| CS.interactInactiveDarkerColor colorScheme ] <| text value
         ]
-
-
-viewTechInfo : Shared.Model -> Model -> Element Msg
-viewTechInfo shared model =
-    el [ width fill ] <|
-        el
-            [ alignRight
-            , Font.size 13
-            , Events.onClick <| SettingsItemShown AppControls
-            ]
-        <|
-            text <|
-                "Zoff Version "
-                    ++ Shared.appVersion
 
 
 viewDialog : Shared.Model -> Model -> Layouts.BaseLayout.Overlay Msg
@@ -1090,6 +1026,12 @@ viewAppInfo shared model =
                 ++ CS.primaryInformation shared.colorScheme
             )
             [ text "N bisschen Zeugs:"
+            , text <|
+                "Zoff Version "
+                    ++ Shared.appVersion
+
+            --     --TODO: Was, wenn noch keine Motivationsdaten vorhanden?
+            --     --      Buttons deaktivieren oder gar nicht anzeigen?
             , Button.new
                 { onPress = OnCopyButton
                 , label = text "Übungsergebnisse kopieren"

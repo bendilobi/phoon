@@ -325,32 +325,43 @@ view props shared route { toContentMsg, model, content } =
                             , height fill
                             , inFront <|
                                 {- Transparent overlay while subPage is shown -}
-                                if shared.subPageShown then
-                                    let
-                                        dragDistance =
-                                            case ( model.swipeInitialX, model.swipeLocationX ) of
-                                                ( Just initialPos, Just currentX ) ->
-                                                    currentX - initialPos
+                                -- if shared.subPageShown then
+                                let
+                                    dragDistance =
+                                        case ( model.swipeInitialX, model.swipeLocationX ) of
+                                            ( Just initialPos, Just currentX ) ->
+                                                currentX - initialPos
 
-                                                ( _, _ ) ->
-                                                    0
-                                    in
-                                    el
-                                        [ width fill
-                                        , height fill
-                                        , BG.color <| rgb 0 0 0
-                                        , alpha <|
-                                            if shared.subPageShown && not model.subPageClosingInProgress then
-                                                0.3 - dragDistance * 0.3 / shared.deviceInfo.window.width
-
-                                            else
+                                            ( _, _ ) ->
                                                 0
-                                        , htmlAttribute <| Transition.properties [ Transition.opacity subPageClosingTime [ Transition.linear ] ]
-                                        ]
-                                        none
+                                in
+                                el
+                                    [ width fill
+                                    , height <|
+                                        if shared.subPageShown then
+                                            fill
 
-                                else
+                                        else
+                                            px 0
+                                    , BG.color <| rgb 0 0 0
+                                    , alpha <|
+                                        if shared.subPageShown && not model.subPageClosingInProgress then
+                                            0.3 - dragDistance * 0.3 / shared.deviceInfo.window.width
+
+                                        else
+                                            0
+                                    , htmlAttribute <|
+                                        case model.swipeInitialX of
+                                            Nothing ->
+                                                Transition.properties [ Transition.opacity subPageClosingTime [ Transition.easeOutExpo ] ]
+
+                                            _ ->
+                                                Html.Attributes.hidden False
+                                    ]
                                     none
+
+                            -- else
+                            --     none
                             ]
                             [ case props.header of
                                 Nothing ->
@@ -558,18 +569,21 @@ viewSubpage shared model subPage toContentMsg =
                     , htmlAttribute <| Swipe.onEnd SwipeEnd
                     ]
                     none
+
+        {- Prevent the page content behind the subPage from being visible when overscrolling: -}
+        , behindContent <| el ([ width fill, height fill ] ++ CS.primaryInformation shared.colorScheme) none
         ]
         [ el
             ([ width fill
-             , height <| px 50
-             , paddingXY 20 0
+             , height <| px 40
+             , paddingXY 20 9
              , inFront <|
                 E.map toContentMsg <|
-                    Input.button [ alignLeft, centerY ]
+                    Input.button [ alignLeft ]
                         { label =
                             row []
                                 [ FeatherIcons.chevronLeft
-                                    |> FeatherIcons.withSize 30
+                                    |> FeatherIcons.withSize 33
                                     |> FeatherIcons.toHtml []
                                     |> html
                                 , text "Zurück"
@@ -580,7 +594,7 @@ viewSubpage shared model subPage toContentMsg =
                 ++ CS.primary
             )
           <|
-            el [ centerX, centerY, Font.bold ] <|
+            el [ centerX, Font.semiBold ] <|
                 text <|
                     Maybe.withDefault "" <|
                         Maybe.map .header subPage
