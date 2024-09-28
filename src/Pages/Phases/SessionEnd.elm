@@ -340,10 +340,8 @@ viewSessionHints : Element msg
 viewSessionHints =
     column
         [ spacing 20
-
-        -- , paddingEach { left = 70, right = 70, top = 50, bottom = 0 }
         , Font.size 15
         ]
         [ bullet <| text "Tippe mit drei Fingern um die Sitzung zu speichern."
-        , bullet <| text "Wenn Du die Sitzung nicht speichern möchtest, wische mit einem Finger, um die Optionen zu zeigen."
+        , bullet <| text "Wenn Du die Sitzung nicht speichern möchtest, wische nach rechts, um die Optionen zu zeigen."
         ]

@@ -445,23 +445,23 @@ viewInfoWindow props shared model toContentMsg =
 
             _ ->
                 none
-        , let
-            { top, bottom, left, right } =
-                SafeArea.paddingEach shared.safeAreaInset
-          in
-          --   paragraph [ paddingXY 0 20, Font.size 15 ]
-          --     [ el [ Font.bold ] <| text "Safe Area: "
-          --     , text "top: "
-          --     , text <| String.fromInt top
-          --     , text ", bottom : "
-          --     , text <| String.fromInt bottom
-          --     , text ", left: "
-          --     , text <| String.fromInt left
-          --     , text ", right: "
-          --     , text <| String.fromInt right
-          --     ]
-          el [ width fill, paddingXY 0 30 ] <| el [ alignRight ] <| text <| String.fromInt bottom
 
+        -- , let
+        --     { top, bottom, left, right } =
+        --         SafeArea.paddingEach shared.safeAreaInset
+        --   in
+        --   paragraph [ paddingXY 0 20, Font.size 15 ]
+        --     [ el [ Font.bold ] <| text "Safe Area: "
+        --     , text "top: "
+        --     , text <| String.fromInt top
+        --     , text ", bottom : "
+        --     , text <| String.fromInt bottom
+        --     , text ", left: "
+        --     , text <| String.fromInt left
+        --     , text ", right: "
+        --     , text <| String.fromInt right
+        --     ]
+        --   el [ width fill, paddingXY 0 30 ] <| el [ alignRight ] <| text <| String.fromInt bottom
         -- , paragraph [ Font.size 15 ]
         --     [ text "SwipeInitial: "
         --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY

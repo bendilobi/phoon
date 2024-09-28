@@ -239,17 +239,6 @@ view shared model =
     }
 
 
-viewSessionHints : Element msg
-viewSessionHints =
-    column
-        [ spacing 20
-        , Font.size 15
-        ]
-        [ bullet <| text "Tippe mit drei Fingern, um mit der Übung zu beginnen"
-        , bullet <| text "Wische mit einem Finger, um Optionen anzuzeigen"
-        ]
-
-
 viewReminder : Shared.Model -> FeatherIcons.Icon -> Element msg
 viewReminder shared icon =
     if shared.previousPath == Route.Path.PrepareSession then
@@ -277,3 +266,19 @@ viewCancelButton shared model =
         , onPress = OnCancelButton
         }
         |> Button.view shared.colorScheme
+
+
+viewSessionHints : Element msg
+viewSessionHints =
+    column
+        [ spacing 20
+        , Font.size 15
+        ]
+        [ paragraph [] [ text """
+        Nimm' eine entspannte Position ein, entweder im Sitzen oder im Liegen. Sorge dafür, dass Du 
+        für die Dauer der Übung ungestört bist und entferne ggf. die Stummschaltung Deines Geräts, um 
+        die Klänge hören zu können.""" ]
+        , bullet <| text "Wische mit einem Finger nach rechts, um Optionen anzuzeigen."
+        , bullet <| text "Tippe mit einem Finger, um ein Glöckchen zu hören (Soundtest)."
+        , bullet <| text "Tippe mit drei Fingern, um mit der Übung zu beginnen."
+        ]

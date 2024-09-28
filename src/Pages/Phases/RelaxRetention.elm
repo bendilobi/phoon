@@ -190,5 +190,5 @@ viewSessionHints =
         [ spacing 20
         , Font.size 15
         ]
-        [ bullet <| text "Halte die Luft an bis der Timer abgelaufen ist und die Glocke klingt"
+        [ bullet <| text "Halte die Luft an, bis der Timer abgelaufen ist und die Glocke erklingt."
         ]

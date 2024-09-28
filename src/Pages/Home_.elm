@@ -349,7 +349,7 @@ viewMotivationInfo shared motData =
                     --      Neustart der App aber nicht mehr? => Wert im Shared.Model ...
                     bullet <|
                         paragraph []
-                            [ text "Du hast gerade Deine längste Serie bisher! Super!!" ]
+                            [ el [ Font.bold ] <| text "Du hast gerade Deine längste Serie bisher! Super!!" ]
 
                   else
                     -- bullet <|
@@ -440,6 +440,7 @@ viewMotivationInfo shared motData =
                                     |> Date.weekday
                                     |> Utils.weekdayToGerman
                                     |> text
+                                    |> el [ Font.bold ]
                                 , if daysUntilStreakEnd > 6 then
                                     text " nächste Woche"
 
