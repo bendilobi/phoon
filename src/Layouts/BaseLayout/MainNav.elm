@@ -481,7 +481,7 @@ viewUpdateResult shared model { color, message, label } =
                 , label = text label
                 , onPress = OnCloseUpdateButton
                 }
-                |> Button.withLightColor
+                -- |> Button.withLightColor
                 |> Button.view shared.colorScheme
             ]
 
@@ -587,7 +587,11 @@ viewSubpage shared model subPage toContentMsg =
                 0 + max dragDistance 0
 
             else
-                shared.deviceInfo.window.width
+                --TODO: Warum wird die Animation beim ersten Anzeigen des Layouts getriggert? Und warum beim
+                --      SessionControls und den Controls offenbar nicht?
+                --      Ich verschiebe hier 15 Pixel weiter, um den Animationseffekt zu verbergen, aber das
+                --      ist nur eine Notlösung...
+                shared.deviceInfo.window.width + 15
         , htmlAttribute <|
             case model.swipeLocationX of
                 {- Suppress animation while swiping -}
