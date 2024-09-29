@@ -147,6 +147,7 @@ viewSessionHints =
         [ spacing 20
         , Font.size 15
         ]
-        [ bullet <| text "Halte die Luft an so lange es geht,"
-        , bullet <| text "dann atme tief ein und tippe mit drei Fingern."
+        [ paragraph [ Font.center, Font.bold ] [ text "Retention" ]
+        , bullet <| text "Halte die Luft an so lange es geht."
+        , bullet <| text "Wenn Du nicht mehr kannst, atme einmal tief ein und tippe mit drei Fingern."
         ]

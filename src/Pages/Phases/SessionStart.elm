@@ -274,7 +274,8 @@ viewSessionHints =
         [ spacing 20
         , Font.size 15
         ]
-        [ paragraph [] [ text """
+        [ paragraph [ Font.center, Font.bold ] [ text "Übungssituation einrichten" ]
+        , paragraph [] [ text """
         Nimm' eine entspannte Position ein, entweder im Sitzen oder im Liegen. Sorge dafür, dass Du 
         für die Dauer der Übung ungestört bist und entferne ggf. die Stummschaltung Deines Geräts, um 
         die Klänge hören zu können.""" ]

@@ -190,5 +190,6 @@ viewSessionHints =
         [ spacing 20
         , Font.size 15
         ]
-        [ bullet <| text "Halte die Luft an, bis der Timer abgelaufen ist und die Glocke erklingt."
+        [ paragraph [ Font.center, Font.bold ] [ text "Entspannungs-Retention" ]
+        , paragraph [ paddingXY 30 0 ] [ text "Halte die Luft an, bis der Timer abgelaufen ist und die Glocke erklingt." ]
         ]

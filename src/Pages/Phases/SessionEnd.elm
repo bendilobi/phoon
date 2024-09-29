@@ -342,6 +342,7 @@ viewSessionHints =
         [ spacing 20
         , Font.size 15
         ]
-        [ bullet <| text "Tippe mit drei Fingern um die Sitzung zu speichern."
+        [ paragraph [ Font.center, Font.bold ] [ text "Übung beenden" ]
+        , bullet <| text "Tippe mit drei Fingern um die Sitzung zu speichern."
         , bullet <| text "Wenn Du die Sitzung nicht speichern möchtest, wische nach rechts, um die Optionen zu zeigen."
         ]

@@ -527,6 +527,14 @@ viewRetentionTrend shared parentPadding =
                             }
                             |> RetentionChart.view
                         )
+                    , paragraph
+                        [ Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
+                        , Font.size 13
+
+                        -- , paddingEach { bottom = 0, top = 0, left = 20, right = 0 }
+                        , paddingXY 20 0
+                        ]
+                        [ text "Verlauf der gemittelten Retentionsdauern pro Sitzung (letzte 30). Die Linie zeigt die bisher längste Retention. " ]
                     ]
 
 

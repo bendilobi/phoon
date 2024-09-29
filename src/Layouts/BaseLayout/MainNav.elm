@@ -460,7 +460,9 @@ viewUpdateResult shared model { color, message, label } =
 
           else
             alpha 1
-        , BG.color <| rgb 1 1 1
+
+        -- , BG.color <| rgb 1 1 1
+        , BG.color <| CS.primaryColors.primary
         , htmlAttribute <|
             Transition.properties
                 [ Transition.opacity updateFadeOutDuration [ Transition.easeInQuint ] -- Transition.easeInQuart ]
@@ -478,7 +480,7 @@ viewUpdateResult shared model { color, message, label } =
                 , label = text label
                 , onPress = OnCloseUpdateButton
                 }
-                |> Button.withLightColor
+                -- |> Button.withLightColor
                 |> Button.view shared.colorScheme
             ]
 

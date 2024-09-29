@@ -315,11 +315,11 @@ viewMotivationInfo shared motData =
                 ]
                 [ row
                     [ width fill ]
-                    [ viewKPI shared.colorScheme "Letzte Serie" <| MotivationData.previousStreak motData
+                    [ viewKPI "Letzte Serie" <| MotivationData.previousStreak motData
                     , el [ width fill ] none
-                    , viewKPI shared.colorScheme "Längste Serie" <| Just <| MotivationData.maxStreak motData
+                    , viewKPI "Längste Serie" <| Just <| MotivationData.maxStreak motData
                     , el [ width fill ] none
-                    , viewKPI shared.colorScheme "Aktuelle Serie" <|
+                    , viewKPI "Aktuelle Serie" <|
                         if streakValid then
                             Just <| MotivationData.streak motData
 
@@ -502,25 +502,27 @@ viewMotivationInfo shared motData =
         }
 
 
-viewKPI : ColorScheme -> String -> Maybe Int -> Element msg
-viewKPI colorScheme caption kpi =
+viewKPI : String -> Maybe Int -> Element msg
+viewKPI caption kpi =
     column
         [ spacing 5
         , Border.rounded 13
-
-        -- , BG.color <| CS.primaryColors.font
-        -- , Font.color <| CS.guideColor colorScheme
         , Border.width 1
         , padding 10
         , width <| px 100
         ]
         [ el [ centerX, Font.size 27, Font.extraBold ] <|
-            text <|
-                case kpi of
-                    Nothing ->
-                        "X"
+            el
+                [--TODO: initial Target für maxStreak und lastStreak speichern und hier anzeigen
+                 -- onRight <| el [ Font.size 11 ] <| text "5"
+                ]
+            <|
+                text <|
+                    case kpi of
+                        Nothing ->
+                            "X"
 
-                    Just n ->
-                        String.fromInt n
+                        Just n ->
+                            String.fromInt n
         , paragraph [ width fill, Font.center, Font.size 11 ] [ text caption ]
         ]
