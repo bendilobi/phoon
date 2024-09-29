@@ -632,7 +632,8 @@ viewSessionHints props shared model =
                  , moveDown <|
                     toFloat sessionHeader.height
                         + min hintsHeight (max dragDistance 0)
-                        + (if props.nudgeSessionHints && dragDistance == 0 then
+                        -- + (if props.nudgeSessionHints && dragDistance == 0 then
+                        + (if props.nudgeSessionHints && model.swipeInitialPosition == Nothing then
                             model.sessionHintsNudge
 
                            else
@@ -651,7 +652,7 @@ viewSessionHints props shared model =
                     el [ centerX, Font.color CS.primaryColors.primary ] <|
                         (FeatherIcons.chevronDown
                             |> FeatherIcons.withSize 40
-                            |> FeatherIcons.withStrokeWidth 1
+                            |> FeatherIcons.withStrokeWidth 1.5
                             |> FeatherIcons.toHtml []
                             |> html
                         )

@@ -581,6 +581,10 @@ viewSubpage shared model subPage toContentMsg =
                             0
             in
             if shared.subPageShown && not model.subPageClosingInProgress then
+                --TODO: Aus irgendeinem Grund wird die Subpage mit "onRight" über allem anderen Content
+                --      dargestellt, auch vor den Dialogen aus BaseLayout...
+                --      Wie kann ich inFront verwenden, ohne das beim ersten Anzeigen die Transition
+                --      getriggert wird?
                 shared.deviceInfo.window.width - max dragDistance 0
 
             else
