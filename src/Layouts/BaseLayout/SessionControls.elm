@@ -112,7 +112,7 @@ init props shared _ =
         [ Effect.setWakeLock
         , Effect.sendCmd <| Task.perform AdjustToday Date.today
         , if props.nudgeSessionHints then
-            Effect.sendCmd <| Delay.after 3000 NudgeSessionHints
+            Effect.sendCmd <| Delay.after 2000 NudgeSessionHints
 
           else
             Effect.none

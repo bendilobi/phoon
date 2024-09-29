@@ -10,7 +10,6 @@ import Element.Font as Font
 import Layouts
 import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData, previousStreak)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea exposing (SafeArea)

@@ -179,7 +179,10 @@ update shared msg model =
             in
             ( model
             , if Time.posixToMillis time - lastHide > 900000 then
-                Effect.navigate NoFade Route.Path.Home_
+                Effect.batch
+                    [ Effect.navigate NoFade Route.Path.Home_
+                    , Effect.reload
+                    ]
 
               else
                 Effect.none
@@ -276,7 +279,7 @@ view props shared route { toContentMsg, model, content } =
     , element =
         case shared.updateState of
             Updating _ ->
-                (el [ width fill, height fill ] <|
+                (el [ width fill, height fill, BG.color <| rgb 1 1 1 ] <|
                     el
                         [ centerX
                         , centerY
@@ -583,7 +586,7 @@ viewSubpage shared model subPage toContentMsg =
             else
                 0
         , htmlAttribute <|
-            case model.swipeInitialX of
+            case model.swipeLocationX of
                 {- Suppress animation while swiping -}
                 Nothing ->
                     Transition.properties [ Transition.transform subPageClosingTime [ Transition.easeOutExpo ] ]

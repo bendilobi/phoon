@@ -1,5 +1,6 @@
 module Layouts.BaseLayout exposing (Model, Msg, Overlay(..), Props, layout, map)
 
+import Browser.Events
 import Effect exposing (Effect)
 import Element as E exposing (..)
 import Element.Background as BG
@@ -9,6 +10,7 @@ import Element.Font as Font
 import Element.Input as Input
 import FeatherIcons
 import Html.Attributes
+import Json.Decode
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SafeArea as SafeArea
@@ -93,11 +95,28 @@ type Msg
     | SwipeStart Swipe.Event
     | Swipe Swipe.Event
     | SwipeEnd Swipe.Event
+      -- | VisibilityChanged Browser.Events.Visibility
+    | CancelSwipe
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
+        -- VisibilityChanged visibility ->
+        --     case visibility of
+        --         Browser.Events.Visible ->
+        --             {- For some strange reason, iOS Safari registers touch events while hidden...
+        --                Here we make sure that these don't have an effect on our InfoWindow:
+        --             -}
+        --             ( { model
+        --                 | swipeGesture = Swipe.blanco
+        --                 , swipeInitialY = Nothing
+        --                 , swipeLocationY = Nothing
+        --               }
+        --             , Effect.none
+        --             )
+        --         _ ->
+        --             ( model, Effect.none )
         OnInfoWindowResize ->
             ( model
             , case shared.infoWindowState of
@@ -186,10 +205,42 @@ update shared msg model =
                 Effect.none
             )
 
+        CancelSwipe ->
+            ( { model
+                | swipeGesture = Swipe.blanco
+                , swipeInitialY = Nothing
+                , swipeLocationY = Nothing
+              }
+            , Effect.none
+            )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    -- Sub.batch
+    --     [ Browser.Events.onVisibilityChange VisibilityChanged
+    --     ,
+    {- Oh the joys of Apples PWA support... So there are these OS-wide swipe gestures in
+       iOS: swipe up from the bottom to close an app window or show it in the opened apps list;
+       swipe down at the bottom of the screen to move the whole content to half the screen (to
+       make it easier to reach things at the top).
+       Unfortunately, when the user does these with our app open, the app receives some touch
+       events: SwipeStart, sometimes Swipe - but no SwipeEnd. If the InfoWindow is shown, this
+       translates accordingly to positional changes as well as deactivating the transition
+       animations. Result: the app seems broken because the InfoWindow stays in an "unnatural"
+       position and is not animated any more...
+       The current workaround (cannot call it a solution) is to
+           1) Have the touch-sensitive area of the InfoWindow not reaching all the way to the
+              bottom. This seems to prevent even very fast "swipe-up"s to not reach our swipe
+              area.
+           2) Have this general onClick handler for the whole screen. In our update function,
+              CancelSwipe resets any swipe information. This cannot prevent the InfoWindow
+              looking weird in case of the "swipe down and up again" iOS gesture, but resolves
+              the issue as soon as the user taps anywhere on the screen.
+        Of course it would be best if iOS didn't send any touch events to a (PWA) app if their
+        swipe actions are triggered...
+    -}
+    Browser.Events.onClick <| Json.Decode.succeed CancelSwipe
 
 
 
@@ -306,7 +357,7 @@ viewInfoWindow props shared model toContentMsg =
         , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
         , height <| px <| round <| shared.deviceInfo.window.height
         , htmlAttribute <|
-            case model.swipeInitialY of
+            case model.swipeLocationY of
                 {- Suppress animation while swiping -}
                 Nothing ->
                     Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
@@ -361,7 +412,8 @@ viewInfoWindow props shared model toContentMsg =
                             maxHeight - safeAreaBottom
 
                         _ ->
-                            halfHeight - safeAreaBottom
+                            -- halfHeight - safeAreaBottom
+                            halfHeight - 200
             in
             column
                 [ width fill
@@ -452,22 +504,28 @@ viewInfoWindow props shared model toContentMsg =
         --     { top, bottom, left, right } =
         --         SafeArea.paddingEach shared.safeAreaInset
         --   in
-        --   paragraph [ paddingXY 0 20, Font.size 15 ]
-        --     [ el [ Font.bold ] <| text "Safe Area: "
-        --     , text "top: "
-        --     , text <| String.fromInt top
-        --     , text ", bottom : "
-        --     , text <| String.fromInt bottom
-        --     , text ", left: "
-        --     , text <| String.fromInt left
-        --     , text ", right: "
-        --     , text <| String.fromInt right
-        --     ]
+        --   --   paragraph [ paddingXY 0 20, Font.size 15 ]
+        --   --     [ el [ Font.bold ] <| text "Safe Area: "
+        --   --     , text "top: "
+        --   --     , text <| String.fromInt top
+        --   --     , text ", bottom : "
+        --   --     , text <| String.fromInt bottom
+        --   --     , text ", left: "
+        --   --     , text <| String.fromInt left
+        --   --     , text ", right: "
+        --   --     , text <| String.fromInt right
+        --   --     ]
         --   el [ width fill, paddingXY 0 30 ] <| el [ alignRight ] <| text <| String.fromInt bottom
-        -- , paragraph [ Font.size 15 ]
-        --     [ text "SwipeInitial: "
+        -- , let
+        --     { bottom } =
+        --         SafeArea.paddingEach shared.safeAreaInset
+        --   in
+        --   paragraph [ Font.size 11, paddingXY 20 30 ]
+        --     [ text "SwipeInitialY: "
         --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY
         --     , text ", CurrentY: "
         --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeLocationY
+        --     , text ", sab: "
+        --     , text <| String.fromInt bottom
         --     ]
         ]
