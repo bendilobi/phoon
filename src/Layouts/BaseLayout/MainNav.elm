@@ -322,7 +322,7 @@ view props shared route { toContentMsg, model, content } =
                     [ el
                         [ width fill
                         , height fill
-                        , onRight <| viewSubpage shared model props.subPage toContentMsg
+                        , inFront <| viewSubpage shared model props.subPage toContentMsg
                         ]
                       <|
                         column
@@ -463,8 +463,6 @@ viewUpdateResult shared model { color, message, label } =
 
           else
             alpha 1
-
-        -- , BG.color <| rgb 1 1 1
         , BG.color <| CS.primaryColors.primary
         , htmlAttribute <|
             Transition.properties
@@ -483,7 +481,7 @@ viewUpdateResult shared model { color, message, label } =
                 , label = text label
                 , onPress = OnCloseUpdateButton
                 }
-                -- |> Button.withLightColor
+                |> Button.withLightColor
                 |> Button.view shared.colorScheme
             ]
 
@@ -570,7 +568,7 @@ viewSubpage shared model subPage toContentMsg =
     column
         [ width <| px <| round shared.deviceInfo.window.width
         , height fill
-        , moveLeft <|
+        , moveRight <|
             let
                 dragDistance =
                     case ( model.swipeInitialX, model.swipeLocationX ) of
@@ -585,10 +583,11 @@ viewSubpage shared model subPage toContentMsg =
                 --      dargestellt, auch vor den Dialogen aus BaseLayout...
                 --      Wie kann ich inFront verwenden, ohne das beim ersten Anzeigen die Transition
                 --      getriggert wird?
-                shared.deviceInfo.window.width - max dragDistance 0
+                -- shared.deviceInfo.window.width - max dragDistance 0
+                0 + max dragDistance 0
 
             else
-                0
+                shared.deviceInfo.window.width
         , htmlAttribute <|
             case model.swipeLocationX of
                 {- Suppress animation while swiping -}
