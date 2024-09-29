@@ -23,6 +23,7 @@ import Route.Path
 import Shared
 import Shared.Model exposing (UpdateState(..))
 import Simple.Transition as Transition
+import String exposing (right)
 import Svg
 import Svg.Attributes
 import Task
@@ -318,7 +319,7 @@ view props shared route { toContentMsg, model, content } =
                     [ el
                         [ width fill
                         , height fill
-                        , inFront <| viewSubpage shared model props.subPage toContentMsg
+                        , onRight <| viewSubpage shared model props.subPage toContentMsg
                         ]
                       <|
                         column
@@ -365,7 +366,7 @@ view props shared route { toContentMsg, model, content } =
                                     none
 
                                 Just headerText ->
-                                    viewHeader headerText props.headerIcon
+                                    viewHeader shared headerText props.headerIcon
                             , el
                                 ([ width fill
                                  , height fill
@@ -416,8 +417,12 @@ view props shared route { toContentMsg, model, content } =
     }
 
 
-viewHeader : String -> Maybe (Element contentMsg) -> Element contentMsg
-viewHeader headerText icon =
+viewHeader : Shared.Model -> String -> Maybe (Element contentMsg) -> Element contentMsg
+viewHeader shared headerText icon =
+    let
+        { right } =
+            SafeArea.paddingEach shared.safeAreaInset
+    in
     el
         ([ width fill
          , Font.center
@@ -429,7 +434,7 @@ viewHeader headerText icon =
             el [ width fill, centerY ] <|
                 el
                     [ alignRight
-                    , paddingEach { bottom = 5, top = 0, left = 0, right = 10 }
+                    , paddingEach { bottom = 5, top = 0, left = 0, right = 10 + right }
                     ]
                 <|
                     Maybe.withDefault none icon
@@ -553,10 +558,14 @@ viewNavButton colorScheme route label icon iconFilled path =
 
 viewSubpage : Shared.Model -> Model -> Maybe (SubPage contentMsg) -> (Msg -> contentMsg) -> Element contentMsg
 viewSubpage shared model subPage toContentMsg =
+    let
+        { left, right, bottom } =
+            SafeArea.paddingEach shared.safeAreaInset
+    in
     column
-        [ width fill
+        [ width <| px <| round shared.deviceInfo.window.width
         , height fill
-        , moveRight <|
+        , moveLeft <|
             let
                 dragDistance =
                     case ( model.swipeInitialX, model.swipeLocationX ) of
@@ -567,10 +576,10 @@ viewSubpage shared model subPage toContentMsg =
                             0
             in
             if shared.subPageShown && not model.subPageClosingInProgress then
-                dragDistance
+                shared.deviceInfo.window.width - max dragDistance 0
 
             else
-                shared.deviceInfo.window.width
+                0
         , htmlAttribute <|
             case model.swipeInitialX of
                 {- Suppress animation while swiping -}
@@ -599,7 +608,7 @@ viewSubpage shared model subPage toContentMsg =
              , paddingXY 20 9
              , inFront <|
                 E.map toContentMsg <|
-                    Input.button [ alignLeft ]
+                    Input.button [ alignLeft, paddingXY left 0 ]
                         { label =
                             row []
                                 [ FeatherIcons.chevronLeft
@@ -622,6 +631,7 @@ viewSubpage shared model subPage toContentMsg =
             [ width fill
             , height fill
             , scrollbarY
+            , paddingEach { left = left, right = right, bottom = bottom, top = 0 }
             ]
           <|
             Maybe.withDefault none <|

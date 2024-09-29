@@ -37,7 +37,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.6.742", False )
+    ( "0.7.18", False )
 
 
 appVersion =
@@ -304,6 +304,7 @@ update route msg model =
             ( { model
                 | previousPath = route.path
                 , fadeIn = fade
+                , subPageShown = False
               }
             , Effect.replaceRoute
                 { path = path

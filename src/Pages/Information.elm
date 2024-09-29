@@ -102,6 +102,7 @@ type DialogShown
     | PracticeTargetWarning
     | DataPasteConfirmation MotivationData
     | DataPasteFailure Decode.Error
+    | DataCopyConfirmation
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
@@ -381,7 +382,15 @@ update shared msg model =
             )
 
         OnCopyButton newState ->
-            ( { model | copyButton = newState }
+            ( { model
+                | copyButton = newState
+                , dialogShown =
+                    if newState == Button.Triggered then
+                        DataCopyConfirmation
+
+                    else
+                        NoDialog
+              }
             , if newState == Button.Triggered then
                 case shared.motivationData of
                     Nothing ->
@@ -1006,6 +1015,21 @@ viewDialog shared model =
                 |> Dialog.view shared.colorScheme
                 |> Layouts.BaseLayout.ModalDialog
 
+        DataCopyConfirmation ->
+            Dialog.new
+                { header = "Kopieren erfolgreich"
+                , screenWidth = shared.deviceInfo.window.width
+                , message = paragraph [] [ text "Deine Übungsergebnisse wurden in die Zwischenablage kopiert und stehen zum Einfügen in anderen Apps zur Verfügung!" ]
+                , choices =
+                    [ Dialog.choice
+                        { label = "Schließen"
+                        , onChoose = OnDialogCancel
+                        }
+                    ]
+                }
+                |> Dialog.view shared.colorScheme
+                |> Layouts.BaseLayout.ModalDialog
+
 
 viewAppInfo :
     Shared.Model
@@ -1017,38 +1041,97 @@ viewAppInfo shared model =
         column
             ([ width fill
              , height fill
-             , spacing 20
+             , Font.size 15
+             , spacing 50
              , padding 30
              ]
                 ++ CS.primaryInformation shared.colorScheme
             )
-            [ text "N bisschen Zeugs:"
-            , text <|
-                "Zoff Version "
-                    ++ Shared.appVersion
+            [ column
+                [ width fill
+                , spacing 10
+                , Font.color <| CS.guideColor shared.colorScheme
+                ]
+                [ el
+                    [ centerX
 
-            --     --TODO: Was, wenn noch keine Motivationsdaten vorhanden?
-            --     --      Buttons deaktivieren oder gar nicht anzeigen?
-            , Button.new
-                { onPress = OnCopyButton
-                , label = text "Übungsergebnisse kopieren"
-                , model = model.copyButton
-                }
-                |> Button.withLightColor
-                |> Button.view shared.colorScheme
-            , Button.new
-                { model = model.pasteButton
-                , label = text "Übungsergebnisse einfügen"
-                , onPress = OnPasteButton
-                }
-                |> Button.withLightColor
-                |> Button.view shared.colorScheme
-            , Button.new
-                { onPress = OnReloadButton
-                , label = text "App neu laden"
-                , model = model.reloadButton
-                }
-                |> Button.withLightColor
-                |> Button.view shared.colorScheme
+                    {- Without the explicit width and height here, Safari doesn't show the
+                       image if clip is applied
+                    -}
+                    , width <| px 100
+                    , height <| px 100
+                    , Border.rounded 27
+                    , clip
+                    ]
+                  <|
+                    image [ width <| px 100 ]
+                        --TODO: Warum wird das Icon unter iOS nicht gezeigt?
+                        { src = "/img/logo/favicon.png"
+                        , description = "Zoff App Logo"
+                        }
+                , el [ height <| px 0 ] none
+                , el
+                    [ Font.size 30
+                    , centerX
+                    , Font.extraBold
+                    ]
+                  <|
+                    text
+                        "Zoff"
+                , el [ centerX, Font.size 17, Font.semiBold ] <| text "Wim Hof Atmung mit dem Hauch von Zen"
+                , el [ centerX, Font.size 14 ] <| text <| "Version " ++ Shared.appVersion
+                ]
+            , column [ spacing 15 ]
+                [ paragraph [] [ text "Diese App wurde mit Hingebung für Dich programmiert von Benno Dielmann." ]
+                , paragraph []
+                    [ text "Hast Du Fragen, Verbesserungsvorschläge, Ideen, Kritik? Schreibe "
+                    , link []
+                        { url = "mailto:mail@benno-dielmann.de?subject=Zoff Feedback"
+                        , label =
+                            el
+                                [ Font.underline
+                                , Font.color <| CS.interactActiveLighterColor shared.colorScheme
+                                ]
+                            <|
+                                text "mir eine E-Mail"
+                        }
+                    , text "!"
+                    ]
+                ]
+            , case shared.motivationData of
+                Nothing ->
+                    none
+
+                _ ->
+                    column
+                        [ width fill
+                        , spacing 20
+                        , padding 15
+                        , Border.rounded 10
+                        , BG.color <| rgb 1 1 1
+                        ]
+                        [ text "Datenmanagement"
+                        , Button.new
+                            { onPress = OnCopyButton
+                            , label = text "Übungsergebnisse kopieren"
+                            , model = model.copyButton
+                            }
+                            |> Button.withLightColor
+                            |> Button.view shared.colorScheme
+                        , Button.new
+                            { model = model.pasteButton
+                            , label = text "Übungsergebnisse importieren"
+                            , onPress = OnPasteButton
+                            }
+                            |> Button.withLightColor
+                            |> Button.view shared.colorScheme
+                        , Button.new
+                            { onPress = OnReloadButton
+                            , label = text "App neu laden"
+                            , model = model.reloadButton
+                            }
+                            |> Button.withLightColor
+                            |> Button.view shared.colorScheme
+                        ]
             ]
     }

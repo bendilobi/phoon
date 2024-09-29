@@ -165,7 +165,7 @@ viewMotivationData shared model motData =
         , Font.size 70
         , moveUp <|
             if shared.deviceInfo.orientation == Portrait then
-                40
+                70
 
             else
                 0
@@ -274,7 +274,7 @@ viewWelcome =
         , centerY
         , Font.center
         , Font.size 25
-        , moveUp 40
+        , moveUp 70
         ]
         [ text <| "Willkommen bei Zoff!!" ]
 
