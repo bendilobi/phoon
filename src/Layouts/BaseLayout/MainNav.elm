@@ -47,10 +47,6 @@ type alias SubPage contentMsg =
     }
 
 
-subPageClosingTime =
-    500
-
-
 layout : Props contentMsg -> Shared.Model -> Route () -> Layout (Layouts.BaseLayout.Props contentMsg) Model Msg contentMsg
 layout props shared route =
     Layout.new
@@ -105,7 +101,6 @@ type alias Model =
     , swipeGesture : Swipe.Gesture
     , swipeInitialX : Maybe Float
     , swipeLocationX : Maybe Float
-    , subPageClosingInProgress : Bool
     }
 
 
@@ -118,7 +113,6 @@ init shared _ =
       , swipeGesture = Swipe.blanco
       , swipeInitialX = Nothing
       , swipeLocationX = Nothing
-      , subPageClosingInProgress = False
       }
     , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
     )
@@ -144,7 +138,6 @@ type Msg
     | Swipe Swipe.Event
     | SwipeEnd Swipe.Event
     | OnSubPageBack
-    | CloseSubPage
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -253,14 +246,7 @@ update shared msg model =
             )
 
         OnSubPageBack ->
-            ( { model | subPageClosingInProgress = True }
-            , Effect.sendCmd <| Delay.after subPageClosingTime CloseSubPage
-            )
-
-        CloseSubPage ->
-            ( { model | subPageClosingInProgress = False }
-            , Effect.toggleSubPage
-            )
+            ( model, Effect.toggleSubPage )
 
 
 subscriptions : Model -> Sub Msg
@@ -349,7 +335,7 @@ view props shared route { toContentMsg, model, content } =
                                             px 0
                                     , BG.color <| rgb 0 0 0
                                     , alpha <|
-                                        if shared.subPageShown && not model.subPageClosingInProgress then
+                                        if shared.subPageShown && not shared.subPageClosingInProgress then
                                             0.3 - dragDistance * 0.3 / shared.deviceInfo.window.width
 
                                         else
@@ -357,7 +343,7 @@ view props shared route { toContentMsg, model, content } =
                                     , htmlAttribute <|
                                         case model.swipeInitialX of
                                             Nothing ->
-                                                Transition.properties [ Transition.opacity subPageClosingTime [ Transition.easeOutExpo ] ]
+                                                Transition.properties [ Transition.opacity Shared.subPageClosingTime [ Transition.easeOutExpo ] ]
 
                                             _ ->
                                                 Html.Attributes.hidden False
@@ -586,7 +572,7 @@ viewSubpage props shared model subPage toContentMsg =
                         ( _, _ ) ->
                             0
             in
-            if shared.subPageShown && not model.subPageClosingInProgress then
+            if shared.subPageShown && not shared.subPageClosingInProgress then
                 0 + max dragDistance 0
 
             else
@@ -595,7 +581,7 @@ viewSubpage props shared model subPage toContentMsg =
             case model.swipeLocationX of
                 {- Suppress animation while swiping -}
                 Nothing ->
-                    Transition.properties [ Transition.transform subPageClosingTime [ Transition.easeOutExpo ] ]
+                    Transition.properties [ Transition.transform Shared.subPageClosingTime [ Transition.easeOutExpo ] ]
 
                 _ ->
                     Html.Attributes.hidden False

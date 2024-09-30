@@ -2,7 +2,7 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
-    , appVersion, showDebugButtons
+    , appVersion, showDebugButtons, subPageClosingTime
     )
 
 {-|
@@ -17,6 +17,7 @@ import Api
 import Browser.Dom
 import Browser.Events
 import Date
+import Delay
 import Dict
 import Effect exposing (Effect)
 import Json.Decode
@@ -37,7 +38,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.7.67", False )
+    ( "0.7.70", False )
 
 
 appVersion =
@@ -46,6 +47,10 @@ appVersion =
 
 showDebugButtons =
     Tuple.second adjustBeforeRelease
+
+
+subPageClosingTime =
+    500
 
 
 
@@ -180,6 +185,7 @@ init flagsResult route =
       , infoWindowState = Shared.Model.Closed
       , sessionHintsHeight = Nothing
       , subPageShown = False
+      , subPageClosingInProgress = False
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here
@@ -415,8 +421,27 @@ update route msg model =
             , Effect.none
             )
 
+        Shared.Msg.PrepareToggleSubPage ->
+            ( { model
+                | subPageClosingInProgress = model.subPageShown
+
+                {- If it's already shown, we don't change that because we do that after the delay
+                   for the Transition animation. If it's closed, we immediately show it:
+                -}
+                , subPageShown = True
+              }
+            , if model.subPageShown then
+                Effect.sendCmd <| Delay.after subPageClosingTime Shared.Msg.OnToggleSubPage
+
+              else
+                Effect.none
+            )
+
         Shared.Msg.OnToggleSubPage ->
-            ( { model | subPageShown = not model.subPageShown }
+            ( { model
+                | subPageShown = not model.subPageShown
+                , subPageClosingInProgress = False
+              }
             , Effect.none
             )
 

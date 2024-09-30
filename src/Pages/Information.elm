@@ -378,7 +378,10 @@ update shared msg model =
 
         OnReplaceMotivationData motData ->
             ( { model | dialogShown = NoDialog }
-            , Effect.setMotivationData <| Just motData
+            , Effect.batch
+                [ Effect.setMotivationData <| Just motData
+                , Effect.toggleSubPage
+                ]
             )
 
         OnCopyButton newState ->

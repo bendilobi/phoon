@@ -45,6 +45,7 @@ type alias Model =
     , infoWindowState : InfoWindowState
     , sessionHintsHeight : Maybe Float
     , subPageShown : Bool
+    , subPageClosingInProgress : Bool
     }
 
 

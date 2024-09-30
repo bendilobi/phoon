@@ -337,7 +337,7 @@ getSessionHintsHeight id =
 
 toggleSubPage : Effect msg
 toggleSubPage =
-    SendSharedMsg Shared.Msg.OnToggleSubPage
+    SendSharedMsg Shared.Msg.PrepareToggleSubPage
 
 
 
