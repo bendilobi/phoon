@@ -164,7 +164,7 @@ viewMotivationData shared model motData =
         , Font.size 70
         , moveUp <|
             if shared.deviceInfo.orientation == Portrait then
-                70
+                60
 
             else
                 0

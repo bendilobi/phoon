@@ -2,7 +2,6 @@ module Pages.Phases.SessionStart exposing (Model, Msg, page)
 
 -- import Lib.Utils exposing (bullet)
 
-import Browser.Dom
 import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Delay
@@ -12,7 +11,6 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import FeatherIcons
-import Html.Attributes
 import Layouts
 import Layouts.BaseLayout
 import Layouts.BaseLayout.SessionControls as SessionControls
@@ -25,8 +23,6 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
 import Shared
-import Shared.Msg
-import Task
 import Time
 import View exposing (View)
 

@@ -322,7 +322,7 @@ view props shared route { toContentMsg, model, content } =
                     [ el
                         [ width fill
                         , height fill
-                        , inFront <| viewSubpage shared model props.subPage toContentMsg
+                        , inFront <| viewSubpage props shared model props.subPage toContentMsg
                         ]
                       <|
                         column
@@ -559,8 +559,8 @@ viewNavButton colorScheme route label icon iconFilled path =
             ]
 
 
-viewSubpage : Shared.Model -> Model -> Maybe (SubPage contentMsg) -> (Msg -> contentMsg) -> Element contentMsg
-viewSubpage shared model subPage toContentMsg =
+viewSubpage : Props contentMsg -> Shared.Model -> Model -> Maybe (SubPage contentMsg) -> (Msg -> contentMsg) -> Element contentMsg
+viewSubpage props shared model subPage toContentMsg =
     let
         { left, right, bottom } =
             SafeArea.paddingEach shared.safeAreaInset
@@ -568,6 +568,14 @@ viewSubpage shared model subPage toContentMsg =
     column
         [ width <| px <| round shared.deviceInfo.window.width
         , height fill
+
+        {- The natural way to render the subPage would be to use "onRight" and then "moveLeft" to show it. Unfortunately,
+           elements that are "onRight" are shown above all other elements, i.e. also above our modal dialogs that are managed
+           by the BaseLayout. So we have to use "inFront" and move the subPage to the right by default. This again triggers
+           the Transition animation which leads to the subPage sliding to the right if the MainNav is initially rendered.
+           Our workaround is to make the subPage invisible as long as there is no content anyway:
+        -}
+        , transparent <| props.subPage == Nothing
         , moveRight <|
             let
                 dragDistance =
@@ -579,19 +587,10 @@ viewSubpage shared model subPage toContentMsg =
                             0
             in
             if shared.subPageShown && not model.subPageClosingInProgress then
-                --TODO: Aus irgendeinem Grund wird die Subpage mit "onRight" über allem anderen Content
-                --      dargestellt, auch vor den Dialogen aus BaseLayout...
-                --      Wie kann ich inFront verwenden, ohne das beim ersten Anzeigen die Transition
-                --      getriggert wird?
-                -- shared.deviceInfo.window.width - max dragDistance 0
                 0 + max dragDistance 0
 
             else
-                --TODO: Warum wird die Animation beim ersten Anzeigen des Layouts getriggert? Und warum beim
-                --      SessionControls und den Controls offenbar nicht?
-                --      Ich verschiebe hier 15 Pixel weiter, um den Animationseffekt zu verbergen, aber das
-                --      ist nur eine Notlösung...
-                shared.deviceInfo.window.width + 15
+                shared.deviceInfo.window.width
         , htmlAttribute <|
             case model.swipeLocationX of
                 {- Suppress animation while swiping -}
