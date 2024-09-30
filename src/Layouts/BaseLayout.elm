@@ -411,8 +411,9 @@ viewInfoWindow props shared model toContentMsg =
                             maxHeight - safeAreaBottom
 
                         _ ->
-                            -- halfHeight - safeAreaBottom
-                            halfHeight - 200
+                            halfHeight - safeAreaBottom
+
+                -- halfHeight - 100
             in
             column
                 [ width fill

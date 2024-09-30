@@ -7,6 +7,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
+import FeatherIcons
 import Layouts
 import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -50,7 +51,7 @@ toLayout shared model =
                 _ ->
                     case shared.motivationData of
                         Nothing ->
-                            viewWelcomeInfo
+                            viewWelcomeInfo shared
 
                         Just motData ->
                             viewMotivationInfo shared motData
@@ -278,8 +279,8 @@ viewWelcome =
         [ text <| "Willkommen bei Zoff!!" ]
 
 
-viewWelcomeInfo : Layouts.BaseLayout.Overlay Msg
-viewWelcomeInfo =
+viewWelcomeInfo : Shared.Model -> Layouts.BaseLayout.Overlay Msg
+viewWelcomeInfo shared =
     Layouts.BaseLayout.InfoWindow
         { header = "Herzlich willkommen bei Zoff"
         , info =
@@ -294,6 +295,19 @@ viewWelcomeInfo =
                                 Die Atemübungen gemacht hast. Und unter "Optimieren" kannst Du festlegen, wie oft pro Woche Du üben willst - so 
                                 kannst Du auch hier und dort mal einen Tag auslassen, ohne Deine Serie zu verlieren!
                                 """ ]
+                , case shared.standalone of
+                    Just False ->
+                        paragraph [ Border.rounded 20, Border.width 1, padding 10 ]
+                            [ text """Diese App ist darauf optimiert, als Standalone-Link auf dem Smartphone-Homebildschirm 
+                            installiert zu werden. Auf dem iPhone musst Du dafür Safari nutzen und im "Teilen"-Menü ("""
+                            , FeatherIcons.share
+                                |> FeatherIcons.toHtml []
+                                |> html
+                            , text """) "Zum Home-Bildschirm" wählen."""
+                            ]
+
+                    _ ->
+                        none
                 ]
         , onClose = DebugInfoToggled
         }
