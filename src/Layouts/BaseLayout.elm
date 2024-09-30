@@ -152,7 +152,7 @@ update shared msg model =
                     Swipe.record event model.swipeGesture
 
                 swipeThreshold =
-                    shared.deviceInfo.window.height / 4
+                    shared.deviceInfo.window.height / 5
 
                 bigSwipeThreshold =
                     shared.deviceInfo.window.height - swipeThreshold
