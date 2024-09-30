@@ -38,7 +38,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.7.77", False )
+    ( "0.7.80", False )
 
 
 appVersion =
@@ -65,12 +65,13 @@ type alias Flags =
     , width : Json.Decode.Value
     , height : Json.Decode.Value
     , browserLang : Json.Decode.Value
+    , standalone : Json.Decode.Value
     }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map7 Flags
+    Json.Decode.map8 Flags
         (Json.Decode.field "storedMotivationData" Json.Decode.value)
         (Json.Decode.field "storedSessionSettings" Json.Decode.value)
         (Json.Decode.field "storedUpdatingState" Json.Decode.value)
@@ -78,6 +79,7 @@ decoder =
         (Json.Decode.field "width" Json.Decode.value)
         (Json.Decode.field "height" Json.Decode.value)
         (Json.Decode.field "browserLang" Json.Decode.value)
+        (Json.Decode.field "standalone" Json.Decode.value)
 
 
 
@@ -101,6 +103,7 @@ init flagsResult route =
                     , width = 0
                     , height = 0
                     , browserLang = Shared.Model.En
+                    , standalone = Nothing
                     }
 
                 Ok data ->
@@ -149,6 +152,9 @@ init flagsResult route =
 
                         browserLangDecoded =
                             Json.Decode.decodeValue (Json.Decode.string |> Json.Decode.andThen decodeBrowserLanguage) data.browserLang
+
+                        standaloneDecoded =
+                            Json.Decode.decodeValue Json.Decode.bool data.standalone
                     in
                     { motData =
                         case motDataDecoded of
@@ -201,6 +207,14 @@ init flagsResult route =
 
                             Ok lang ->
                                 lang
+                    , standalone =
+                        case standaloneDecoded of
+                            Err e ->
+                                -- "Decoding-Fehler von 'standalone': " ++ Json.Decode.errorToString e
+                                Nothing
+
+                            Ok s ->
+                                Just s
                     }
     in
     ( { zone = Time.utc
@@ -224,6 +238,7 @@ init flagsResult route =
       , sessionHintsHeight = Nothing
       , subPageShown = False
       , subPageClosingInProgress = False
+      , standalone = decodedFlags.standalone
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Shared.Msg.AdjustTimeZone Time.here

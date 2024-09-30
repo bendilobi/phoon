@@ -547,7 +547,7 @@ viewNavButton colorScheme route label icon iconFilled path =
 viewSubpage : Props contentMsg -> Shared.Model -> Model -> Maybe (SubPage contentMsg) -> (Msg -> contentMsg) -> Element contentMsg
 viewSubpage props shared model subPage toContentMsg =
     let
-        { left, right, bottom } =
+        { left, right } =
             SafeArea.paddingEach shared.safeAreaInset
     in
     column
@@ -627,7 +627,7 @@ viewSubpage props shared model subPage toContentMsg =
             [ width fill
             , height fill
             , scrollbarY
-            , paddingEach { left = left, right = right, bottom = bottom, top = 0 }
+            , paddingEach { left = left, right = right, bottom = 0, top = 0 }
             ]
           <|
             Maybe.withDefault none <|

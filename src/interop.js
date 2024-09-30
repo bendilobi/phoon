@@ -26,6 +26,9 @@ export const flags = ({ env }) => {
     const lang = navigator.language
     console.log('Language detected: ' + lang)
 
+    const standalone = navigator.standalone
+    console.log('standalone: ' + standalone)
+
     return {
       storedMotivationData: motivationJson,
       storedSessionSettings: sessionSettingsJson,
@@ -33,7 +36,8 @@ export const flags = ({ env }) => {
       safeAreaInsets : sa,
       width : width,
       height : height,
-      browserLang : lang
+      browserLang : lang, 
+      standalone : standalone
     }
   }
 

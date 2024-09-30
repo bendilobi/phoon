@@ -25,6 +25,7 @@ type alias Model =
     { zone : Time.Zone
     , today : Date.Date
     , appLanguage : AppLanguage
+    , standalone : Maybe Bool
     , appVisible : Bool
     , updateState : UpdateState
     , versionOnServer : Api.Data String

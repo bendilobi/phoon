@@ -1134,5 +1134,30 @@ viewAppInfo shared model =
                             |> Button.withLightColor
                             |> Button.view shared.colorScheme
                         ]
+            , column [ Font.size 11, spacing 10 ]
+                [ el [ Font.bold ] <| text "Technische Informationen:"
+                , text <|
+                    "Browser-Sprache: "
+                        ++ (case shared.appLanguage of
+                                Shared.Model.En ->
+                                    "Englisch"
+
+                                Shared.Model.De ->
+                                    "Deutsch"
+                           )
+                , text <|
+                    "Standalone: "
+                        ++ (case shared.standalone of
+                                Nothing ->
+                                    "Kein Wert"
+
+                                Just s ->
+                                    if s then
+                                        "Ja"
+
+                                    else
+                                        "Nein"
+                           )
+                ]
             ]
     }
