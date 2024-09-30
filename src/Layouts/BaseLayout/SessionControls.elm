@@ -632,7 +632,6 @@ viewSessionHints props shared model =
                  , moveDown <|
                     toFloat sessionHeader.height
                         + min hintsHeight (max dragDistance 0)
-                        -- + (if props.nudgeSessionHints && dragDistance == 0 then
                         + (if props.nudgeSessionHints && model.swipeInitialPosition == Nothing then
                             model.sessionHintsNudge
 

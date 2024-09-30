@@ -156,8 +156,6 @@ view shared model =
             el
                 [ Font.size 120
                 , Font.bold
-
-                -- , centerX
                 , Font.center
                 , width fill
                 , centerY

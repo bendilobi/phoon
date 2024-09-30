@@ -353,11 +353,6 @@ viewMotivationInfo shared motData =
                             [ el [ Font.bold ] <| text "Du hast gerade Deine längste Serie bisher! Super!!" ]
 
                   else
-                    -- bullet <|
-                    --     paragraph []
-                    --         [ text "Längste Serie bisher: "
-                    --         , text <| String.fromInt <| MotivationData.maxStreak motData
-                    --         ]
                     none
                 , case MotivationData.previousStreak motData of
                     Nothing ->
@@ -397,27 +392,7 @@ viewMotivationInfo shared motData =
                                         [ text "Du hast Deine letzte Serie eingeholt! Super!!" ]
 
                             else
-                                -- bullet <|
-                                --     paragraph []
-                                --         [ text "Letzte Serie: "
-                                --         , text <| String.fromInt previousStreak
-                                --         ]
                                 none
-
-                -- , bullet <|
-                --     let
-                --         maxRet =
-                --             MotivationData.maxRetention motData
-                --     in
-                --     paragraph []
-                --         [ text "Bisher längste Retention: "
-                --         , text <|
-                --             Millis.toString False maxRet
-                --         , if Millis.toSeconds maxRet < 60 then
-                --             text " Sekunden"
-                --           else
-                --             text " Minuten"
-                --         ]
                 , if streakValid && not (daysSinceLastSession > 0 && remainingFreezes == 0) then
                     let
                         daysUntilStreakEnd =
@@ -432,7 +407,10 @@ viewMotivationInfo shared motData =
                     bullet <|
                         paragraph [] <|
                             if daysUntilStreakEnd == 1 then
-                                [ text "Um die Serie fortzusetzen, übe spätestens morgen wieder!" ]
+                                [ text "Um die Serie fortzusetzen, übe "
+                                , el [ Font.bold ] <| text "spätestens morgen "
+                                , text "wieder!"
+                                ]
 
                             else
                                 [ text "Um die Serie fortzusetzen, übe spätestens am "
@@ -476,26 +454,6 @@ viewMotivationInfo shared motData =
 
                   else
                     none
-
-                -- , bullet <|
-                --     paragraph []
-                --         [ text "Übungsziel: "
-                --         , text <| String.fromInt <| shared.sessionSettings.practiceFrequencyTarget
-                --         ]
-                -- , bullet <|
-                --     paragraph []
-                --         [ text <| "Übungsziel zu Beginn: "
-                --         , text <| initialTarget
-                --         ]
-                -- , bullet <|
-                --     paragraph []
-                --         [ text "Debug-Info: "
-                --         , text "Freezes: "
-                --         , text <|
-                --             String.fromFloat <|
-                --                 MotivationData.streakFreezes motData
-                --         , text ""
-                --         ]
                 ]
         , onClose = DebugInfoToggled
         }

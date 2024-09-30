@@ -276,19 +276,3 @@ view colorScheme (Settings settings) =
                         ++ eventAttributes
                     )
                     settings.label
-
-
-
--- <|
--- text <|
---     case settings.model of
---         Pressed True ->
---             "Pressed & Captured"
---         Pressed False ->
---             "Pressed & Not Cap."
---         Released ->
---             "Released"
---         Cancelled ->
---             "Cancelled"
---         Triggered ->
---             "Triggered"

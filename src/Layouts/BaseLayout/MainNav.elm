@@ -467,7 +467,6 @@ viewUpdateResult shared model { color, message, label } =
                 , label = text label
                 , onPress = OnCloseUpdateButton
                 }
-                -- |> Button.withLightColor
                 |> Button.view shared.colorScheme
             ]
 

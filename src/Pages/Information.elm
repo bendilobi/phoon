@@ -533,8 +533,6 @@ viewRetentionTrend shared parentPadding =
                     , paragraph
                         [ Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
                         , Font.size 13
-
-                        -- , paddingEach { bottom = 0, top = 0, left = 20, right = 0 }
                         , paddingXY 20 0
                         ]
                         [ text "Verlauf der gemittelten Retentionsdauern pro Sitzung (letzte 30). Die Linie zeigt die bisher längste Retention. " ]
@@ -601,13 +599,6 @@ viewSettings shared model =
             , Border.rounded 10
             , BG.color <| CS.settingsColor shared.colorScheme
             , paddingEach { left = hPad, right = 0, top = 0, bottom = 0 }
-
-            --TODO: Hierfür müsste die Height direkt definiert sein -> Kann ich das aus
-            --      den verschiedenen Größen berechnen?
-            -- , htmlAttribute <|
-            --     Transition.properties
-            --         [ Transition.property "height" 1000 [ Transition.easeInOutCirc ] --Transition.easeInOutQuint ] -- Transition.easeInQuart ]
-            --         ]
             ]
 
         activeItemLabel : String -> Element Msg
@@ -1076,7 +1067,6 @@ viewAppInfo shared model =
                     ]
                   <|
                     image [ width <| px 100 ]
-                        --TODO: Warum wird das Icon unter iOS nicht gezeigt?
                         { src = "/img/logo/favicon.png"
                         , description = "Zoff App Logo"
                         }

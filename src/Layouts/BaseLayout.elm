@@ -253,7 +253,6 @@ view props shared { toContentMsg, model, content } =
     , attributes = []
     , element =
         el
-            -- content.attributes
             (CS.primary
                 ++ [ width fill
                    , height fill
