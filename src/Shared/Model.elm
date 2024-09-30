@@ -1,4 +1,4 @@
-module Shared.Model exposing (InfoWindowState(..), Model, UpdateState(..))
+module Shared.Model exposing (AppLanguage(..), InfoWindowState(..), Model, UpdateState(..))
 
 import Api
 import Date
@@ -24,6 +24,7 @@ own file, so they can be imported by `Effect.elm`
 type alias Model =
     { zone : Time.Zone
     , today : Date.Date
+    , appLanguage : AppLanguage
     , appVisible : Bool
     , updateState : UpdateState
     , versionOnServer : Api.Data String
@@ -47,6 +48,11 @@ type alias Model =
     , subPageShown : Bool
     , subPageClosingInProgress : Bool
     }
+
+
+type AppLanguage
+    = En
+    | De
 
 
 type InfoWindowState

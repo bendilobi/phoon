@@ -23,13 +23,17 @@ export const flags = ({ env }) => {
     const width = window.innerWidth
     const height = window.innerHeight
 
+    const lang = navigator.language
+    console.log('Language detected: ' + lang)
+
     return {
       storedMotivationData: motivationJson,
       storedSessionSettings: sessionSettingsJson,
       storedUpdatingState : updatingStateJson,
       safeAreaInsets : sa,
       width : width,
-      height : height
+      height : height,
+      browserLang : lang
     }
   }
 

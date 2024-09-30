@@ -498,6 +498,16 @@ viewInfoWindow props shared model toContentMsg =
 
             _ ->
                 none
+        , el [ padding 20, Font.size 12 ] <|
+            text <|
+                "Browser-Sprache: "
+                    ++ (case shared.appLanguage of
+                            Shared.Model.En ->
+                                "Englisch"
+
+                            Shared.Model.De ->
+                                "Deutsch"
+                       )
 
         -- , let
         --     { top, bottom, left, right } =

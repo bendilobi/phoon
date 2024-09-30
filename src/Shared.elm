@@ -38,7 +38,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.7.72", False )
+    ( "0.7.77", False )
 
 
 appVersion =
@@ -64,18 +64,20 @@ type alias Flags =
     , safeAreaInsets : Json.Decode.Value
     , width : Json.Decode.Value
     , height : Json.Decode.Value
+    , browserLang : Json.Decode.Value
     }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map6 Flags
+    Json.Decode.map7 Flags
         (Json.Decode.field "storedMotivationData" Json.Decode.value)
         (Json.Decode.field "storedSessionSettings" Json.Decode.value)
         (Json.Decode.field "storedUpdatingState" Json.Decode.value)
         (Json.Decode.field "safeAreaInsets" Json.Decode.value)
         (Json.Decode.field "width" Json.Decode.value)
         (Json.Decode.field "height" Json.Decode.value)
+        (Json.Decode.field "browserLang" Json.Decode.value)
 
 
 
@@ -98,6 +100,7 @@ init flagsResult route =
                     , safeAreaInsets = SafeArea.new { top = 0, bottom = 0, left = 0, right = 0 }
                     , width = 0
                     , height = 0
+                    , browserLang = Shared.Model.En
                     }
 
                 Ok data ->
@@ -119,6 +122,33 @@ init flagsResult route =
 
                         heightDecoded =
                             Json.Decode.decodeValue Json.Decode.float data.height
+
+                        --TODO: Language-Sachen in ein eigenes Modul...
+                        decodeBrowserLanguage : String -> Json.Decode.Decoder Shared.Model.AppLanguage
+                        decodeBrowserLanguage string =
+                            let
+                                tag =
+                                    string
+                                        |> String.split "-"
+                                        |> List.head
+                            in
+                            case tag of
+                                Nothing ->
+                                    Json.Decode.fail "Browser language decoding failed."
+
+                                Just t ->
+                                    case t of
+                                        "en" ->
+                                            Json.Decode.succeed Shared.Model.En
+
+                                        "de" ->
+                                            Json.Decode.succeed Shared.Model.De
+
+                                        _ ->
+                                            Json.Decode.succeed Shared.Model.En
+
+                        browserLangDecoded =
+                            Json.Decode.decodeValue (Json.Decode.string |> Json.Decode.andThen decodeBrowserLanguage) data.browserLang
                     in
                     { motData =
                         case motDataDecoded of
@@ -164,10 +194,18 @@ init flagsResult route =
 
                             Ok px ->
                                 px
+                    , browserLang =
+                        case browserLangDecoded of
+                            Err _ ->
+                                Shared.Model.En
+
+                            Ok lang ->
+                                lang
                     }
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
+      , appLanguage = decodedFlags.browserLang
       , appVisible = True
       , updateState = decodedFlags.updateState
       , versionOnServer = Api.Loading

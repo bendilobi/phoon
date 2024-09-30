@@ -54,7 +54,7 @@ toLayout shared model =
         { header = Just "Übung optimieren"
         , headerIcon =
             Just <|
-                Input.button []
+                Input.button [ paddingEach { left = 20, right = 0, top = 0, bottom = 0 } ]
                     { label =
                         FeatherIcons.info
                             |> FeatherIcons.withSize 25
@@ -535,7 +535,7 @@ viewRetentionTrend shared parentPadding =
                         , Font.size 13
                         , paddingXY 20 0
                         ]
-                        [ text "Verlauf der gemittelten Retentionsdauern pro Sitzung (letzte 30). Die Linie zeigt die bisher längste Retention. " ]
+                        [ text "Verlauf der gemittelten Retentionsdauern pro Sitzung (letzte 30). Die Linie oben zeigt die bisher längste Retention. " ]
                     ]
 
 

@@ -293,7 +293,7 @@ update props shared route msg model =
 
                 delay =
                     if model.sessionHintsNudge == toggleSize && model.sessionHintsNudgeToggle then
-                        3000
+                        2000
 
                     else
                         200
