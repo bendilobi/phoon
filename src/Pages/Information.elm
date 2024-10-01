@@ -52,17 +52,7 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.BaseLayout_MainNav
         { header = Just "Übung optimieren"
-        , headerIcon =
-            Just <|
-                Input.button [ paddingEach { left = 20, right = 0, top = 0, bottom = 0 } ]
-                    { label =
-                        FeatherIcons.info
-                            |> FeatherIcons.withSize 25
-                            |> FeatherIcons.withStrokeWidth 1.5
-                            |> FeatherIcons.toHtml []
-                            |> html
-                    , onPress = Just OnToggleAppInfo
-                    }
+        , headerIcon = Just <| Layouts.BaseLayout.MainNav.viewHeaderButton FeatherIcons.info OnToggleAppInfo
         , enableScrolling = True
         , fadeOut = model.fadeOut
         , subPage =
@@ -396,6 +386,7 @@ update shared msg model =
                         NoDialog
               }
             , if newState == Button.Triggered then
+                --TODO: Auch Settings kopieren und einfügen
                 case shared.motivationData of
                     Nothing ->
                         Effect.none

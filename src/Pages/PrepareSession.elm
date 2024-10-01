@@ -8,8 +8,10 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
+import FeatherIcons
 import Layouts
 import Layouts.BaseLayout
+import Layouts.BaseLayout.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Millis as Millis
 import Lib.MotivationData as MotivationData exposing (MotivationData)
@@ -19,6 +21,7 @@ import Lib.SessionResults as SessionResults
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
+import Shared.Model
 import Task
 import Time
 import View exposing (View)
@@ -32,18 +35,29 @@ page shared route =
         , subscriptions = subscriptions shared
         , view = view shared
         }
-        |> Page.withLayout toLayout
+        |> Page.withLayout (toLayout shared)
 
 
-toLayout : Model -> Layouts.Layout Msg
-toLayout model =
+toLayout : Shared.Model -> Model -> Layouts.Layout Msg
+toLayout shared model =
     Layouts.BaseLayout_MainNav
         { header = Just "Sitzung vorbereiten"
-        , headerIcon = Nothing
+        , headerIcon = Just <| Layouts.BaseLayout.MainNav.viewHeaderButton FeatherIcons.alertTriangle OnToggleWarnings
         , enableScrolling = False
         , fadeOut = model.fadeOut
         , subPage = Nothing
-        , overlay = Layouts.BaseLayout.NoOverlay
+
+        -- if shared.subPageShown then
+        --     Just <| viewWarnings shared model
+        -- else
+        --     Nothing
+        , overlay =
+            case shared.infoWindowState of
+                Shared.Model.Closed ->
+                    Layouts.BaseLayout.NoOverlay
+
+                _ ->
+                    viewWarnings
         }
 
 
@@ -56,6 +70,7 @@ type alias Model =
     , startButton : Button.Model
     , cycleCrementer : IntCrementer.Model
     , fadeOut : Fading.Trigger
+    , warningWasShown : Bool
     }
 
 
@@ -65,10 +80,21 @@ init shared () =
       , startButton = Button.init
       , cycleCrementer = IntCrementer.init
       , fadeOut = NoFade
+      , warningWasShown = False
       }
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Tick Time.now
         , Effect.sessionUpdated <| Session.new shared.sessionSettings
+
+        -- , case shared.motivationData of
+        --     Nothing ->
+        --         case shared.updateState of
+        --             Shared.Model.NotUpdating ->
+        --                 Effect.sendMsg OnToggleWarnings
+        --             _ ->
+        --                 Effect.none
+        --     _ ->
+        --         Effect.none
         ]
     )
 
@@ -82,6 +108,7 @@ type Msg
     | OnStartButton Button.Model
     | CycleCountChanged Int IntCrementer.Model
     | ReadyToStartSession
+    | OnToggleWarnings
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -104,22 +131,26 @@ update shared msg model =
             )
 
         OnStartButton newState ->
-            ( { model
-                | startButton = newState
-                , fadeOut =
-                    if newState == Button.Triggered then
-                        FadeWith Fading.sessionFadingColor
+            case newState of
+                Button.Triggered ->
+                    if shared.motivationData == Nothing && not model.warningWasShown then
+                        ( { model
+                            | startButton = newState
+                            , warningWasShown = True
+                          }
+                        , Effect.sendMsg OnToggleWarnings
+                        )
 
                     else
-                        NoFade
-              }
-            , case newState of
-                Button.Triggered ->
-                    Effect.sendCmd <| Delay.after Fading.duration ReadyToStartSession
+                        ( { model
+                            | startButton = newState
+                            , fadeOut = FadeWith Fading.sessionFadingColor
+                          }
+                        , Effect.sendCmd <| Delay.after Fading.duration ReadyToStartSession
+                        )
 
                 _ ->
-                    Effect.none
-            )
+                    ( { model | startButton = newState }, Effect.none )
 
         ReadyToStartSession ->
             ( model
@@ -129,6 +160,16 @@ update shared msg model =
                 , Effect.navigate (FadeWith Fading.sessionFadingColor) <|
                     Session.currentPath shared.session
                 ]
+            )
+
+        OnToggleWarnings ->
+            ( model
+            , case shared.infoWindowState of
+                Shared.Model.Closed ->
+                    Effect.setInfoWindowState Shared.Model.Half
+
+                _ ->
+                    Effect.setInfoWindowState Shared.Model.Closed
             )
 
 
@@ -220,3 +261,12 @@ viewEstimatedTime shared time =
                 |> String.padLeft 2 '0'
     in
     text <| hour ++ ":" ++ minute
+
+
+viewWarnings : Layouts.BaseLayout.Overlay Msg
+viewWarnings =
+    Layouts.BaseLayout.InfoWindow
+        { header = "Warnung"
+        , info = text "Auf KEINEN Fall im Wasser üben!!!"
+        , onClose = OnToggleWarnings
+        }

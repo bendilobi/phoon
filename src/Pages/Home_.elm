@@ -352,10 +352,6 @@ viewMotivationInfo shared motData =
                             ]
 
                   else if diffToMaxStreak == 0 then
-                    --TODO: Besonderen Text, wenn der Serienrekord gerade eingestellt wurde...
-                    --      Dafür muss ich aber die gespeicherten Daten erweitern, oder?
-                    --      Oder doch nur direkt nach der Übung eine Meldung zeigen, beim
-                    --      Neustart der App aber nicht mehr? => Wert im Shared.Model ...
                     bullet <|
                         paragraph []
                             [ el [ Font.bold ] <| text "Du hast gerade Deine längste Serie bisher! Super!!" ]
@@ -391,10 +387,6 @@ viewMotivationInfo shared motData =
                                         ]
 
                             else if diffToPreviousStreak == 0 then
-                                --TODO: Besonderen Text, wenn der Serienrekord gerade eingestellt wurde...
-                                --      Dafür muss ich aber die gespeicherten Daten erweitern, oder?
-                                --      Oder doch nur direkt nach der Übung eine Meldung zeigen, beim
-                                --      Neustart der App aber nicht mehr? => Wert im Shared.Model ...
                                 bullet <|
                                     paragraph []
                                         [ text "Du hast Deine letzte Serie eingeholt! Super!!" ]

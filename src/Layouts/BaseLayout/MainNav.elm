@@ -1,4 +1,4 @@
-module Layouts.BaseLayout.MainNav exposing (Model, Msg, Props, SubPage, layout, map)
+module Layouts.BaseLayout.MainNav exposing (Model, Msg, Props, SubPage, layout, map, viewHeaderButton)
 
 import Browser.Events
 import Components.AnimatedButton as Button
@@ -639,3 +639,19 @@ viewSubpage props shared model subPage toContentMsg =
             Maybe.withDefault none <|
                 Maybe.map .content subPage
         ]
+
+
+{-| To be called from within pages using the Layout for passing the information to the
+layout props
+-}
+viewHeaderButton : FeatherIcons.Icon -> contentMsg -> Element contentMsg
+viewHeaderButton icon onTap =
+    Input.button [ paddingEach { left = 20, right = 0, top = 0, bottom = 0 } ]
+        { label =
+            icon
+                |> FeatherIcons.withSize 25
+                |> FeatherIcons.withStrokeWidth 1.5
+                |> FeatherIcons.toHtml []
+                |> html
+        , onPress = Just onTap
+        }
