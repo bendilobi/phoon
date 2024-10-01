@@ -70,12 +70,12 @@ init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
     ( {}
     , Effect.batch
-        [ Effect.sendCmd <| Task.perform TodayIs Date.today
+        [ Effect.adjustToday
         , case shared.motivationData of
             Nothing ->
                 case shared.updateState of
                     Shared.Model.NotUpdating ->
-                        Effect.sendMsg DebugInfoToggled
+                        Effect.sendMsg InfoWindowToggled
 
                     _ ->
                         Effect.none
@@ -91,8 +91,7 @@ init shared () =
 
 
 type Msg
-    = TodayIs Date.Date
-    | DebugInfoToggled
+    = InfoWindowToggled
 
 
 
@@ -102,12 +101,7 @@ type Msg
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
-        TodayIs date ->
-            ( model
-            , Effect.adjustToday date
-            )
-
-        DebugInfoToggled ->
+        InfoWindowToggled ->
             ( model
             , case shared.infoWindowState of
                 Shared.Model.Closed ->
@@ -140,7 +134,7 @@ view shared model =
         el
             [ width fill
             , height fill
-            , Events.onClick DebugInfoToggled
+            , Events.onClick InfoWindowToggled
             , Font.bold
             ]
         <|
@@ -309,7 +303,7 @@ viewWelcomeInfo shared =
                     _ ->
                         none
                 ]
-        , onClose = DebugInfoToggled
+        , onClose = InfoWindowToggled
         }
 
 
@@ -469,7 +463,7 @@ viewMotivationInfo shared motData =
                   else
                     none
                 ]
-        , onClose = DebugInfoToggled
+        , onClose = InfoWindowToggled
         }
 
 

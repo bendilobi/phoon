@@ -38,7 +38,7 @@ import Time
 
 adjustBeforeRelease =
     -- Make version string in version.json identical!!!
-    ( "0.7.88", False )
+    ( "0.7.89", False )
 
 
 appVersion =
@@ -317,6 +317,11 @@ update route msg model =
             ( { model | zone = newZone }
             , Effect.none
             )
+
+        --TODO: Wie kann ich das ohne diese Extra-Nachricht tun? Also kann man Tasks innerhalb eines
+        --      Effekts ausführen lassen?
+        Shared.Msg.GetToday ->
+            ( model, Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today )
 
         Shared.Msg.AdjustToday today ->
             let

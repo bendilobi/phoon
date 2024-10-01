@@ -381,6 +381,7 @@ update shared msg model =
             , Effect.batch
                 [ Effect.setMotivationData <| Just motData
                 , Effect.toggleSubPage
+                , Effect.adjustToday
                 ]
             )
 

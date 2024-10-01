@@ -110,7 +110,7 @@ init props shared _ =
       }
     , Effect.batch
         [ Effect.setWakeLock
-        , Effect.sendCmd <| Task.perform AdjustToday Date.today
+        , Effect.adjustToday
         , if props.nudgeSessionHints then
             Effect.sendCmd <| Delay.after 2000 NudgeSessionHints
 
@@ -135,7 +135,6 @@ type Msg
     | Swipe Swipe.Event
     | SwipeEnd Swipe.Event
     | ReleaseDebounceBlock
-    | AdjustToday Date.Date
     | ToggleFadeIn Fading.Trigger
     | SessionFadedOut
     | NudgeSessionHints
@@ -263,11 +262,6 @@ update props shared route msg model =
 
         ReleaseDebounceBlock ->
             ( { model | debounceBlock = False }, Effect.none )
-
-        AdjustToday today ->
-            ( model
-            , Effect.adjustToday today
-            )
 
         MouseNavSwipe ->
             ( { model | controlsShown = True }, Effect.none )

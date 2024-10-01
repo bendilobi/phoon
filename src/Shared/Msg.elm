@@ -29,6 +29,7 @@ type Msg
     | ReceivedSafeArea Json.Decode.Value
     | VisibilityChanged Browser.Events.Visibility
     | AdjustTimeZone Time.Zone
+    | GetToday
     | AdjustToday Date.Date
     | SessionUpdated Session
     | CancelSession Session

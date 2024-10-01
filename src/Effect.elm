@@ -259,9 +259,15 @@ setUpdateState updateState =
     SendSharedMsg <| Shared.Msg.SetUpdateState updateState
 
 
-adjustToday : Date.Date -> Effect msg
-adjustToday today =
-    SendSharedMsg <| Shared.Msg.AdjustToday today
+
+-- adjustToday : Date.Date -> Effect msg
+-- adjustToday today =
+--     SendSharedMsg <| Shared.Msg.AdjustToday today
+
+
+adjustToday : Effect msg
+adjustToday =
+    SendSharedMsg <| Shared.Msg.GetToday
 
 
 

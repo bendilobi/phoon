@@ -174,7 +174,13 @@ update shared msg model =
             , if Time.posixToMillis time - lastHide > 900000 then
                 Effect.batch
                     [ Effect.navigate NoFade Route.Path.Home_
-                    , Effect.reload
+
+                    --TODO: Sometimes, reload ends with the app being "bricked", i.e. a white screen
+                    --      with no possibility of interaction. This remedies itself whenever iOS
+                    --      decides to reload the app which seems to happen every few weeks...
+                    --      On the other hand, sometimes iOS forgets how to play sounds which can
+                    --      be resolved by reloading the app...
+                    -- , Effect.reload
                     ]
 
               else
