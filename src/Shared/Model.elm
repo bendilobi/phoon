@@ -1,4 +1,4 @@
-module Shared.Model exposing (AppLanguage(..), InfoWindowState(..), Model, UpdateState(..))
+module Shared.Model exposing (InfoWindowState(..), Model, UpdateState(..))
 
 import Api
 import Date
@@ -9,6 +9,7 @@ import Lib.PageFading as Fading
 import Lib.SafeArea exposing (SafeArea)
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults exposing (SessionResults)
+import Lib.Texts as Texts
 import Lib.Utils as Utils
 import Route.Path
 import Time
@@ -24,7 +25,7 @@ own file, so they can be imported by `Effect.elm`
 type alias Model =
     { zone : Time.Zone
     , today : Date.Date
-    , appLanguage : AppLanguage
+    , appLanguage : Texts.AppLanguage
     , standalone : Maybe Bool
     , appVisible : Bool
     , updateState : UpdateState
@@ -49,11 +50,6 @@ type alias Model =
     , subPageShown : Bool
     , subPageClosingInProgress : Bool
     }
-
-
-type AppLanguage
-    = En
-    | De
 
 
 type InfoWindowState

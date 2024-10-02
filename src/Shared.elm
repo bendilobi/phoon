@@ -27,6 +27,7 @@ import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults exposing (SessionResults)
+import Lib.Texts as Texts
 import Lib.Utils as Utils
 import Route exposing (Route)
 import Route.Path
@@ -39,7 +40,7 @@ import Time
 adjustBeforeRelease =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    ( "0.7.103", False )
+    ( "0.7.105", False )
 
 
 appVersion =
@@ -108,7 +109,7 @@ init flagsResult route =
                     , safeAreaInsets = SafeArea.new { top = 0, bottom = 0, left = 0, right = 0 }
                     , width = 0
                     , height = 0
-                    , browserLang = Shared.Model.En
+                    , browserLang = Texts.En
                     , standalone = Nothing
                     }
 
@@ -133,7 +134,7 @@ init flagsResult route =
                             Json.Decode.decodeValue Json.Decode.float data.height
 
                         --TODO: Language-Sachen in ein eigenes Modul...
-                        decodeBrowserLanguage : String -> Json.Decode.Decoder Shared.Model.AppLanguage
+                        decodeBrowserLanguage : String -> Json.Decode.Decoder Texts.AppLanguage
                         decodeBrowserLanguage string =
                             let
                                 tag =
@@ -148,13 +149,13 @@ init flagsResult route =
                                 Just t ->
                                     case t of
                                         "en" ->
-                                            Json.Decode.succeed Shared.Model.En
+                                            Json.Decode.succeed Texts.En
 
                                         "de" ->
-                                            Json.Decode.succeed Shared.Model.De
+                                            Json.Decode.succeed Texts.De
 
                                         _ ->
-                                            Json.Decode.succeed Shared.Model.En
+                                            Json.Decode.succeed Texts.En
 
                         browserLangDecoded =
                             Json.Decode.decodeValue (Json.Decode.string |> Json.Decode.andThen decodeBrowserLanguage) data.browserLang
@@ -209,7 +210,7 @@ init flagsResult route =
                     , browserLang =
                         case browserLangDecoded of
                             Err _ ->
-                                Shared.Model.En
+                                Texts.En
 
                             Ok lang ->
                                 lang

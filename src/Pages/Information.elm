@@ -29,6 +29,7 @@ import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session exposing (BreathCount, BreathingSpeed, Session)
+import Lib.Texts as Texts
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -1131,10 +1132,10 @@ viewAppInfo shared model =
                 , text <|
                     "Browser-Sprache: "
                         ++ (case shared.appLanguage of
-                                Shared.Model.En ->
+                                Texts.En ->
                                     "Englisch"
 
-                                Shared.Model.De ->
+                                Texts.De ->
                                     "Deutsch"
                            )
                 , text <|

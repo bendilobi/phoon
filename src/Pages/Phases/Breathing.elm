@@ -137,9 +137,10 @@ view shared model =
                     , centerY
                     , Font.size 40
                     , Font.center
+                    , padding 20
                     ]
                 <|
-                    text "Retention \nvorbereiten"
+                    paragraph [] [ text "Retention vorbereiten" ]
 
             else
                 let

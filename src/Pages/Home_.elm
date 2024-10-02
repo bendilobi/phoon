@@ -14,13 +14,13 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData, previousStreak)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea exposing (SafeArea)
+import Lib.Texts as Texts
 import Lib.Utils as Utils exposing (bullet)
 import Maybe
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Shared.Model
-import Task
 import View exposing (View)
 
 
@@ -38,7 +38,7 @@ page shared route =
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.BaseLayout_MainNav
-        { header = Just "Motivation finden"
+        { header = Just <| Texts.motivationHeading shared.appLanguage
         , headerIcon = Nothing
         , enableScrolling = False
         , fadeOut = NoFade
@@ -127,7 +127,7 @@ subscriptions model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Motivation"
+    { title = Texts.motivationHeading shared.appLanguage
     , attributes =
         CS.primaryMotivation shared.colorScheme
     , element =
