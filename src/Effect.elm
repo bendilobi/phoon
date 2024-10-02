@@ -336,9 +336,9 @@ setInfoWindowState state =
     SendSharedMsg <| Shared.Msg.SetInfoWindowState state
 
 
-getSessionHintsHeight : String -> Effect msg
-getSessionHintsHeight id =
-    SendSharedMsg <| Shared.Msg.SessionHintsHeightRequested id
+getSessionHintsHeight : Effect msg
+getSessionHintsHeight =
+    SendSharedMsg <| Shared.Msg.SessionHintsHeightRequested
 
 
 toggleSubPage : Effect msg

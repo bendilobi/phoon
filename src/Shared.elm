@@ -2,7 +2,7 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
-    , appVersion, showDebugButtons, subPageClosingTime
+    , appVersion, sessionHintsID, showDebugButtons, subPageClosingTime
     )
 
 {-|
@@ -39,7 +39,7 @@ import Time
 adjustBeforeRelease =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    ( "0.7.97", False )
+    ( "0.7.103", False )
 
 
 appVersion =
@@ -52,6 +52,11 @@ showDebugButtons =
 
 subPageClosingTime =
     500
+
+
+sessionHintsID : String
+sessionHintsID =
+    "sessionHints"
 
 
 
@@ -267,7 +272,7 @@ update route msg model =
     case msg of
         Shared.Msg.ReceivedViewport { viewport } ->
             ( { model | deviceInfo = Utils.classifyDevice { width = viewport.width, height = viewport.height } }
-            , Effect.none
+            , Effect.getSessionHintsHeight
             )
 
         Shared.Msg.Resized _ _ ->
@@ -463,9 +468,9 @@ update route msg model =
             , Effect.none
             )
 
-        Shared.Msg.SessionHintsHeightRequested id ->
+        Shared.Msg.SessionHintsHeightRequested ->
             ( model
-            , Effect.sendCmd <| Task.attempt Shared.Msg.ReceivedSessionHintsElement <| Browser.Dom.getElement id
+            , Effect.sendCmd <| Task.attempt Shared.Msg.ReceivedSessionHintsElement <| Browser.Dom.getElement sessionHintsID
             )
 
         Shared.Msg.ReceivedSessionHintsElement (Ok { element }) ->

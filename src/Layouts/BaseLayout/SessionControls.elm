@@ -1,6 +1,5 @@
-module Layouts.BaseLayout.SessionControls exposing (Model, Msg(..), Props, layout, map, sessionHintsID)
+module Layouts.BaseLayout.SessionControls exposing (Model, Msg(..), Props, SessionHints, layout, map)
 
-import Date
 import Delay
 import Effect exposing (Effect)
 import Element as E exposing (..)
@@ -20,7 +19,6 @@ import Lib.Swipe as Swipe
 import Route exposing (Route)
 import Shared
 import Simple.Transition as Transition
-import Task
 import View exposing (View)
 
 
@@ -32,9 +30,13 @@ type alias Props contentMsg =
     , overlay : Layouts.BaseLayout.Overlay contentMsg
     , multitouchEffects : List (Effect Msg)
     , singleTapEffects : List (Effect Msg)
-    , sessionHints : Element contentMsg
+    , sessionHints : SessionHints contentMsg
     , nudgeSessionHints : Bool
     }
+
+
+type alias SessionHints contentMsg =
+    { heading : String, content : Element contentMsg }
 
 
 layout : Props contentMsg -> Shared.Model -> Route () -> Layout (Layouts.BaseLayout.Props contentMsg) Model Msg contentMsg
@@ -70,7 +72,7 @@ map fn props =
                     }
     , multitouchEffects = props.multitouchEffects
     , singleTapEffects = props.singleTapEffects
-    , sessionHints = E.map fn props.sessionHints
+    , sessionHints = { heading = props.sessionHints.heading, content = E.map fn props.sessionHints.content }
     , nudgeSessionHints = props.nudgeSessionHints
     }
 
@@ -119,11 +121,6 @@ init props shared _ =
         , Effect.sendCmd <| Fading.initCmd shared.fadeIn ToggleFadeIn
         ]
     )
-
-
-sessionHintsID : String
-sessionHintsID =
-    "sessionHints"
 
 
 
@@ -616,13 +613,16 @@ viewSessionHints props shared model =
 
             else
                 0
+
+        { left, right } =
+            SafeArea.paddingEach shared.safeAreaInset
     in
     el
         [ width fill
         , above <|
             el
                 ([ width fill
-                 , htmlAttribute <| Html.Attributes.id sessionHintsID
+                 , htmlAttribute <| Html.Attributes.id Shared.sessionHintsID
                  , moveDown <|
                     toFloat sessionHeader.height
                         + min hintsHeight (max dragDistance 0)
@@ -640,7 +640,7 @@ viewSessionHints props shared model =
                         _ ->
                             Html.Attributes.hidden False
                  , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 80, bottomRight = 80 }
-                 , paddingEach { top = 15, left = 30, right = 30, bottom = 30 }
+                 , paddingEach { top = 15, left = 30 + left, right = 30 + right, bottom = 30 }
                  , below <|
                     el [ centerX, Font.color CS.primaryColors.primary ] <|
                         (FeatherIcons.chevronDown
@@ -658,6 +658,13 @@ viewSessionHints props shared model =
                     , alignBottom
                     ]
                 <|
-                    props.sessionHints
+                    column
+                        [ spacing 20
+                        , Font.size 15
+                        , centerX
+                        ]
+                        [ paragraph [ Font.center, Font.bold ] [ text props.sessionHints.heading ]
+                        , props.sessionHints.content
+                        ]
         ]
         none

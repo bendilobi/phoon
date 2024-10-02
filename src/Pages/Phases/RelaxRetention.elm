@@ -81,7 +81,7 @@ init () =
       }
     , Effect.batch
         [ Effect.playSound Session.RelaxRetentionSound
-        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
+        , Effect.getSessionHintsHeight
         , Effect.sendMsg <| Tick <| Time.millisToPosix 0
         ]
     )
@@ -182,12 +182,13 @@ viewCancelButton shared model =
         |> Button.view shared.colorScheme
 
 
-viewSessionHints : Element msg
+viewSessionHints : SessionControls.SessionHints msg
 viewSessionHints =
-    column
-        [ spacing 20
-        , Font.size 15
-        ]
-        [ paragraph [ Font.center, Font.bold ] [ text "Entspannungs-Retention" ]
-        , paragraph [ paddingXY 30 0 ] [ text "Halte die Luft an, bis der Timer abgelaufen ist und die Glocke erklingt." ]
-        ]
+    { heading = "Entspannungs-Retention"
+    , content =
+        column
+            [ spacing 20
+            ]
+            [ paragraph [ paddingXY 30 0 ] [ text "Halte die Luft an, bis der Timer abgelaufen ist und die Glocke erklingt." ]
+            ]
+    }

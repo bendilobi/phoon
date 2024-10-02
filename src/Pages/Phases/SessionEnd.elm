@@ -101,7 +101,7 @@ init shared () =
       }
     , Effect.batch
         [ Effect.playSound Session.EndSound
-        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
+        , Effect.getSessionHintsHeight
         , Effect.setMotivationData <|
             MotivationData.update
                 shared.results
@@ -336,13 +336,14 @@ viewControlsBottom shared model =
         ]
 
 
-viewSessionHints : Element msg
+viewSessionHints : SessionControls.SessionHints msg
 viewSessionHints =
-    column
-        [ spacing 20
-        , Font.size 15
-        ]
-        [ paragraph [ Font.center, Font.bold ] [ text "Übung beenden" ]
-        , bullet <| text "Tippe mit drei Fingern um die Sitzung zu speichern."
-        , bullet <| text "Wenn Du die Sitzung nicht speichern möchtest, wische nach rechts, um die Optionen zu zeigen."
-        ]
+    { heading = "Übung beenden"
+    , content =
+        column
+            [ spacing 20
+            ]
+            [ bullet <| text "Tippe mit drei Fingern um die Sitzung zu speichern."
+            , bullet <| text "Wenn Du die Sitzung nicht speichern möchtest, wische nach rechts, um die Optionen zu zeigen."
+            ]
+    }

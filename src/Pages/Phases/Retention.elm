@@ -63,7 +63,7 @@ init shared () =
     ( { cancelButton = Button.init }
     , Effect.batch
         [ Effect.playSound Session.RetentionSound
-        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
+        , Effect.getSessionHintsHeight
         ]
     )
 
@@ -141,13 +141,14 @@ viewCancelButton shared model =
         |> Button.view shared.colorScheme
 
 
-viewSessionHints : Element msg
+viewSessionHints : SessionControls.SessionHints msg
 viewSessionHints =
-    column
-        [ spacing 20
-        , Font.size 15
-        ]
-        [ paragraph [ Font.center, Font.bold ] [ text "Retention" ]
-        , bullet <| text "Halte die Luft an so lange es geht."
-        , bullet <| text "Wenn Du nicht mehr kannst, atme einmal tief ein und tippe mit drei Fingern."
-        ]
+    { heading = "Retention"
+    , content =
+        column
+            [ spacing 20
+            ]
+            [ bullet <| text "Halte die Luft an so lange es geht."
+            , bullet <| text "Wenn Du nicht mehr kannst, atme einmal tief ein und tippe mit drei Fingern."
+            ]
+    }

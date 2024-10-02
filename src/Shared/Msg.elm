@@ -41,7 +41,7 @@ type Msg
     | ReceivedVersionOnServer (Result Http.Error String)
     | SetMotivationData (Maybe MotivationData)
     | SetInfoWindowState Shared.Model.InfoWindowState
-    | SessionHintsHeightRequested String
+    | SessionHintsHeightRequested
     | ReceivedSessionHintsElement (Result Browser.Dom.Error Browser.Dom.Element)
     | PrepareToggleSubPage
     | OnToggleSubPage

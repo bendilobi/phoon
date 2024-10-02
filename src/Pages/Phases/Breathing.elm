@@ -68,7 +68,7 @@ init shared () =
       }
     , Effect.batch
         [ Effect.playSound Session.BreathingSound
-        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
+        , Effect.getSessionHintsHeight
         ]
     )
 
@@ -97,7 +97,7 @@ update shared msg model =
             ( { model | breathingFinished = True }
             , Effect.batch
                 [ Effect.playSound Session.BreathingEndSound
-                , Effect.getSessionHintsHeight SessionControls.sessionHintsID
+                , Effect.getSessionHintsHeight
                 ]
             )
 
@@ -172,24 +172,27 @@ viewCancelButton shared model =
         |> Button.view shared.colorScheme
 
 
-viewSessionHints : Model -> Element msg
+viewSessionHints : Model -> SessionControls.SessionHints msg
 viewSessionHints model =
     if model.breathingFinished then
-        column
-            [ spacing 20
-            , Font.size 15
-            ]
-            [ paragraph [ Font.center, Font.bold ] [ text "Atemphase abschließen" ]
-            , bullet <| text "Atme noch einmal tief ein und lass' dann den Atem los,"
-            , bullet <| text "halte die Luft an,"
-            , bullet <| text "und tippe dann mit drei Fingern um die Retention zu beginnen."
-            ]
+        { heading = "Atemphase abschließen"
+        , content =
+            column
+                [ spacing 20
+                , Font.size 15
+                ]
+                [ bullet <| text "Atme noch einmal tief ein und lass' dann den Atem los,"
+                , bullet <| text "halte die Luft an,"
+                , bullet <| text "und tippe dann mit drei Fingern um die Retention zu beginnen."
+                ]
+        }
 
     else
-        column
-            [ spacing 20
-            , Font.size 15
-            ]
-            [ paragraph [ Font.center, Font.bold ] [ text "Atmen" ]
-            , paragraph [ paddingXY 30 0 ] [ text "Atme tief ein und aus im Rhythmus der Animation, bis die Glocke erklingt." ]
-            ]
+        { heading = "Atmen"
+        , content =
+            column
+                [ spacing 20
+                ]
+                [ paragraph [ paddingXY 30 0 ] [ text "Atme tief ein und aus im Rhythmus der Animation, bis die Glocke erklingt." ]
+                ]
+        }

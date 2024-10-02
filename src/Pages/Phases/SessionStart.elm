@@ -1,7 +1,5 @@
 module Pages.Phases.SessionStart exposing (Model, Msg, page)
 
--- import Lib.Utils exposing (bullet)
-
 import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Delay
@@ -81,7 +79,7 @@ init shared () =
       }
     , Effect.batch
         [ Effect.sendCmd <| Delay.after (Fading.duration + 500) FadeInFinished
-        , Effect.getSessionHintsHeight SessionControls.sessionHintsID
+        , Effect.getSessionHintsHeight
         ]
     )
 
@@ -264,18 +262,18 @@ viewCancelButton shared model =
         |> Button.view shared.colorScheme
 
 
-viewSessionHints : Element msg
+viewSessionHints : SessionControls.SessionHints msg
 viewSessionHints =
-    column
-        [ spacing 20
-        , Font.size 15
-        ]
-        [ paragraph [ Font.center, Font.bold ] [ text "Übungssituation einrichten" ]
-        , paragraph [] [ text """
+    { heading = "Übungssituation einrichten"
+    , content =
+        column
+            [ spacing 20 ]
+            [ paragraph [] [ text """
         Nimm' eine entspannte Position ein, entweder im Sitzen oder im Liegen. Sorge dafür, dass Du 
         für die Dauer der Übung ungestört bist und entferne ggf. die Stummschaltung Deines Geräts, um 
         die Klänge hören zu können.""" ]
-        , bullet <| text "Wische mit einem Finger nach rechts, um Optionen anzuzeigen."
-        , bullet <| text "Tippe mit einem Finger, um ein Glöckchen zu hören (Soundtest)."
-        , bullet <| text "Tippe mit drei Fingern, um mit der Übung zu beginnen."
-        ]
+            , bullet <| text "Wische mit einem Finger nach rechts, um Optionen anzuzeigen."
+            , bullet <| text "Tippe mit einem Finger, um ein Glöckchen zu hören (Soundtest)."
+            , bullet <| text "Tippe mit drei Fingern, um mit der Übung zu beginnen."
+            ]
+    }
