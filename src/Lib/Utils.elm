@@ -1,4 +1,4 @@
-module Lib.Utils exposing (Device, animatedColumn, animatedEl, bullet, classifyDevice, colorToHex)
+module Lib.Utils exposing (Device, animatedColumn, animatedEl, classifyDevice, colorToHex)
 
 import Color
 import Color.Convert
@@ -56,24 +56,6 @@ colorToHex color =
         |> toRgb
         |> Color.fromRgba
         |> Color.Convert.colorToHex
-
-
-bullet : Element msg -> Element msg
-bullet content =
-    row [ spacing 8, paddingXY 20 0 ]
-        [ el [ alignTop, Font.bold ] <| text "•"
-        , paragraph
-            [ Font.alignLeft
-
-            --- This is a bugfix for (it seems) a bug in elm-ui...
-            --- See https://github.com/mdgriffith/elm-ui/issues/124
-            --- Without this, the button that is overlayed on swipe in the
-            --- SessionControls is not clickable at first, only on the second
-            --- tap...
-            -- , htmlAttribute <| Html.Attributes.style "pointer-events" "none"
-            ]
-            [ content ]
-        ]
 
 
 

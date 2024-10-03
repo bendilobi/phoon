@@ -19,7 +19,7 @@ import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults exposing (SessionResults)
-import Lib.Utils exposing (bullet)
+import Lib.Texts as Texts
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -47,16 +47,16 @@ toLayout shared model =
         , overlay =
             if model.confirmDialogShown then
                 Dialog.new
-                    { header = "Retentionsdaten verwerfen?"
+                    { header = Texts.discardRetentionData shared.appLanguage
                     , screenWidth = shared.deviceInfo.window.width
-                    , message = paragraph [] [ text "Retentionsdaten aus dieser Sitzung wirklich verwerfen?" ]
+                    , message = paragraph [] [ text <| Texts.discardRetMessage shared.appLanguage ]
                     , choices =
                         [ Dialog.choice
-                            { label = "Verwerfen"
+                            { label = Texts.discard shared.appLanguage
                             , onChoose = OnConfirmButton
                             }
                         , Dialog.choice
-                            { label = "Behalten"
+                            { label = Texts.keep shared.appLanguage
                             , onChoose = OnDialogCancel
                             }
                         ]
@@ -71,7 +71,7 @@ toLayout shared model =
             , Effect.navigateNext shared.session
             ]
         , singleTapEffects = []
-        , sessionHints = viewSessionHints
+        , sessionHints = viewSessionHints shared
         , nudgeSessionHints = False
         }
 
@@ -207,7 +207,7 @@ subscriptions model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Session End"
+    { title = Texts.endSession shared.appLanguage
     , attributes =
         CS.phaseSessionEnd shared.colorScheme
     , element =
@@ -223,11 +223,12 @@ view shared model =
                 , Font.size 40
                 ]
              <|
-                text "Sitzung beendet!"
+                text <|
+                    Texts.sessionEnded shared.appLanguage
             )
                 :: (case ( SessionResults.getRetentionTimes shared.results, SessionResults.meanRetentionTime shared.results ) of
                         ( Just times, Just meanTime ) ->
-                            [ viewRetentionTimes times meanTime
+                            [ viewRetentionTimes shared times meanTime
                             , case shared.motivationData of
                                 Nothing ->
                                     none
@@ -250,7 +251,7 @@ view shared model =
                                 , paddingXY 30 0
                                 , Font.size 15
                                 ]
-                                [ text "Mittlere Retentionsdauern der letzten Übungen (max 30)" ]
+                                [ text <| Texts.retTrentCaption shared.appLanguage ]
                             ]
 
                         ( _, _ ) ->
@@ -259,8 +260,9 @@ view shared model =
     }
 
 
-viewRetentionTimes : List Int -> Int -> Element msg
-viewRetentionTimes times meanTime =
+viewRetentionTimes : Shared.Model -> List Int -> Int -> Element msg
+viewRetentionTimes shared times meanTime =
+    --TODO: Layout überarbeiten: Paragraph verwenden?
     column
         [ spacing 10
         , centerX
@@ -270,7 +272,7 @@ viewRetentionTimes times meanTime =
         List.map2
             (\i t ->
                 row [ width fill ]
-                    [ el [ width fill ] <| text <| "Runde " ++ String.fromInt i ++ ": "
+                    [ el [ width fill ] <| text <| Texts.cycles3 shared.appLanguage i
                     , el [ Font.bold ] <| text <| formatRetentionTime t
                     ]
             )
@@ -281,7 +283,7 @@ viewRetentionTimes times meanTime =
                     , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
                     , paddingXY 0 7
                     ]
-                    [ el [ width fill ] <| text "Durchschnitt: "
+                    [ el [ width fill ] <| text <| Texts.mean shared.appLanguage ++ " "
                     , el
                         [ Font.bold
                         ]
@@ -305,7 +307,7 @@ viewAddCycleButton : Shared.Model -> Model -> Element Msg
 viewAddCycleButton shared model =
     Button.new
         { model = model.addCycleButton
-        , label = text "Noch 'ne Runde"
+        , label = text <| Texts.oneMoreCycle shared.appLanguage
         , onPress = OnAddCycleButton
         }
         |> Button.withLightColor
@@ -317,7 +319,7 @@ viewControlsBottom shared model =
     if SessionResults.finishedCycles shared.results > 0 then
         [ Button.new
             { model = model.discardButton
-            , label = text "Sitzung verwerfen"
+            , label = text <| Texts.discardSession shared.appLanguage
             , onPress = OnDiscardButton
             }
             |> Button.withTransparent
@@ -328,7 +330,7 @@ viewControlsBottom shared model =
     else
         [ Button.new
             { model = model.cancelButton
-            , label = text "Beenden"
+            , label = text <| Texts.finish shared.appLanguage
             , onPress = OnCancelButton
             }
             |> Button.withLightColor
@@ -336,14 +338,13 @@ viewControlsBottom shared model =
         ]
 
 
-viewSessionHints : SessionControls.SessionHints msg
-viewSessionHints =
-    { heading = "Übung beenden"
+viewSessionHints : Shared.Model -> SessionControls.SessionHints msg
+viewSessionHints shared =
+    { heading = Texts.endSession shared.appLanguage
     , content =
         column
             [ spacing 20
             ]
-            [ bullet <| text "Tippe mit drei Fingern um die Sitzung zu speichern."
-            , bullet <| text "Wenn Du die Sitzung nicht speichern möchtest, wische nach rechts, um die Optionen zu zeigen."
-            ]
+        <|
+            Texts.sessionEndHints shared.appLanguage
     }

@@ -34,6 +34,7 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Shared.Model exposing (UpdateState(..))
+import String.Format
 import Time
 import View exposing (View)
 
@@ -52,7 +53,7 @@ page shared route =
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.BaseLayout_MainNav
-        { header = Just "Übung optimieren"
+        { header = Just <| Texts.optimizePractice shared.appLanguage
         , headerIcon = Just <| Layouts.BaseLayout.MainNav.viewHeaderButton FeatherIcons.info OnToggleAppInfo
         , enableScrolling = True
         , fadeOut = model.fadeOut
@@ -467,7 +468,7 @@ subscriptions shared model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Information"
+    { title = Texts.optimizePractice shared.appLanguage
     , attributes =
         CS.primaryInformation shared.colorScheme
     , element =
@@ -510,7 +511,8 @@ viewRetentionTrend shared parentPadding =
                         , Font.color <| CS.guideColor shared.colorScheme
                         ]
                       <|
-                        text "Retentionstrend"
+                        text <|
+                            Texts.retentionTrend shared.appLanguage
                     , el [ centerX ] <|
                         (RetentionChart.new
                             { width = (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2) - parentPadding
@@ -528,7 +530,7 @@ viewRetentionTrend shared parentPadding =
                         , Font.size 13
                         , paddingXY 20 0
                         ]
-                        [ text "Verlauf der gemittelten Retentionsdauern pro Sitzung (letzte 30). Die Linie oben zeigt die bisher längste Retention. " ]
+                        [ text <| Texts.retTrentCaption shared.appLanguage ]
                     ]
 
 
@@ -547,14 +549,14 @@ viewUpdate shared model =
                 ]
                 [ paragraph [ width fill, Font.center ]
                     [ text <|
-                        "Ein Update ist verfügbar von Version "
-                            ++ Shared.appVersion
-                            ++ " auf "
-                            ++ versionOnServer
+                        (Texts.updateAvailable shared.appLanguage
+                            |> String.Format.namedValue "currentVersion" Shared.appVersion
+                            |> String.Format.namedValue "newestVersion" versionOnServer
+                        )
                     ]
                 , Button.new
                     { model = model.updateButton
-                    , label = text "Update jetzt laden"
+                    , label = text <| Texts.updateNow shared.appLanguage
                     , onPress = OnUpdateButton
                     }
                     |> Button.withLightColor
@@ -613,12 +615,13 @@ viewSettings shared model =
                 , Font.color <| CS.guideColor shared.colorScheme
                 ]
               <|
-                text "Übung anpassen"
+                text <|
+                    Texts.customizeExercise shared.appLanguage
             , el [ width fill ] none
             , el [ alignBottom ] <|
                 (Button.new
                     { onPress = OnResetSettingsButton
-                    , label = text "Zurücksetzen"
+                    , label = text <| Texts.reset shared.appLanguage
                     , model = model.resetSettingsButton
                     }
                     |> Button.withInline
@@ -630,21 +633,16 @@ viewSettings shared model =
             [ if model.settingsItemShown == Cycles then
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
-                        [ activeItemLabel "Gesamtablauf"
+                        [ activeItemLabel <| Texts.overallSequence shared.appLanguage
                         , IntCrementer.new
                             { label =
                                 \n ->
-                                    paragraph []
-                                        [ el
+                                    paragraph [] <|
+                                        Texts.cycles shared.appLanguage
+                                            n
                                             [ Font.bold
                                             , Font.color <| CS.guideColor shared.colorScheme
                                             ]
-                                          <|
-                                            text <|
-                                                String.fromInt n
-                                        , text " Runde"
-                                        , el [ transparent <| n == 1 ] <| text "n"
-                                        ]
                             , onCrement = DefaultCyclesChanged
                             , model = model.cycleCrementer
                             }
@@ -655,18 +653,10 @@ viewSettings shared model =
                         ]
 
               else
-                let
-                    cycleString =
-                        if shared.sessionSettings.cycles == 1 then
-                            " Runde"
-
-                        else
-                            " Runden"
-                in
                 viewSettingsItem
                     { attributes = lastItemAttrs
-                    , label = "Gesamtablauf"
-                    , value = (shared.sessionSettings.cycles |> String.fromInt) ++ cycleString
+                    , label = Texts.overallSequence shared.appLanguage
+                    , value = Texts.cycles2 shared.appLanguage shared.sessionSettings.cycles
                     , item = Cycles
                     }
                     shared.colorScheme
@@ -676,7 +666,7 @@ viewSettings shared model =
             [ if model.settingsItemShown == BreathingSpeed then
                 el itemAttrs <|
                     column [ width fill, spacing 20 ]
-                        [ activeItemLabel "Atemgeschwindigkeit"
+                        [ activeItemLabel <| Texts.breathingSpeed shared.appLanguage
                         , el [ centerX ] <|
                             (Bubble.new
                                 { model = model.bubble
@@ -688,7 +678,7 @@ viewSettings shared model =
                             )
                         , RadioGroup.new
                             { choices = Session.breathingSpeeds
-                            , toString = Session.breathingSpeedDE
+                            , toString = Texts.breathingSpeeds shared.appLanguage
                             , onSelect = DefaultBreathingSpeedChanged
                             }
                             |> RadioGroup.withSelected shared.sessionSettings.breathingSpeed
@@ -698,8 +688,8 @@ viewSettings shared model =
 
               else
                 viewSettingsItem
-                    { label = "Atemgeschwindigkeit"
-                    , value = Session.breathingSpeedDE shared.sessionSettings.breathingSpeed
+                    { label = Texts.breathingSpeed shared.appLanguage
+                    , value = Texts.breathingSpeeds shared.appLanguage shared.sessionSettings.breathingSpeed
                     , attributes = itemAttrs
                     , item = BreathingSpeed
                     }
@@ -707,7 +697,7 @@ viewSettings shared model =
             , if model.settingsItemShown == BreathCount then
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
-                        [ activeItemLabel "Atemzüge"
+                        [ activeItemLabel <| Texts.breaths shared.appLanguage
                         , RadioGroup.new
                             { choices = Session.breathCountChoices
                             , toString = Session.breathCountInt >> String.fromInt
@@ -720,7 +710,7 @@ viewSettings shared model =
 
               else
                 viewSettingsItem
-                    { label = "Atemzüge"
+                    { label = Texts.breaths shared.appLanguage
                     , value = shared.sessionSettings.breathCount |> Session.breathCountInt |> String.fromInt
                     , attributes = lastItemAttrs
                     , item = BreathCount
@@ -737,25 +727,13 @@ viewSettings shared model =
             , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
             , Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
             ]
-            [ text "Dauer der Atemphase: "
-            , el
-                [ Font.color <| CS.guideColor shared.colorScheme
-                , Font.bold
-                ]
-              <|
-                text <|
-                    Millis.toString False millis
-            , if Millis.toSeconds millis < 60 then
-                text " Sekunden"
-
-              else
-                text " Minuten"
-            ]
+          <|
+            Texts.breathingDuration shared.appLanguage millis [ Font.color <| CS.guideColor shared.colorScheme ]
         , column settingsAttrs
             [ if model.settingsItemShown == RelaxRetDuration then
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
-                        [ activeItemLabel "Erholungsretention"
+                        [ activeItemLabel <| Texts.relaxRetention shared.appLanguage
                         , IntCrementer.new
                             { label =
                                 \n ->
@@ -772,7 +750,7 @@ viewSettings shared model =
                                           <|
                                             text <|
                                                 String.fromInt n
-                                        , text " Sekunden"
+                                        , text <| " " ++ Texts.seconds shared.appLanguage
                                         ]
                             , onCrement = DefaultRelaxRetDurationChanged
                             , model = model.relaxRetDurCrementer
@@ -789,13 +767,14 @@ viewSettings shared model =
 
               else
                 viewSettingsItem
-                    { label = "Erholungsretention"
+                    { label = Texts.relaxRetention shared.appLanguage
                     , value =
                         (shared.sessionSettings.relaxRetDuration
                             |> Millis.toSeconds
                             |> String.fromInt
                         )
-                            ++ " Sekunden"
+                            ++ " "
+                            ++ Texts.seconds shared.appLanguage
                     , attributes = lastItemAttrs
                     , item = RelaxRetDuration
                     }
@@ -810,41 +789,19 @@ viewSettings shared model =
                             |> Maybe.withDefault []
                         )
           in
-          paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ]
-            [ text "Geschätzte Gesamtdauer der Übung: "
-            , el
-                [ Font.color <| CS.guideColor shared.colorScheme
-                , Font.bold
-                ]
-              <|
-                text <|
-                    Millis.toString False duration
-            , text <|
-                if Millis.toMinutes duration < 60 then
-                    " Minuten"
-
-                else
-                    " Stunden"
-            ]
+          paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ] <|
+            Texts.estimatedDuration shared.appLanguage duration [ Font.color <| CS.guideColor shared.colorScheme ]
         , el [ height <| px 15 ] none
         , column settingsAttrs
             [ if model.settingsItemShown == PracticeFrequencyTarget then
                 el lastItemAttrs <|
                     column [ width fill, spacing 20 ]
-                        [ activeItemLabel "Übungsziel"
+                        [ activeItemLabel <| Texts.practiceGoal shared.appLanguage
                         , IntCrementer.new
                             { label =
                                 \n ->
-                                    paragraph []
-                                        [ el
-                                            [ Font.bold
-                                            , Font.color <| CS.guideColor shared.colorScheme
-                                            ]
-                                          <|
-                                            text <|
-                                                String.fromInt n
-                                        , text " mal pro Woche"
-                                        ]
+                                    paragraph [] <|
+                                        Texts.timesPerWeek shared.appLanguage n [ Font.color <| CS.guideColor shared.colorScheme ]
                             , onCrement = PracticeFreqTargetChanged
                             , model = model.practiceFreqCrementer
                             }
@@ -860,12 +817,13 @@ viewSettings shared model =
 
               else
                 viewSettingsItem
-                    { label = "Übungsziel"
+                    { label = Texts.practiceGoal shared.appLanguage
                     , value =
                         (shared.sessionSettings.practiceFrequencyTarget
                             |> String.fromInt
                         )
-                            ++ " mal pro Woche"
+                            ++ " "
+                            ++ Texts.timesPerWeek2 shared.appLanguage
                     , attributes = lastItemAttrs
                     , item = PracticeFrequencyTarget
                     }
@@ -877,7 +835,7 @@ viewSettings shared model =
             , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
             , Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
             ]
-            [ text "Das Übungsziel bestimmt, wie häufig \"Schutzringe\" für die Fortsetzung der Serie hinzukommen. \"4 mal pro Woche\" bedeutet beispielsweise, dass für vier Übungen drei Ringe hinzukommen. Es können also drei von sieben Tagen freigenommen werden."
+            [ text <| Texts.practiceGoalCaption shared.appLanguage
             ]
         ]
 
@@ -917,21 +875,23 @@ viewDialog shared model =
                         |> String.fromInt
             in
             Dialog.new
-                { header = "Serie beenden?"
+                { header = Texts.endStreak shared.appLanguage
                 , screenWidth = shared.deviceInfo.window.width
                 , message =
                     paragraph []
-                        [ text "Wenn Du das Übungsziel niedriger ansetzt als zu Beginn der Serie ("
-                        , text initialFrequency
-                        , text " Tage pro Woche), beginnt die Serie mit der nächsten Übung neu!"
+                        [ Texts.endStreakMessage shared.appLanguage
+                            |> String.Format.value initialFrequency
+                            |> text
                         ]
                 , choices =
                     [ Dialog.choice
-                        { label = "Serie beenden"
+                        { label = Texts.endStreak2 shared.appLanguage
                         , onChoose = OnDialogRestartStreak True
                         }
                     , Dialog.choice
-                        { label = "Ziel auf " ++ initialFrequency ++ " lassen"
+                        { label =
+                            Texts.leaveGoalAt shared.appLanguage
+                                |> String.Format.value initialFrequency
                         , onChoose = OnDialogRestartStreak False
                         }
                     ]
@@ -941,7 +901,7 @@ viewDialog shared model =
 
         DataPasteConfirmation motData ->
             Dialog.new
-                { header = "Daten importieren?"
+                { header = Texts.importData shared.appLanguage
                 , screenWidth = shared.deviceInfo.window.width
                 , message =
                     column
@@ -957,7 +917,7 @@ viewDialog shared model =
 
                           else
                             column [ width fill, spacing 10 ]
-                                [ el [ centerX ] <| text "Retentionstrend:"
+                                [ el [ centerX ] <| text <| Texts.retentionTrend shared.appLanguage ++ ":"
                                 , column [ centerX ]
                                     [ el [ centerX ] <|
                                         (RetentionChart.new
@@ -983,11 +943,11 @@ viewDialog shared model =
                         ]
                 , choices =
                     [ Dialog.choice
-                        { label = "Importieren"
+                        { label = Texts.imp shared.appLanguage
                         , onChoose = OnReplaceMotivationData motData
                         }
                     , Dialog.choice
-                        { label = "Verwerfen"
+                        { label = Texts.discard shared.appLanguage
                         , onChoose = OnDialogCancel
                         }
                     ]
@@ -997,12 +957,12 @@ viewDialog shared model =
 
         DataPasteFailure error ->
             Dialog.new
-                { header = "Einfügen nicht möglich"
+                { header = Texts.pasteImpossible shared.appLanguage
                 , screenWidth = shared.deviceInfo.window.width
-                , message = paragraph [] [ text "Das scheinen leider keine validen Ergebnisdaten zu sein..." ]
+                , message = paragraph [] [ text <| Texts.pasteImpossibleMessage shared.appLanguage ]
                 , choices =
                     [ Dialog.choice
-                        { label = "Schließen"
+                        { label = Texts.close shared.appLanguage
                         , onChoose = OnDialogCancel
                         }
                     ]
@@ -1012,12 +972,12 @@ viewDialog shared model =
 
         DataCopyConfirmation ->
             Dialog.new
-                { header = "Kopieren erfolgreich"
+                { header = Texts.copySuccessful shared.appLanguage
                 , screenWidth = shared.deviceInfo.window.width
-                , message = paragraph [] [ text "Deine Übungsergebnisse wurden in die Zwischenablage kopiert und stehen zum Einfügen in anderen Apps zur Verfügung!" ]
+                , message = paragraph [] [ text <| Texts.copySuccessfulMessage shared.appLanguage ]
                 , choices =
                     [ Dialog.choice
-                        { label = "Schließen"
+                        { label = Texts.close shared.appLanguage
                         , onChoose = OnDialogCancel
                         }
                     ]
@@ -1031,7 +991,7 @@ viewAppInfo :
     -> Model
     -> Layouts.BaseLayout.MainNav.SubPage Msg
 viewAppInfo shared model =
-    { header = "App Info"
+    { header = Texts.appInfo shared.appLanguage
     , content =
         column
             ([ width fill
@@ -1061,7 +1021,7 @@ viewAppInfo shared model =
                   <|
                     image [ width <| px 100 ]
                         { src = "/img/logo/favicon.png"
-                        , description = "Zoff App Logo"
+                        , description = "{{ }} App Logo" |> String.Format.value Texts.appName
                         }
                 , el [ height <| px 0 ] none
                 , el
@@ -1070,28 +1030,35 @@ viewAppInfo shared model =
                     , Font.extraBold
                     ]
                   <|
-                    text
-                        "Zoff"
-                , el [ centerX, Font.size 17, Font.semiBold ] <| text "Wim Hof Atmung mit dem Hauch von Zen"
-                , el [ centerX, Font.size 14 ] <| text <| "Version " ++ Shared.appVersion
+                    text <|
+                        Texts.appName
+                , el [ centerX, Font.size 17, Font.semiBold ] <| text <| Texts.appSlogan shared.appLanguage
+                , el [ centerX, Font.size 14 ] <|
+                    text <|
+                        (Texts.version shared.appLanguage
+                            |> String.Format.value Shared.appVersion
+                        )
                 ]
             , column [ spacing 15 ]
-                [ paragraph [] [ text "Diese App wurde mit Hingebung für Dich programmiert von Benno Dielmann." ]
-                , paragraph []
-                    [ text "Hast Du Fragen, Verbesserungsvorschläge, Ideen, Kritik? Schreibe "
-                    , link []
-                        { url = "mailto:mail@benno-dielmann.de?subject=Zoff Feedback"
-                        , label =
-                            el
-                                [ Font.underline
-                                , Font.color <| CS.interactActiveLighterColor shared.colorScheme
-                                ]
-                            <|
-                                text "mir eine E-Mail"
-                        }
-                    , text "!"
-                    ]
-                ]
+                (Texts.authorAndContact shared.appLanguage
+                    ++ [ link []
+                            { url =
+                                "mailto:mail@benno-dielmann.de?subject={{ }} Feedback"
+                                    |> String.Format.value Texts.appName
+                            , label =
+                                el
+                                    [ Font.underline
+                                    , Font.color <| CS.interactActiveLighterColor shared.colorScheme
+                                    ]
+                                <|
+                                    (FeatherIcons.mail
+                                        |> FeatherIcons.toHtml []
+                                        |> html
+                                        |> el [ padding 5 ]
+                                    )
+                            }
+                       ]
+                )
             , case shared.motivationData of
                 Nothing ->
                     none
@@ -1104,53 +1071,51 @@ viewAppInfo shared model =
                         , Border.rounded 10
                         , BG.color <| rgb 1 1 1
                         ]
-                        [ text "Datenmanagement"
+                        [ text <| Texts.dataManagement shared.appLanguage
                         , Button.new
                             { onPress = OnCopyButton
-                            , label = text "Übungsergebnisse kopieren"
+                            , label = text <| Texts.copyResults shared.appLanguage
                             , model = model.copyButton
                             }
                             |> Button.withLightColor
                             |> Button.view shared.colorScheme
                         , Button.new
                             { model = model.pasteButton
-                            , label = text "Übungsergebnisse importieren"
+                            , label = text <| Texts.importResults shared.appLanguage
                             , onPress = OnPasteButton
                             }
                             |> Button.withLightColor
                             |> Button.view shared.colorScheme
                         , Button.new
                             { onPress = OnReloadButton
-                            , label = text "App neu laden"
+                            , label = text <| Texts.reloadApp shared.appLanguage
                             , model = model.reloadButton
                             }
                             |> Button.withLightColor
                             |> Button.view shared.colorScheme
                         ]
-            , column [ Font.size 11, spacing 10 ]
-                [ el [ Font.bold ] <| text "Technische Informationen:"
-                , text <|
-                    "Browser-Sprache: "
-                        ++ (case shared.appLanguage of
-                                Texts.En ->
-                                    "Englisch"
 
-                                Texts.De ->
-                                    "Deutsch"
-                           )
-                , text <|
-                    "Standalone: "
-                        ++ (case shared.standalone of
-                                Nothing ->
-                                    "Kein Wert"
-
-                                Just s ->
-                                    if s then
-                                        "Ja"
-
-                                    else
-                                        "Nein"
-                           )
-                ]
+            -- , column [ Font.size 11, spacing 10 ]
+            --     [ el [ Font.bold ] <| text "Technische Informationen:"
+            --     , text <|
+            --         "Browser-Sprache: "
+            --             ++ (case shared.appLanguage of
+            --                     Texts.En ->
+            --                         "Englisch"
+            --                     Texts.De ->
+            --                         "Deutsch"
+            --                )
+            --     , text <|
+            --         "Standalone: "
+            --             ++ (case shared.standalone of
+            --                     Nothing ->
+            --                         "Kein Wert"
+            --                     Just s ->
+            --                         if s then
+            --                             "Ja"
+            --                         else
+            --                             "Nein"
+            --                )
+            --     ]
             ]
     }

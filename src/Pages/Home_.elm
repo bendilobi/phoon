@@ -14,8 +14,7 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData, previousStreak)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea exposing (SafeArea)
-import Lib.Texts as Texts
-import Lib.Utils as Utils exposing (bullet)
+import Lib.Texts as Texts exposing (bullet, bulletParagraph)
 import Maybe
 import Page exposing (Page)
 import Route exposing (Route)
@@ -288,7 +287,7 @@ viewWelcomeInfo shared =
         { header = Texts.welcome2 shared.appLanguage
         , info =
             column [ spacing 25 ]
-                [ paragraph [] [ text <| Texts.introduction shared.appLanguage ]
+                [ paragraph [] <| Texts.introduction shared.appLanguage
                 , case shared.standalone of
                     Just False ->
                         paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
@@ -343,18 +342,13 @@ viewMotivationInfo shared motData =
                               )
                   in
                   if diffToMaxStreak < 4 && diffToMaxStreak > 0 then
-                    bullet <|
-                        paragraph []
-                            [ text <|
-                                (Texts.practiceUntilLongest shared.appLanguage
-                                    |> String.Format.value (diffToMaxStreak |> String.fromInt)
-                                )
-                            ]
+                    bullet
+                        (Texts.practiceUntilLongest shared.appLanguage
+                            |> String.Format.value (diffToMaxStreak |> String.fromInt)
+                        )
 
                   else if diffToMaxStreak == 0 then
-                    bullet <|
-                        paragraph []
-                            [ el [ Font.bold ] <| text <| Texts.caughtUpLongest shared.appLanguage ]
+                    bullet <| Texts.caughtUpLongest shared.appLanguage
 
                   else
                     none
@@ -379,18 +373,13 @@ viewMotivationInfo shared motData =
                                           )
                             in
                             if diffToPreviousStreak < 4 && diffToPreviousStreak > 0 then
-                                bullet <|
-                                    paragraph []
-                                        [ text <|
-                                            (Texts.practiceUntilLast shared.appLanguage
-                                                |> String.Format.value (diffToPreviousStreak |> String.fromInt)
-                                            )
-                                        ]
+                                bullet
+                                    (Texts.practiceUntilLast shared.appLanguage
+                                        |> String.Format.value (diffToPreviousStreak |> String.fromInt)
+                                    )
 
                             else if diffToPreviousStreak == 0 then
-                                bullet <|
-                                    paragraph []
-                                        [ text <| Texts.caughtUpLast shared.appLanguage ]
+                                bullet <| Texts.caughtUpLast shared.appLanguage
 
                             else
                                 none
@@ -405,18 +394,17 @@ viewMotivationInfo shared motData =
                                     0
                                   )
                     in
-                    bullet <|
-                        paragraph [] <|
-                            if daysUntilStreakEnd == 1 then
-                                Texts.practiceTomorrow shared.appLanguage
+                    bulletParagraph <|
+                        if daysUntilStreakEnd == 1 then
+                            Texts.practiceTomorrow shared.appLanguage
 
-                            else
-                                Texts.practiceUntilWeekday shared.appLanguage
-                                    (shared.today
-                                        |> Date.add Date.Days daysUntilStreakEnd
-                                        |> Date.weekday
-                                    )
-                                    (daysUntilStreakEnd > 6)
+                        else
+                            Texts.practiceUntilWeekday shared.appLanguage
+                                (shared.today
+                                    |> Date.add Date.Days daysUntilStreakEnd
+                                    |> Date.weekday
+                                )
+                                (daysUntilStreakEnd > 6)
 
                   else
                     none
@@ -425,17 +413,12 @@ viewMotivationInfo shared motData =
                         none
 
                     Just sessions ->
-                        bullet <|
-                            paragraph []
-                                [ text <| Texts.nextRingAfter shared.appLanguage sessions
-                                ]
+                        bullet <| Texts.nextRingAfter shared.appLanguage sessions
                 , if streakValid && daysSinceLastSession > 1 then
-                    bullet <|
-                        paragraph []
-                            [ Texts.lastPracticeWas shared.appLanguage
-                                |> String.Format.value (String.fromInt daysSinceLastSession)
-                                |> text
-                            ]
+                    bullet
+                        (Texts.lastPracticeWas shared.appLanguage
+                            |> String.Format.value (String.fromInt daysSinceLastSession)
+                        )
 
                   else
                     none

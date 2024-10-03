@@ -14,7 +14,7 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
-import Lib.Utils exposing (bullet)
+import Lib.Texts as Texts
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -43,7 +43,7 @@ toLayout shared model =
         , overlay = Layouts.BaseLayout.NoOverlay
         , multitouchEffects = [ Effect.navigateNext shared.session ]
         , singleTapEffects = []
-        , sessionHints = viewSessionHints model
+        , sessionHints = viewSessionHints shared model
         , nudgeSessionHints = False
         }
 
@@ -126,7 +126,7 @@ subscriptions shared model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Atem-Phase"
+    { title = Texts.breathing shared.appLanguage
     , attributes =
         CS.phaseBreathing shared.colorScheme
     , element =
@@ -140,7 +140,7 @@ view shared model =
                     , padding 20
                     ]
                 <|
-                    paragraph [] [ text "Retention vorbereiten" ]
+                    paragraph [] [ text <| Texts.prepareRetention shared.appLanguage ]
 
             else
                 let
@@ -167,33 +167,32 @@ viewCancelButton : Shared.Model -> Model -> Element Msg
 viewCancelButton shared model =
     Button.new
         { model = model.cancelButton
-        , label = text "Sitzung abbrechen"
+        , label = text <| Texts.cancelSession shared.appLanguage
         , onPress = OnCancelButton
         }
         |> Button.view shared.colorScheme
 
 
-viewSessionHints : Model -> SessionControls.SessionHints msg
-viewSessionHints model =
+viewSessionHints : Shared.Model -> Model -> SessionControls.SessionHints msg
+viewSessionHints shared model =
     if model.breathingFinished then
-        { heading = "Atemphase abschließen"
+        { heading = Texts.prepareRetention shared.appLanguage
         , content =
             column
                 [ spacing 20
-                , Font.size 15
+
+                -- , Font.size 15
                 ]
-                [ bullet <| text "Atme noch einmal tief ein und lass' dann den Atem los,"
-                , bullet <| text "halte die Luft an,"
-                , bullet <| text "und tippe dann mit drei Fingern um die Retention zu beginnen."
-                ]
+            <|
+                Texts.breathingEndHints shared.appLanguage
         }
 
     else
-        { heading = "Atmen"
+        { heading = Texts.breathing shared.appLanguage
         , content =
             column
                 [ spacing 20
                 ]
-                [ paragraph [ paddingXY 30 0 ] [ text "Atme tief ein und aus im Rhythmus der Animation, bis die Glocke erklingt." ]
-                ]
+            <|
+                Texts.breathingHints shared.appLanguage
         }

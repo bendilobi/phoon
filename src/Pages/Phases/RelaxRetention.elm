@@ -13,7 +13,7 @@ import Lib.Millis as Millis
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
-import Lib.Utils exposing (bullet)
+import Lib.Texts as Texts
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -42,7 +42,7 @@ toLayout shared model =
         , overlay = Layouts.BaseLayout.NoOverlay
         , multitouchEffects = [ Effect.navigateNext shared.session ]
         , singleTapEffects = []
-        , sessionHints = viewSessionHints
+        , sessionHints = viewSessionHints shared
         , nudgeSessionHints = False
         }
 
@@ -148,7 +148,7 @@ subscriptions model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Relax Retention Phase"
+    { title = Texts.relaxRetention shared.appLanguage
     , attributes =
         CS.phaseRelaxRetention shared.colorScheme
     , element =
@@ -175,20 +175,20 @@ viewCancelButton : Shared.Model -> Model -> Element Msg
 viewCancelButton shared model =
     Button.new
         { model = model.cancelButton
-        , label = text "Sitzung abbrechen"
+        , label = text <| Texts.cancelSession shared.appLanguage
         , onPress = OnCancelButton
         }
         |> Button.withLightColor
         |> Button.view shared.colorScheme
 
 
-viewSessionHints : SessionControls.SessionHints msg
-viewSessionHints =
-    { heading = "Entspannungs-Retention"
+viewSessionHints : Shared.Model -> SessionControls.SessionHints msg
+viewSessionHints shared =
+    { heading = Texts.relaxRetention shared.appLanguage
     , content =
         column
             [ spacing 20
             ]
-            [ paragraph [ paddingXY 30 0 ] [ text "Halte die Luft an, bis der Timer abgelaufen ist und die Glocke erklingt." ]
-            ]
+        <|
+            Texts.relaxretHints shared.appLanguage
     }

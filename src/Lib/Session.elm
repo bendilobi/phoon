@@ -9,7 +9,7 @@ module Lib.Session exposing
     , breathCount
     , breathCountChoices
     , breathCountInt
-    , breathingSpeedDE
+      -- , breathingSpeedDE
     , breathingSpeeds
     , currentPath
     , currentPhase
@@ -65,30 +65,25 @@ breathingSpeeds =
     [ Slow, Medium, Fast ]
 
 
-breathingSpeedDE : BreathingSpeed -> String
-breathingSpeedDE speed =
-    case speed of
-        Slow ->
-            "Langsam"
 
-        Medium ->
-            "Mittel"
-
-        Fast ->
-            "Schnell"
-
-
-breathingSpeedEN : BreathingSpeed -> String
-breathingSpeedEN speed =
-    case speed of
-        Slow ->
-            "Slow"
-
-        Medium ->
-            "Medium"
-
-        Fast ->
-            "Fast"
+-- breathingSpeedDE : BreathingSpeed -> String
+-- breathingSpeedDE speed =
+--     case speed of
+--         Slow ->
+--             "Langsam"
+--         Medium ->
+--             "Mittel"
+--         Fast ->
+--             "Schnell"
+-- breathingSpeedEN : BreathingSpeed -> String
+-- breathingSpeedEN speed =
+--     case speed of
+--         Slow ->
+--             "Slow"
+--         Medium ->
+--             "Medium"
+--         Fast ->
+--             "Fast"
 
 
 type BreathCount

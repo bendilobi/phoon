@@ -550,6 +550,9 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
                     ]
                     none
                 ]
+
+        { left, right } =
+            SafeArea.paddingEach shared.safeAreaInset
     in
     column
         [ width fill
@@ -567,7 +570,7 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
             (row
                 [ width fill
                 , height fill
-                , paddingEach { left = 30, right = 15, top = sessionHeader.padTop, bottom = sessionHeader.padBot }
+                , paddingEach { left = 30 + left, right = 15 + right, top = sessionHeader.padTop, bottom = sessionHeader.padBot }
                 ]
              <|
                 (List.map

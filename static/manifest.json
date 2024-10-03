@@ -1,8 +1,8 @@
 {
-  "short_name": "Zoff",
-  "name": "Zoff - WHM with a flavor of Zen",
+  "short_name": "Poon",
+  "name": "Poon - Wim Hof breathwork with a flavor of Zen",
   "description": "A web app for practicing Wim Hof breathing",
-  "id": "zoff",
+  "id": "poon",
   "icons": [
     {
       "src": "./img/logo/favicon.png",

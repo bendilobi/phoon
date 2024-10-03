@@ -192,7 +192,7 @@ view shared model =
                 [ IntCrementer.new
                     { label =
                         \n ->
-                            row [] <| Texts.cycles shared.appLanguage n
+                            row [] <| Texts.cycles shared.appLanguage n [ Font.bold ]
                     , onCrement = CycleCountChanged
                     , model = model.cycleCrementer
                     }

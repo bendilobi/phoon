@@ -13,7 +13,7 @@ import Lib.Millis as Millis
 import Lib.PageFading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
-import Lib.Utils exposing (bullet)
+import Lib.Texts as Texts
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -45,7 +45,7 @@ toLayout shared model =
             , Effect.navigateNext shared.session
             ]
         , singleTapEffects = []
-        , sessionHints = viewSessionHints
+        , sessionHints = viewSessionHints shared
         , nudgeSessionHints = False
         }
 
@@ -111,7 +111,7 @@ subscriptions model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Retentions-Phase"
+    { title = Texts.retention shared.appLanguage
     , attributes =
         CS.phaseRetention shared.colorScheme
     , element =
@@ -134,21 +134,20 @@ viewCancelButton : Shared.Model -> Model -> Element Msg
 viewCancelButton shared model =
     Button.new
         { model = model.cancelButton
-        , label = text "Sitzung abbrechen"
+        , label = text <| Texts.cancelSession shared.appLanguage
         , onPress = OnCancelButton
         }
         |> Button.withLightColor
         |> Button.view shared.colorScheme
 
 
-viewSessionHints : SessionControls.SessionHints msg
-viewSessionHints =
-    { heading = "Retention"
+viewSessionHints : Shared.Model -> SessionControls.SessionHints msg
+viewSessionHints shared =
+    { heading = Texts.retention shared.appLanguage
     , content =
         column
             [ spacing 20
             ]
-            [ bullet <| text "Halte die Luft an so lange es geht."
-            , bullet <| text "Wenn Du nicht mehr kannst, atme einmal tief ein und tippe mit drei Fingern."
-            ]
+        <|
+            Texts.retentionHints shared.appLanguage
     }

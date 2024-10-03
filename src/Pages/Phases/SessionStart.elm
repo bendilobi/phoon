@@ -16,7 +16,7 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
-import Lib.Utils exposing (bullet)
+import Lib.Texts as Texts
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
@@ -46,7 +46,7 @@ toLayout shared model =
         , overlay = Layouts.BaseLayout.NoOverlay
         , multitouchEffects = [ Effect.navigateNext shared.session ]
         , singleTapEffects = [ Effect.playSound Session.StartSound ]
-        , sessionHints = viewSessionHints
+        , sessionHints = viewSessionHints shared
         , nudgeSessionHints = shared.previousPath == Route.Path.PrepareSession
         }
 
@@ -168,7 +168,7 @@ subscriptions shared model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Preparation Phase"
+    { title = Texts.practiceSetup shared.appLanguage
     , attributes =
         CS.phaseSessionStart shared.colorScheme
     , element =
@@ -253,27 +253,20 @@ viewReminder shared icon =
 
 viewCancelButton : Shared.Model -> Model -> Element Msg
 viewCancelButton shared model =
-    --TODO: Texte zwischen den verschiedenen CancelButtons auf den Phasen-Seiten synchronisieren
     Button.new
         { model = model.cancelButton
-        , label = text "Sitzung abbrechen"
+        , label = text <| Texts.cancelSession shared.appLanguage
         , onPress = OnCancelButton
         }
         |> Button.view shared.colorScheme
 
 
-viewSessionHints : SessionControls.SessionHints msg
-viewSessionHints =
-    { heading = "Übungssituation einrichten"
+viewSessionHints : Shared.Model -> SessionControls.SessionHints msg
+viewSessionHints shared =
+    { heading = Texts.practiceSetup shared.appLanguage
     , content =
         column
             [ spacing 20 ]
-            [ paragraph [] [ text """
-        Nimm' eine entspannte Position ein, entweder im Sitzen oder im Liegen. Sorge dafür, dass Du 
-        für die Dauer der Übung ungestört bist und entferne ggf. die Stummschaltung Deines Geräts, um 
-        die Klänge hören zu können.""" ]
-            , bullet <| text "Wische mit einem Finger nach rechts, um Optionen anzuzeigen."
-            , bullet <| text "Tippe mit einem Finger, um ein Glöckchen zu hören (Soundtest)."
-            , bullet <| text "Tippe mit drei Fingern, um mit der Übung zu beginnen."
-            ]
+        <|
+            Texts.sessionStartHints shared.appLanguage
     }
