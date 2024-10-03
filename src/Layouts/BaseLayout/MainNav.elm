@@ -18,12 +18,14 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Swipe as Swipe
+import Lib.Texts as Texts
 import Route exposing (Route)
 import Route.Path
 import Shared
 import Shared.Model exposing (UpdateState(..))
 import Simple.Transition as Transition
 import String exposing (right)
+import String.Format
 import Svg
 import Svg.Attributes
 import Task
@@ -279,7 +281,7 @@ view props shared route { toContentMsg, model, content } =
                         ]
                     <|
                         text <|
-                            "Aktualisiere..."
+                            Texts.updating shared.appLanguage
                 )
                     |> E.map toContentMsg
 
@@ -294,8 +296,10 @@ view props shared route { toContentMsg, model, content } =
                                 viewUpdateResult shared
                                     model
                                     { color = CS.successColor shared.colorScheme
-                                    , message = "Update auf Version " ++ Shared.appVersion ++ " erfolgreich!"
-                                    , label = "Fertig"
+                                    , message =
+                                        Texts.updateSuccessfull shared.appLanguage
+                                            |> String.Format.value Shared.appVersion
+                                    , label = Texts.done shared.appLanguage
                                     }
                                     |> E.map toContentMsg
 
@@ -304,7 +308,7 @@ view props shared route { toContentMsg, model, content } =
                                     model
                                     { color = CS.actionNeededColor shared.colorScheme
                                     , message = errorMessage
-                                    , label = "Später versuchen"
+                                    , label = Texts.tryLater shared.appLanguage
                                     }
                                     |> E.map toContentMsg
 
@@ -511,11 +515,11 @@ viewNavBar shared route =
         in
         --- Elements with zero width to make elm-ui space them correctly...
         [ el [ width <| px 0 ] none
-        , viewButton "Motivieren" FeatherIcons.thumbsUp thumbsUpFilled Route.Path.Home_
+        , viewButton (Texts.motivate shared.appLanguage) FeatherIcons.thumbsUp thumbsUpFilled Route.Path.Home_
         , el [ width <| px 0 ] none
-        , viewButton "Praktizieren" FeatherIcons.play playFilled Route.Path.PrepareSession
+        , viewButton (Texts.practice shared.appLanguage) FeatherIcons.play playFilled Route.Path.PrepareSession
         , el [ width <| px 0 ] none
-        , viewButton "Optimieren" FeatherIcons.user userFilled Route.Path.Information
+        , viewButton (Texts.optimize shared.appLanguage) FeatherIcons.user userFilled Route.Path.Information
         , el [ width <| px 0 ] none
         ]
 
@@ -617,7 +621,7 @@ viewSubpage props shared model subPage toContentMsg =
                                     |> FeatherIcons.withSize 33
                                     |> FeatherIcons.toHtml []
                                     |> html
-                                , text "Zurück"
+                                , text <| Texts.back shared.appLanguage
                                 ]
                         , onPress = Just OnSubPageBack
                         }

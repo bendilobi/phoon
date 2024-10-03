@@ -21,6 +21,7 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Shared.Model
+import String.Format
 import View exposing (View)
 
 
@@ -140,7 +141,7 @@ view shared model =
         <|
             case shared.motivationData of
                 Nothing ->
-                    viewWelcome
+                    viewWelcome shared
 
                 Just motData ->
                     viewMotivationData shared model motData
@@ -170,20 +171,28 @@ viewMotivationData shared model motData =
                 , Font.center
                 , paddingXY 20 30
                 ]
-                [ if not streakValid then
-                    if daysSinceLastSession - 1 == 1 then
-                        text <| "Tage seit letzter Übung"
+            <|
+                if not streakValid then
+                    -- if daysSinceLastSession - 1 == 1 then
+                    --     text <| "Tage seit letzter Übung"
+                    -- else
+                    --     text <| "Tage seit letzter Übung... Auf geht's!"
+                    [ text <| Texts.daysSinceLastPractice shared.appLanguage daysSinceLastSession
+                    , text <|
+                        if daysSinceLastSession - 1 == 1 then
+                            ""
 
-                    else
-                        text <| "Tage seit letzter Übung... Auf geht's!"
+                        else
+                            "..."
+                                ++ Texts.letsGo shared.appLanguage
+                    ]
 
-                  else if remainingFreezes == 0 && daysSinceLastSession > 0 && MotivationData.streak motData > 1 then
+                else if remainingFreezes == 0 && daysSinceLastSession > 0 && MotivationData.streak motData > 1 then
                     -- Last freeze will be used up if no practice today
-                    text <| "Praktiziere noch heute, um Deine Serie fortzusetzen!"
+                    [ text <| Texts.practiceToday shared.appLanguage ]
 
-                  else
-                    none
-                ]
+                else
+                    []
         ]
     <|
         if streakValid then
@@ -261,8 +270,8 @@ viewStreak colorScheme size freezes freezeInDanger streak =
     List.foldl viewRing viewStreakNumber ringSizes
 
 
-viewWelcome : Element msg
-viewWelcome =
+viewWelcome : Shared.Model -> Element msg
+viewWelcome shared =
     paragraph
         [ width fill
         , centerY
@@ -270,38 +279,28 @@ viewWelcome =
         , Font.size 25
         , moveUp 70
         ]
-        [ text <| "Willkommen bei Zoff!!" ]
+        [ text <| Texts.welcome shared.appLanguage ]
 
 
 viewWelcomeInfo : Shared.Model -> Layouts.BaseLayout.Overlay Msg
 viewWelcomeInfo shared =
     Layouts.BaseLayout.InfoWindow
-        { header = "Herzlich willkommen bei Zoff"
+        { header = Texts.welcome2 shared.appLanguage
         , info =
             column [ spacing 25 ]
-                [ paragraph [] [ text """
-                                    Mit Zoff machst Du Deine Atemübung ganz entspannt, vielleicht sogar im Liegen und mit geschlossenen
-                                    Augen - Klänge leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
-                                    weitergeht (z.B. Beginn und Ende der Retention), tippst Du einfach mit drei Fingern irgendwo auf den Bildschirm.
-                                    """ ]
-                , paragraph [] [ text """
-                                Zoff hilft Dir auch dabei, eine regelmäßige Übungspraxis aufrechtzuerhalten: Hier wird erfasst, wie oft Du in Serie
-                                Die Atemübungen gemacht hast. Und unter "Optimieren" kannst Du festlegen, wie oft pro Woche Du üben willst - so 
-                                kannst Du auch hier und dort mal einen Tag auslassen, ohne Deine Serie zu verlieren!
-                                """ ]
+                [ paragraph [] [ text <| Texts.introduction shared.appLanguage ]
                 , case shared.standalone of
                     Just False ->
-                        paragraph [ Border.rounded 20, Border.width 1, padding 10 ]
-                            [ text """Diese App ist darauf optimiert, als Standalone-Link auf dem Smartphone-Homebildschirm 
-                            installiert zu werden. Auf dem iPhone musst Du dafür Safari nutzen und im "Teilen"-Menü ("""
-                            , FeatherIcons.share
-                                |> FeatherIcons.toHtml []
-                                |> html
-                            , text """) "Zum Home-Bildschirm" wählen."""
-                            ]
+                        paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
+                            Texts.installInstruction shared.appLanguage <|
+                                (FeatherIcons.share
+                                    |> FeatherIcons.toHtml []
+                                    |> html
+                                )
 
                     _ ->
                         none
+                , paragraph [] [ text <| Texts.introduction2 shared.appLanguage ]
                 ]
         , onClose = InfoWindowToggled
         }
@@ -314,7 +313,7 @@ viewMotivationInfo shared motData =
             MotivationData.streakInfo shared.today shared.sessionSettings.practiceFrequencyTarget motData
     in
     Layouts.BaseLayout.InfoWindow
-        { header = "Serie"
+        { header = Texts.streakInfoHeader shared.appLanguage
         , info =
             column
                 [ width fill
@@ -322,11 +321,11 @@ viewMotivationInfo shared motData =
                 ]
                 [ row
                     [ width fill ]
-                    [ viewKPI "Letzte Serie" <| MotivationData.previousStreak motData
+                    [ viewKPI (Texts.lastStreak shared.appLanguage) <| MotivationData.previousStreak motData
                     , el [ width fill ] none
-                    , viewKPI "Längste Serie" <| Just <| MotivationData.maxStreak motData
+                    , viewKPI (Texts.longestStreak shared.appLanguage) <| Just <| MotivationData.maxStreak motData
                     , el [ width fill ] none
-                    , viewKPI "Aktuelle Serie" <|
+                    , viewKPI (Texts.currentStreak shared.appLanguage) <|
                         if streakValid then
                             Just <| MotivationData.streak motData
 
@@ -346,15 +345,16 @@ viewMotivationInfo shared motData =
                   if diffToMaxStreak < 4 && diffToMaxStreak > 0 then
                     bullet <|
                         paragraph []
-                            [ text "Übe noch "
-                            , text <| String.fromInt diffToMaxStreak
-                            , text " mal und Du hast Deine längste Serie eingeholt!"
+                            [ text <|
+                                (Texts.practiceUntilLongest shared.appLanguage
+                                    |> String.Format.value (diffToMaxStreak |> String.fromInt)
+                                )
                             ]
 
                   else if diffToMaxStreak == 0 then
                     bullet <|
                         paragraph []
-                            [ el [ Font.bold ] <| text "Du hast gerade Deine längste Serie bisher! Super!!" ]
+                            [ el [ Font.bold ] <| text <| Texts.caughtUpLongest shared.appLanguage ]
 
                   else
                     none
@@ -381,15 +381,16 @@ viewMotivationInfo shared motData =
                             if diffToPreviousStreak < 4 && diffToPreviousStreak > 0 then
                                 bullet <|
                                     paragraph []
-                                        [ text "Übe noch "
-                                        , text <| String.fromInt diffToPreviousStreak
-                                        , text " mal und Du hast Deine letzte Serie eingeholt!"
+                                        [ text <|
+                                            (Texts.practiceUntilLast shared.appLanguage
+                                                |> String.Format.value (diffToPreviousStreak |> String.fromInt)
+                                            )
                                         ]
 
                             else if diffToPreviousStreak == 0 then
                                 bullet <|
                                     paragraph []
-                                        [ text "Du hast Deine letzte Serie eingeholt! Super!!" ]
+                                        [ text <| Texts.caughtUpLast shared.appLanguage ]
 
                             else
                                 none
@@ -407,25 +408,15 @@ viewMotivationInfo shared motData =
                     bullet <|
                         paragraph [] <|
                             if daysUntilStreakEnd == 1 then
-                                [ text "Um die Serie fortzusetzen, übe "
-                                , el [ Font.bold ] <| text "spätestens morgen "
-                                , text "wieder!"
-                                ]
+                                Texts.practiceTomorrow shared.appLanguage
 
                             else
-                                [ text "Um die Serie fortzusetzen, übe spätestens am "
-                                , shared.today
-                                    |> Date.add Date.Days daysUntilStreakEnd
-                                    |> Date.weekday
-                                    |> Utils.weekdayToGerman
-                                    |> text
-                                    |> el [ Font.bold ]
-                                , if daysUntilStreakEnd > 6 then
-                                    text " nächste Woche"
-
-                                  else
-                                    none
-                                ]
+                                Texts.practiceUntilWeekday shared.appLanguage
+                                    (shared.today
+                                        |> Date.add Date.Days daysUntilStreakEnd
+                                        |> Date.weekday
+                                    )
+                                    (daysUntilStreakEnd > 6)
 
                   else
                     none
@@ -436,20 +427,14 @@ viewMotivationInfo shared motData =
                     Just sessions ->
                         bullet <|
                             paragraph []
-                                [ text "Nächster Ring kommt nach "
-                                , text <|
-                                    if sessions > 1 then
-                                        String.fromInt sessions ++ " Übungen"
-
-                                    else
-                                        "der nächsten Übung"
+                                [ text <| Texts.nextRingAfter shared.appLanguage sessions
                                 ]
                 , if streakValid && daysSinceLastSession > 1 then
                     bullet <|
                         paragraph []
-                            [ text "Deine letzte Übung war vor "
-                            , text <| String.fromInt daysSinceLastSession
-                            , text " Tagen"
+                            [ Texts.lastPracticeWas shared.appLanguage
+                                |> String.Format.value (String.fromInt daysSinceLastSession)
+                                |> text
                             ]
 
                   else

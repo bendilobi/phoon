@@ -40,7 +40,7 @@ import Time
 adjustBeforeRelease =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    ( "0.7.105", False )
+    ( "0.7.109", False )
 
 
 appVersion =

@@ -15,6 +15,7 @@ import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.SafeArea as SafeArea
 import Lib.Swipe as Swipe
+import Lib.Texts as Texts
 import Route exposing (Route)
 import Shared
 import Shared.Model
@@ -95,28 +96,12 @@ type Msg
     | SwipeStart Swipe.Event
     | Swipe Swipe.Event
     | SwipeEnd Swipe.Event
-      -- | VisibilityChanged Browser.Events.Visibility
     | CancelSwipe
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
-        -- VisibilityChanged visibility ->
-        --     case visibility of
-        --         Browser.Events.Visible ->
-        --             {- For some strange reason, iOS Safari registers touch events while hidden...
-        --                Here we make sure that these don't have an effect on our InfoWindow:
-        --             -}
-        --             ( { model
-        --                 | swipeGesture = Swipe.blanco
-        --                 , swipeInitialY = Nothing
-        --                 , swipeLocationY = Nothing
-        --               }
-        --             , Effect.none
-        --             )
-        --         _ ->
-        --             ( model, Effect.none )
         OnInfoWindowResize ->
             ( model
             , case shared.infoWindowState of
@@ -217,9 +202,6 @@ update shared msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    -- Sub.batch
-    --     [ Browser.Events.onVisibilityChange VisibilityChanged
-    --     ,
     {- Oh the joys of Apples PWA support... So there are these OS-wide swipe gestures in
        iOS: swipe up from the bottom to close an app window or show it in the opened apps list;
        swipe down at the bottom of the screen to move the whole content to half the screen (to
@@ -249,7 +231,7 @@ subscriptions model =
 
 view : Props contentMsg -> Shared.Model -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared { toContentMsg, model, content } =
-    { title = content.title ++ " | Zoff"
+    { title = content.title ++ " | " ++ Texts.appName
     , attributes = []
     , element =
         el

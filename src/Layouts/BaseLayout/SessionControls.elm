@@ -16,6 +16,7 @@ import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Session as Session
 import Lib.Swipe as Swipe
+import Lib.Texts as Texts
 import Route exposing (Route)
 import Shared
 import Simple.Transition as Transition
@@ -322,7 +323,7 @@ subscriptions model =
 
 view : Props contentMsg -> Shared.Model -> Route () -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
 view props shared route { toContentMsg, model, content } =
-    { title = content.title ++ " | Zoff Session"
+    { title = content.title ++ " | " ++ Texts.appName ++ " Session"
     , attributes = content.attributes
     , element =
         el

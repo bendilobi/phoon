@@ -18,6 +18,7 @@ import Lib.MotivationData as MotivationData exposing (MotivationData)
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
+import Lib.Texts as Texts
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -41,23 +42,18 @@ page shared route =
 toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.BaseLayout_MainNav
-        { header = Just "Sitzung vorbereiten"
+        { header = Just <| Texts.prepareSession shared.appLanguage
         , headerIcon = Just <| Layouts.BaseLayout.MainNav.viewHeaderButton FeatherIcons.alertTriangle OnToggleWarnings
         , enableScrolling = False
         , fadeOut = model.fadeOut
         , subPage = Nothing
-
-        -- if shared.subPageShown then
-        --     Just <| viewWarnings shared model
-        -- else
-        --     Nothing
         , overlay =
             case shared.infoWindowState of
                 Shared.Model.Closed ->
                     Layouts.BaseLayout.NoOverlay
 
                 _ ->
-                    viewWarnings
+                    viewWarnings shared
         }
 
 
@@ -85,16 +81,6 @@ init shared () =
     , Effect.batch
         [ Effect.sendCmd <| Task.perform Tick Time.now
         , Effect.sessionUpdated <| Session.new shared.sessionSettings
-
-        -- , case shared.motivationData of
-        --     Nothing ->
-        --         case shared.updateState of
-        --             Shared.Model.NotUpdating ->
-        --                 Effect.sendMsg OnToggleWarnings
-        --             _ ->
-        --                 Effect.none
-        --     _ ->
-        --         Effect.none
         ]
     )
 
@@ -192,7 +178,7 @@ subscriptions shared model =
 
 view : Shared.Model -> Model -> View Msg
 view shared model =
-    { title = "Session"
+    { title = Texts.prepareSession shared.appLanguage
     , attributes = CS.primaryPrepareSession shared.colorScheme
     , element =
         column
@@ -206,27 +192,21 @@ view shared model =
                 [ IntCrementer.new
                     { label =
                         \n ->
-                            row []
-                                [ el [ Font.bold ] <| text <| String.fromInt n
-                                , text " Runde"
-                                , el [ transparent <| n == 1 ] <| text "n"
-                                ]
+                            row [] <| Texts.cycles shared.appLanguage n
                     , onCrement = CycleCountChanged
                     , model = model.cycleCrementer
                     }
                     |> IntCrementer.withMin 1
                     |> IntCrementer.withMax 9
                     |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
-                , paragraph []
-                    [ text "Geschätztes Ende: "
-                    , el [ Font.bold, Font.size 30 ] <| viewEstimatedTime shared model.time
-                    , text " Uhr"
-                    ]
+
+                --TODO: Zeitdarstellung in Texts übernehmen (pm/am etc.)
+                , paragraph [] <| Texts.estimatedEnd shared.appLanguage <| viewEstimatedTime shared model.time
                 ]
             , el [ width fill ]
                 (Button.new
                     { onPress = OnStartButton
-                    , label = text "Los geht's!"
+                    , label = text <| Texts.startSession shared.appLanguage
                     , model = model.startButton
                     }
                     |> Button.view shared.colorScheme
@@ -263,10 +243,10 @@ viewEstimatedTime shared time =
     text <| hour ++ ":" ++ minute
 
 
-viewWarnings : Layouts.BaseLayout.Overlay Msg
-viewWarnings =
+viewWarnings : Shared.Model -> Layouts.BaseLayout.Overlay Msg
+viewWarnings shared =
     Layouts.BaseLayout.InfoWindow
-        { header = "Warnung"
-        , info = text "Auf KEINEN Fall im Wasser üben!!!"
+        { header = Texts.warnings shared.appLanguage
+        , info = text <| Texts.practiceWarnings shared.appLanguage
         , onClose = OnToggleWarnings
         }
