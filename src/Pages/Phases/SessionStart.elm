@@ -21,6 +21,7 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
 import Shared
+import Simple.Transition as Transition
 import Time
 import View exposing (View)
 
@@ -189,10 +190,9 @@ view shared model =
             , el
                 [ centerX
                 , centerY
-                , transparent <| model.ticks < 1
                 ]
               <|
-                viewReminder shared FeatherIcons.volume2
+                viewReminder shared model 1 FeatherIcons.volume2
             , el [ width fill, height fill ] <|
                 if model.fadeInFinished then
                     el [ centerX, centerY ] <|
@@ -220,10 +220,9 @@ view shared model =
                 el
                     [ centerX
                     , centerY
-                    , transparent <| model.ticks < 2
                     ]
                 <|
-                    viewReminder shared FeatherIcons.bellOff
+                    viewReminder shared model 2 FeatherIcons.bellOff
             , el
                 [ width fill
                 , height fill
@@ -233,12 +232,19 @@ view shared model =
     }
 
 
-viewReminder : Shared.Model -> FeatherIcons.Icon -> Element msg
-viewReminder shared icon =
+viewReminder : Shared.Model -> Model -> Int -> FeatherIcons.Icon -> Element msg
+viewReminder shared model ticks icon =
     if shared.previousPath == Route.Path.PrepareSession then
         row
             [ spacing 10
             , Font.size 30
+            , alpha <|
+                if model.ticks < ticks then
+                    0
+
+                else
+                    1
+            , htmlAttribute <| Transition.properties [ Transition.opacity 700 [ Transition.easeIn ] ]
             ]
             [ el [] <|
                 html <|
