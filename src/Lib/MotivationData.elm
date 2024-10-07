@@ -5,6 +5,7 @@ module Lib.MotivationData exposing
     , lastSessionDate
     , maxRetention
     , maxStreak
+    , maxStreakFreezes
     , meanRetentionTimes
     , previousStreak
     , streak
@@ -45,6 +46,11 @@ the current using of one freeze per day...
 frequencyTargetFrame : Float
 frequencyTargetFrame =
     7
+
+
+maxStreakFreezes : Int
+maxStreakFreezes =
+    8
 
 
 freezeIncrement : Int -> Float
@@ -167,9 +173,10 @@ update results today practiceFrequencyTarget motivationData =
                                 --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
                                 --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
                                 , streakFreezes =
-                                    if remainingStreakFreeze >= 9 - freezeIncrement practiceFrequencyTarget then
-                                        -- allow no more than 8 streak freezes
-                                        8.99
+                                    if remainingStreakFreeze >= (maxStreakFreezes + 1 |> toFloat) - freezeIncrement practiceFrequencyTarget then
+                                        -- allow no more than maxStreakFreezes
+                                        -- 8.99
+                                        (maxStreakFreezes |> toFloat) + 0.99
 
                                     else
                                         remainingStreakFreeze + freezeIncrement practiceFrequencyTarget

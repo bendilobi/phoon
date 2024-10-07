@@ -8,6 +8,10 @@ import String.Format
 import Time exposing (Weekday(..))
 
 
+
+--- Technical stuff
+
+
 type AppLanguage
     = En
     | De
@@ -69,9 +73,22 @@ bullet content =
         |> bulletParagraph
 
 
+para : String -> Element msg
+para content =
+    paragraph [] (content |> boldify [])
+
+
+
+--- App Name
+
+
 appName : String
 appName =
-    "Poon"
+    "Phoon"
+
+
+
+--- TEXTS AND TRANSLATIONS ---
 
 
 motivationHeading : AppLanguage -> String
@@ -122,48 +139,47 @@ practiceToday lang =
             "Practice today to continue your streak!"
 
 
-welcome : AppLanguage -> String
-welcome lang =
-    case lang of
-        De ->
-            "Willkommen bei {{ }}!!"
-                |> String.Format.value appName
 
-        _ ->
-            "Welcome to {{ }}!!"
-                |> String.Format.value appName
+-- welcome : AppLanguage -> String
+-- welcome lang =
+--     (case lang of
+--         De ->
+--             "{{ }}"
+--         _ ->
+--             "{{ }}"
+--     )
+--         |> String.Format.value appName
 
 
 welcome2 : AppLanguage -> String
 welcome2 lang =
-    case lang of
+    (case lang of
         De ->
             "Herzlich willkommen bei {{ }}!!"
-                |> String.Format.value appName
 
         _ ->
             "Welcome to {{ }}!!"
-                |> String.Format.value appName
+    )
+        |> String.Format.value appName
 
 
 introduction : AppLanguage -> List (Element msg)
 introduction lang =
-    case lang of
+    (case lang of
         De ->
             """
             Mit *{{ }}* machst Du Deine Atemübung ganz entspannt, vielleicht sogar *im Liegen* und mit geschlossenen
             Augen - *Klänge* leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
             weitergeht (z.B. Beginn und Ende der Retention), *tippst Du einfach mit drei Fingern* irgendwo auf den Bildschirm.
             """
-                |> String.Format.value appName
-                |> boldify []
 
         _ ->
             """With {{ }}, you do your breathing exercise in a completely relaxed manner, perhaps even lying down and with your eyes closed.
             eyes closed - sounds guide you to the next step. And if you want to decide for yourself when to continue 
             (e.g. start and end of retention), simply tap anywhere on the screen with three fingers."""
-                |> String.Format.value appName
-                |> boldify []
+    )
+        |> String.Format.value appName
+        |> boldify []
 
 
 installInstruction : AppLanguage -> Element msg -> List (Element msg)
@@ -375,6 +391,18 @@ practiceUntilWeekday lang wday nextWeek =
                 |> boldify []
 
 
+maxRingsReached : AppLanguage -> Int -> String
+maxRingsReached lang n =
+    (case lang of
+        De ->
+            "Du hast gerade die maximal mögliche Anzahl von Ringen ({{ }})."
+
+        _ ->
+            "You have reached the maximum possible number of rings ({{ }})."
+    )
+        |> String.Format.value (String.fromInt n)
+
+
 nextRingAfter : AppLanguage -> Int -> String
 nextRingAfter lang sessions =
     case lang of
@@ -555,20 +583,61 @@ warnings : AppLanguage -> String
 warnings lang =
     case lang of
         De ->
-            "Warnhinweise"
+            "Sicherheitshinweise"
 
         _ ->
-            "Warnings"
+            "Safety instructions"
 
 
-practiceWarnings : AppLanguage -> String
+practiceWarnings : AppLanguage -> List (Element msg)
 practiceWarnings lang =
     case lang of
         De ->
-            "Auf KEINEN Fall im Wasser üben!!!"
+            [ para """
+            Die Atemübung, wie sie von Wim Hof weltweit bekannt gemacht wurde, ist eine intensive, körperliche Übung, die den Organismus
+            gezielt einer Belastung aussetzt (Sauerstoff-Entzug), um einen Anpassungseffekt zu bewirken. Es kann dabei in seltenen Fällen
+            zu einer Bewusstseinseintrübung bis hin zu einer kurzen Bewusstlosigkeit kommen.
+            """
+            , para """
+            Es ist daher *sehr wichtig*, dass Du die Übung immer in einer Umgebung ausführst, in der das kein Problem ist, am Besten *im Sitzen 
+            oder im Liegen auf einer weichen Unterlage*.
+            """
+            , bullet "Übe *niemals im oder am Wasser* (auch nicht im flachen Wasser)!"
+            , bullet "Übe *nie, während Du Auto fährst*"
+            , bullet "Übe nicht, wenn Du nicht körperlich fit bist."
+            , bullet """Im Falle von Herzproblemen, Schwangerschaft, Epilepsie und ähnlichem, konsultiere auf jeden Fall Deinen Arzt, 
+            bevor Du die Atemübung ausprobierst!
+            """
+            , para """
+            Die Autoren dieser App übernehmen keine Verantwortung für Deinen Umgang mit der App, d.h. Du übst auf eigene Verantwortung! 
+            Die App ist nicht dafür gemacht, Dir die Atemübung beizubringen. 
+            Informiere Dich unabhängig von der App über die korrekte Ausführung der Wim Hof Atmung (z.B. im Internet, auf Youtube, ...).
+            """
+            ]
 
         _ ->
-            "Don't ever practice in water!!!"
+            [ para """
+            The breathing exercise, as made famous worldwide by Wim Hof, is an intensive, physical exercise that exposes the organism
+            to stress (oxygen deprivation) in order to bring about an adaptation effect. In rare cases, this can
+            lead to a clouding of consciousness or even brief loss of consciousness may occur.
+            """
+            , para """
+            It is therefore *very important* that you always do the exercise in an environment where this is not a problem, preferably *sitting 
+            or lying down on a soft surface*.
+            """
+            , bullet """*never* practice *in or near water* (not even in shallow water)!"""
+            , bullet """*never* practice *while driving*"""
+            , bullet """Do not practise if you are not physically fit."""
+            , bullet """In case of heart conditions, high blood pressure or other cardiovascular issues, pregnancy, 
+            epilepsy and the like, always consult your healthcare professional, 
+            before you try the breathing exercise!
+            """
+            , para """
+            The authors of this app accept no responsibility for your use of the app, i.e. you practise at your own risk! 
+            The app is not designed to teach you the breathing exercise. 
+            Inform yourself independently of the app about the correct execution of Wim Hof breathing (e.g. on the Internet, on YouTube, ...).
+            """
+            ]
 
 
 startSession : AppLanguage -> String
@@ -989,17 +1058,13 @@ authorAndContact : AppLanguage -> List (Element msg)
 authorAndContact lang =
     case lang of
         De ->
-            [ paragraph [] [ text "Diese App wurde mit Hingebung für Dich programmiert von Benno Dielmann." ]
-            , paragraph []
-                [ text "Hast Du Fragen, Verbesserungsvorschläge, Ideen, Kritik? Schreibe mir eine E-Mail:"
-                ]
+            [ para "Diese App wurde mit Hingebung für Dich programmiert von Benno Dielmann."
+            , para "Hast Du Fragen, Verbesserungsvorschläge, Ideen, Kritik? Schreibe mir eine E-Mail:"
             ]
 
         _ ->
-            [ paragraph [] [ text "This app was programmed with dedication for you by Benno Dielmann." ]
-            , paragraph []
-                [ text "Do you have any questions, suggestions for improvement, ideas or criticism? Write me an e-mail:"
-                ]
+            [ para "This app was programmed with dedication for you by Benno Dielmann."
+            , para "Do you have any questions, suggestions for improvement, ideas or criticism? Write me an e-mail:"
             ]
 
 
@@ -1057,20 +1122,20 @@ sessionStartHints : AppLanguage -> List (Element msg)
 sessionStartHints lang =
     case lang of
         De ->
-            [ paragraph [] <| [ text """
+            [ para """
         Nimm' eine entspannte Position ein, entweder im Sitzen oder im Liegen. Sorge dafür, dass Du 
         für die Dauer der Übung ungestört bist und entferne ggf. die Stummschaltung Deines Geräts, um 
-        die Klänge hören zu können.""" ]
+        die Klänge hören zu können."""
             , bullet "Wische mit einem Finger nach rechts, um Optionen anzuzeigen."
             , bullet "Tippe mit einem Finger, um ein Glöckchen zu hören (Soundtest)."
             , bullet "Tippe mit drei Fingern, um mit der Atemübung zu beginnen."
             ]
 
         _ ->
-            [ paragraph [] <| [ text """
+            [ para """
         Take a relaxed position, either sitting or lying down. Make sure that you are  
         undisturbed for the duration of the exercise and, if necessary, unmute your device so that you can hear the sounds. 
-        """ ]
+        """
             , bullet "Swipe right with one finger to show the options."
             , bullet "Tap with one finger to hear a bell (for sound check)."
             , bullet "Tap or swipe with three fingers to start the breathwork session."

@@ -1,8 +1,8 @@
 {
-  "short_name": "Poon",
-  "name": "Poon - Wim Hof breathwork with a flavor of Zen",
+  "short_name": "Phoon",
+  "name": "Phoon - Wim Hof breathwork with a flavor of Zen",
   "description": "A web app for practicing Wim Hof breathing",
-  "id": "poon",
+  "id": "phoon",
   "icons": [
     {
       "src": "./img/logo/favicon.png",

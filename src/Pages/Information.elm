@@ -1059,41 +1059,41 @@ viewAppInfo shared model =
                             }
                        ]
                 )
-            , case shared.motivationData of
-                Nothing ->
-                    none
+            , column
+                [ width fill
+                , spacing 20
+                , padding 15
+                , Border.rounded 10
+                , BG.color <| rgb 1 1 1
+                ]
+                [ text <| Texts.dataManagement shared.appLanguage
+                , case shared.motivationData of
+                    Nothing ->
+                        none
 
-                _ ->
-                    column
-                        [ width fill
-                        , spacing 20
-                        , padding 15
-                        , Border.rounded 10
-                        , BG.color <| rgb 1 1 1
-                        ]
-                        [ text <| Texts.dataManagement shared.appLanguage
-                        , Button.new
+                    _ ->
+                        Button.new
                             { onPress = OnCopyButton
                             , label = text <| Texts.copyResults shared.appLanguage
                             , model = model.copyButton
                             }
                             |> Button.withLightColor
                             |> Button.view shared.colorScheme
-                        , Button.new
-                            { model = model.pasteButton
-                            , label = text <| Texts.importResults shared.appLanguage
-                            , onPress = OnPasteButton
-                            }
-                            |> Button.withLightColor
-                            |> Button.view shared.colorScheme
-                        , Button.new
-                            { onPress = OnReloadButton
-                            , label = text <| Texts.reloadApp shared.appLanguage
-                            , model = model.reloadButton
-                            }
-                            |> Button.withLightColor
-                            |> Button.view shared.colorScheme
-                        ]
+                , Button.new
+                    { model = model.pasteButton
+                    , label = text <| Texts.importResults shared.appLanguage
+                    , onPress = OnPasteButton
+                    }
+                    |> Button.withLightColor
+                    |> Button.view shared.colorScheme
+                , Button.new
+                    { onPress = OnReloadButton
+                    , label = text <| Texts.reloadApp shared.appLanguage
+                    , model = model.reloadButton
+                    }
+                    |> Button.withLightColor
+                    |> Button.view shared.colorScheme
+                ]
 
             -- , column [ Font.size 11, spacing 10 ]
             --     [ el [ Font.bold ] <| text "Technische Informationen:"

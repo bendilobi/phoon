@@ -13,7 +13,7 @@ import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.MotivationData as MotivationData exposing (MotivationData, previousStreak)
 import Lib.PageFading exposing (Trigger(..))
-import Lib.SafeArea as SafeArea exposing (SafeArea)
+import Lib.SafeArea as SafeArea
 import Lib.Texts as Texts exposing (bullet, bulletParagraph)
 import Maybe
 import Page exposing (Page)
@@ -271,14 +271,17 @@ viewStreak colorScheme size freezes freezeInDanger streak =
 
 viewWelcome : Shared.Model -> Element msg
 viewWelcome shared =
-    paragraph
+    column
         [ width fill
         , centerY
         , Font.center
         , Font.size 25
         , moveUp 70
+        , spacing 20
         ]
-        [ text <| Texts.welcome shared.appLanguage ]
+        [ el [ centerX ] <| text Texts.appName
+        , paragraph [ Font.size 17 ] [ text <| Texts.appSlogan shared.appLanguage ]
+        ]
 
 
 viewWelcomeInfo : Shared.Model -> Layouts.BaseLayout.Overlay Msg
@@ -413,7 +416,11 @@ viewMotivationInfo shared motData =
                         none
 
                     Just sessions ->
-                        bullet <| Texts.nextRingAfter shared.appLanguage sessions
+                        if remainingFreezes == MotivationData.maxStreakFreezes then
+                            bullet <| Texts.maxRingsReached shared.appLanguage MotivationData.maxStreakFreezes
+
+                        else
+                            bullet <| Texts.nextRingAfter shared.appLanguage sessions
                 , if streakValid && daysSinceLastSession > 1 then
                     bullet
                         (Texts.lastPracticeWas shared.appLanguage

@@ -22,11 +22,11 @@ import Dict
 import Effect exposing (Effect)
 import Json.Decode
 import Lib.ColorScheme as CS
-import Lib.MotivationData as MotivationData exposing (MotivationData)
+import Lib.MotivationData as MotivationData
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea
-import Lib.Session as Session exposing (Session)
-import Lib.SessionResults as SessionResults exposing (SessionResults)
+import Lib.Session as Session
+import Lib.SessionResults as SessionResults
 import Lib.Texts as Texts
 import Lib.Utils as Utils
 import Route exposing (Route)
@@ -40,7 +40,7 @@ import Time
 adjustBeforeRelease =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    ( "0.7.123", False )
+    ( "0.7.129", False )
 
 
 appVersion =
