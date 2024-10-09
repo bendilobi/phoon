@@ -139,20 +139,8 @@ practiceToday lang =
             "Practice today to continue your streak!"
 
 
-
--- welcome : AppLanguage -> String
--- welcome lang =
---     (case lang of
---         De ->
---             "{{ }}"
---         _ ->
---             "{{ }}"
---     )
---         |> String.Format.value appName
-
-
-welcome2 : AppLanguage -> String
-welcome2 lang =
+welcome : AppLanguage -> String
+welcome lang =
     (case lang of
         De ->
             "Herzlich willkommen bei {{ }}!!"
@@ -165,52 +153,60 @@ welcome2 lang =
 
 introduction : AppLanguage -> List (Element msg)
 introduction lang =
-    (case lang of
+    case lang of
         De ->
-            """
+            [ para
+                ("""
             Mit *{{ }}* machst Du Deine Atemübung ganz entspannt, vielleicht sogar *im Liegen* und mit geschlossenen
             Augen - *Klänge* leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
             weitergeht (z.B. Beginn und Ende der Retention), *tippst Du einfach mit drei Fingern* irgendwo auf den Bildschirm.
             """
+                    |> String.Format.value appName
+                )
+            ]
 
         _ ->
-            """With {{ }}, you do your breathing exercise in a completely relaxed manner, perhaps even lying down and with your eyes closed.
-            eyes closed - sounds guide you to the next step. And if you want to decide for yourself when to continue 
-            (e.g. start and end of retention), simply tap anywhere on the screen with three fingers."""
-    )
-        |> String.Format.value appName
-        |> boldify []
+            [ para
+                ("""*{{ }}* is an app for touch devices (smartphones, mainly) that aims to help you enjoy the benefits of the
+                *Wim Hof style breathwork*, by"""
+                    |> String.Format.value appName
+                )
+            , bullet """motivating you to *practice regularily* by keeping track of your *streak* of continuous practice sessions - according
+                to your *personal target* (e.g. four sessions per week)"""
+            , bullet """making your practice sessions as convenient as possible - guiding you with *animations* and using *sounds* and *touch 
+                gestures* so you can practice with closed eyes while lying down"""
+            , bullet """helping you optimize your breathwork effect by tuning exercise parameters and comparing their effect on retention times."""
+            ]
 
 
 installInstruction : AppLanguage -> Element msg -> List (Element msg)
 installInstruction lang icon =
     case lang of
         De ->
-            [ text """Diese App ist darauf optimiert, als Standalone-Link auf dem Smartphone-Homebildschirm 
+            [ para """Diese App ist darauf optimiert, als Standalone-Link auf dem Smartphone-Homebildschirm 
                             installiert zu werden. Auf dem iPhone musst Du dafür Safari nutzen und im "Teilen"-Menü ("""
             , icon
-            , text """) "Zum Home-Bildschirm" wählen."""
+            , para """) "Zum Home-Bildschirm" wählen."""
             ]
 
         _ ->
-            [ text """This web-app is optimized to be installed as a standalone link on your phone's (or tablet's) 
+            [ para """This web-app is optimized to be installed as a standalone link on your phone's (or tablet's) 
             Home-screen. This way it will look and feel like a native app installed from the App Store. To create the app icon
             on the Home-screen, go to the share menu ("""
             , icon
-            , text """) and choose "Add to Home Screen" in the list that appears."""
+            , para """) and choose "Add to Home Screen" in the list that appears."""
             ]
 
 
 introduction2 : AppLanguage -> String
 introduction2 lang =
-    case lang of
+    (case lang of
         De ->
             """
             {{ }} hilft Dir auch dabei, eine regelmäßige Übungspraxis aufrechtzuerhalten: Hier wird erfasst, wie oft Du in Serie
             Die Atemübungen gemacht hast. Und unter "Optimieren" kannst Du festlegen, wie oft pro Woche Du üben willst - so 
             kannst Du auch hier und dort mal einen Tag auslassen, ohne Deine Serie zu verlieren!
             """
-                |> String.Format.value appName
 
         _ ->
             """
@@ -218,7 +214,8 @@ introduction2 lang =
             you have done the breathing exercises. And under "Optimise" you can specify how often you want to practise each week - so you can 
             This allows you to skip a day here and there without losing your series!
             """
-                |> String.Format.value appName
+    )
+        |> String.Format.value appName
 
 
 streakInfoHeader : AppLanguage -> String
@@ -303,14 +300,14 @@ caughtUpLast lang =
 
 practiceTomorrow : AppLanguage -> List (Element msg)
 practiceTomorrow lang =
-    case lang of
+    (case lang of
         De ->
             "Um die Serie fortzusetzen übe *spätestens morgen* wieder!"
-                |> boldify []
 
         _ ->
             "To continue your streak, practice again *tomorrow at the latest*"
-                |> boldify []
+    )
+        |> boldify []
 
 
 weekday : AppLanguage -> Time.Weekday -> String

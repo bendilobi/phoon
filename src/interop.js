@@ -2,6 +2,7 @@
 const MOTIVATION_DATA_KEY = 'motivationData'
 const SESSION_SETTINGS_KEY = 'sessionSettings'
 const UPDATING_KEY = 'updating'
+let checkVersion = () => /(iPhone|iPad) OS ([1-9]*)/g.exec(window.navigator.userAgent)?.[2] || 0
 
 export const flags = ({ env }) => {
     const motivationStored = localStorage.getItem(MOTIVATION_DATA_KEY)
@@ -29,6 +30,10 @@ export const flags = ({ env }) => {
     const standalone = navigator.standalone
     console.log('standalone: ' + standalone)
 
+    // const userAgent = window.navigator.userAgent
+    const iOSVersion = checkVersion()
+    // console.log('user agent: ' + userAgent)
+
     return {
       storedMotivationData: motivationJson,
       storedSessionSettings: sessionSettingsJson,
@@ -37,7 +42,8 @@ export const flags = ({ env }) => {
       width : width,
       height : height,
       browserLang : lang, 
-      standalone : standalone
+      standalone : standalone,
+      iOSVersion : iOSVersion
     }
   }
 

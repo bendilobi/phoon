@@ -21,6 +21,7 @@ import Delay
 import Dict
 import Effect exposing (Effect)
 import Json.Decode
+import Json.Decode.Pipeline exposing (optional, required)
 import Lib.ColorScheme as CS
 import Lib.MotivationData as MotivationData
 import Lib.PageFading as Fading exposing (Trigger(..))
@@ -40,7 +41,7 @@ import Time
 adjustBeforeRelease =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    ( "0.7.129", False )
+    ( "0.7.136", False )
 
 
 appVersion =
@@ -73,20 +74,36 @@ type alias Flags =
     , height : Json.Decode.Value
     , browserLang : Json.Decode.Value
     , standalone : Json.Decode.Value
+    , iOSVersion : Json.Decode.Value
+    }
+
+
+makeFlags : Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Flags
+makeFlags mot set upd saf wid hei bro stan ios =
+    { storedMotivationData = mot
+    , storedSessionSettings = set
+    , storedUpdatingState = upd
+    , safeAreaInsets = saf
+    , width = wid
+    , height = hei
+    , browserLang = bro
+    , standalone = stan
+    , iOSVersion = ios
     }
 
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map8 Flags
-        (Json.Decode.field "storedMotivationData" Json.Decode.value)
-        (Json.Decode.field "storedSessionSettings" Json.Decode.value)
-        (Json.Decode.field "storedUpdatingState" Json.Decode.value)
-        (Json.Decode.field "safeAreaInsets" Json.Decode.value)
-        (Json.Decode.field "width" Json.Decode.value)
-        (Json.Decode.field "height" Json.Decode.value)
-        (Json.Decode.field "browserLang" Json.Decode.value)
-        (Json.Decode.field "standalone" Json.Decode.value)
+    Json.Decode.succeed makeFlags
+        |> required "storedMotivationData" Json.Decode.value
+        |> required "storedSessionSettings" Json.Decode.value
+        |> required "storedUpdatingState" Json.Decode.value
+        |> required "safeAreaInsets" Json.Decode.value
+        |> required "width" Json.Decode.value
+        |> required "height" Json.Decode.value
+        |> required "browserLang" Json.Decode.value
+        |> required "standalone" Json.Decode.value
+        |> required "iOSVersion" Json.Decode.value
 
 
 
@@ -111,6 +128,7 @@ init flagsResult route =
                     , height = 0
                     , browserLang = Texts.En
                     , standalone = Nothing
+                    , iOSVersion = Nothing
                     }
 
                 Ok data ->
@@ -162,6 +180,9 @@ init flagsResult route =
 
                         standaloneDecoded =
                             Json.Decode.decodeValue Json.Decode.bool data.standalone
+
+                        iOSVersionDecoded =
+                            Json.Decode.decodeValue Json.Decode.string data.iOSVersion
                     in
                     { motData =
                         case motDataDecoded of
@@ -216,17 +237,27 @@ init flagsResult route =
                                 lang
                     , standalone =
                         case standaloneDecoded of
+                            {- Supposedly, this value (navigator.standalone) is a Bool in iOS and "undefined" in other OSes
+                               In iOS it is "True" if the app is called via a link from the home screen and "False" if not.
+                            -}
                             Err e ->
-                                -- "Decoding-Fehler von 'standalone': " ++ Json.Decode.errorToString e
                                 Nothing
 
                             Ok s ->
                                 Just s
+                    , iOSVersion =
+                        case iOSVersionDecoded of
+                            Err e ->
+                                Nothing
+
+                            Ok v ->
+                                String.toInt v
                     }
     in
     ( { zone = Time.utc
       , today = Date.fromRataDie 0
       , appLanguage = decodedFlags.browserLang
+      , iOSVersion = decodedFlags.iOSVersion
       , appVisible = True
       , updateState = decodedFlags.updateState
       , versionOnServer = Api.Loading

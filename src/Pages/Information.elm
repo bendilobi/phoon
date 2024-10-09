@@ -1094,6 +1094,10 @@ viewAppInfo shared model =
                     |> Button.withLightColor
                     |> Button.view shared.colorScheme
                 ]
+            , paragraph []
+                [ text "User Agent: "
+                , text <| String.fromInt <| Maybe.withDefault 0 shared.iOSVersion
+                ]
 
             -- , column [ Font.size 11, spacing 10 ]
             --     [ el [ Font.bold ] <| text "Technische Informationen:"

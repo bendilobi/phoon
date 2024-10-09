@@ -332,10 +332,18 @@ viewInfoWindow props shared model toContentMsg =
             }
         , clip
 
-        --TODO: Recherchieren, ob einfach eine Weiche für iOS < 18 umgesetzt werden kann, weil diese
-        --      Versionen die Variante mit -webkit- brauchen:
-        -- , htmlAttribute <| Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(16px);"
-        , htmlAttribute <| Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
+        {- backdrop-filter needs a "-webkit-" prefix in iOS prior to 18, so we try to respect that here: -}
+        , htmlAttribute <|
+            case shared.iOSVersion of
+                Nothing ->
+                    Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
+
+                Just v ->
+                    if v < 18 then
+                        Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(20px);"
+
+                    else
+                        Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
         , height <| px <| round <| shared.deviceInfo.window.height
         , htmlAttribute <|
             case model.swipeLocationY of

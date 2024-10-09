@@ -287,23 +287,24 @@ viewWelcome shared =
 viewWelcomeInfo : Shared.Model -> Layouts.BaseLayout.Overlay Msg
 viewWelcomeInfo shared =
     Layouts.BaseLayout.InfoWindow
-        { header = Texts.welcome2 shared.appLanguage
+        { header = Texts.welcome shared.appLanguage
         , info =
-            column [ spacing 25 ]
-                [ paragraph [] <| Texts.introduction shared.appLanguage
-                , case shared.standalone of
-                    Just False ->
-                        paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
-                            Texts.installInstruction shared.appLanguage <|
-                                (FeatherIcons.share
-                                    |> FeatherIcons.toHtml []
-                                    |> html
-                                )
+            column [ spacing 15 ]
+                (Texts.introduction shared.appLanguage
+                    ++ [ case shared.standalone of
+                            Just False ->
+                                paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
+                                    Texts.installInstruction shared.appLanguage <|
+                                        (FeatherIcons.share
+                                            |> FeatherIcons.toHtml []
+                                            |> html
+                                        )
 
-                    _ ->
-                        none
-                , paragraph [] [ text <| Texts.introduction2 shared.appLanguage ]
-                ]
+                            _ ->
+                                none
+                       , paragraph [] [ text <| Texts.introduction2 shared.appLanguage ]
+                       ]
+                )
         , onClose = InfoWindowToggled
         }
 
