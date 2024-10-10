@@ -78,6 +78,35 @@ para content =
     paragraph [] (content |> boldify [])
 
 
+viewTime : AppLanguage -> List (Attribute msg) -> Time.Zone -> Time.Posix -> Element msg
+viewTime lang attrs zone time =
+    let
+        hour =
+            Time.toHour zone time
+
+        minute =
+            Time.toMinute zone time
+                |> String.fromInt
+                |> String.padLeft 2 '0'
+    in
+    case lang of
+        De ->
+            el attrs <| text <| (hour |> String.fromInt) ++ ":" ++ minute
+
+        _ ->
+            if hour > 12 then
+                paragraph []
+                    [ el attrs <| text <| (hour - 12 |> String.fromInt) ++ ":" ++ minute
+                    , text " pm"
+                    ]
+
+            else
+                paragraph []
+                    [ el attrs <| text <| (hour |> String.fromInt) ++ ":" ++ minute
+                    , text " am"
+                    ]
+
+
 
 --- App Name
 
@@ -565,14 +594,13 @@ estimatedEnd lang time =
     case lang of
         De ->
             [ text "Geschätztes Ende: "
-            , el [ Font.bold, Font.size 30 ] time
+            , time
             , text " Uhr"
             ]
 
         _ ->
             [ text "Estimated end: "
-            , el [ Font.bold, Font.size 30 ] time
-            , text " o'clock"
+            , time
             ]
 
 
@@ -1347,3 +1375,28 @@ breathing lang =
 
         _ ->
             "Breathing"
+
+
+wakeLockNote : AppLanguage -> List (Element msg)
+wakeLockNote lang =
+    case lang of
+        De ->
+            [ para """*Bitte beachten:*"""
+            , para """
+            Aufgrund eines Fehlers in iOS musst Du sicherstellen, dass sich der Bildschirm Deines Geräts während der Atemübung 
+            nicht automatisch sperrt.
+            """
+            , para """
+            Öffne die Einstellungen-App, gehe zu "Anzeige & Helligkeit" und wähle unter "Automatische Sperre" 4 Minuten oder mehr.
+            """
+            ]
+
+        _ ->
+            [ para """*Please note:*"""
+            , para """
+            Due to a bug in iOS, you have to make sure your screen doesn't automatically lock during your exercise. 
+            """
+            , para """
+            Open the Settings app, choose "Display & Brightness" and set "Auto-Lock" to 4 minutes or more.
+            """
+            ]

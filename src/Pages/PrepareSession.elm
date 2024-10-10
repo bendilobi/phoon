@@ -199,11 +199,44 @@ view shared model =
                     |> IntCrementer.withMin 1
                     |> IntCrementer.withMax 9
                     |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
-
-                --TODO: Zeitdarstellung in Texts übernehmen (pm/am etc.)
-                , paragraph [] <| Texts.estimatedEnd shared.appLanguage <| viewEstimatedTime shared model.time
+                , let
+                    estimate =
+                        model.time
+                            |> Time.posixToMillis
+                            |> (+)
+                                (Session.estimatedDurationMillis
+                                    (shared.motivationData
+                                        |> Maybe.map MotivationData.meanRetentionTimes
+                                        |> Maybe.withDefault []
+                                    )
+                                    shared.session
+                                    |> Millis.toInt
+                                )
+                            |> Time.millisToPosix
+                  in
+                  paragraph [] <|
+                    Texts.estimatedEnd shared.appLanguage <|
+                        el [ Font.bold ] <|
+                            Texts.viewTime shared.appLanguage [ Font.size 30 ] shared.zone estimate
                 ]
-            , el [ width fill ]
+            , el
+                [ width fill
+                , below <|
+                    case shared.iOSVersion of
+                        Nothing ->
+                            none
+
+                        _ ->
+                            column
+                                [ spacing 10
+                                , paddingEach { left = 30, right = 0, top = 30, bottom = 0 }
+                                , Font.size 12
+                                , centerX
+                                , Font.alignLeft
+                                ]
+                            <|
+                                Texts.wakeLockNote shared.appLanguage
+                ]
                 (Button.new
                     { onPress = OnStartButton
                     , label = text <| Texts.startSession shared.appLanguage
@@ -215,32 +248,25 @@ view shared model =
     }
 
 
-viewEstimatedTime : Shared.Model -> Time.Posix -> Element msg
-viewEstimatedTime shared time =
-    let
-        estimate =
-            time
-                |> Time.posixToMillis
-                |> (+)
-                    (Session.estimatedDurationMillis
-                        (shared.motivationData
-                            |> Maybe.map MotivationData.meanRetentionTimes
-                            |> Maybe.withDefault []
-                        )
-                        shared.session
-                        |> Millis.toInt
-                    )
-                |> Time.millisToPosix
 
-        hour =
-            String.fromInt <| Time.toHour shared.zone estimate
-
-        minute =
-            Time.toMinute shared.zone estimate
-                |> String.fromInt
-                |> String.padLeft 2 '0'
-    in
-    text <| hour ++ ":" ++ minute
+-- viewEstimatedTime : Shared.Model -> Time.Posix -> Element msg
+-- viewEstimatedTime shared time =
+--     let
+--         estimate =
+--             time
+--                 |> Time.posixToMillis
+--                 |> (+)
+--                     (Session.estimatedDurationMillis
+--                         (shared.motivationData
+--                             |> Maybe.map MotivationData.meanRetentionTimes
+--                             |> Maybe.withDefault []
+--                         )
+--                         shared.session
+--                         |> Millis.toInt
+--                     )
+--                 |> Time.millisToPosix
+--     in
+--     text <| hour ++ ":" ++ minute
 
 
 viewWarnings : Shared.Model -> Layouts.BaseLayout.Overlay Msg
