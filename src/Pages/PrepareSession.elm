@@ -221,7 +221,10 @@ view shared model =
                 ]
             , el
                 [ width fill
-                , below <|
+                , inFront <|
+                    {- Can't use "below" because elm-ui paints these in front of all other content
+                       so that it stays visible during page fading. Instead we use inFront and moveDown...
+                    -}
                     case shared.iOSVersion of
                         Nothing ->
                             none
@@ -233,6 +236,7 @@ view shared model =
                                 , Font.size 12
                                 , centerX
                                 , Font.alignLeft
+                                , moveDown 50
                                 ]
                             <|
                                 Texts.wakeLockNote shared.appLanguage
@@ -246,27 +250,6 @@ view shared model =
                 )
             ]
     }
-
-
-
--- viewEstimatedTime : Shared.Model -> Time.Posix -> Element msg
--- viewEstimatedTime shared time =
---     let
---         estimate =
---             time
---                 |> Time.posixToMillis
---                 |> (+)
---                     (Session.estimatedDurationMillis
---                         (shared.motivationData
---                             |> Maybe.map MotivationData.meanRetentionTimes
---                             |> Maybe.withDefault []
---                         )
---                         shared.session
---                         |> Millis.toInt
---                     )
---                 |> Time.millisToPosix
---     in
---     text <| hour ++ ":" ++ minute
 
 
 viewWarnings : Shared.Model -> Layouts.BaseLayout.Overlay Msg

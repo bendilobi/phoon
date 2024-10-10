@@ -271,7 +271,7 @@ viewRetentionTimes shared times meanTime =
     <|
         List.map2
             (\i t ->
-                row [ width fill ]
+                row [ width fill, spacing 10 ]
                     [ el [ width fill ] <| text <| Texts.cycles3 shared.appLanguage i
                     , el [ Font.bold ] <| text <| formatRetentionTime t
                     ]
@@ -282,8 +282,9 @@ viewRetentionTimes shared times meanTime =
                     [ width fill
                     , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
                     , paddingXY 0 7
+                    , spacing 10
                     ]
-                    [ el [ width fill ] <| text <| Texts.mean shared.appLanguage ++ " "
+                    [ el [ width fill ] <| text <| Texts.mean shared.appLanguage
                     , el
                         [ Font.bold
                         ]

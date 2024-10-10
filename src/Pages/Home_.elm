@@ -324,7 +324,12 @@ viewMotivationInfo shared motData =
                 ]
                 [ row
                     [ width fill ]
-                    [ viewKPI (Texts.lastStreak shared.appLanguage) <| MotivationData.previousStreak motData
+                    [ viewKPI (Texts.lastStreak shared.appLanguage) <|
+                        if streakValid then
+                            MotivationData.previousStreak motData
+
+                        else
+                            Just <| MotivationData.streak motData
                     , el [ width fill ] none
                     , viewKPI (Texts.longestStreak shared.appLanguage) <| Just <| MotivationData.maxStreak motData
                     , el [ width fill ] none
@@ -356,7 +361,15 @@ viewMotivationInfo shared motData =
 
                   else
                     none
-                , case MotivationData.previousStreak motData of
+                , let
+                    prevStreak =
+                        if streakValid then
+                            MotivationData.previousStreak motData
+
+                        else
+                            Just <| MotivationData.streak motData
+                  in
+                  case prevStreak of
                     Nothing ->
                         none
 
