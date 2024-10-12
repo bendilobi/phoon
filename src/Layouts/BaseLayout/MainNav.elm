@@ -10,7 +10,9 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
+import Element.Keyed
 import FeatherIcons
+import Html
 import Html.Attributes
 import Layout exposing (Layout)
 import Layouts.BaseLayout
@@ -398,7 +400,14 @@ view props shared route { toContentMsg, model, content } =
                                             --TODO: Das funktioniert in Chromium nicht mehr. Ist das ein Bug dort?
                                             --      Selbst wenn ich height festsetze und clip dazu, ist der content-
                                             --      Bereicht so groß wie der Inhalt und die gesamte App scrollt...
-                                            [ scrollbarY ]
+                                            [ scrollbarY
+
+                                            {- This fixes a problem with recent versions of Chromium/Chrome
+                                               (see https://github.com/mdgriffith/elm-ui/issues/367)
+                                            -}
+                                            , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                                            , htmlAttribute <| Html.Attributes.id "Blah"
+                                            ]
 
                                         else
                                             []

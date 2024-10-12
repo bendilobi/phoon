@@ -21,7 +21,7 @@ import Delay
 import Dict
 import Effect exposing (Effect)
 import Json.Decode
-import Json.Decode.Pipeline exposing (optional, required)
+import Json.Decode.Pipeline exposing (required)
 import Lib.ColorScheme as CS
 import Lib.MotivationData as MotivationData
 import Lib.PageFading as Fading exposing (Trigger(..))
@@ -41,7 +41,7 @@ import Time
 adjustBeforeRelease =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    ( "0.7.149", False )
+    ( "0.7.153", False )
 
 
 appVersion =

@@ -2,8 +2,10 @@ module Lib.Texts exposing (..)
 
 import Element exposing (..)
 import Element.Font as Font
+import Html exposing (th)
 import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.Session as Session exposing (BreathingSpeed(..))
+import String exposing (fromInt)
 import String.Format
 import Time exposing (Weekday(..))
 
@@ -142,10 +144,10 @@ daysSinceLastPractice lang n =
 
         _ ->
             if n == 1 then
-                "Day since last practice"
+                "day since last practice"
 
             else
-                "Days since last practice"
+                "days since last practice"
 
 
 letsGo : AppLanguage -> String
@@ -172,10 +174,10 @@ welcome : AppLanguage -> String
 welcome lang =
     (case lang of
         De ->
-            "Herzlich willkommen bei {{ }}!!"
+            "Herzlich willkommen bei {{ }}!"
 
         _ ->
-            "Welcome to {{ }}!!"
+            "Welcome to {{ }}!"
     )
         |> String.Format.value appName
 
@@ -186,25 +188,56 @@ introduction lang =
         De ->
             [ para
                 ("""
-            Mit *{{ }}* machst Du Deine Atemübung ganz entspannt, vielleicht sogar *im Liegen* und mit geschlossenen
-            Augen - *Klänge* leiten Dich jeweils zum nächsten Schritt. Und wenn Du selbst entscheiden möchtest, wann es 
-            weitergeht (z.B. Beginn und Ende der Retention), *tippst Du einfach mit drei Fingern* irgendwo auf den Bildschirm.
-            """
+                *{{}}* ist eine App für Smartphones (oder andere Touch Devices), die Dich die positiven Effekte der *Wim Hof Atemübung* 
+                so bequem wie möglich genießen lässt.                
+                """
                     |> String.Format.value appName
                 )
+            , bullet
+                --TODO: Doch irgendwie das mit den Ringen unterbringen?
+                ("""
+                *Finde Motivation* für eine regelmäßige Übungspraxis: Bestimme, wie häufig Du üben willst - {{ }} erfasst, wie lange Du Deine
+                Serie durchhältst.
+                """
+                    |> String.Format.value appName
+                )
+            , bullet
+                --TODO: Zeitprognose und ad hoc Anpassung erwähnen?
+                ("""
+                *Übe, wie es für Dich am bequemsten ist* - im Sitzen oder im Liegen: {{ }} führt Dich mit Klängen und Animationen und lässt sich 
+                während der Übung komplett mit Berührungsgesten steuern.
+                """
+                    |> String.Format.value appName
+                )
+            , bullet """
+                *Optimiere Deinen Übungeserfolg*: Verfolge die Entwicklung Deiner Retentionszeiten und passe die Übungsparameter entsprechend an.
+                """
             ]
 
         _ ->
             [ para
-                ("""*{{ }}* is an app for touch devices (smartphones, mainly) that aims to help you enjoy the benefits of the
-                *Wim Hof style breathwork*, by"""
+                ("""*{{ }}* is an app for smartphones (or other touch devices) that lets you reap the benefits of *Wim Hof style breathwork*
+                as conveniently as possible.
+                """
                     |> String.Format.value appName
                 )
-            , bullet """motivating you to *practice regularily* by keeping track of your *streak* of continuous practice sessions - according
-                to your *personal target* (e.g. four sessions per week)"""
-            , bullet """making your practice sessions as convenient as possible - guiding you with *animations* and using *sounds* and *touch 
-                gestures* so you can practice with closed eyes while lying down"""
-            , bullet """helping you optimize your breathwork effect by tuning exercise parameters and comparing their effect on retention times."""
+            , bullet
+                ("""
+            *Find and maintain motivation* for regular practice: Set a goal of how often you intend to practice - {{ }} keeps track of your streak
+            and makes sure you don't miss a beat
+                """
+                    |> String.Format.value appName
+                )
+            , bullet
+                ("""
+            *Conveniently practice however you like* - even lying down with closed eyes: {{ }} guides you with sounds and animations and can be  
+            operated during the practice session entirely by touch gestures.
+                """
+                    |> String.Format.value appName
+                )
+            , bullet """
+            *Optimize your breathwork success*: fine-tune your exercise parameters and keep track of your retention time progress.
+            """
             ]
 
 
@@ -212,39 +245,46 @@ installInstruction : AppLanguage -> Element msg -> List (Element msg)
 installInstruction lang icon =
     case lang of
         De ->
-            [ para """Diese App ist darauf optimiert, als Standalone-Link auf dem Smartphone-Homebildschirm 
-                            installiert zu werden. Auf dem iPhone musst Du dafür Safari nutzen und im "Teilen"-Menü ("""
+            [ para ("""
+            {{ }} ist eine "Progressive Web Application (PWA)" - eine Webseite, die darauf optimiert ist, wie eine App aus dem 
+            App Store auszusehen und benutzt zu werden. Um das bestmöglich erleben zu können, installiere sie bitte auf dem 
+            Home-Screen: Öffne das Teilen-Menü (
+            """ |> String.Format.value appName)
             , icon
-            , para """) "Zum Home-Bildschirm" wählen."""
+            , para """ Icon) und wähle dort "Zum Home-Bildschirm"."""
             ]
 
         _ ->
-            [ para """This web-app is optimized to be installed as a standalone link on your phone's (or tablet's) 
-            Home-screen. This way it will look and feel like a native app installed from the App Store. To create the app icon
-            on the Home-screen, go to the share menu ("""
+            [ para ("""{{ }} is a "Progressive Web Application (PWA)" - a website that's made to look and feel like a native app from the 
+            App Store. For this experience, please install it as a "link" to your phone's Home screen: Go to the share menu (
+            """ |> String.Format.value appName)
             , icon
-            , para """) and choose "Add to Home Screen" in the list that appears."""
+            , para """ icon) and choose "Add to Home Screen" in the list that appears."""
             ]
 
 
-introduction2 : AppLanguage -> String
+introduction2 : AppLanguage -> List (Element msg)
 introduction2 lang =
-    (case lang of
+    case lang of
         De ->
+            [ para
+                ("""
+                {{ }} bietet nur die nötigsten Erklärungen zur Durchführung der Wim-Hof-Atemtechnik. Wenn Du Dich damit noch nicht
+                auskennst, schaue Dir am Besten eines der unzähligen Erklärvideos auf YouTube an. Eine Erklärung vom Meister selbst
+                ist besser als tausend Worte geschriebene Anleitung!
             """
-            {{ }} hilft Dir auch dabei, eine regelmäßige Übungspraxis aufrechtzuerhalten: Hier wird erfasst, wie oft Du in Serie
-            Die Atemübungen gemacht hast. Und unter "Optimieren" kannst Du festlegen, wie oft pro Woche Du üben willst - so 
-            kannst Du auch hier und dort mal einen Tag auslassen, ohne Deine Serie zu verlieren!
-            """
+                    |> String.Format.value appName
+                )
+            ]
 
         _ ->
-            """
-            {{ }} also helps you to maintain a regular exercise practice: This records how many times in a row
-            you have done the breathing exercises. And under "Optimise" you can specify how often you want to practise each week - so you can 
-            This allows you to skip a day here and there without losing your series!
-            """
-    )
-        |> String.Format.value appName
+            [ para
+                ("""
+            {{ }} provides only basic instructions on how to do Wim Hof style breathwork. If you're new to his breathwork, we recommend you
+            head over to YouTube and find one of the numerous videos on the topic. Being shown by the man himself is surely better than
+            a thousand words of explanation!
+            """ |> String.Format.value appName)
+            ]
 
 
 streakInfoHeader : AppLanguage -> String
@@ -287,34 +327,44 @@ currentStreak lang =
             "Current Streak"
 
 
-practiceUntilLongest : AppLanguage -> String
-practiceUntilLongest lang =
-    case lang of
-        De ->
-            "Übe noch {{ }} mal und Du hast Deine längste Serie eingeholt!"
+practiceUntilLongest : AppLanguage -> Int -> String
+practiceUntilLongest lang n =
+    String.Format.value (String.fromInt n) <|
+        case lang of
+            De ->
+                "Übe noch {{ }} mal und Du hast Deine längste Serie eingeholt!"
 
-        _ ->
-            "Practice {{ }} more times and you will have caught up with your longest streak!"
+            _ ->
+                if n == 1 then
+                    "Practice one more time and you will have caught up with your longest streak!"
+
+                else
+                    "Practice {{ }} more times and you will have caught up with your longest streak!"
 
 
 caughtUpLongest : AppLanguage -> String
 caughtUpLongest lang =
     case lang of
         De ->
-            "*Du hast gerade Deine längste Serie bisher! Super!!*"
+            "*Du hast gerade Deine längste Serie bisher! Fantastisch!!*"
 
         _ ->
-            "*You are having your longest streak so far! Great!!*"
+            "*You are having your longest streak so far! Phantastic!!*"
 
 
-practiceUntilLast : AppLanguage -> String
-practiceUntilLast lang =
-    case lang of
-        De ->
-            "Übe noch {{ }} mal und Du hast Deine letzte Serie eingeholt!"
+practiceUntilLast : AppLanguage -> Int -> String
+practiceUntilLast lang n =
+    String.Format.value (String.fromInt n) <|
+        case lang of
+            De ->
+                "Übe noch {{ }} mal und Du hast Deine letzte Serie eingeholt!"
 
-        _ ->
-            "Practice {{ }} more times and you will have caught up with your most recent streak!"
+            _ ->
+                if n == 1 then
+                    "Practice one more time and you will have caught up with your last streak!"
+
+                else
+                    "Practice {{ }} more times and you will have caught up with your last streak!"
 
 
 caughtUpLast : AppLanguage -> String
@@ -324,7 +374,7 @@ caughtUpLast lang =
             "Du hast gerade Deine letzte Serie eingeholt! Super!!"
 
         _ ->
-            "You caught up with your most recent streak! Great!!"
+            "You caught up with your last streak! Great!!"
 
 
 practiceTomorrow : AppLanguage -> List (Element msg)
@@ -419,46 +469,51 @@ practiceUntilWeekday lang wday nextWeek =
 
 maxRingsReached : AppLanguage -> Int -> String
 maxRingsReached lang n =
-    (case lang of
-        De ->
-            "Du hast gerade die maximal mögliche Anzahl von Ringen ({{ }})."
+    String.Format.value (String.fromInt n) <|
+        case lang of
+            De ->
+                "Du hast gerade die maximal mögliche Anzahl von Ringen ({{ }})."
 
-        _ ->
-            "You have reached the maximum possible number of rings ({{ }})."
-    )
-        |> String.Format.value (String.fromInt n)
+            _ ->
+                "You have reached the maximum possible number of rings ({{ }})."
 
 
 nextRingAfter : AppLanguage -> Int -> String
 nextRingAfter lang sessions =
-    case lang of
-        De ->
-            "Der nächste Ring kommt nach "
-                ++ (if sessions > 1 then
-                        String.fromInt sessions ++ " Übungen."
+    String.Format.value (String.fromInt sessions) <|
+        case lang of
+            De ->
+                if sessions == 1 then
+                    "Der nächste Ring kommt nach der nächsten Übung"
 
-                    else
-                        "der nächsten Übung."
-                   )
+                else
+                    "Der nächste Ring kommt nach {{ }} Übungen"
 
-        _ ->
-            "You will get your next ring after "
-                ++ (if sessions > 1 then
-                        String.fromInt sessions ++ " practice sessions."
+            _ ->
+                if sessions == 1 then
+                    "You will geht the next ring after your next practice session."
 
-                    else
-                        "your next practice session."
-                   )
+                else
+                    "You will geht your next ring after {{ }} practice sessions."
 
 
-lastPracticeWas : AppLanguage -> String
-lastPracticeWas lang =
-    case lang of
-        De ->
-            "Deine letzte Übung war vor {{ }} Tagen."
+lastPracticeWas : AppLanguage -> Int -> String
+lastPracticeWas lang n =
+    String.Format.value (String.fromInt n) <|
+        case lang of
+            De ->
+                if n == 1 then
+                    "Deine letzte Übung war gestern."
 
-        _ ->
-            "Your last practice session was {{ }} days ago."
+                else
+                    "Deine letzte Übung war vor {{ }} Tagen."
+
+            _ ->
+                if n == 1 then
+                    "Your last practice session was yesterday."
+
+                else
+                    "Your last practice session was {{ }} days ago."
 
 
 updating : AppLanguage -> String
@@ -569,24 +624,21 @@ cycles lang n nAttributes =
 
 cycles2 : AppLanguage -> Int -> String
 cycles2 lang n =
-    case lang of
-        De ->
-            String.fromInt n
-                ++ (if n == 1 then
-                        " Runde"
+    String.Format.value (String.fromInt n) <|
+        case lang of
+            De ->
+                if n == 1 then
+                    "{{ }} Runde"
 
-                    else
-                        " Runden"
-                   )
+                else
+                    "{{ }} Runden"
 
-        _ ->
-            String.fromInt n
-                ++ (if n == 1 then
-                        " Cycle"
+            _ ->
+                if n == 1 then
+                    "{{ }} Cycle"
 
-                    else
-                        " Cycles"
-                   )
+                else
+                    "{{ }} Cycles"
 
 
 estimatedEnd : AppLanguage -> Element msg -> List (Element msg)
@@ -621,7 +673,7 @@ practiceWarnings lang =
             [ para """
             Die Atemübung, wie sie von Wim Hof weltweit bekannt gemacht wurde, ist eine intensive, körperliche Übung, die den Organismus
             gezielt einer Belastung aussetzt (Sauerstoff-Entzug), um einen Anpassungseffekt zu bewirken. Es kann dabei in seltenen Fällen
-            zu einer Bewusstseinseintrübung bis hin zu einer kurzen Bewusstlosigkeit kommen.
+            während der Übung zu einer Bewusstseinseintrübung bis hin zu einer kurzen Bewusstlosigkeit kommen.
             """
             , para """
             Es ist daher *sehr wichtig*, dass Du die Übung immer in einer Umgebung ausführst, in der das kein Problem ist, am Besten *im Sitzen 
@@ -630,11 +682,13 @@ practiceWarnings lang =
             , bullet "Übe *niemals im oder am Wasser* (auch nicht im flachen Wasser)!"
             , bullet "Übe *nie, während Du Auto fährst*"
             , bullet "Übe nicht, wenn Du nicht körperlich fit bist."
-            , bullet """Im Falle von Herzproblemen, Schwangerschaft, Epilepsie und ähnlichem, konsultiere auf jeden Fall Deinen Arzt, 
-            bevor Du die Atemübung ausprobierst!
+            , bullet """Im Falle von Herzproblemen, Bluthochdruck oder anderen Herz-Kreislauf-Problemen, Schwangerschaft, Epilepsie,
+            oder ähnlichen Gesundheitseinschränkungen, *konsultiere auf jeden Fall Deinen Arzt*, bevor Du die Atemübung ausprobierst!
             """
             , para """
             Die Autoren dieser App übernehmen keine Verantwortung für Deinen Umgang mit der App, d.h. Du übst auf eigene Verantwortung! 
+            """
+            , para """
             Die App ist nicht dafür gemacht, Dir die Atemübung beizubringen. 
             Informiere Dich unabhängig von der App über die korrekte Ausführung der Wim Hof Atmung (z.B. im Internet, auf Youtube, ...).
             """
@@ -642,23 +696,24 @@ practiceWarnings lang =
 
         _ ->
             [ para """
-            The breathing exercise, as made famous worldwide by Wim Hof, is an intensive, physical exercise that exposes the organism
+            The breathing exercise, as made famous worldwide by Wim Hof, is an intense, physical exercise that exposes the organism
             to stress (oxygen deprivation) in order to bring about an adaptation effect. In rare cases, this can
-            lead to a clouding of consciousness or even brief loss of consciousness may occur.
+            lead to a clouding or even brief loss of consciousness during the exercise.
             """
             , para """
             It is therefore *very important* that you always do the exercise in an environment where this is not a problem, preferably *sitting 
             or lying down on a soft surface*.
             """
-            , bullet """*never* practice *in or near water* (not even in shallow water)!"""
-            , bullet """*never* practice *while driving*"""
-            , bullet """Do not practise if you are not physically fit."""
+            , bullet """*Never* practice *in or near water* (not even in shallow water)!"""
+            , bullet """*Never* practice *while driving*"""
+            , bullet """Do not practice if you are not physically fit."""
             , bullet """In case of heart conditions, high blood pressure or other cardiovascular issues, pregnancy, 
-            epilepsy and the like, always consult your healthcare professional, 
-            before you try the breathing exercise!
+            epilepsy, or similar conditions, always *consult your healthcare professional* before trying the breathing exercise!
             """
             , para """
             The authors of this app accept no responsibility for your use of the app, i.e. you practise at your own risk! 
+            """
+            , para """
             The app is not designed to teach you the breathing exercise. 
             Inform yourself independently of the app about the correct execution of Wim Hof breathing (e.g. on the Internet, on YouTube, ...).
             """
@@ -699,12 +754,12 @@ retTrentCaption : AppLanguage -> String
 retTrentCaption lang =
     case lang of
         De ->
-            """Verlauf der gemittelten Retentionsdauern pro Sitzung (letzte 30). 
+            """Verlauf der gemittelten Retentionsdauern pro Sitzung (letzte 30 Sitzungen). 
         Die Linie oben zeigt die bisher längste Retention."""
 
         _ ->
-            """Plot of the average retention times per session (last 30). 
-        The line shows the longest retention to date"""
+            """Plot of the average retention times per session (last 30 sessions). 
+        The line at the top shows the longest retention to date"""
 
 
 updateAvailable : AppLanguage -> String
@@ -893,26 +948,37 @@ practiceGoal lang =
 
 timesPerWeek : AppLanguage -> Int -> List (Attribute msg) -> List (Element msg)
 timesPerWeek lang n attrs =
-    case lang of
-        De ->
-            "*{{ }}* mal pro Woche"
-                |> String.Format.value (String.fromInt n)
-                |> boldify attrs
+    boldify attrs <|
+        String.Format.value (String.fromInt n) <|
+            case lang of
+                De ->
+                    "*{{ }}* mal pro Woche"
 
-        _ ->
-            "*{{ }}* times per week"
-                |> String.Format.value (String.fromInt n)
-                |> boldify attrs
+                _ ->
+                    if n == 1 then
+                        "*{{ }}* time per week"
+
+                    else
+                        "*{{ }}* times per week"
 
 
-timesPerWeek2 : AppLanguage -> String
-timesPerWeek2 lang =
-    case lang of
-        De ->
-            "mal pro Woche"
+timesPerWeek2 : AppLanguage -> Int -> String
+timesPerWeek2 lang n =
+    String.Format.value (String.fromInt n) <|
+        case lang of
+            De ->
+                if n == 1 then
+                    "Einmal pro Woche"
 
-        _ ->
-            "times per week"
+                else
+                    "{{ }} mal pro Woche"
+
+            _ ->
+                if n == 1 then
+                    "Once per week"
+
+                else
+                    "{{ }} times per week"
 
 
 practiceGoalCaption : AppLanguage -> String

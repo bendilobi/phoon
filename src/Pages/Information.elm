@@ -819,11 +819,12 @@ viewSettings shared model =
                 viewSettingsItem
                     { label = Texts.practiceGoal shared.appLanguage
                     , value =
-                        (shared.sessionSettings.practiceFrequencyTarget
-                            |> String.fromInt
-                        )
-                            ++ " "
-                            ++ Texts.timesPerWeek2 shared.appLanguage
+                        -- (shared.sessionSettings.practiceFrequencyTarget
+                        --     |> String.fromInt
+                        -- )
+                        --     ++ " "
+                        --     ++ Texts.timesPerWeek2 shared.appLanguage
+                        Texts.timesPerWeek2 shared.appLanguage shared.sessionSettings.practiceFrequencyTarget
                     , attributes = lastItemAttrs
                     , item = PracticeFrequencyTarget
                     }
@@ -1094,11 +1095,11 @@ viewAppInfo shared model =
                     |> Button.withLightColor
                     |> Button.view shared.colorScheme
                 ]
-            , paragraph []
-                [ text "User Agent: "
-                , text <| String.fromInt <| Maybe.withDefault 0 shared.iOSVersion
-                ]
 
+            -- , paragraph []
+            --     [ text "User Agent: "
+            --     , text <| String.fromInt <| Maybe.withDefault 0 shared.iOSVersion
+            --     ]
             -- , column [ Font.size 11, spacing 10 ]
             --     [ el [ Font.bold ] <| text "Technische Informationen:"
             --     , text <|

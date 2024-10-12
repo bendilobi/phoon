@@ -10,8 +10,9 @@ import Element.Font as Font
 import FeatherIcons
 import Layouts
 import Layouts.BaseLayout
+import Layouts.BaseLayout.MainNav
 import Lib.ColorScheme as CS exposing (ColorScheme)
-import Lib.MotivationData as MotivationData exposing (MotivationData, previousStreak)
+import Lib.MotivationData as MotivationData exposing (MotivationData, previousStreak, streakInfo)
 import Lib.PageFading exposing (Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Texts as Texts exposing (bullet, bulletParagraph)
@@ -39,7 +40,13 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.BaseLayout_MainNav
         { header = Just <| Texts.motivationHeading shared.appLanguage
-        , headerIcon = Nothing
+        , headerIcon =
+            case shared.motivationData of
+                Nothing ->
+                    Nothing
+
+                _ ->
+                    Just <| Layouts.BaseLayout.MainNav.viewHeaderButton FeatherIcons.helpCircle <| InfoWindowToggled Welcome
         , enableScrolling = False
         , fadeOut = NoFade
         , subPage = Nothing
@@ -54,7 +61,13 @@ toLayout shared model =
                             viewWelcomeInfo shared
 
                         Just motData ->
-                            viewMotivationInfo shared motData
+                            -- viewMotivationInfo shared motData
+                            case model.infoContent of
+                                Welcome ->
+                                    viewWelcomeInfo shared
+
+                                StreakInfo ->
+                                    viewMotivationInfo shared motData
         }
 
 
@@ -63,19 +76,24 @@ toLayout shared model =
 
 
 type alias Model =
-    {}
+    { infoContent : InfoWindowContent }
+
+
+type InfoWindowContent
+    = Welcome
+    | StreakInfo
 
 
 init : Shared.Model -> () -> ( Model, Effect Msg )
 init shared () =
-    ( {}
+    ( { infoContent = StreakInfo }
     , Effect.batch
         [ Effect.adjustToday
         , case shared.motivationData of
             Nothing ->
                 case shared.updateState of
                     Shared.Model.NotUpdating ->
-                        Effect.sendMsg InfoWindowToggled
+                        Effect.sendMsg <| InfoWindowToggled Welcome
 
                     _ ->
                         Effect.none
@@ -91,7 +109,7 @@ init shared () =
 
 
 type Msg
-    = InfoWindowToggled
+    = InfoWindowToggled InfoWindowContent
 
 
 
@@ -101,8 +119,8 @@ type Msg
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
-        InfoWindowToggled ->
-            ( model
+        InfoWindowToggled content ->
+            ( { model | infoContent = content }
             , case shared.infoWindowState of
                 Shared.Model.Closed ->
                     Effect.setInfoWindowState Shared.Model.Half
@@ -134,7 +152,7 @@ view shared model =
         el
             [ width fill
             , height fill
-            , Events.onClick InfoWindowToggled
+            , Events.onClick <| InfoWindowToggled StreakInfo
             , Font.bold
             ]
         <|
@@ -145,6 +163,21 @@ view shared model =
                 Just motData ->
                     viewMotivationData shared model motData
     }
+
+
+viewWelcome : Shared.Model -> Element msg
+viewWelcome shared =
+    column
+        [ width fill
+        , centerY
+        , Font.center
+        , Font.size 25
+        , moveUp 70
+        , spacing 20
+        ]
+        [ el [ centerX ] <| text Texts.appName
+        , paragraph [ Font.size 17 ] [ text <| Texts.appSlogan shared.appLanguage ]
+        ]
 
 
 viewMotivationData : Shared.Model -> Model -> MotivationData -> Element Msg
@@ -172,10 +205,6 @@ viewMotivationData shared model motData =
                 ]
             <|
                 if not streakValid then
-                    -- if daysSinceLastSession - 1 == 1 then
-                    --     text <| "Tage seit letzter Übung"
-                    -- else
-                    --     text <| "Tage seit letzter Übung... Auf geht's!"
                     [ text <| Texts.daysSinceLastPractice shared.appLanguage daysSinceLastSession
                     , text <|
                         if daysSinceLastSession - 1 == 1 then
@@ -269,21 +298,6 @@ viewStreak colorScheme size freezes freezeInDanger streak =
     List.foldl viewRing viewStreakNumber ringSizes
 
 
-viewWelcome : Shared.Model -> Element msg
-viewWelcome shared =
-    column
-        [ width fill
-        , centerY
-        , Font.center
-        , Font.size 25
-        , moveUp 70
-        , spacing 20
-        ]
-        [ el [ centerX ] <| text Texts.appName
-        , paragraph [ Font.size 17 ] [ text <| Texts.appSlogan shared.appLanguage ]
-        ]
-
-
 viewWelcomeInfo : Shared.Model -> Layouts.BaseLayout.Overlay Msg
 viewWelcomeInfo shared =
     Layouts.BaseLayout.InfoWindow
@@ -291,7 +305,7 @@ viewWelcomeInfo shared =
         , info =
             column [ spacing 15 ]
                 (Texts.introduction shared.appLanguage
-                    ++ [ case shared.standalone of
+                    ++ (case shared.standalone of
                             Just False ->
                                 paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
                                     Texts.installInstruction shared.appLanguage <|
@@ -302,10 +316,10 @@ viewWelcomeInfo shared =
 
                             _ ->
                                 none
-                       , paragraph [] [ text <| Texts.introduction2 shared.appLanguage ]
-                       ]
+                       )
+                    :: Texts.introduction2 shared.appLanguage
                 )
-        , onClose = InfoWindowToggled
+        , onClose = InfoWindowToggled Welcome
         }
 
 
@@ -352,8 +366,8 @@ viewMotivationInfo shared motData =
                   in
                   if diffToMaxStreak < 4 && diffToMaxStreak > 0 then
                     bullet
-                        (Texts.practiceUntilLongest shared.appLanguage
-                            |> String.Format.value (diffToMaxStreak |> String.fromInt)
+                        (Texts.practiceUntilLongest shared.appLanguage diffToMaxStreak
+                         -- |> String.Format.value (diffToMaxStreak |> String.fromInt)
                         )
 
                   else if diffToMaxStreak == 0 then
@@ -391,8 +405,8 @@ viewMotivationInfo shared motData =
                             in
                             if diffToPreviousStreak < 4 && diffToPreviousStreak > 0 then
                                 bullet
-                                    (Texts.practiceUntilLast shared.appLanguage
-                                        |> String.Format.value (diffToPreviousStreak |> String.fromInt)
+                                    (Texts.practiceUntilLast shared.appLanguage diffToPreviousStreak
+                                     -- |> String.Format.value (diffToPreviousStreak |> String.fromInt)
                                     )
 
                             else if diffToPreviousStreak == 0 then
@@ -437,14 +451,12 @@ viewMotivationInfo shared motData =
                             bullet <| Texts.nextRingAfter shared.appLanguage sessions
                 , if streakValid && daysSinceLastSession > 1 then
                     bullet
-                        (Texts.lastPracticeWas shared.appLanguage
-                            |> String.Format.value (String.fromInt daysSinceLastSession)
-                        )
+                        (Texts.lastPracticeWas shared.appLanguage daysSinceLastSession)
 
                   else
                     none
                 ]
-        , onClose = InfoWindowToggled
+        , onClose = InfoWindowToggled StreakInfo
         }
 
 
