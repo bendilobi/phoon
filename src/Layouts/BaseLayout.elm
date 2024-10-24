@@ -473,7 +473,7 @@ viewInfoWindow props shared model toContentMsg =
             , Font.bold
             , Font.center
             , Font.size 18
-            , paddingEach { left = 30, top = 21, right = 30, bottom = 30 }
+            , paddingEach { left = 30, top = 21, right = 30, bottom = 20 }
             ]
           <|
             case props.overlay of

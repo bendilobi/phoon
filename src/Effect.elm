@@ -205,6 +205,7 @@ soundEncoder sound =
 
 setWakeLock : Effect msg
 setWakeLock =
+    --TODO: Mit Bool Wakelock auch wieder entfernen können -> Am Ende der Session
     SendMessageToJavaScript
         { tag = "SET_WAKE_LOCK"
         , data = Json.Encode.string ""

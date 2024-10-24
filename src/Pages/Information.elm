@@ -181,8 +181,7 @@ update shared msg model =
                     Effect.none
 
                 Browser.Events.Visible ->
-                    --TODO: Ausprobieren, ob ich das überhaupt brauche, oder ob das selbe
-                    --      im Shared update das sowieso übernimmt
+                    --TODO: Wie oft will ich die Version abfragen? bringt das Probleme, wenn die Nutzerzahlen steigen?
                     Effect.checkVersion ReceivedNewestVersionString
             )
 
@@ -388,7 +387,7 @@ update shared msg model =
                         NoDialog
               }
             , if newState == Button.Triggered then
-                --TODO: Auch Settings kopieren und einfügen
+                --TODO: Include the app settings into the copied and pasted stuff
                 case shared.motivationData of
                     Nothing ->
                         Effect.none

@@ -406,7 +406,6 @@ view props shared route { toContentMsg, model, content } =
                                                (see https://github.com/mdgriffith/elm-ui/issues/367)
                                             -}
                                             , htmlAttribute <| Html.Attributes.style "min-height" "auto"
-                                            , htmlAttribute <| Html.Attributes.id "Blah"
                                             ]
 
                                         else
@@ -646,6 +645,7 @@ viewSubpage props shared model subPage toContentMsg =
             [ width fill
             , height fill
             , scrollbarY
+            , htmlAttribute <| Html.Attributes.style "min-height" "auto"
             , paddingEach { left = left, right = right, bottom = 0, top = 0 }
             ]
           <|

@@ -108,7 +108,7 @@ view colorScheme currentInt (Settings settings) =
                 |> CrementButton.withDisabled (Just currentInt == settings.min)
                 |> CrementButton.withLightColor settings.isLightColored
                 |> CrementButton.view colorScheme
-            , settings.label currentInt
+            , el [ width fill, Font.center ] <| settings.label currentInt
             , CrementButton.new
                 { onPress =
                     settings.onCrement

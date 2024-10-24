@@ -204,13 +204,13 @@ introduction lang =
             , bullet
                 --TODO: Zeitprognose und ad hoc Anpassung erwähnen?
                 ("""
-                *Übe, wie es für Dich am bequemsten ist* - im Sitzen oder im Liegen: {{ }} führt Dich mit Klängen und Animationen und lässt sich 
+                *Praktiziere, wie es für Dich am bequemsten ist* - im Sitzen oder im Liegen: {{ }} führt Dich mit Klängen und Animationen und lässt sich 
                 während der Übung komplett mit Berührungsgesten steuern.
                 """
                     |> String.Format.value appName
                 )
             , bullet """
-                *Optimiere Deinen Übungeserfolg*: Verfolge die Entwicklung Deiner Retentionszeiten und passe die Übungsparameter entsprechend an.
+                *Optimiere Deinen Übungserfolg*: Verfolge die Entwicklung Deiner Retentionszeiten und passe die Übungsparameter entsprechend an.
                 """
             ]
 
@@ -241,6 +241,10 @@ introduction lang =
             ]
 
 
+
+--TODO: Kurzer allgemeiner Installationshinweis
+
+
 installInstruction : AppLanguage -> Element msg -> List (Element msg)
 installInstruction lang icon =
     case lang of
@@ -269,7 +273,7 @@ introduction2 lang =
         De ->
             [ para
                 ("""
-                {{ }} bietet nur die nötigsten Erklärungen zur Durchführung der Wim-Hof-Atemtechnik. Wenn Du Dich damit noch nicht
+                {{ }} bietet nur grundlegende Hinweise zur Durchführung der Wim-Hof-Atemtechnik. Wenn Du Dich damit noch nicht
                 auskennst, schaue Dir am Besten eines der unzähligen Erklärvideos auf YouTube an. Eine Erklärung vom Meister selbst
                 ist besser als tausend Worte geschriebene Anleitung!
             """
@@ -689,8 +693,7 @@ practiceWarnings lang =
             Die Autoren dieser App übernehmen keine Verantwortung für Deinen Umgang mit der App, d.h. Du übst auf eigene Verantwortung! 
             """
             , para """
-            Die App ist nicht dafür gemacht, Dir die Atemübung beizubringen. 
-            Informiere Dich unabhängig von der App über die korrekte Ausführung der Wim Hof Atmung (z.B. im Internet, auf Youtube, ...).
+            Informiere Dich bitte selbst über die korrekte Ausführung der Wim Hof Atmung (z.B. im Internet, auf Youtube, ...).
             """
             ]
 
@@ -714,8 +717,7 @@ practiceWarnings lang =
             The authors of this app accept no responsibility for your use of the app, i.e. you practise at your own risk! 
             """
             , para """
-            The app is not designed to teach you the breathing exercise. 
-            Inform yourself independently of the app about the correct execution of Wim Hof breathing (e.g. on the Internet, on YouTube, ...).
+            Please inform yourself about the correct execution of Wim Hof breathing (e.g. on the Internet, on YouTube, ...).
             """
             ]
 
@@ -990,7 +992,7 @@ practiceGoalCaption lang =
 
         _ ->
             """The practice goal determines how often “protective rings” for the continuation of the series are added. “4 times per week” 
-            means, for example, that three rings are added for four practice sessions. This means that three out of seven days can be taken off."""
+            means, for example, that three rings are added for four practice sessions. This way, three out of seven days can be taken off."""
 
 
 endStreak : AppLanguage -> String
@@ -1017,12 +1019,15 @@ endStreakMessage : AppLanguage -> String
 endStreakMessage lang =
     case lang of
         De ->
-            """Wenn Du das Übungsziel niedriger ansetzt als zu Beginn Deiner Serie ({{ }} Tage pro Woche), 
-        beginnt die Serie mit der nächsten Übung neu!"""
+            """Wenn Du das Übungsziel niedriger ansetzt als zu Beginn Deiner aktuellen Serie ({{ }} Tage pro Woche), 
+            wird sie beendet und mit der nächsten Übung beginnt eine neue Serie!
+        """
 
         _ ->
-            """If you set the practice goal lower than at the beginning of your streak ({{ }} days per week), 
-        the streak will restart with the next practice session!"""
+            """
+            If you set the practice goal lower than at the beginning of your current streak ({{ }} days per week), 
+        the streak will be cancelled and a new one will start with your next practice session!
+        """
 
 
 leaveGoalAt : AppLanguage -> String
@@ -1127,12 +1132,13 @@ appInfo lang =
 
 appSlogan : AppLanguage -> String
 appSlogan lang =
+    --TODO: Besseren Slogan ohne Zen?
     case lang of
         De ->
             "Wim Hof Atmung mit dem Hauch von Zen"
 
         _ ->
-            "Wim Hof breathwork with a flavor of Zen"
+            "Wim Hof style breathwork with a flavor of Zen"
 
 
 version : AppLanguage -> String
@@ -1225,9 +1231,9 @@ sessionStartHints lang =
         _ ->
             [ para """
         Take a relaxed position, either sitting or lying down. Make sure that you are  
-        undisturbed for the duration of the exercise and, if necessary, unmute your device so that you can hear the sounds. 
+        undisturbed for the duration of the exercise and, if necessary, unmute your device to be able to hear the sounds. 
         """
-            , bullet "Swipe right with one finger to show the options."
+            , bullet "Swipe right with one finger to access the options."
             , bullet "Tap with one finger to hear a bell (for sound check)."
             , bullet "Tap or swipe with three fingers to start the breathwork session."
             ]
@@ -1237,11 +1243,24 @@ breathingHints : AppLanguage -> List (Element msg)
 breathingHints lang =
     case lang of
         De ->
-            [ paragraph [ paddingXY 30 0 ] [ text "Atme tief ein und aus im Rhythmus der Animation, bis die Glocke erklingt." ]
+            -- [ paragraph [ paddingXY 30 0 ] [ text "Atme tief ein und aus im Rhythmus der Animation, bis die Glocke erklingt." ]
+            [ bullet "Atme tief ein und aus im Rhythmus der Animation, bis die Glocke erklingt."
+            , bullet """
+            Beim Einatmen drücke das Zwerchfell nach unten und fülle Deine Lunge von unten beginnend maximal mit Luft.
+            """
+            , bullet """
+            Beim Ausatmen entspanne einfach und lass' los, sodass die Luft von selbst entweicht.
+            """
             ]
 
         _ ->
-            [ paragraph [ paddingXY 30 0 ] [ text "Breathe in and out very deeply following the rhythm of the animation, until the bell sounds." ]
+            [ bullet "Breathe in and out very deeply following the rhythm of the animation, until the bell sounds."
+            , bullet """
+            When inhaling, push down your diaphragm and fill your lung completely with air, beginning from the bottom.
+            """
+            , bullet """
+            When exhaling, just relax and let go. Let the air get out all by itself.
+            """
             ]
 
 
@@ -1249,15 +1268,15 @@ breathingEndHints : AppLanguage -> List (Element msg)
 breathingEndHints lang =
     case lang of
         De ->
-            [ bullet "Atme noch einmal tief ein und lass' dann den Atem los,"
-            , bullet "halte die Luft an,"
-            , bullet "und tippe dann mit drei Fingern um die Retention zu beginnen."
+            [ bullet "Atme noch einmal tief ein und lass' den Atem los,"
+            , bullet "dann halte die Luft an,"
+            , bullet "und tippe mit drei Fingern um den Timer für die Retention zu starten."
             ]
 
         _ ->
-            [ bullet "Breathe in one last time, then let your breath go,"
+            [ bullet "Breathe in very deeply one last time, then let your breath go,"
             , bullet "hold your breath,"
-            , bullet "then tap with three fingers to begin the retention phase."
+            , bullet "then tap with three fingers to start the retention counter."
             ]
 
 
@@ -1266,12 +1285,14 @@ retentionHints lang =
     case lang of
         De ->
             [ bullet "Halte die Luft an so lange es geht."
-            , bullet "Wenn Du nicht mehr kannst, atme einmal tief ein und tippe mit drei Fingern."
+            , bullet "Entspanne alle Muskeln, fühle und genieße!"
+            , bullet "Wenn Du nicht mehr kannst, atme einmal tief ein, halte die Luft an und tippe mit drei Fingern."
             ]
 
         _ ->
             [ bullet "Hold your breath as long as you comfortably are able to."
-            , bullet "When you can't hold any longer, take one deep breath and tap with three fingers."
+            , bullet "Relax all muscles, feel and enjoy!"
+            , bullet "When you can't hold any longer, inhale very deeply, hold your breath and tap with three fingers."
             ]
 
 
@@ -1291,8 +1312,8 @@ sessionEndHints : AppLanguage -> List (Element msg)
 sessionEndHints lang =
     case lang of
         De ->
-            [ bullet "Tippe mit drei Fingern um die Sitzung zu speichern."
-            , bullet "Wenn Du die Sitzung nicht speichern möchtest, wische nach rechts, um die Optionen zu zeigen."
+            [ bullet "Tippe mit drei Fingern, um die Sitzungsergebnisse zu speichern und die Sitzung zu beenden."
+            , bullet "Wenn Du nicht speichern möchtest, wische nach rechts, um die Optionen anzuzeigen."
             ]
 
         _ ->
@@ -1449,20 +1470,25 @@ wakeLockNote lang =
         De ->
             [ para """*Bitte beachten:*"""
             , para """
-            Aufgrund eines Fehlers in iOS musst Du sicherstellen, dass sich der Bildschirm Deines Geräts während der Atemübung 
-            nicht automatisch sperrt.
+            Bitte stelle sicher, dass sich der Bildschirm Deines Geräts während der Atemübung nicht automatisch sperrt:
             """
             , para """
             Öffne die Einstellungen-App, gehe zu "Anzeige & Helligkeit" und wähle unter "Automatische Sperre" 4 Minuten oder mehr.
+            """
+            , para """
+            Dieser Schritt ist leider nötig, weil die App das wegen eines Fehlers in iOS noch nicht für Dich machen kann..."
             """
             ]
 
         _ ->
             [ para """*Please note:*"""
             , para """
-            Due to a bug in iOS, you have to make sure your screen doesn't automatically lock during your exercise. 
+            Please make sure your screen doesn't automatically lock during your exercise:
             """
             , para """
             Open the Settings app, choose "Display & Brightness" and set "Auto-Lock" to 4 minutes or more.
+            """
+            , para """
+            This is unfortunately necessary due to a bug in iOS which prevents apps like this one from doing it for you...
             """
             ]

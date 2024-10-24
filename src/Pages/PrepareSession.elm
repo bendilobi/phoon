@@ -257,5 +257,5 @@ viewWarnings shared =
     Layouts.BaseLayout.InfoWindow
         { header = Texts.warnings shared.appLanguage
         , onClose = OnToggleWarnings
-        , info = column [ spacing 20 ] <| Texts.practiceWarnings shared.appLanguage
+        , info = column [ spacing 15 ] <| Texts.practiceWarnings shared.appLanguage
         }

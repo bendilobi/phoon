@@ -261,7 +261,7 @@ viewStreak : ColorScheme -> Int -> Int -> Bool -> Int -> Element msg
 viewStreak colorScheme size freezes freezeInDanger streak =
     let
         ringSizes =
-            --TODO: Statt statischen Größen auf "width fill" und entsprechendem Padding basieren?
+            --TODO: Maybe try a different implementation, using width fill and padding to arrange the rings?
             List.foldl (\ringNumber sizes -> size - (ringNumber * 20) :: sizes) [] <|
                 List.range 0 (freezes - 1)
 
@@ -277,7 +277,6 @@ viewStreak colorScheme size freezes freezeInDanger streak =
                     CS.primaryMotivationCopyColor colorScheme
                 , Border.width <|
                     if ringSize == (List.head ringSizes |> Maybe.withDefault 0) && freezeInDanger then
-                        --TODO: In Kommentar erklären, warum inneren Ring nicht äußeren
                         1
 
                     else
@@ -471,7 +470,7 @@ viewKPI caption kpi =
         ]
         [ el [ centerX, Font.size 27, Font.extraBold ] <|
             el
-                [--TODO: initial Target für maxStreak und lastStreak speichern und hier anzeigen
+                [--TODO: Save the initial Target of maxStreak and lastStreak and show it here:
                  -- onRight <| el [ Font.size 11 ] <| text "5"
                 ]
             <|

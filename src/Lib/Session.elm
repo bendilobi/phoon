@@ -9,7 +9,6 @@ module Lib.Session exposing
     , breathCount
     , breathCountChoices
     , breathCountInt
-      -- , breathingSpeedDE
     , breathingSpeeds
     , currentPath
     , currentPhase
@@ -63,27 +62,6 @@ breathingSpeeds =
         -- If the compiler complains, maybe add the missing thing here?
     in
     [ Slow, Medium, Fast ]
-
-
-
--- breathingSpeedDE : BreathingSpeed -> String
--- breathingSpeedDE speed =
---     case speed of
---         Slow ->
---             "Langsam"
---         Medium ->
---             "Mittel"
---         Fast ->
---             "Schnell"
--- breathingSpeedEN : BreathingSpeed -> String
--- breathingSpeedEN speed =
---     case speed of
---         Slow ->
---             "Slow"
---         Medium ->
---             "Medium"
---         Fast ->
---             "Fast"
 
 
 type BreathCount
