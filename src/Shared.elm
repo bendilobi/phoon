@@ -2,7 +2,7 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
-    , appVersion, sessionHintsID, showDebugButtons, subPageClosingTime
+    , appVersion, sessionHintsID, subPageClosingTime
     )
 
 {-|
@@ -38,18 +38,22 @@ import Task
 import Time
 
 
-adjustBeforeRelease =
-    --TODO: Update-Mechanismus dokumentieren
-    -- Make version string in version.json identical!!!
-    ( "0.7.162", False )
+
+-- adjustBeforeRelease =
+--     --TODO: Debug Buttons abschaffen
+--     ( "0.7.162", False )
 
 
 appVersion =
-    Tuple.first adjustBeforeRelease
+    --TODO: Update-Mechanismus dokumentieren
+    -- Make version string in version.json identical!!!
+    "0.7.163"
 
 
-showDebugButtons =
-    Tuple.second adjustBeforeRelease
+
+-- Tuple.first adjustBeforeRelease
+-- showDebugButtons =
+--     Tuple.second adjustBeforeRelease
 
 
 subPageClosingTime =

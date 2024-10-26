@@ -1,5 +1,7 @@
 module Layouts.BaseLayout.SessionControls exposing (Model, Msg(..), Props, SessionHints, layout, map)
 
+import Browser
+import Browser.Events
 import Delay
 import Effect exposing (Effect)
 import Element as E exposing (..)
@@ -9,6 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import FeatherIcons
 import Html.Attributes
+import Json.Decode
+import Key
 import Layout exposing (Layout)
 import Layouts.BaseLayout
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -94,6 +98,7 @@ type alias Model =
     , swipeDirectionY : Maybe Bool
     , sessionHintsNudge : Float
     , sessionHintsNudgeToggle : Bool
+    , hintsShownByKeyPress : Bool
     }
 
 
@@ -110,6 +115,7 @@ init props shared _ =
       , swipeDirectionY = Nothing
       , sessionHintsNudge = 0
       , sessionHintsNudgeToggle = False
+      , hintsShownByKeyPress = False
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -137,8 +143,10 @@ type Msg
     | SessionFadedOut
     | NudgeSessionHints
       -- To simulate gestures via buttons for debugging in desktop browser:
-    | MouseNavTap
-    | MouseNavSwipe
+      -- | MouseNavTap
+      -- | MouseNavSwipe
+    | KeyUp Key.Key
+    | KeyDown Key.Key
 
 
 update : Props contentMsg -> Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
@@ -231,17 +239,17 @@ update props shared route msg model =
               --       ein zweites End Event...
             , Effect.batch <|
                 (if multitouchRegistered then
-                    Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock
+                    (Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock) :: props.multitouchEffects
 
                  else
-                    Effect.none
+                    -- Effect.none
+                    []
                 )
-                    :: (if multitouchRegistered then
-                            props.multitouchEffects
-
-                        else
-                            []
-                       )
+                    -- :: (if multitouchRegistered then
+                    --         props.multitouchEffects
+                    --     else
+                    --         []
+                    --    )
                     ++ (if singleTapRegistered then
                             props.singleTapEffects
 
@@ -261,17 +269,63 @@ update props shared route msg model =
         ReleaseDebounceBlock ->
             ( { model | debounceBlock = False }, Effect.none )
 
-        MouseNavSwipe ->
-            ( { model | controlsShown = True }, Effect.none )
+        -- MouseNavSwipe ->
+        --     ( { model | controlsShown = True }, Effect.none )
+        -- MouseNavTap ->
+        --     ( { model | controlsShown = False }
+        --     , if not model.controlsShown then
+        --         Effect.batch props.multitouchEffects
+        --       else
+        --         Effect.none
+        --     )
+        KeyDown key ->
+            case key of
+                Key.ArrowDown ->
+                    ( { model | hintsShownByKeyPress = not model.controlsShown }, Effect.none )
 
-        MouseNavTap ->
-            ( { model | controlsShown = False }
-            , if not model.controlsShown then
-                Effect.batch props.multitouchEffects
+                _ ->
+                    ( model, Effect.none )
 
-              else
-                Effect.none
-            )
+        KeyUp key ->
+            case key of
+                --TODO: unify this with the code in SwipeEnd -> no dupilcation
+                Key.Space ->
+                    let
+                        multitouchRegistered =
+                            not model.controlsShown
+                                && not model.debounceBlock
+                    in
+                    ( { model
+                        | controlsShown = False
+                        , debounceBlock = model.debounceBlock || multitouchRegistered
+                      }
+                    , if multitouchRegistered then
+                        Effect.batch
+                            ((Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock)
+                                :: props.multitouchEffects
+                            )
+
+                      else
+                        Effect.none
+                    )
+
+                Key.Escape ->
+                    ( { model | controlsShown = not model.controlsShown }, Effect.none )
+
+                Key.ArrowDown ->
+                    ( { model
+                        | controlsShown = False
+                        , hintsShownByKeyPress = False
+                      }
+                    , Effect.none
+                    )
+
+                Key.Enter ->
+                    ( { model | controlsShown = False }, Effect.batch props.singleTapEffects )
+
+                _ ->
+                    --TODO: Hinweisfenster mit Shortcuts (auch bei Enter)
+                    ( { model | controlsShown = False }, Effect.none )
 
         ToggleFadeIn fade ->
             ( { model | fadeState = Fading.update fade }
@@ -314,7 +368,10 @@ update props shared route msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Browser.Events.onKeyUp (Json.Decode.map KeyUp Key.decoder)
+        , Browser.Events.onKeyDown (Json.Decode.map KeyDown Key.decoder)
+        ]
 
 
 
@@ -368,8 +425,8 @@ view props shared route { toContentMsg, model, content } =
     }
 
 
-viewTouchOverlay : Bool -> Element Msg
-viewTouchOverlay debug =
+viewTouchOverlay : Element Msg
+viewTouchOverlay =
     el
         [ width fill
         , height fill
@@ -378,30 +435,30 @@ viewTouchOverlay debug =
         , htmlAttribute <| Swipe.onEnd SwipeEnd
         ]
     <|
-        if debug then
-            column
-                [ spacing 10 ]
-                [ viewDebugButton MouseNavSwipe "Swipe"
-                , viewDebugButton MouseNavTap "Tap"
-                ]
+        -- if debug then
+        --     column
+        --         [ spacing 10 ]
+        --         [ viewDebugButton MouseNavSwipe "Swipe"
+        --         , viewDebugButton MouseNavTap "Tap"
+        --         ]
+        -- else
+        none
 
-        else
-            none
 
 
-viewDebugButton : Msg -> String -> Element Msg
-viewDebugButton msg label =
-    Input.button
-        [ BG.color <| rgb255 33 33 33
-        , Font.color <| rgb 1 1 1
-        , padding 10
-        , width fill
-        , Font.center
-        , Font.size 10
-        ]
-        { onPress = Just msg
-        , label = text label
-        }
+-- viewDebugButton : Msg -> String -> Element Msg
+-- viewDebugButton msg label =
+--     Input.button
+--         [ BG.color <| rgb255 33 33 33
+--         , Font.color <| rgb 1 1 1
+--         , padding 10
+--         , width fill
+--         , Font.center
+--         , Font.size 10
+--         ]
+--         { onPress = Just msg
+--         , label = text label
+--         }
 
 
 viewControls : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg) -> Element contentMsg
@@ -464,7 +521,7 @@ viewControls props shared model toContentMsg =
 
           else
             none
-        , viewTouchOverlay Shared.showDebugButtons
+        , viewTouchOverlay
             |> E.map toContentMsg
         , column
             [ width fill
@@ -590,7 +647,7 @@ viewHeaderAndTouchOverlay props shared model toContentMsg =
             none
 
           else
-            viewTouchOverlay Shared.showDebugButtons
+            viewTouchOverlay
                 |> E.map toContentMsg
         ]
 
@@ -628,14 +685,18 @@ viewSessionHints props shared model =
                 ([ width fill
                  , htmlAttribute <| Html.Attributes.id Shared.sessionHintsID
                  , moveDown <|
-                    toFloat sessionHeader.height
-                        + min hintsHeight (max dragDistance 0)
-                        + (if props.nudgeSessionHints && model.swipeInitialPosition == Nothing then
-                            model.sessionHintsNudge
+                    if model.hintsShownByKeyPress then
+                        hintsHeight
 
-                           else
-                            0
-                          )
+                    else
+                        toFloat sessionHeader.height
+                            + min hintsHeight (max dragDistance 0)
+                            + (if props.nudgeSessionHints && model.swipeInitialPosition == Nothing then
+                                model.sessionHintsNudge
+
+                               else
+                                0
+                              )
                  , htmlAttribute <|
                     case model.swipeInitialPosition of
                         Nothing ->
