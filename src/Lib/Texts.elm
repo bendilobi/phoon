@@ -1215,17 +1215,14 @@ practiceSetup lang =
             "Set up practice situation"
 
 
-sessionStartHints : AppLanguage -> List (Element msg)
-sessionStartHints lang =
+sessionStartHintsIntro : AppLanguage -> List (Element msg)
+sessionStartHintsIntro lang =
     case lang of
         De ->
             [ para """
         Nimm' eine entspannte Position ein, entweder im Sitzen oder im Liegen. Sorge dafür, dass Du 
         für die Dauer der Übung ungestört bist und entferne ggf. die Stummschaltung Deines Geräts, um 
         die Klänge hören zu können."""
-            , bullet "Wische mit einem Finger nach rechts, um Optionen anzuzeigen."
-            , bullet "Tippe mit einem Finger, um ein Glöckchen zu hören (Soundtest)."
-            , bullet "Tippe mit drei Fingern, um mit der Atemübung zu beginnen."
             ]
 
         _ ->
@@ -1233,9 +1230,43 @@ sessionStartHints lang =
         Take a relaxed position, either sitting or lying down. Make sure that you are  
         undisturbed for the duration of the exercise and, if necessary, unmute your device to be able to hear the sounds. 
         """
-            , bullet "Swipe right with one finger to access the options."
-            , bullet "Tap with one finger to hear a bell (for sound check)."
-            , bullet "Tap or swipe with three fingers to start the breathwork session."
+            ]
+
+
+sessionStartHintsKey : AppLanguage -> List (Element msg)
+sessionStartHintsKey lang =
+    case lang of
+        De ->
+            [ bullet """Halte die *Pfeil nach unten*-Taste gedrückt, um diese Hinweise anzuzeigen.""" ]
+
+        _ ->
+            [ bullet """Press the *arrow down* key to show these hints.""" ]
+
+
+keyWrapper : Maybe Bool -> String -> String
+keyWrapper showKey k =
+    case showKey of
+        Just True ->
+            " (*{{ }}*)"
+                |> String.Format.value k
+
+        _ ->
+            ""
+
+
+sessionStartHintsBullets : AppLanguage -> (String -> String) -> List (Element msg)
+sessionStartHintsBullets lang key =
+    case lang of
+        De ->
+            [ bullet <| "Wische mit einem Finger nach rechts, um Optionen anzuzeigen." ++ key "Esc"
+            , bullet <| "Tippe mit einem Finger, um ein Glöckchen zu hören (Soundtest)." ++ key "Enter"
+            , bullet <| "Tippe mit drei Fingern, um mit der Atemübung zu beginnen." ++ key "Leertaste"
+            ]
+
+        _ ->
+            [ bullet <| "Swipe right with one finger to access the options." ++ key "Esc"
+            , bullet <| "Tap with one finger to hear a bell (for sound check)." ++ key "Enter"
+            , bullet <| "Tap or swipe with three fingers to start the breathwork session." ++ key "Space"
             ]
 
 
@@ -1243,7 +1274,6 @@ breathingHints : AppLanguage -> List (Element msg)
 breathingHints lang =
     case lang of
         De ->
-            -- [ paragraph [ paddingXY 30 0 ] [ text "Atme tief ein und aus im Rhythmus der Animation, bis die Glocke erklingt." ]
             [ bullet "Atme tief ein und aus im Rhythmus der Animation, bis die Glocke erklingt."
             , bullet """
             Beim Einatmen drücke das Zwerchfell nach unten und fülle Deine Lunge von unten beginnend maximal mit Luft.
@@ -1264,35 +1294,39 @@ breathingHints lang =
             ]
 
 
-breathingEndHints : AppLanguage -> List (Element msg)
-breathingEndHints lang =
+breathingEndHints : AppLanguage -> (String -> String) -> List (Element msg)
+breathingEndHints lang key =
     case lang of
         De ->
             [ bullet "Atme noch einmal tief ein und lass' den Atem los,"
             , bullet "dann halte die Luft an,"
-            , bullet "und tippe mit drei Fingern um den Timer für die Retention zu starten."
+            , bullet <| "und tippe mit drei Fingern um den Timer für die Retention zu starten." ++ key "Leertaste"
             ]
 
         _ ->
             [ bullet "Breathe in very deeply one last time, then let your breath go,"
             , bullet "hold your breath,"
-            , bullet "then tap with three fingers to start the retention counter."
+            , bullet <| "then tap with three fingers to start the retention counter." ++ key "Space"
             ]
 
 
-retentionHints : AppLanguage -> List (Element msg)
-retentionHints lang =
+retentionHints : AppLanguage -> (String -> String) -> List (Element msg)
+retentionHints lang key =
     case lang of
         De ->
             [ bullet "Halte die Luft an so lange es geht."
             , bullet "Entspanne alle Muskeln, fühle und genieße!"
-            , bullet "Wenn Du nicht mehr kannst, atme einmal tief ein, halte die Luft an und tippe mit drei Fingern."
+            , bullet <|
+                "Wenn Du nicht mehr kannst, atme einmal tief ein, halte die Luft an und tippe mit drei Fingern."
+                    ++ key "Leertaste"
             ]
 
         _ ->
             [ bullet "Hold your breath as long as you comfortably are able to."
             , bullet "Relax all muscles, feel and enjoy!"
-            , bullet "When you can't hold any longer, inhale very deeply, hold your breath and tap with three fingers."
+            , bullet <|
+                "When you can't hold any longer, inhale very deeply, hold your breath and tap with three fingers."
+                    ++ key "Space"
             ]
 
 
@@ -1308,17 +1342,25 @@ relaxretHints lang =
             ]
 
 
-sessionEndHints : AppLanguage -> List (Element msg)
-sessionEndHints lang =
+sessionEndHints : AppLanguage -> (String -> String) -> List (Element msg)
+sessionEndHints lang key =
     case lang of
         De ->
-            [ bullet "Tippe mit drei Fingern, um die Sitzungsergebnisse zu speichern und die Sitzung zu beenden."
-            , bullet "Wenn Du nicht speichern möchtest, wische nach rechts, um die Optionen anzuzeigen."
+            [ bullet <|
+                "Tippe mit drei Fingern, um die Sitzungsergebnisse zu speichern und die Sitzung zu beenden."
+                    ++ key "Leertaste"
+            , bullet <|
+                "Wenn Du nicht speichern möchtest, wische nach rechts, um die Optionen anzuzeigen."
+                    ++ key "Esc"
             ]
 
         _ ->
-            [ bullet "Tap with three fingers to save your retention data and end the session."
-            , bullet "If you don't want to save the data, swipe right to show the options."
+            [ bullet <|
+                "Tap with three fingers to save your retention data and end the session."
+                    ++ key "Space"
+            , bullet <|
+                "If you don't want to save the data, swipe right to show the options."
+                    ++ key "Esc"
             ]
 
 

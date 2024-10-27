@@ -274,5 +274,12 @@ viewSessionHints shared =
         column
             [ spacing 20 ]
         <|
-            Texts.sessionStartHints shared.appLanguage
+            Texts.sessionStartHintsIntro shared.appLanguage
+                ++ (if shared.mouseDetected == Just True then
+                        Texts.sessionStartHintsKey shared.appLanguage
+
+                    else
+                        []
+                   )
+                ++ (Texts.sessionStartHintsBullets shared.appLanguage <| Texts.keyWrapper shared.mouseDetected)
     }

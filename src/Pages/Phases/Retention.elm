@@ -149,5 +149,6 @@ viewSessionHints shared =
             [ spacing 20
             ]
         <|
-            Texts.retentionHints shared.appLanguage
+            Texts.retentionHints shared.appLanguage <|
+                Texts.keyWrapper shared.mouseDetected
     }

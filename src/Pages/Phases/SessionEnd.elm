@@ -347,5 +347,6 @@ viewSessionHints shared =
             [ spacing 20
             ]
         <|
-            Texts.sessionEndHints shared.appLanguage
+            Texts.sessionEndHints shared.appLanguage <|
+                Texts.keyWrapper shared.mouseDetected
     }

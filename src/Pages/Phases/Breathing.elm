@@ -184,7 +184,8 @@ viewSessionHints shared model =
                 -- , Font.size 15
                 ]
             <|
-                Texts.breathingEndHints shared.appLanguage
+                Texts.breathingEndHints shared.appLanguage <|
+                    Texts.keyWrapper shared.mouseDetected
         }
 
     else

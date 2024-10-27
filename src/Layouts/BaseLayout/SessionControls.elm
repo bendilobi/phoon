@@ -114,7 +114,7 @@ init props shared _ =
       , swipeDirectionY = Nothing
       , sessionHintsNudge = 0
       , sessionHintsNudgeToggle = False
-      , hintsShownByKeyPress = False
+      , hintsShownByKeyPress = shared.mouseDetected == Just True
       }
     , Effect.batch
         [ Effect.setWakeLock
@@ -243,7 +243,12 @@ update props shared route msg model =
                     ( model, Effect.sendMsg GoNextTriggered )
 
                 Key.Escape ->
-                    ( { model | controlsShown = not model.controlsShown }, Effect.none )
+                    ( { model
+                        | controlsShown = not model.controlsShown
+                        , hintsShownByKeyPress = False
+                      }
+                    , Effect.none
+                    )
 
                 Key.ArrowDown ->
                     ( { model
@@ -257,7 +262,12 @@ update props shared route msg model =
                     ( model, Effect.sendMsg PageActionTriggered )
 
                 _ ->
-                    ( { model | controlsShown = False }, Effect.none )
+                    ( { model
+                        | controlsShown = False
+                        , hintsShownByKeyPress = False
+                      }
+                    , Effect.none
+                    )
 
         GoNextTriggered ->
             let
