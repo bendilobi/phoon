@@ -27,6 +27,10 @@ type alias Model =
     , today : Date.Date
     , appLanguage : Texts.AppLanguage
     , standalone : Maybe Bool
+
+    {- We go under the assumption that if a mouse is used, the app is run in a desktop environment with keyboard.
+       So we use this field for desktop-specific stuff:
+    -}
     , mouseDetected : Maybe Bool
     , iOSVersion : Maybe Int
     , appVisible : Bool

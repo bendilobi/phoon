@@ -415,11 +415,13 @@ view props shared route { toContentMsg, model, content } =
                                 )
                                 content.element
                             ]
-                    , if shared.deviceInfo.orientation == Portrait then
-                        viewNavBar shared route |> E.map toContentMsg
+                    , if shared.deviceInfo.orientation == Landscape && shared.mouseDetected == Just False then
+                        --TODO: Maybe it would be better to determine whether to show the navbar based on screen
+                        --      size...
+                        none
 
                       else
-                        none
+                        viewNavBar shared route |> E.map toContentMsg
                     ]
     }
 
