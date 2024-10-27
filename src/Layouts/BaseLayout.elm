@@ -99,6 +99,7 @@ type Msg
     | SwipeEnd Swipe.Event
     | CancelSwipe
     | PointerDetected Bool
+    | IgnoreSwipe Swipe.Event
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -191,6 +192,9 @@ update shared msg model =
               else
                 Effect.none
             )
+
+        IgnoreSwipe _ ->
+            ( model, Effect.none )
 
         CancelSwipe ->
             ( { model
@@ -338,13 +342,9 @@ viewInfoWindow props shared model toContentMsg =
         halfHeight =
             shared.deviceInfo.window.height / 2 + 52
     in
-    column
+    el
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
-        , centerX
-        , Font.color <| CS.primaryColors.primary
-        , Font.size 14
-        , BG.color <| rgba255 241 241 230 0.55
-        , paddingEach { top = 0, left = 23, right = 23, bottom = 20 }
+        , height <| px <| round <| shared.deviceInfo.window.height
         , Border.roundEach
             { topLeft = 25
             , topRight = 25
@@ -352,28 +352,6 @@ viewInfoWindow props shared model toContentMsg =
             , bottomRight = 0
             }
         , clip
-
-        {- backdrop-filter needs a "-webkit-" prefix in iOS prior to 18, so we try to respect that here: -}
-        , htmlAttribute <|
-            case shared.iOSVersion of
-                Nothing ->
-                    Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
-
-                Just v ->
-                    if v < 18 then
-                        Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(20px);"
-
-                    else
-                        Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
-        , height <| px <| round <| shared.deviceInfo.window.height
-        , htmlAttribute <|
-            case model.swipeLocationY of
-                {- Suppress animation while swiping -}
-                Nothing ->
-                    Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
-
-                _ ->
-                    Html.Attributes.hidden False
         , moveUp <|
             case props.overlay of
                 InfoWindow _ ->
@@ -401,8 +379,29 @@ viewInfoWindow props shared model toContentMsg =
 
                 _ ->
                     0
+        , BG.color <| rgba255 241 241 230 0.55
+
+        {- backdrop-filter needs a "-webkit-" prefix in iOS prior to 18, so we try to respect that here: -}
+        , htmlAttribute <|
+            case shared.iOSVersion of
+                Nothing ->
+                    Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
+
+                Just v ->
+                    if v < 18 then
+                        Html.Attributes.attribute "style" "-webkit-backdrop-filter: blur(20px);"
+
+                    else
+                        Html.Attributes.attribute "style" "backdrop-filter: blur(20px);"
+        , htmlAttribute <|
+            case model.swipeLocationY of
+                {- Suppress animation while swiping -}
+                Nothing ->
+                    Transition.properties [ Transition.transform 500 [ Transition.easeOutExpo ] ]
+
+                _ ->
+                    Html.Attributes.hidden False
         , inFront <|
-            {- Overlay for receiving touch events; with resize and close buttons in front -}
             let
                 safeAreaBottom =
                     --TODO: Offenbar ist der Wert hin und wieder fälschlicherweise 0...
@@ -426,117 +425,125 @@ viewInfoWindow props shared model toContentMsg =
 
                 -- halfHeight - 100
             in
-            column
+            el
                 [ width fill
-                , height <|
-                    px <|
-                        round <|
-                            touchAreaHeight
+                , height <| px <| round safeAreaBottom
+                , moveDown touchAreaHeight
+                , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| IgnoreSwipe e
+                , htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| IgnoreSwipe e
+                , htmlAttribute <| Swipe.onEnd <| \e -> toContentMsg <| IgnoreSwipe e
                 ]
-                [ (el
-                    [ width fill
-                    , height fill
-                    , htmlAttribute <| Swipe.onStart SwipeStart
-                    , htmlAttribute <| Swipe.onMove Swipe
-                    , htmlAttribute <| Swipe.onEnd SwipeEnd
+                none
+        , inFront <|
+            el
+                []
+            <|
+                {- Close button -}
+                Input.button
+                    [ Font.color <| CS.greyOverTransparencyColor shared.colorScheme
                     ]
-                   <|
-                    el
-                        [ width fill ]
-                    <|
-                        {- Resize-button -}
-                        Input.button
-                            [ centerX
-                            , height <| px 25
-                            , width fill
-                            , padding 5
-                            ]
-                            { onPress = Just OnInfoWindowResize
-                            , label =
-                                el
-                                    [ height <| px 5
-                                    , width <| px 40
-                                    , BG.color <| CS.greyOverTransparencyColor shared.colorScheme
-                                    , Border.rounded 4
-                                    , alignTop
-                                    ]
-                                    none
-                            }
-                  )
-                    |> E.map toContentMsg
-                , el
-                    [ paddingXY 15 0
-                    , moveUp <| touchAreaHeight - 45
-                    ]
-                  <|
-                    {- Close button -}
-                    Input.button
-                        [ Font.color <| CS.greyOverTransparencyColor shared.colorScheme
-                        ]
-                        { onPress =
-                            case props.overlay of
-                                InfoWindow { onClose } ->
-                                    Just onClose
+                    { onPress =
+                        case props.overlay of
+                            InfoWindow { onClose } ->
+                                Just onClose
 
-                                _ ->
-                                    Nothing
-                        , label =
-                            FeatherIcons.withSize 32 FeatherIcons.x
+                            _ ->
+                                Nothing
+                    , label =
+                        el
+                            [ padding 15
+                            ]
+                        <|
+                            (FeatherIcons.withSize 32 FeatherIcons.x
                                 |> FeatherIcons.withStrokeWidth 1.3
                                 |> FeatherIcons.toHtml []
                                 |> html
-                        }
+                            )
+                    }
+        , inFront <|
+            el
+                [ width fill
                 ]
+            <|
+                {- Resize-button -}
+                Input.button
+                    [ centerX
+                    , height <| px 25
+                    , width fill
+                    , padding 5
+                    ]
+                    { onPress = Just <| toContentMsg OnInfoWindowResize
+                    , label =
+                        el
+                            [ height <| px 5
+                            , width <| px 40
+                            , BG.color <| CS.greyOverTransparencyColor shared.colorScheme
+                            , Border.rounded 4
+                            , alignTop
+                            ]
+                            none
+                    }
         ]
-        [ el
-            {- Header -}
+    <|
+        column
             [ width fill
-            , Font.bold
-            , Font.center
-            , Font.size 18
-            , paddingEach { left = 30, top = 21, right = 30, bottom = 20 }
+            , height fill
+            , Font.color <| CS.primaryColors.primary
+            , Font.size 14
+            , paddingEach { top = 0, left = 23, right = 23, bottom = 20 }
+            , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| SwipeStart e
+            , htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| Swipe e
+            , htmlAttribute <| Swipe.onEnd <| \e -> toContentMsg <| SwipeEnd e
             ]
-          <|
-            case props.overlay of
-                InfoWindow { header } ->
-                    paragraph [] [ text header ]
+            [ el
+                {- Header -}
+                [ width fill
+                , Font.bold
+                , Font.center
+                , Font.size 18
+                , paddingEach { left = 30, top = 22, right = 30, bottom = 20 }
+                ]
+              <|
+                case props.overlay of
+                    InfoWindow { header } ->
+                        paragraph [] [ text header ]
+
+                    _ ->
+                        none
+            , {- Information content -}
+              case props.overlay of
+                InfoWindow { info } ->
+                    info
 
                 _ ->
                     none
-        , {- Information content -}
-          case props.overlay of
-            InfoWindow { info } ->
-                info
 
-            _ ->
-                none
-
-        -- , let
-        --     { top, bottom, left, right } =
-        --         SafeArea.paddingEach shared.safeAreaInset
-        --   in
-        --   --   paragraph [ paddingXY 0 20, Font.size 15 ]
-        --   --     [ el [ Font.bold ] <| text "Safe Area: "
-        --   --     , text "top: "
-        --   --     , text <| String.fromInt top
-        --   --     , text ", bottom : "
-        --   --     , text <| String.fromInt bottom
-        --   --     , text ", left: "
-        --   --     , text <| String.fromInt left
-        --   --     , text ", right: "
-        --   --     , text <| String.fromInt right
-        --   --     ]
-        --   el [ width fill, paddingXY 0 30 ] <| el [ alignRight ] <| text <| String.fromInt bottom
-        -- , let
-        --     { bottom } =
-        --         SafeArea.paddingEach shared.safeAreaInset
-        --   in
-        --   paragraph [ Font.size 11, paddingXY 20 30 ]
-        --     [ text "SwipeInitialY: "
-        --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY
-        --     , text ", CurrentY: "
-        --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeLocationY
-        --     , text ", sab: "
-        --     , text <| String.fromInt bottom
-        --     ]
-        ]
+            -- , let
+            --     { top, bottom, left, right } =
+            --         SafeArea.paddingEach shared.safeAreaInset
+            --   in
+            --   --   paragraph [ paddingXY 0 20, Font.size 15 ]
+            --   --     [ el [ Font.bold ] <| text "Safe Area: "
+            --   --     , text "top: "
+            --   --     , text <| String.fromInt top
+            --   --     , text ", bottom : "
+            --   --     , text <| String.fromInt bottom
+            --   --     , text ", left: "
+            --   --     , text <| String.fromInt left
+            --   --     , text ", right: "
+            --   --     , text <| String.fromInt right
+            --   --     ]
+            --   el [ width fill, paddingXY 0 30 ] <| el [ alignRight ] <| text <| String.fromInt bottom
+            -- , let
+            --     { bottom } =
+            --         SafeArea.paddingEach shared.safeAreaInset
+            --   in
+            --   paragraph [ Font.size 11, paddingXY 20 30 ]
+            --     [ text "SwipeInitialY: "
+            --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY
+            --     , text ", CurrentY: "
+            --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeLocationY
+            --     , text ", sab: "
+            --     , text <| String.fromInt bottom
+            --     ]
+            ]

@@ -299,7 +299,7 @@ viewWelcomeInfo shared =
         { header = Texts.welcome shared.appLanguage
         , info =
             column [ spacing 15 ]
-                (Texts.introduction shared.appLanguage
+                ((Texts.introduction shared.appLanguage
                     ++ (case shared.standalone of
                             Just False ->
                                 paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
@@ -313,6 +313,20 @@ viewWelcomeInfo shared =
                                 none
                        )
                     :: Texts.introduction2 shared.appLanguage
+                 )
+                    ++ [ link []
+                            { url = "https://www.youtube.com/watch?v=MgKdHG6MQ0g&list=PL2WKxL9enbZQ2XpjhGXG-rDG0_lUp4OcX"
+                            , label =
+                                el
+                                    [ Font.color <| rgb255 154 59 116
+                                    , Font.underline
+                                    , Font.bold
+                                    ]
+                                <|
+                                    text <|
+                                        Texts.wimLink shared.appLanguage
+                            }
+                       ]
                 )
         , onClose = InfoWindowToggled Welcome
         }

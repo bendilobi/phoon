@@ -291,6 +291,16 @@ introduction2 lang =
             ]
 
 
+wimLink : AppLanguage -> String
+wimLink lang =
+    case lang of
+        De ->
+            "Auf YouTube gibt es Videos zu allen Details"
+
+        _ ->
+            "There are videos to every detail on YouTube"
+
+
 streakInfoHeader : AppLanguage -> String
 streakInfoHeader lang =
     case lang of
