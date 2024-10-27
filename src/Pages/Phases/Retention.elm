@@ -40,11 +40,11 @@ toLayout shared model =
         , controlsBottom = [ viewCancelButton shared model ]
         , fadeOut = NoFade
         , overlay = Layouts.BaseLayout.NoOverlay
-        , multitouchEffects =
+        , goNextEffects =
             [ Effect.resultsUpdated <| SessionResults.addRetention shared.results
             , Effect.navigateNext shared.session
             ]
-        , singleTapEffects = []
+        , pageActionEffects = []
         , sessionHints = viewSessionHints shared
         , nudgeSessionHints = False
         }

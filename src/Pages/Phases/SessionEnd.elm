@@ -66,11 +66,11 @@ toLayout shared model =
 
             else
                 Layouts.BaseLayout.NoOverlay
-        , multitouchEffects =
+        , goNextEffects =
             [ Effect.sendCmd <| Delay.after Fading.duration SessionControls.SessionFadedOut
             , Effect.navigateNext shared.session
             ]
-        , singleTapEffects = []
+        , pageActionEffects = []
         , sessionHints = viewSessionHints shared
         , nudgeSessionHints = False
         }

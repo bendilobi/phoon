@@ -1,6 +1,5 @@
 module Layouts.BaseLayout.SessionControls exposing (Model, Msg(..), Props, SessionHints, layout, map)
 
-import Browser
 import Browser.Events
 import Delay
 import Effect exposing (Effect)
@@ -33,8 +32,8 @@ type alias Props contentMsg =
     , controlsBottom : List (Element contentMsg)
     , fadeOut : Fading.Trigger
     , overlay : Layouts.BaseLayout.Overlay contentMsg
-    , multitouchEffects : List (Effect Msg)
-    , singleTapEffects : List (Effect Msg)
+    , goNextEffects : List (Effect Msg)
+    , pageActionEffects : List (Effect Msg)
     , sessionHints : SessionHints contentMsg
     , nudgeSessionHints : Bool
     }
@@ -75,8 +74,8 @@ map fn props =
                     , info = E.map fn info
                     , onClose = fn onClose
                     }
-    , multitouchEffects = props.multitouchEffects
-    , singleTapEffects = props.singleTapEffects
+    , goNextEffects = props.goNextEffects
+    , pageActionEffects = props.pageActionEffects
     , sessionHints = { heading = props.sessionHints.heading, content = E.map fn props.sessionHints.content }
     , nudgeSessionHints = props.nudgeSessionHints
     }
@@ -142,11 +141,10 @@ type Msg
     | ToggleFadeIn Fading.Trigger
     | SessionFadedOut
     | NudgeSessionHints
-      -- To simulate gestures via buttons for debugging in desktop browser:
-      -- | MouseNavTap
-      -- | MouseNavSwipe
     | KeyUp Key.Key
     | KeyDown Key.Key
+    | GoNextTriggered
+    | PageActionTriggered
 
 
 update : Props contentMsg -> Shared.Model -> Route () -> Msg -> Model -> ( Model, Effect Msg )
@@ -210,16 +208,6 @@ update props shared route msg model =
                 gesture =
                     Swipe.record event model.gesture
 
-                multitouchRegistered =
-                    not model.controlsShown
-                        && not model.debounceBlock
-                        && (Swipe.maxFingers gesture == 3)
-
-                singleTapRegistered =
-                    not model.controlsShown
-                        && Swipe.isTap gesture
-                        && (Swipe.maxFingers gesture == 1)
-
                 swipeSize =
                     shared.deviceInfo.window.width * 0.9
             in
@@ -230,54 +218,17 @@ update props shared route msg model =
                 , swipeLocationY = Nothing
                 , swipeDirectionY = Nothing
                 , controlsShown = Swipe.isRightSwipe swipeSize gesture
-                , debounceBlock = model.debounceBlock || multitouchRegistered
-                , doSessionEndFadeOut = model.doSessionEndFadeOut || multitouchRegistered && route.path == Session.phasePath Session.End
               }
-              -- TODO: Herausfinden, ob ich doch irgendwie ein sauberes "Mehr als 1 Finger beteiligt" hinkriege...
-              --       Was aktuell zu passieren scheint: Beim Lupfen eines Fingers wird ein End Event
-              --       ausgelöst. Wenn sich dann die zwei liegengebliebenen Finger kurz bewegen, gibts
-              --       ein zweites End Event...
-            , Effect.batch <|
-                (if multitouchRegistered then
-                    (Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock) :: props.multitouchEffects
+            , if Swipe.maxFingers gesture == 3 then
+                Effect.sendMsg GoNextTriggered
 
-                 else
-                    -- Effect.none
-                    []
-                )
-                    -- :: (if multitouchRegistered then
-                    --         props.multitouchEffects
-                    --     else
-                    --         []
-                    --    )
-                    ++ (if singleTapRegistered then
-                            props.singleTapEffects
+              else if Swipe.isTap gesture && Swipe.maxFingers gesture == 1 then
+                Effect.sendMsg PageActionTriggered
 
-                        else
-                            []
-                       )
+              else
+                Effect.none
             )
 
-        SessionFadedOut ->
-            ( model
-            , Effect.batch
-                [ Effect.playSound Session.EndSound
-                , Effect.sessionEnded Session.Finished
-                ]
-            )
-
-        ReleaseDebounceBlock ->
-            ( { model | debounceBlock = False }, Effect.none )
-
-        -- MouseNavSwipe ->
-        --     ( { model | controlsShown = True }, Effect.none )
-        -- MouseNavTap ->
-        --     ( { model | controlsShown = False }
-        --     , if not model.controlsShown then
-        --         Effect.batch props.multitouchEffects
-        --       else
-        --         Effect.none
-        --     )
         KeyDown key ->
             case key of
                 Key.ArrowDown ->
@@ -288,26 +239,8 @@ update props shared route msg model =
 
         KeyUp key ->
             case key of
-                --TODO: unify this with the code in SwipeEnd -> no dupilcation
                 Key.Space ->
-                    let
-                        multitouchRegistered =
-                            not model.controlsShown
-                                && not model.debounceBlock
-                    in
-                    ( { model
-                        | controlsShown = False
-                        , debounceBlock = model.debounceBlock || multitouchRegistered
-                      }
-                    , if multitouchRegistered then
-                        Effect.batch
-                            ((Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock)
-                                :: props.multitouchEffects
-                            )
-
-                      else
-                        Effect.none
-                    )
+                    ( model, Effect.sendMsg GoNextTriggered )
 
                 Key.Escape ->
                     ( { model | controlsShown = not model.controlsShown }, Effect.none )
@@ -321,11 +254,45 @@ update props shared route msg model =
                     )
 
                 Key.Enter ->
-                    ( { model | controlsShown = False }, Effect.batch props.singleTapEffects )
+                    ( model, Effect.sendMsg PageActionTriggered )
 
                 _ ->
-                    --TODO: Hinweisfenster mit Shortcuts (auch bei Enter)
                     ( { model | controlsShown = False }, Effect.none )
+
+        GoNextTriggered ->
+            let
+                goNextAllowed =
+                    not model.controlsShown
+                        && not model.debounceBlock
+            in
+            ( { model
+                | controlsShown = False
+                , debounceBlock = model.debounceBlock || goNextAllowed
+                , doSessionEndFadeOut = model.doSessionEndFadeOut || goNextAllowed && route.path == Session.phasePath Session.End
+              }
+            , if goNextAllowed then
+                Effect.batch
+                    ((Effect.sendCmd <| Delay.after 1500 ReleaseDebounceBlock)
+                        :: props.goNextEffects
+                    )
+
+              else
+                Effect.none
+            )
+
+        PageActionTriggered ->
+            ( { model | controlsShown = False }, Effect.batch props.pageActionEffects )
+
+        SessionFadedOut ->
+            ( model
+            , Effect.batch
+                [ Effect.playSound Session.EndSound
+                , Effect.sessionEnded Session.Finished
+                ]
+            )
+
+        ReleaseDebounceBlock ->
+            ( { model | debounceBlock = False }, Effect.none )
 
         ToggleFadeIn fade ->
             ( { model | fadeState = Fading.update fade }
@@ -435,30 +402,7 @@ viewTouchOverlay =
         , htmlAttribute <| Swipe.onEnd SwipeEnd
         ]
     <|
-        -- if debug then
-        --     column
-        --         [ spacing 10 ]
-        --         [ viewDebugButton MouseNavSwipe "Swipe"
-        --         , viewDebugButton MouseNavTap "Tap"
-        --         ]
-        -- else
         none
-
-
-
--- viewDebugButton : Msg -> String -> Element Msg
--- viewDebugButton msg label =
---     Input.button
---         [ BG.color <| rgb255 33 33 33
---         , Font.color <| rgb 1 1 1
---         , padding 10
---         , width fill
---         , Font.center
---         , Font.size 10
---         ]
---         { onPress = Just msg
---         , label = text label
---         }
 
 
 viewControls : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg) -> Element contentMsg

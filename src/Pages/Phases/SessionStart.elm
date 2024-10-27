@@ -45,8 +45,8 @@ toLayout shared model =
         , controlsBottom = [ viewCancelButton shared model ]
         , fadeOut = model.fadeOut
         , overlay = Layouts.BaseLayout.NoOverlay
-        , multitouchEffects = [ Effect.navigateNext shared.session ]
-        , singleTapEffects = [ Effect.playSound Session.StartSound ]
+        , goNextEffects = [ Effect.navigateNext shared.session ]
+        , pageActionEffects = [ Effect.playSound Session.StartSound ]
         , sessionHints = viewSessionHints shared
         , nudgeSessionHints = shared.previousPath == Route.Path.PrepareSession
         }

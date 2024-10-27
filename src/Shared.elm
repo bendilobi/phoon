@@ -38,22 +38,10 @@ import Task
 import Time
 
 
-
--- adjustBeforeRelease =
---     --TODO: Debug Buttons abschaffen
---     ( "0.7.162", False )
-
-
 appVersion =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    "0.7.163"
-
-
-
--- Tuple.first adjustBeforeRelease
--- showDebugButtons =
---     Tuple.second adjustBeforeRelease
+    "0.7.165"
 
 
 subPageClosingTime =
