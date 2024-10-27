@@ -41,7 +41,7 @@ import Time
 appVersion =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    "0.7.165"
+    "0.7.171"
 
 
 subPageClosingTime =
@@ -250,6 +250,7 @@ init flagsResult route =
       , today = Date.fromRataDie 0
       , appLanguage = decodedFlags.browserLang
       , iOSVersion = decodedFlags.iOSVersion
+      , mouseDetected = Nothing
       , appVisible = True
       , updateState = decodedFlags.updateState
       , versionOnServer = Api.Loading
@@ -374,6 +375,11 @@ update route msg model =
               }
             , Effect.none
             )
+
+        Shared.Msg.PointerDevice isMouse ->
+            --TODO: mouseDetected als Maybe Bool; initialisiert mit Nothing, wenn touch detected False, wenn
+            --      Mausbewegung ohne Button True
+            ( { model | mouseDetected = Just <| isMouse }, Effect.none )
 
         Shared.Msg.SessionUpdated session ->
             ( { model | session = session }

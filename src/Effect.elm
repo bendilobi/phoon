@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, toggleSubPage, updateApp, updateSessionSettings, writeToClipboard
+    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, pointerDetected, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, toggleSubPage, updateApp, updateSessionSettings, writeToClipboard
     )
 
 {-|
@@ -345,6 +345,11 @@ getSessionHintsHeight =
 toggleSubPage : Effect msg
 toggleSubPage =
     SendSharedMsg Shared.Msg.PrepareToggleSubPage
+
+
+pointerDetected : Bool -> Effect msg
+pointerDetected isMouse =
+    SendSharedMsg <| Shared.Msg.PointerDevice isMouse
 
 
 

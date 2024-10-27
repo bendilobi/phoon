@@ -253,10 +253,6 @@ viewMotivationData shared model motData =
                         daysSinceLastSession
 
 
-
--- ]
-
-
 viewStreak : ColorScheme -> Int -> Int -> Bool -> Int -> Element msg
 viewStreak colorScheme size freezes freezeInDanger streak =
     let

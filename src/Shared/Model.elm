@@ -27,6 +27,7 @@ type alias Model =
     , today : Date.Date
     , appLanguage : Texts.AppLanguage
     , standalone : Maybe Bool
+    , mouseDetected : Maybe Bool
     , iOSVersion : Maybe Int
     , appVisible : Bool
     , updateState : UpdateState

@@ -10,6 +10,7 @@ import Element.Font as Font
 import Element.Input as Input
 import FeatherIcons
 import Html.Attributes
+import Html.Events.Extra.Pointer as Pointer
 import Json.Decode
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS exposing (ColorScheme)
@@ -97,6 +98,7 @@ type Msg
     | Swipe Swipe.Event
     | SwipeEnd Swipe.Event
     | CancelSwipe
+    | PointerDetected Bool
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -199,6 +201,11 @@ update shared msg model =
             , Effect.none
             )
 
+        PointerDetected isMouse ->
+            ( model
+            , Effect.pointerDetected isMouse
+            )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -241,6 +248,20 @@ view props shared { toContentMsg, model, content } =
                    , clip
                    , below <| viewInfoWindow props shared model toContentMsg
                    ]
+                ++ (case shared.mouseDetected of
+                        Nothing ->
+                            let
+                                mouseDetector =
+                                    (\e -> e.pointerType == Pointer.MouseType)
+                                        >> (\b -> toContentMsg <| PointerDetected b)
+                            in
+                            [ htmlAttribute <| Pointer.onMove mouseDetector
+                            , htmlAttribute <| Pointer.onDown mouseDetector
+                            ]
+
+                        _ ->
+                            []
+                   )
             )
         <|
             el

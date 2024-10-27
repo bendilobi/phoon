@@ -45,3 +45,4 @@ type Msg
     | ReceivedSessionHintsElement (Result Browser.Dom.Error Browser.Dom.Element)
     | PrepareToggleSubPage
     | OnToggleSubPage
+    | PointerDevice Bool
