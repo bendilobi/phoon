@@ -314,7 +314,7 @@ viewWelcomeInfo shared =
                        )
                     :: Texts.introduction2 shared.appLanguage
                  )
-                    ++ [ link []
+                    ++ [ newTabLink []
                             { url = "https://www.youtube.com/watch?v=MgKdHG6MQ0g&list=PL2WKxL9enbZQ2XpjhGXG-rDG0_lUp4OcX"
                             , label =
                                 el

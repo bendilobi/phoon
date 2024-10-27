@@ -345,6 +345,7 @@ viewInfoWindow props shared model toContentMsg =
     el
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
         , height <| px <| round <| shared.deviceInfo.window.height
+        , centerX
         , Border.roundEach
             { topLeft = 25
             , topRight = 25
@@ -422,8 +423,6 @@ viewInfoWindow props shared model toContentMsg =
 
                         _ ->
                             halfHeight - safeAreaBottom
-
-                -- halfHeight - 100
             in
             el
                 [ width fill
@@ -434,6 +433,29 @@ viewInfoWindow props shared model toContentMsg =
                 , htmlAttribute <| Swipe.onEnd <| \e -> toContentMsg <| IgnoreSwipe e
                 ]
                 none
+        , inFront <|
+            el
+                [ width fill
+                ]
+            <|
+                {- Resize-button -}
+                Input.button
+                    [ centerX
+                    , height <| px 25
+                    , width fill
+                    , padding 5
+                    ]
+                    { onPress = Just <| toContentMsg OnInfoWindowResize
+                    , label =
+                        el
+                            [ height <| px 5
+                            , width <| px 40
+                            , BG.color <| CS.greyOverTransparencyColor shared.colorScheme
+                            , Border.rounded 4
+                            , alignTop
+                            ]
+                            none
+                    }
         , inFront <|
             el
                 []
@@ -459,29 +481,6 @@ viewInfoWindow props shared model toContentMsg =
                                 |> FeatherIcons.toHtml []
                                 |> html
                             )
-                    }
-        , inFront <|
-            el
-                [ width fill
-                ]
-            <|
-                {- Resize-button -}
-                Input.button
-                    [ centerX
-                    , height <| px 25
-                    , width fill
-                    , padding 5
-                    ]
-                    { onPress = Just <| toContentMsg OnInfoWindowResize
-                    , label =
-                        el
-                            [ height <| px 5
-                            , width <| px 40
-                            , BG.color <| CS.greyOverTransparencyColor shared.colorScheme
-                            , Border.rounded 4
-                            , alignTop
-                            ]
-                            none
                     }
         ]
     <|
