@@ -1,11 +1,13 @@
 # Phoon
 
-Breathwork app inspired by the [Wim Hof Method](https://www.wimhofmethod.com/). Optimized for being used "blindly": do your breathwork completely relaxed lying down with closed eyes - `Phoon` guides you with sounds and is operated with simple touch gestures. Focus on your breathing only!
+Breathwork app inspired by the [Wim Hof Method](https://www.wimhofmethod.com/). Optimized for being used "blindly": do your breathwork completely relaxed lying down with eyes closed - `Phoon` guides you with sounds and is operated with simple touch gestures. Focus on your breathing only!
 
 
 ## Overview
 
 `Phoon` is a free and open-source app that supports you in establishing a habit of regular Wim Hof style breathwork exercise:
+
+
 
 - **Find and maintain your motivation** for regular practice: You set a goal of how often you want to exercise - `Phoon` keeps track of your streak and makes sure you don't miss a beat. By exercising you earn rings protecting your streak: for each ring you have, you can take a day off whenever you like. How often you get new rings depends on your practice goal (e.g. "4 times a week").
 - **Practice conveniently however you like**: For example, load `Phoon` on your smartphone and do your breathwork exercise totally relaxed lying down with closed eyes - `Phoon` guides you with sounds and when you have to trigger the next step (e.g. to indicate the end of your breath hold (retention)), you can do that with a simple touch gesture. 
@@ -26,6 +28,7 @@ For optimal experience, go there using your smartphone's browser (Safari on iOS;
 - Not enough time to do a full exercise? Quickly adjust the number of cycles you want to do in your session without changing your general exercise preferences.
 - Keeps track of your current streak, last streak and longest streak so far
 - Remembers your longest retention time
+- Supports multiple languages (currently English and German)
 - Touch gestures are designed so that you don't accidentally trigger stuff if you pick up your phone:
   - Go to the next exercise step by tapping or swiping with three fingers at once
   - Display options by swiping from left to right all over the screen
@@ -53,5 +56,6 @@ If you like `Phoon` and want to support me developing it further, you can [buy m
 - **Zen mode**: No text or numbers so your conceptual mind isn't triggered when using the app
 - **Better support for Android**: adjust look and feel when run on Android devices
 - **More details in the retention graph**: Show streaks, breathing time etc.
+- **Better accessibility**: Text zoom, ...
 - _Your feature idea_: Please describe it in an issue here in this repository!
 
