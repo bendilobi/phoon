@@ -7,6 +7,8 @@ Breathwork app inspired by the [Wim Hof Method](https://www.wimhofmethod.com/). 
 
 `Phoon` is a free and open-source app that supports you in establishing a habit of regular Wim Hof style breathwork exercise:
 
+
+
 - **Find and maintain your motivation** for regular practice: You set a goal of how often you want to exercise - `Phoon` keeps track of your streak and makes sure you don't miss a beat. By exercising you earn rings protecting your streak: for each ring you have, you can take a day off whenever you like. How often you get new rings depends on your practice goal (e.g. "4 times a week").
 - **Practice conveniently however you like**: For example, load `Phoon` on your smartphone and do your breathwork exercise totally relaxed lying down with closed eyes - `Phoon` guides you with sounds and when you have to trigger the next step (e.g. to indicate the end of your breath hold (retention)), you can do that with a simple touch gesture. 
 You prefer being guided visually? `Phoon` provides animations ("breathing bubble") and color-coded phases so you are always oriented!
