@@ -35,6 +35,7 @@ type alias Model =
     , iOSVersion : Maybe Int
     , appVisible : Bool
     , updateState : UpdateState
+    , showWakelockHint : Bool
     , versionOnServer : Api.Data String
     , deviceInfo : Utils.Device
     , session : Session

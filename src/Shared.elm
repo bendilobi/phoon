@@ -41,7 +41,7 @@ import Time
 appVersion =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    "0.7.194"
+    "0.7.195"
 
 
 subPageClosingTime =
@@ -61,6 +61,7 @@ type alias Flags =
     { storedMotivationData : Json.Decode.Value
     , storedSessionSettings : Json.Decode.Value
     , storedUpdatingState : Json.Decode.Value
+    , storedShowWakelockHint : Json.Decode.Value
     , safeAreaInsets : Json.Decode.Value
     , width : Json.Decode.Value
     , height : Json.Decode.Value
@@ -70,11 +71,12 @@ type alias Flags =
     }
 
 
-makeFlags : Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Flags
-makeFlags mot set upd saf wid hei bro stan ios =
+makeFlags : Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Flags
+makeFlags mot set upd wlh saf wid hei bro stan ios =
     { storedMotivationData = mot
     , storedSessionSettings = set
     , storedUpdatingState = upd
+    , storedShowWakelockHint = wlh
     , safeAreaInsets = saf
     , width = wid
     , height = hei
@@ -90,6 +92,7 @@ decoder =
         |> required "storedMotivationData" Json.Decode.value
         |> required "storedSessionSettings" Json.Decode.value
         |> required "storedUpdatingState" Json.Decode.value
+        |> required "storedShowWakelockHint" Json.Decode.value
         |> required "safeAreaInsets" Json.Decode.value
         |> required "width" Json.Decode.value
         |> required "height" Json.Decode.value
@@ -115,6 +118,7 @@ init flagsResult route =
                     { motData = Nothing
                     , sessionSettings = Session.defaultSettings
                     , updateState = NotUpdating
+                    , showWakelockHint = True
                     , safeAreaInsets = SafeArea.new { top = 0, bottom = 0, left = 0, right = 0 }
                     , width = 0
                     , height = 0
@@ -133,6 +137,9 @@ init flagsResult route =
 
                         updateStateDecoded =
                             Json.Decode.decodeValue Json.Decode.int data.storedUpdatingState
+
+                        showWakelockHintDecoded =
+                            Json.Decode.decodeValue Json.Decode.bool data.storedShowWakelockHint
 
                         safeAreasDecoded =
                             SafeArea.decode data.safeAreaInsets
@@ -205,6 +212,13 @@ init flagsResult route =
 
                                 else
                                     Updating <| nOfTries + 1
+                    , showWakelockHint =
+                        case showWakelockHintDecoded of
+                            Err e ->
+                                True
+
+                            Ok hint ->
+                                hint
                     , safeAreaInsets = safeAreasDecoded
                     , width =
                         case widthDecoded of
@@ -253,6 +267,7 @@ init flagsResult route =
       , mouseDetected = Nothing
       , appVisible = True
       , updateState = decodedFlags.updateState
+      , showWakelockHint = decodedFlags.showWakelockHint
       , versionOnServer = Api.Loading
       , deviceInfo = Utils.classifyDevice { width = decodedFlags.width, height = decodedFlags.height }
       , session = Session.new decodedFlags.sessionSettings
@@ -537,6 +552,15 @@ update route msg model =
                 , subPageClosingInProgress = False
               }
             , Effect.none
+            )
+
+        Shared.Msg.OnToggleShowWakelockHint ->
+            let
+                hintShown =
+                    not model.showWakelockHint
+            in
+            ( { model | showWakelockHint = hintShown }
+            , Effect.saveShowWakelockHint hintShown
             )
 
 

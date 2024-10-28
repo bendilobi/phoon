@@ -8,6 +8,7 @@ import Element exposing (..)
 import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
+import Element.Input as Input
 import FeatherIcons
 import Layouts
 import Layouts.BaseLayout
@@ -95,6 +96,7 @@ type Msg
     | CycleCountChanged Int IntCrementer.Model
     | ReadyToStartSession
     | OnToggleWarnings
+    | OnToggleWakelockHint
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -156,6 +158,11 @@ update shared msg model =
 
                 _ ->
                     Effect.setInfoWindowState Shared.Model.Closed
+            )
+
+        OnToggleWakelockHint ->
+            ( model
+            , Effect.toggleWakelockHint
             )
 
 
@@ -230,16 +237,21 @@ view shared model =
                             none
 
                         _ ->
-                            column
-                                [ spacing 10
-                                , paddingEach { left = 30, right = 0, top = 30, bottom = 0 }
-                                , Font.size 12
-                                , centerX
-                                , Font.alignLeft
-                                , moveDown 50
-                                ]
-                            <|
-                                Texts.wakeLockNote shared.appLanguage
+                            Input.button []
+                                { onPress = Just OnToggleWakelockHint
+                                , label =
+                                    column
+                                        [ spacing 10
+                                        , paddingEach { left = 30, right = 0, top = 30, bottom = 0 }
+                                        , Font.size 12
+                                        , centerX
+                                        , Font.alignLeft
+                                        , transparent <| not shared.showWakelockHint
+                                        , moveDown 50
+                                        ]
+                                    <|
+                                        Texts.wakeLockNote shared.appLanguage
+                                }
                 ]
                 (Button.new
                     { onPress = OnStartButton

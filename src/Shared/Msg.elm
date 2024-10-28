@@ -46,3 +46,4 @@ type Msg
     | PrepareToggleSubPage
     | OnToggleSubPage
     | PointerDevice Bool
+    | OnToggleShowWakelockHint

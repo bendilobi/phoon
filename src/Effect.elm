@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, pointerDetected, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, toggleSubPage, updateApp, updateSessionSettings, writeToClipboard
+    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, pointerDetected, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveShowWakelockHint, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, toggleSubPage, toggleWakelockHint, updateApp, updateSessionSettings, writeToClipboard
     )
 
 {-|
@@ -243,6 +243,14 @@ saveUpdatingState updateState =
         }
 
 
+saveShowWakelockHint : Bool -> Effect msg
+saveShowWakelockHint hint =
+    SendMessageToJavaScript
+        { tag = "STORE_SHOW_WAKELOCK_HINT"
+        , data = Json.Encode.bool hint
+        }
+
+
 getSafeArea : Effect msg
 getSafeArea =
     SendMessageToJavaScript
@@ -350,6 +358,11 @@ toggleSubPage =
 pointerDetected : Bool -> Effect msg
 pointerDetected isMouse =
     SendSharedMsg <| Shared.Msg.PointerDevice isMouse
+
+
+toggleWakelockHint : Effect msg
+toggleWakelockHint =
+    SendSharedMsg Shared.Msg.OnToggleShowWakelockHint
 
 
 
