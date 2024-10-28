@@ -237,21 +237,21 @@ view shared model =
                             none
 
                         _ ->
-                            Input.button []
-                                { onPress = Just OnToggleWakelockHint
-                                , label =
-                                    column
-                                        [ spacing 10
-                                        , paddingEach { left = 30, right = 0, top = 30, bottom = 0 }
-                                        , Font.size 12
-                                        , centerX
-                                        , Font.alignLeft
-                                        , transparent <| not shared.showWakelockHint
-                                        , moveDown 50
-                                        ]
-                                    <|
-                                        Texts.wakeLockNote shared.appLanguage
-                                }
+                            el [ moveDown 80 ] <|
+                                Input.button []
+                                    { onPress = Just OnToggleWakelockHint
+                                    , label =
+                                        column
+                                            [ spacing 10
+                                            , paddingEach { left = 30, right = 0, top = 0, bottom = 0 }
+                                            , Font.size 12
+                                            , centerX
+                                            , Font.alignLeft
+                                            , transparent <| not shared.showWakelockHint
+                                            ]
+                                        <|
+                                            Texts.wakeLockNote shared.appLanguage
+                                    }
                 ]
                 (Button.new
                     { onPress = OnStartButton
