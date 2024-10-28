@@ -1,6 +1,6 @@
 # Phoon
 
-Breathwork app inspired by the [Wim Hof Method](https://www.wimhofmethod.com/). Optimized for being used "blindly": do your breathwork completely relaxed lying down with closed eyes - `Phoon` guides you with sounds and is operated with simple touch gestures. Focus on your breathing only!
+Breathwork app inspired by the [Wim Hof Method](https://www.wimhofmethod.com/). Optimized for being used "blindly": do your breathwork completely relaxed lying down with eyes closed - `Phoon` guides you with sounds and is operated with simple touch gestures. Focus on your breathing only!
 
 
 ## Overview
@@ -26,6 +26,7 @@ For optimal experience, go there using your smartphone's browser (Safari on iOS;
 - Not enough time to do a full exercise? Quickly adjust the number of cycles you want to do in your session without changing your general exercise preferences.
 - Keeps track of your current streak, last streak and longest streak so far
 - Remembers your longest retention time
+- Supports multiple languages (currently English and German)
 - Touch gestures are designed so that you don't accidentally trigger stuff if you pick up your phone:
   - Go to the next exercise step by tapping or swiping with three fingers at once
   - Display options by swiping from left to right all over the screen
@@ -53,5 +54,6 @@ If you like `Phoon` and want to support me developing it further, you can [buy m
 - **Zen mode**: No text or numbers so your conceptual mind isn't triggered when using the app
 - **Better support for Android**: adjust look and feel when run on Android devices
 - **More details in the retention graph**: Show streaks, breathing time etc.
+- **Better accessibility**: Text zoom, ...
 - _Your feature idea_: Please describe it in an issue here in this repository!
 
