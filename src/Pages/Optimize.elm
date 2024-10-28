@@ -1,4 +1,4 @@
-module Pages.Information exposing (Model, Msg, page)
+module Pages.Optimize exposing (Model, Msg, page)
 
 import Api
 import Browser.Events
@@ -1043,7 +1043,7 @@ viewAppInfo shared model =
                 (Texts.authorAndContact shared.appLanguage
                     ++ [ link []
                             { url =
-                                "mailto:mail@benno-dielmann.de?subject={{ }} Feedback"
+                                "mailto:phoon@bendilobi.de?subject={{ }} Feedback"
                                     |> String.Format.value Texts.appName
                             , label =
                                 el

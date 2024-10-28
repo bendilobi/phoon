@@ -1,4 +1,4 @@
-module Pages.PrepareSession exposing (Model, Msg, page)
+module Pages.Practice exposing (Model, Msg, page)
 
 import Components.AnimatedButton as Button
 import Components.IntCrementer as IntCrementer

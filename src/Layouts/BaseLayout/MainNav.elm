@@ -527,9 +527,9 @@ viewNavBar shared route =
         [ el [ width <| px 0 ] none
         , viewButton (Texts.motivate shared.appLanguage) FeatherIcons.thumbsUp thumbsUpFilled Route.Path.Home_
         , el [ width <| px 0 ] none
-        , viewButton (Texts.practice shared.appLanguage) FeatherIcons.play playFilled Route.Path.PrepareSession
+        , viewButton (Texts.practice shared.appLanguage) FeatherIcons.play playFilled Route.Path.Practice
         , el [ width <| px 0 ] none
-        , viewButton (Texts.optimize shared.appLanguage) FeatherIcons.user userFilled Route.Path.Information
+        , viewButton (Texts.optimize shared.appLanguage) FeatherIcons.user userFilled Route.Path.Optimize
         , el [ width <| px 0 ] none
         ]
 

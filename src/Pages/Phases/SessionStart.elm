@@ -48,7 +48,7 @@ toLayout shared model =
         , goNextEffects = [ Effect.navigateNext shared.session ]
         , pageActionEffects = [ Effect.playSound Session.StartSound ]
         , sessionHints = viewSessionHints shared
-        , nudgeSessionHints = shared.previousPath == Route.Path.PrepareSession
+        , nudgeSessionHints = shared.previousPath == Route.Path.Practice
         }
 
 
@@ -234,7 +234,7 @@ view shared model =
 
 viewReminder : Shared.Model -> Model -> Int -> FeatherIcons.Icon -> Element msg
 viewReminder shared model ticks icon =
-    if shared.previousPath == Route.Path.PrepareSession then
+    if shared.previousPath == Route.Path.Practice then
         row
             [ spacing 10
             , Font.size 30
