@@ -7,11 +7,19 @@ Breathwork app inspired by the [Wim Hof Method](https://www.wimhofmethod.com/). 
 
 `Phoon` is a free and open-source app that supports you in establishing a habit of regular Wim Hof style breathwork exercise:
 
-
+![Streak with two rings](screenshots/find_motivation.png)
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+![Streak info](screenshots/find_motivation_info.png)
 
 - **Find and maintain your motivation** for regular practice: You set a goal of how often you want to exercise - `Phoon` keeps track of your streak and makes sure you don't miss a beat. By exercising you earn rings protecting your streak: for each ring you have, you can take a day off whenever you like. How often you get new rings depends on your practice goal (e.g. "4 times a week").
+  
+![Breathing bubble](screenshots/breathing_bubble.png)
+
 - **Practice conveniently however you like**: For example, load `Phoon` on your smartphone and do your breathwork exercise totally relaxed lying down with closed eyes - `Phoon` guides you with sounds and when you have to trigger the next step (e.g. to indicate the end of your breath hold (retention)), you can do that with a simple touch gesture. 
 You prefer being guided visually? `Phoon` provides animations ("breathing bubble") and color-coded phases so you are always oriented!
+
+![Retention trend and settings](screenshots/optimize.png)
+
 - **Optimize your breathwork success**: fine-tune your exercise parameters and keep track of your retention time progress. `Phoon` provides a graph of the mean retention (breath hold) time of your last 30 sessions so you can retrace how your retention capacity develops. Tinker with your exercise parameters (such as _nummber of cycles per session_, _breathing speed_ or _number of breaths_) to find the setup that works best for you!
 
 
@@ -23,6 +31,10 @@ For optimal experience, go there using your smartphone's browser (Safari on iOS;
 
 
 ## Other Features
+
+![Prepare session screen](screenshots/prepare_session.png) 
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+![Info dropdown during session](screenshots/info_dropdown.png)
 
 - Unsure whether you have enough time to do an exercise before leaving to work? Based on you previous retention times and your exercise settings, `Phoon` calculates at which time you will probably be done.
 - Not enough time to do a full exercise? Quickly adjust the number of cycles you want to do in your session without changing your general exercise preferences.
