@@ -21,7 +21,6 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Shared.Model
-import String.Format
 import View exposing (View)
 
 
@@ -41,12 +40,8 @@ toLayout shared model =
     Layouts.BaseLayout_MainNav
         { header = Just <| Texts.motivationHeading shared.appLanguage
         , headerIcon =
-            case shared.motivationData of
-                Nothing ->
-                    Nothing
-
-                _ ->
-                    Just <| Layouts.BaseLayout.MainNav.viewHeaderButton FeatherIcons.helpCircle <| InfoWindowToggled Welcome
+            shared.motivationData
+                |> Maybe.map (\_ -> Layouts.BaseLayout.MainNav.viewHeaderButton FeatherIcons.helpCircle <| InfoWindowToggled Welcome)
         , enableScrolling = False
         , fadeOut = NoFade
         , subPage = Nothing
@@ -61,7 +56,6 @@ toLayout shared model =
                             viewWelcomeInfo shared
 
                         Just motData ->
-                            -- viewMotivationInfo shared motData
                             case model.infoContent of
                                 Welcome ->
                                     viewWelcomeInfo shared
@@ -374,10 +368,7 @@ viewMotivationInfo shared motData =
                               )
                   in
                   if diffToMaxStreak < 4 && diffToMaxStreak > 0 then
-                    bullet
-                        (Texts.practiceUntilLongest shared.appLanguage diffToMaxStreak
-                         -- |> String.Format.value (diffToMaxStreak |> String.fromInt)
-                        )
+                    bullet <| Texts.practiceUntilLongest shared.appLanguage diffToMaxStreak
 
                   else if diffToMaxStreak == 0 then
                     bullet <| Texts.caughtUpLongest shared.appLanguage
@@ -413,10 +404,7 @@ viewMotivationInfo shared motData =
                                           )
                             in
                             if diffToPreviousStreak < 4 && diffToPreviousStreak > 0 then
-                                bullet
-                                    (Texts.practiceUntilLast shared.appLanguage diffToPreviousStreak
-                                     -- |> String.Format.value (diffToPreviousStreak |> String.fromInt)
-                                    )
+                                bullet <| Texts.practiceUntilLast shared.appLanguage diffToPreviousStreak
 
                             else if diffToPreviousStreak == 0 then
                                 bullet <| Texts.caughtUpLast shared.appLanguage

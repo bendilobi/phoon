@@ -165,7 +165,8 @@ view colorScheme (Settings settings) =
                                     Released
 
                                 Triggered ->
-                                    Triggered
+                                    -- Triggered
+                                    Cancelled
 
             {- And finally, we want the button to go into non-pressed state and not do a Released
                animation if the interaction is cancelled, eg. if the user started scrolling after

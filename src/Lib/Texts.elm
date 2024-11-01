@@ -2,10 +2,8 @@ module Lib.Texts exposing (..)
 
 import Element exposing (..)
 import Element.Font as Font
-import Html exposing (th)
 import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.Session as Session exposing (BreathingSpeed(..))
-import String exposing (fromInt)
 import String.Format
 import Time exposing (Weekday(..))
 
@@ -363,7 +361,7 @@ caughtUpLongest lang =
             "*Du hast gerade Deine längste Serie bisher! Fantastisch!!*"
 
         _ ->
-            "*You are having your longest streak so far! Phantastic!!*"
+            "*You are having your longest streak so far! Fantastic!!*"
 
 
 practiceUntilLast : AppLanguage -> Int -> String

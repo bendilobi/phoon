@@ -3,8 +3,6 @@ module Lib.Utils exposing (Device, animatedColumn, animatedEl, classifyDevice, c
 import Color
 import Color.Convert
 import Element exposing (..)
-import Element.Font as Font
-import Html.Attributes
 import Simple.Animation exposing (Animation)
 import Simple.Animation.Animated as Animated
 import Time exposing (Weekday(..))
