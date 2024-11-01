@@ -180,6 +180,12 @@ view shared model =
 
                 else
                     row
+
+            bubbleSize =
+                min shared.deviceInfo.window.width
+                    shared.deviceInfo.window.height
+                    * 0.5
+                    |> round
         in
         container
             [ width fill
@@ -193,36 +199,26 @@ view shared model =
                 ]
               <|
                 viewReminder shared model 1 FeatherIcons.volume2
-            , el [ width fill, height fill ] <|
+            , el [ centerX, centerY, width <| px bubbleSize, height <| px bubbleSize ] <|
                 if model.fadeInFinished then
-                    el [ centerX, centerY ] <|
-                        (Bubble.new
-                            { model = model.bubble
-                            , size =
-                                min shared.deviceInfo.window.width
-                                    shared.deviceInfo.window.height
-                                    * 0.5
-                                    |> round
-                            , bubbleColor = CS.phaseSessionStartCopyColor shared.colorScheme
-                            , bgColor = CS.phaseSessionStartColor shared.colorScheme
-                            }
-                            |> Bubble.withLabel "Start"
-                            |> Bubble.withFontSize 50
-                            |> Bubble.view
-                        )
+                    Bubble.new
+                        { model = model.bubble
+                        , size = bubbleSize
+                        , bubbleColor = CS.phaseSessionStartCopyColor shared.colorScheme
+                        , bgColor = CS.phaseSessionStartColor shared.colorScheme
+                        }
+                        |> Bubble.withLabel "Start"
+                        |> Bubble.withFontSize 50
+                        |> Bubble.view
 
                 else
                     none
             , el
-                [ width fill
+                [ centerX
+                , centerY
                 ]
               <|
-                el
-                    [ centerX
-                    , centerY
-                    ]
-                <|
-                    viewReminder shared model 2 FeatherIcons.bellOff
+                viewReminder shared model 2 FeatherIcons.bellOff
             , el
                 [ width fill
                 , height fill
