@@ -5,7 +5,7 @@ Breathwork app inspired by the [Wim Hof Method](https://www.wimhofmethod.com/). 
 
 ## Overview
 
-`Phoon` is a free and open-source app that supports you in establishing a habit of regular Wim Hof style breathwork exercise:
+`Phoon` is a free and open-source app that supports you in establishing a habit of regular Wim Hof style breathwork exercise.
 
 ![Streak with two rings](screenshots/find_motivation.png)
 <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
