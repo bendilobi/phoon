@@ -105,6 +105,7 @@ init shared () =
                 { bubbleType = Bubble.Counting <| Session.breathCountInt shared.sessionSettings.breathCount
                 , onFinished = Nothing
                 , breathingSpeed = Session.speedToMillis shared.sessionSettings.breathingSpeed
+                , startWithInhale = True
                 }
       , resetSettingsButton = Button.init
       , resetItemStatusButton = Button.init

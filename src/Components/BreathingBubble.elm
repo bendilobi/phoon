@@ -87,6 +87,7 @@ type Model msg
         , breathingSpeed : Milliseconds
         , bubbleType : BubbleType
         , onFinished : Maybe msg
+        , startWithInhale : Bool
         }
 
 
@@ -94,6 +95,7 @@ init :
     { bubbleType : BubbleType
     , onFinished : Maybe msg
     , breathingSpeed : Milliseconds
+    , startWithInhale : Bool
     }
     -> Model msg
 init props =
@@ -102,6 +104,7 @@ init props =
         , breathingSpeed = props.breathingSpeed
         , bubbleType = props.bubbleType
         , onFinished = props.onFinished
+        , startWithInhale = props.startWithInhale
         }
 
 
@@ -196,37 +199,39 @@ view (Settings settings) =
 
         speed =
             model.breathingSpeed |> Millis.toInt
+
+        minScale =
+            0.05
+
+        ( startScale, otherScale ) =
+            if model.startWithInhale then
+                ( minScale, 1 )
+
+            else
+                ( 1, minScale )
     in
     el
         [ width <| px settings.size
         , height <| px settings.size
-
-        --TODO: centerX und centerY sollte nicht in der Komponente passieren...
-        , centerX
-        , centerY
         ]
     <|
         Utils.animatedEl
             (Animation.steps
-                { startAt = [ P.scale 0.05 ]
+                { startAt = [ P.scale startScale ]
                 , options =
                     [ Animation.easeOutQuad
                     , Animation.loop
                     ]
                 }
-                [ Animation.step speed [ P.scale 1 ]
-                , Animation.step speed [ P.scale 0.05 ]
+                [ Animation.step speed [ P.scale otherScale ]
+                , Animation.step speed [ P.scale startScale ]
                 ]
             )
             [ Font.bold
             , width <| px settings.size
             , height <| px settings.size
             , Border.rounded <| settings.size // 2
-
-            -- , Font.color settings.bgColor
             , Font.color settings.bubbleColor
-
-            -- , BG.color settings.bubbleColor
             , Border.color settings.bubbleColor
             , Border.width <| settings.size // 7
             ]

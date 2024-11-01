@@ -62,6 +62,7 @@ init shared () =
                 { bubbleType = Bubble.Counting <| Session.breathCount shared.session
                 , onFinished = Just BubbleFinished
                 , breathingSpeed = Session.speedMillis shared.session
+                , startWithInhale = SessionResults.finishedCycles shared.results == 0
                 }
       , breathingFinished = False
       , cancelButton = Button.init

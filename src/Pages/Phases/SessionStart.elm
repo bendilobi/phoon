@@ -73,6 +73,7 @@ init shared () =
                 { bubbleType = Bubble.Static
                 , onFinished = Nothing
                 , breathingSpeed = Session.speedMillis shared.session
+                , startWithInhale = True
                 }
       , cancelButton = Button.init
       , fadeOut = NoFade
