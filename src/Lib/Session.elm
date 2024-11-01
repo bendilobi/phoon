@@ -36,6 +36,7 @@ import Json.Decode
 import Json.Decode.Pipeline exposing (optional)
 import Json.Encode
 import Lib.Millis as Millis exposing (Milliseconds)
+import Lib.MotivationData exposing (MotivationData)
 import Route.Path
 
 
@@ -332,7 +333,8 @@ phaseDuration : Session -> Maybe Milliseconds -> Phase -> Milliseconds
 phaseDuration session retentionEstimate phase =
     case phase of
         Start ->
-            Millis.fromSeconds 5
+            {- We just guess the user spends 30 seconds here before starting: -}
+            Millis.fromSeconds 30
 
         Breathing ->
             speedMillis session
@@ -341,7 +343,10 @@ phaseDuration session retentionEstimate phase =
         Retention ->
             case retentionEstimate of
                 Nothing ->
-                    Millis.fromSeconds <| 2 * 60 + 15
+                    {- If there is no estimate for retention time, we just optimistically
+                       assume it will be 2 minutes...
+                    -}
+                    Millis.fromSeconds <| 2 * 60
 
                 Just estimate ->
                     estimate
@@ -350,14 +355,23 @@ phaseDuration session retentionEstimate phase =
             relaxRetDuration session
 
         End ->
-            Millis.fromSeconds <| 2 * 60
+            {- Here we assume it takes 3 minutes to relax before finalizing the
+               practice session:
+            -}
+            Millis.fromSeconds <| 3 * 60
 
 
 estimatedDurationMillis : List Milliseconds -> Session -> Milliseconds
-estimatedDurationMillis meanRetTimes (Session session) =
+estimatedDurationMillis times (Session session) =
     let
         (State curPhase remainingPhases) =
             session.state
+
+        meanRetTimes =
+            {- We use only the newest 10 results, so if there is a trend in the data,
+               the estimate becomes more accurate:
+            -}
+            List.take 10 times
 
         retentionEstimate =
             if List.length meanRetTimes == 0 then
