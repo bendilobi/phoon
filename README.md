@@ -36,8 +36,8 @@ For optimal experience, go there using your smartphone's browser (Safari on iOS;
 <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 ![Info dropdown during session](screenshots/info_dropdown.png)
 
-- Unsure whether you have enough time to do an exercise before leaving to work? Based on you previous retention times and your exercise settings, `Phoon` calculates at which time you will probably be done.
-- Not enough time to do a full exercise? Quickly adjust the number of cycles you want to do in your session without changing your general exercise preferences.
+- Unsure whether you have enough time to do your morning exercise before leaving for work? `Phoon` estimates at which time you will be done so you know at a glance if you can do it.
+- Not enough time to do a full exercise? Quickly adjust the number of cycles before starting your session without changing your general exercise preferences.
 - Keeps track of your current streak, last streak and longest streak so far
 - Remembers your longest retention time
 - Supports multiple languages (currently English and German)
