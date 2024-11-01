@@ -179,8 +179,7 @@ introduction lang =
         De ->
             [ para
                 ("""
-                *{{}}* ist eine App für Smartphones (oder andere Touch Devices), die Dich die positiven Effekte der *Wim Hof Atemübung* 
-                so bequem wie möglich genießen lässt.                
+                *{{}}* ist Dein Trainingspartner für eine regelmäßige Praxis der Wim Hof Atemtechnik:
                 """
                     |> String.Format.value appName
                 )
@@ -188,7 +187,8 @@ introduction lang =
                 --TODO: Doch irgendwie das mit den Ringen unterbringen?
                 ("""
                 *Finde Motivation* für eine regelmäßige Übungspraxis: Bestimme, wie häufig Du üben willst - {{ }} erfasst, wie lange Du Deine
-                Serie durchhältst.
+                Serie durchhältst. Wenn Du übst, bekommst Du *Ringe*, die Deine Serie schützen: Pro Ring kannst Du einen Tag pausieren, ohne dass
+                die Serie abbricht. Wie häufig Du Ringe bekommst, hängt von Deinem gewählten Übungsziel ab (z.B. "4 mal pro Woche").
                 """
                     |> String.Format.value appName
                 )
@@ -207,15 +207,15 @@ introduction lang =
 
         _ ->
             [ para
-                ("""*{{ }}* is an app for smartphones (or other touch devices) that lets you reap the benefits of *Wim Hof style breathwork*
-                as conveniently as possible.
+                ("""*{{ }}* is your sparring partner for a continuous practice of Wim Hof style breathwork:
                 """
                     |> String.Format.value appName
                 )
             , bullet
                 ("""
             *Find and maintain motivation* for regular practice: Set a goal of how often you intend to practice - {{ }} keeps track of your streak
-            and makes sure you don't miss a beat
+            and makes sure you don't miss a beat. By exercising you earn *rings* protecting your streak: for each ring you have, you can take a day 
+            off whenever you like. How often you get new rings depends on your chosen practice goal (e.g. "4 times a week").
                 """
                     |> String.Format.value appName
                 )
@@ -236,8 +236,8 @@ introduction lang =
 --TODO: Kurzer allgemeiner Installationshinweis
 
 
-installInstruction : AppLanguage -> Element msg -> List (Element msg)
-installInstruction lang icon =
+installInstructionIOS : AppLanguage -> Element msg -> List (Element msg)
+installInstructionIOS lang icon =
     case lang of
         De ->
             [ para ("""
@@ -258,8 +258,8 @@ installInstruction lang icon =
             ]
 
 
-introduction2 : AppLanguage -> List (Element msg)
-introduction2 lang =
+disclaimer : AppLanguage -> List (Element msg)
+disclaimer lang =
     case lang of
         De ->
             [ para
@@ -286,10 +286,10 @@ wimLink : AppLanguage -> String
 wimLink lang =
     case lang of
         De ->
-            "Auf YouTube gibt es Videos zu allen Details"
+            "Auf YouTube gibt es Videos zu allen Details der Methode"
 
         _ ->
-            "There are videos to every detail on YouTube"
+            "There are videos on every detail of the method on YouTube"
 
 
 streakInfoHeader : AppLanguage -> String

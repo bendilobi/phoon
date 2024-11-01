@@ -297,7 +297,7 @@ viewWelcomeInfo shared =
                     ++ (case shared.standalone of
                             Just False ->
                                 paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
-                                    Texts.installInstruction shared.appLanguage <|
+                                    Texts.installInstructionIOS shared.appLanguage <|
                                         (FeatherIcons.share
                                             |> FeatherIcons.toHtml []
                                             |> html
@@ -306,19 +306,19 @@ viewWelcomeInfo shared =
                             _ ->
                                 none
                        )
-                    :: Texts.introduction2 shared.appLanguage
+                    :: Texts.disclaimer shared.appLanguage
                  )
                     ++ [ newTabLink []
                             { url = "https://www.youtube.com/watch?v=MgKdHG6MQ0g&list=PL2WKxL9enbZQ2XpjhGXG-rDG0_lUp4OcX"
                             , label =
-                                el
+                                paragraph
                                     [ Font.color <| rgb255 154 59 116
                                     , Font.underline
                                     , Font.bold
                                     ]
-                                <|
-                                    text <|
+                                    [ text <|
                                         Texts.wimLink shared.appLanguage
+                                    ]
                             }
                        ]
                 )
