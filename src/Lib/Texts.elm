@@ -54,13 +54,6 @@ bulletParagraph content =
         [ el [ alignTop, Font.bold ] <| text "•"
         , paragraph
             [ Font.alignLeft
-
-            --- This is a bugfix for (it seems) a bug in elm-ui...
-            --- See https://github.com/mdgriffith/elm-ui/issues/124
-            --- Without this, the button that is overlayed on swipe in the
-            --- SessionControls is not clickable at first, only on the second
-            --- tap...
-            -- , htmlAttribute <| Html.Attributes.style "pointer-events" "none"
             ]
             content
         ]
@@ -503,10 +496,10 @@ nextRingAfter lang sessions =
 
             _ ->
                 if sessions == 1 then
-                    "You will geht the next ring after your next practice session."
+                    "You will get the next ring after your next practice session."
 
                 else
-                    "You will geht your next ring after {{ }} practice sessions."
+                    "You will get your next ring after {{ }} practice sessions."
 
 
 lastPracticeWas : AppLanguage -> Int -> String
