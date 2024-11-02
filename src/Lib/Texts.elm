@@ -201,6 +201,13 @@ introduction lang =
             , bullet """
                 *Optimiere Deinen Übungserfolg*: Verfolge die Entwicklung Deiner Retentionszeiten und passe die Übungsparameter entsprechend an.
                 """
+            , para
+                ("""
+            {{ }} kann mit Tastaturkürzeln bedient werden, ist aber für die Benutzung auf Smartphones optimiert - es ist eine Webseite, die sich wie 
+            eine native App anfühlt, insbesondere wenn sie auf den Home-Screen des Geräts installiert wurde. 
+            """
+                    |> String.Format.value appName
+                )
             ]
 
         _ ->
@@ -227,32 +234,50 @@ introduction lang =
             , bullet """
             *Optimize your breathwork success*: fine-tune your exercise parameters and keep track of your retention time progress.
             """
+            , para
+                ("""
+            {{ }} can be controlled with keyboard shortcuts, but is optimized for usage on smartphones - it is a website made to look and feel
+            like a native app when installed to the device's home screen.
+            """
+                    |> String.Format.value appName
+                )
             ]
-
-
-
---TODO: Kurzer allgemeiner Installationshinweis
 
 
 installInstructionIOS : AppLanguage -> Element msg -> List (Element msg)
 installInstructionIOS lang icon =
     case lang of
         De ->
-            [ para ("""
-            {{ }} ist eine "Progressive Web Application (PWA)" - eine Webseite, die darauf optimiert ist, wie eine App aus dem 
-            App Store auszusehen und benutzt zu werden. Um das bestmöglich erleben zu können, installiere sie bitte auf dem 
-            Home-Screen: Öffne das Teilen-Menü (
-            """ |> String.Format.value appName)
+            [ para """
+            Zur Installation der App nutze den Safari-Browser zur Anzeige dieser Seite und öffne das Teilen-Menü (
+            """
             , icon
             , para """ Icon) und wähle dort "Zum Home-Bildschirm"."""
             ]
 
         _ ->
-            [ para ("""{{ }} is a "Progressive Web Application (PWA)" - a website that's made to look and feel like a native app from the 
-            App Store. For this experience, please install it as a "link" to your phone's Home screen: Go to the share menu (
-            """ |> String.Format.value appName)
+            [ para """To install the app, use the Safari browser to view this site and go to the share menu (
+            """
             , icon
-            , para """ icon) and choose "Add to Home Screen" in the list that appears."""
+            , para """ icon), then choose "Add to Home Screen" in the list that appears."""
+            ]
+
+
+installInstructionAndroid : AppLanguage -> List (Element msg)
+installInstructionAndroid lang =
+    case lang of
+        De ->
+            [ para """
+            Zur Installation der App nutze den Chrome-Browser auf Deinem Smartphone und aktiviere den Button rechts neben
+            der Adressleiste.
+            """
+            ]
+
+        _ ->
+            [ para """
+            To install the app, use the Chrome browser on your smartphone and tap the button next to the right of the
+            address bar.
+            """
             ]
 
 

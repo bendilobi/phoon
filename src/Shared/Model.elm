@@ -26,6 +26,10 @@ type alias Model =
     { zone : Time.Zone
     , today : Date.Date
     , appLanguage : Texts.AppLanguage
+
+    {- This is Nothing in browsers other than Safari, False in
+       in Safari if not "installed" to the home screen and True if installed.
+    -}
     , standalone : Maybe Bool
 
     {- We go under the assumption that if a mouse is used, the app is run in a desktop environment with keyboard.
