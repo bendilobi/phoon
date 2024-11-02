@@ -515,14 +515,19 @@ viewInfoWindow props shared model toContentMsg =
             , {- Information content -}
               case props.overlay of
                 InfoWindow { info } ->
-                    el
-                        [ width fill
-                        , height fill
-                        , scrollbarY
-                        , htmlAttribute <| Html.Attributes.style "min-height" "auto"
-                        ]
-                    <|
-                        info
+                    case shared.infoWindowState of
+                        Shared.Model.Max ->
+                            el
+                                [ width fill
+                                , height fill
+                                , scrollbarY
+                                , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                                ]
+                            <|
+                                info
+
+                        _ ->
+                            info
 
                 _ ->
                     none
