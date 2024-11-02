@@ -170,7 +170,7 @@ viewWelcome shared =
         , spacing 20
         ]
         [ el [ centerX ] <| text Texts.appName
-        , paragraph [ Font.size 17 ] [ text <| Texts.appSlogan shared.appLanguage ]
+        , paragraph [ Font.size 17 ] [ Texts.appSlogan shared.appLanguage ]
         ]
 
 

@@ -83,7 +83,6 @@ type alias Model =
     , copyButton : Button.Model
     , pasteButton : Button.Model
     , updateButton : Button.Model
-    , reloadButton : Button.Model
     , replaceMotDataButton : Button.Model
     , fadeOut : Fading.Trigger
     }
@@ -116,7 +115,6 @@ init shared () =
       , copyButton = Button.init
       , pasteButton = Button.init
       , updateButton = Button.init
-      , reloadButton = Button.init
       , replaceMotDataButton = Button.init
       , fadeOut = NoFade
       }
@@ -143,7 +141,6 @@ type SettingsItem
 
 type Msg
     = Tick Time.Posix
-      -- | OnReloadButton Button.Model
     | OnReloadButton
     | OnUpdateButton Button.Model
     | VisibilityChanged Browser.Events.Visibility
@@ -212,13 +209,6 @@ update shared msg model =
             , Effect.updateApp shared.updateState
             )
 
-        -- OnReloadButton state ->
-        --     ( { model | reloadButton = state }
-        --     , if state == Button.Triggered then
-        --         Effect.reload
-        --       else
-        --         Effect.none
-        --     )
         OnReloadButton ->
             ( model, Effect.reload )
 
@@ -994,7 +984,7 @@ viewAppInfo shared model =
             ([ width fill
              , height fill
              , Font.size 15
-             , spacing 50
+             , spacing 40
              , padding 30
              ]
                 ++ CS.primaryInformation shared.colorScheme
@@ -1029,17 +1019,26 @@ viewAppInfo shared model =
                   <|
                     text <|
                         Texts.appName
-                , el [ centerX, Font.size 17, Font.semiBold ] <| text <| Texts.appSlogan shared.appLanguage
+                , el
+                    [ centerX
+                    , Font.size 17
+                    , Font.semiBold
+                    , Font.center
+                    ]
+                  <|
+                    Texts.appSlogan shared.appLanguage
                 , el [ centerX, Font.size 14 ] <|
                     text <|
                         (Texts.version shared.appLanguage
                             |> String.Format.value Shared.appVersion
                         )
                 ]
-            , column [ spacing 15 ]
+            , column [ spacing 10 ]
                 (Texts.authorAndContact shared.appLanguage
-                    ++ [ row [ spacing 20 ]
-                            [ link [ padding 10 ]
+                    ++ [ row [ spacing 20, centerX ]
+                            [ link
+                                [ paddingXY 20 0
+                                ]
                                 { url =
                                     "mailto:phoon-feedback@bendilobi.de"
                                 , label =
@@ -1050,10 +1049,9 @@ viewAppInfo shared model =
                                         (FeatherIcons.mail
                                             |> FeatherIcons.toHtml []
                                             |> html
-                                            |> el [ padding 5 ]
                                         )
                                 }
-                            , newTabLink [ padding 10 ]
+                            , newTabLink [ paddingXY 20 0 ]
                                 { url =
                                     "https://github.com/bendilobi/phoon"
                                 , label =
@@ -1064,7 +1062,6 @@ viewAppInfo shared model =
                                         (FeatherIcons.github
                                             |> FeatherIcons.toHtml []
                                             |> html
-                                            |> el [ padding 5 ]
                                         )
                                 }
                             ]
@@ -1122,18 +1119,10 @@ viewAppInfo shared model =
                     }
                     |> Button.withLightColor
                     |> Button.view shared.colorScheme
-
-                -- , Button.new
-                --     { onPress = OnReloadButton
-                --     , label = text <| Texts.reloadApp shared.appLanguage
-                --     , model = model.reloadButton
-                --     }
-                --     |> Button.withLightColor
-                --     |> Button.view shared.colorScheme
                 ]
             , Input.button [ Font.size 12 ]
                 { onPress = Just OnReloadButton
-                , label = text "© Benno Dielmann"
+                , label = text "© 2024 Benno Dielmann"
                 }
             ]
     }
