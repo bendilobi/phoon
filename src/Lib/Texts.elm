@@ -283,6 +283,7 @@ installInstructionAndroid lang =
 
 disclaimer : AppLanguage -> List (Element msg)
 disclaimer lang =
+    --TODO: Datenschutzhinweis hierhin? Oder in AppInfo?
     case lang of
         De ->
             [ para
@@ -1554,3 +1555,42 @@ wakeLockNote lang =
             This is unfortunately necessary due to a bug in iOS which prevents apps like this one from doing it for you...
             """
             ]
+
+
+bmacIntro : AppLanguage -> Element msg
+bmacIntro lang =
+    para <|
+        String.Format.value appName <|
+            case lang of
+                De ->
+                    """
+            {{ }} ist kostenlos und wird es immer bleiben. Wenn es Dir aber Freude bereitet und Du Dich dankbar
+            zeigen (und damit die Weiterentwicklung der App unterstützen) möchtest, kannst Du mir...
+            """
+
+                _ ->
+                    """
+            {{ }} is free and will stay free. If it provided joy for you and you would like to show gratitude
+            (and support the further development of the app), you can...
+            """
+
+
+bmac : AppLanguage -> String
+bmac lang =
+    case lang of
+        De ->
+            "Einen Kaffee spendieren"
+
+        _ ->
+            "Buy me a coffee"
+
+
+bmacOutro : AppLanguage -> Element msg
+bmacOutro lang =
+    para <|
+        case lang of
+            De ->
+                "Das würde mich sehr freuen!"
+
+            _ ->
+                "That would make me very happy!"

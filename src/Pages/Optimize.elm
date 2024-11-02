@@ -1054,6 +1054,31 @@ viewAppInfo shared model =
                             }
                        ]
                 )
+            , column [ spacing 10 ]
+                [ Texts.bmacIntro shared.appLanguage
+                , newTabLink [ centerX ]
+                    { url = "https://www.buymeacoffee.com/bendilobi"
+                    , label =
+                        el
+                            [ paddingXY 25 10
+                            , Border.rounded 15
+                            , BG.color <| rgb255 255 221 0
+                            ]
+                        <|
+                            --TODO: i18n
+                            image []
+                                { src =
+                                    case shared.appLanguage of
+                                        Texts.De ->
+                                            "/img/bmac/bmac_de.png"
+
+                                        _ ->
+                                            "/img/bmac/bmac_en.png"
+                                , description = Texts.bmac shared.appLanguage
+                                }
+                    }
+                , Texts.bmacOutro shared.appLanguage
+                ]
             , column
                 [ width fill
                 , spacing 20
