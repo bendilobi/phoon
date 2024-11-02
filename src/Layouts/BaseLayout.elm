@@ -13,7 +13,7 @@ import Html.Attributes
 import Html.Events.Extra.Pointer as Pointer
 import Json.Decode
 import Layout exposing (Layout)
-import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.ColorScheme as CS
 import Lib.SafeArea as SafeArea
 import Lib.Swipe as Swipe
 import Lib.Texts as Texts
@@ -336,15 +336,18 @@ view props shared { toContentMsg, model, content } =
 viewInfoWindow : Props contentMsg -> Shared.Model -> Model -> (Msg -> contentMsg) -> Element contentMsg
 viewInfoWindow props shared model toContentMsg =
     let
+        topGap =
+            31
+
         maxHeight =
-            shared.deviceInfo.window.height - 31
+            shared.deviceInfo.window.height - topGap
 
         halfHeight =
             shared.deviceInfo.window.height / 2 + 52
     in
     el
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
-        , height <| px <| round <| shared.deviceInfo.window.height
+        , height <| px <| round <| shared.deviceInfo.window.height - topGap
         , centerX
         , Border.roundEach
             { topLeft = 25
@@ -512,7 +515,14 @@ viewInfoWindow props shared model toContentMsg =
             , {- Information content -}
               case props.overlay of
                 InfoWindow { info } ->
-                    info
+                    el
+                        [ width fill
+                        , height fill
+                        , scrollbarY
+                        , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                        ]
+                    <|
+                        info
 
                 _ ->
                     none

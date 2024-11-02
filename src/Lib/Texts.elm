@@ -184,7 +184,6 @@ introduction lang =
                     |> String.Format.value appName
                 )
             , bullet
-                --TODO: Doch irgendwie das mit den Ringen unterbringen?
                 ("""
                 *Finde Motivation* für eine regelmäßige Übungspraxis: Bestimme, wie häufig Du üben willst - {{ }} erfasst, wie lange Du Deine
                 Serie durchhältst. Wenn Du übst, bekommst Du *Ringe*, die Deine Serie schützen: Pro Ring kannst Du einen Tag pausieren, ohne dass
@@ -193,7 +192,6 @@ introduction lang =
                     |> String.Format.value appName
                 )
             , bullet
-                --TODO: Zeitprognose und ad hoc Anpassung erwähnen?
                 ("""
                 *Praktiziere, wie es für Dich am bequemsten ist* - im Sitzen oder im Liegen: {{ }} führt Dich mit Klängen und Animationen und lässt sich 
                 während der Übung komplett mit Berührungsgesten steuern.
@@ -678,7 +676,7 @@ practiceWarnings lang =
             [ para """
             Die Atemübung, wie sie von Wim Hof weltweit bekannt gemacht wurde, ist eine intensive, körperliche Übung, die den Organismus
             gezielt einer Belastung aussetzt (Sauerstoff-Entzug), um einen Anpassungseffekt zu bewirken. Es kann dabei in seltenen Fällen
-            während der Übung zu einer Bewusstseinseintrübung bis hin zu einer kurzen Bewusstlosigkeit kommen.
+            während der Übung zu einer Bewusstseinseintrübung bis hin zu einer momentanen Bewusstlosigkeit kommen.
             """
             , para """
             Es ist daher *sehr wichtig*, dass Du die Übung immer in einer Umgebung ausführst, in der das kein Problem ist, am Besten *im Sitzen 
@@ -692,8 +690,6 @@ practiceWarnings lang =
             """
             , para """
             Die Autoren dieser App übernehmen keine Verantwortung für Deinen Umgang mit der App, d.h. Du übst auf eigene Verantwortung! 
-            """
-            , para """
             Informiere Dich bitte selbst über die korrekte Ausführung der Wim Hof Atmung (z.B. im Internet, auf Youtube, ...).
             """
             ]
@@ -715,9 +711,7 @@ practiceWarnings lang =
             epilepsy, or similar conditions, always *consult your healthcare professional* before trying the breathing exercise!
             """
             , para """
-            The authors of this app accept no responsibility for your use of the app, i.e. you practise at your own risk! 
-            """
-            , para """
+            The authors of this app accept no responsibility for your use of the app, i.e. you practice at your own risk! 
             Please inform yourself about the correct execution of Wim Hof breathing (e.g. on the Internet, on YouTube, ...).
             """
             ]
