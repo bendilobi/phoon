@@ -1075,7 +1075,7 @@ viewAppInfo shared model =
                         el
                             [ paddingXY 25 10
                             , Border.rounded 15
-                            , BG.color <| rgb255 255 221 0
+                            , BG.color <| rgb255 245 238 230 --207 194 173
                             ]
                         <|
                             --TODO: i18n

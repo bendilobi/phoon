@@ -58,7 +58,6 @@ type BulletType
 bulletParagraph : BulletType -> List (Element msg) -> Element msg
 bulletParagraph fIcon content =
     row [ spacing 8, paddingXY 20 0 ]
-        -- [ el [ alignTop, Font.bold ] <| text "•"
         [ el [ alignTop, Font.bold ]
             (case fIcon of
                 Bullet ->
