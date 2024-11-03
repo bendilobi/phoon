@@ -19,6 +19,7 @@ import Lib.PageFading as Fading exposing (FadeState, Trigger(..))
 import Lib.SafeArea as SafeArea
 import Lib.Swipe as Swipe
 import Lib.Texts as Texts
+import Lib.Utils as Utils exposing (MainTask(..))
 import Route exposing (Route)
 import Route.Path
 import Shared
@@ -491,23 +492,6 @@ viewUpdateResult shared model { color, message, label } =
 
 viewNavBar : Shared.Model -> Route () -> Element Msg
 viewNavBar shared route =
-    let
-        playFilled =
-            [ Svg.polygon [ Svg.Attributes.fill "currentColor", Svg.Attributes.points "5 3 19 12 5 21 5 3" ] []
-            ]
-                |> FeatherIcons.customIcon
-
-        thumbsUpFilled =
-            [ Svg.path [ Svg.Attributes.fill "currentColor", Svg.Attributes.d "M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" ] []
-            ]
-                |> FeatherIcons.customIcon
-
-        userFilled =
-            [ Svg.path [ Svg.Attributes.fill "currentColor", Svg.Attributes.d "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" ] []
-            , Svg.circle [ Svg.Attributes.fill "currentColor", Svg.Attributes.cx "12", Svg.Attributes.cy "7", Svg.Attributes.r "4" ] []
-            ]
-                |> FeatherIcons.customIcon
-    in
     row
         ([ width fill
          , Border.widthEach { bottom = 0, left = 0, right = 0, top = 1 }
@@ -523,17 +507,17 @@ viewNavBar shared route =
         in
         --- Elements with zero width to make elm-ui space them correctly...
         [ el [ width <| px 0 ] none
-        , viewButton (Texts.motivate shared.appLanguage) FeatherIcons.thumbsUp thumbsUpFilled Route.Path.Home_
+        , viewButton (Texts.motivate shared.appLanguage) Motivate Route.Path.Home_
         , el [ width <| px 0 ] none
-        , viewButton (Texts.practice shared.appLanguage) FeatherIcons.play playFilled Route.Path.Practice
+        , viewButton (Texts.practice shared.appLanguage) Practice Route.Path.Practice
         , el [ width <| px 0 ] none
-        , viewButton (Texts.optimize shared.appLanguage) FeatherIcons.user userFilled Route.Path.Optimize
+        , viewButton (Texts.optimize shared.appLanguage) Optimize Route.Path.Optimize
         , el [ width <| px 0 ] none
         ]
 
 
-viewNavButton : ColorScheme -> Route () -> String -> FeatherIcons.Icon -> FeatherIcons.Icon -> Route.Path.Path -> Element Msg
-viewNavButton colorScheme route label icon iconFilled path =
+viewNavButton : ColorScheme -> Route () -> String -> MainTask -> Route.Path.Path -> Element Msg
+viewNavButton colorScheme route label mainTask path =
     el
         (if route.path == path then
             [ Font.color <| CS.guideColor colorScheme ]
@@ -553,11 +537,7 @@ viewNavButton colorScheme route label icon iconFilled path =
                 html <|
                     FeatherIcons.toHtml [] <|
                         FeatherIcons.withSize 27 <|
-                            if route.path == path then
-                                iconFilled
-
-                            else
-                                icon
+                            Utils.mainTaskIcon (route.path == path) mainTask
             , el [ centerX ] <| text label
             ]
 

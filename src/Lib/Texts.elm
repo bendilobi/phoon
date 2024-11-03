@@ -2,8 +2,10 @@ module Lib.Texts exposing (..)
 
 import Element exposing (..)
 import Element.Font as Font
+import FeatherIcons
 import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.Session as Session exposing (BreathingSpeed(..))
+import Lib.Utils exposing (MainTask(..), mainTaskIcon)
 import String.Format
 import Time exposing (Weekday(..))
 
@@ -48,10 +50,26 @@ boldify attrs txt =
         |> Tuple.second
 
 
-bulletParagraph : List (Element msg) -> Element msg
-bulletParagraph content =
+type BulletType
+    = Bullet
+    | Icon FeatherIcons.Icon
+
+
+bulletParagraph : BulletType -> List (Element msg) -> Element msg
+bulletParagraph fIcon content =
     row [ spacing 8, paddingXY 20 0 ]
-        [ el [ alignTop, Font.bold ] <| text "•"
+        -- [ el [ alignTop, Font.bold ] <| text "•"
+        [ el [ alignTop, Font.bold ]
+            (case fIcon of
+                Bullet ->
+                    text "•"
+
+                Icon icon ->
+                    icon
+                        |> FeatherIcons.withSize 13
+                        |> FeatherIcons.toHtml []
+                        |> html
+            )
         , paragraph
             [ Font.alignLeft
             ]
@@ -63,7 +81,14 @@ bullet : String -> Element msg
 bullet content =
     content
         |> boldify []
-        |> bulletParagraph
+        |> bulletParagraph Bullet
+
+
+iconBullet : MainTask -> String -> Element msg
+iconBullet task content =
+    content
+        |> boldify []
+        |> bulletParagraph (Icon <| mainTaskIcon True task)
 
 
 para : String -> Element msg
@@ -183,7 +208,7 @@ introduction lang =
                 """
                     |> String.Format.value appName
                 )
-            , bullet
+            , iconBullet Motivate
                 ("""
                 *Finde Motivation* für eine regelmäßige Übungspraxis: Bestimme, wie häufig Du üben willst - {{ }} erfasst, wie lange Du Deine
                 Serie durchhältst. Wenn Du übst, bekommst Du *Ringe*, die Deine Serie schützen: Pro Ring kannst Du einen Tag pausieren, ohne dass
@@ -191,14 +216,15 @@ introduction lang =
                 """
                     |> String.Format.value appName
                 )
-            , bullet
+            , iconBullet Practice
                 ("""
                 *Praktiziere, wie es für Dich am bequemsten ist* - im Sitzen oder im Liegen: {{ }} führt Dich mit Klängen und Animationen und lässt sich 
                 während der Übung komplett mit Berührungsgesten steuern.
                 """
                     |> String.Format.value appName
                 )
-            , bullet """
+            , iconBullet Optimize
+                """
                 *Optimiere Deinen Übungserfolg*: Verfolge die Entwicklung Deiner Retentionszeiten und passe die Übungsparameter entsprechend an.
                 """
             , para
@@ -216,7 +242,7 @@ introduction lang =
                 """
                     |> String.Format.value appName
                 )
-            , bullet
+            , iconBullet Motivate
                 ("""
             *Find and maintain motivation* for regular practice: Set a goal of how often you intend to practice - {{ }} keeps track of your streak
             and makes sure you don't miss a beat. By exercising you earn *rings* protecting your streak: for each ring you have, you can take a day 
@@ -224,14 +250,15 @@ introduction lang =
                 """
                     |> String.Format.value appName
                 )
-            , bullet
+            , iconBullet Practice
                 ("""
             *Conveniently practice however you like* - even lying down with closed eyes: {{ }} guides you with sounds and animations and can be  
             operated during the practice session entirely by touch gestures.
                 """
                     |> String.Format.value appName
                 )
-            , bullet """
+            , iconBullet Optimize
+                """
             *Optimize your breathwork success*: fine-tune your exercise parameters and keep track of your retention time progress.
             """
             , para

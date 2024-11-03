@@ -432,7 +432,7 @@ viewMotivationInfo shared motData =
                                     0
                                   )
                     in
-                    bulletParagraph <|
+                    bulletParagraph Texts.Bullet <|
                         if daysUntilStreakEnd == 1 then
                             Texts.practiceTomorrow shared.appLanguage
 
