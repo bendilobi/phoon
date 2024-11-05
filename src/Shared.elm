@@ -41,7 +41,7 @@ import Time
 appVersion =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    "0.7.225"
+    "0.7.232"
 
 
 subPageClosingTime =

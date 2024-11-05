@@ -432,6 +432,7 @@ update shared msg model =
             )
 
         OnToggleAppInfo ->
+            --TODO: Wenn shared.subpageShown == False, Version abfragen. Oben dann nicht mehr (init und Visibility)
             ( model
             , Effect.toggleSubPage
             )
@@ -475,8 +476,6 @@ view shared model =
             , Font.size 15
             ]
             [ viewRetentionTrend shared <| pagePadding * 2
-
-            -- , viewUpdate shared model
             , viewSettings shared model
             ]
     }

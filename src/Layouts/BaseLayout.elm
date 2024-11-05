@@ -344,6 +344,13 @@ viewInfoWindow props shared model toContentMsg =
 
         halfHeight =
             shared.deviceInfo.window.height / 2 + 52
+
+        safeAreaBottom =
+            --TODO: Offenbar ist der Wert hin und wieder fälschlicherweise 0...
+            --      => in diesem Fall einen Default setzen?
+            SafeArea.paddingEach shared.safeAreaInset
+                |> .bottom
+                |> toFloat
     in
     el
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
@@ -406,14 +413,8 @@ viewInfoWindow props shared model toContentMsg =
                 _ ->
                     Html.Attributes.hidden False
         , inFront <|
+            {- Blocker for swipe gestures outside of the safe area at the bottom. -}
             let
-                safeAreaBottom =
-                    --TODO: Offenbar ist der Wert hin und wieder fälschlicherweise 0...
-                    --      => in diesem Fall einen Default setzen?
-                    SafeArea.paddingEach shared.safeAreaInset
-                        |> .bottom
-                        |> toFloat
-
                 touchAreaHeight =
                     {- This is needed because of the "swipe from the bottom" - gesture in iOS:
                        If the touch area covers everything including the safeAreaInset.bottom, touch events
@@ -492,7 +493,8 @@ viewInfoWindow props shared model toContentMsg =
             , height fill
             , Font.color <| CS.primaryColors.primary
             , Font.size 14
-            , paddingEach { top = 0, left = 23, right = 23, bottom = 20 }
+
+            -- , paddingEach { top = 0, left = 23, right = 23, bottom = 0 }
             , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| SwipeStart e
             , htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| Swipe e
             , htmlAttribute <| Swipe.onEnd <| \e -> toContentMsg <| SwipeEnd e
@@ -515,22 +517,48 @@ viewInfoWindow props shared model toContentMsg =
             , {- Information content -}
               case props.overlay of
                 InfoWindow { info } ->
-                    case shared.infoWindowState of
-                        Shared.Model.Max ->
-                            el
-                                [ width fill
-                                , height fill
-                                , scrollbarY
-                                , htmlAttribute <| Html.Attributes.style "min-height" "auto"
-                                ]
-                            <|
-                                info
+                    -- case shared.infoWindowState of
+                    --     Shared.Model.Max ->
+                    --         el
+                    --             [ width fill
+                    --             , height fill
+                    --             , scrollbarY
+                    --             , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                    --             ]
+                    --         <|
+                    --             info
+                    --     _ ->
+                    --         info
+                    el
+                        ([ width fill
+                         , height fill
+                         , paddingXY 23 0
+                         ]
+                            ++ (case shared.infoWindowState of
+                                    Shared.Model.Max ->
+                                        [ scrollbarY
+                                        , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                                        ]
 
-                        _ ->
-                            info
+                                    _ ->
+                                        []
+                               )
+                        )
+                    <|
+                        info
 
                 _ ->
                     none
+            , el
+                {- We have an overlay that prevents swipe if the user swipes up at the bottom
+                   (trigering OS-specific stuff). See above. This element prevents the overlay from
+                   covering content, so that it doesn't disable links if there happens one to be
+                   below it...
+                -}
+                [ width fill
+                , height <| px <| round safeAreaBottom
+                ]
+                none
 
             -- , let
             --     { top, bottom, left, right } =
