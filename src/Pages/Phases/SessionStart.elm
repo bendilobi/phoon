@@ -13,6 +13,7 @@ import Layouts
 import Layouts.BaseLayout
 import Layouts.BaseLayout.SessionControls as SessionControls
 import Lib.ColorScheme as CS exposing (ColorScheme)
+import Lib.Millis as Millis
 import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session
 import Lib.SessionResults as SessionResults
@@ -101,17 +102,8 @@ update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
         Tick _ ->
-            let
-                ( bModel, _ ) =
-                    Bubble.update
-                        { msg = Bubble.Tick
-                        , model = model.bubble
-                        , toModel = \bubble -> { model | bubble = bubble }
-                        }
-            in
             ( { model
                 | ticks = model.ticks + 1
-                , bubble = bModel.bubble
               }
             , Effect.none
             )
@@ -158,6 +150,7 @@ subscriptions shared model =
     if model.fadeInFinished then
         --- Reducing the tickSpeed by 1 millisecond is a fix for a bug in Elm:
         --- https://github.com/elm/time/issues/25
+        --TODO: Stattdessen Delay verwenden?
         Time.every (Bubble.tickSpeed model.bubble - 1) Tick
 
     else
@@ -199,7 +192,7 @@ view shared model =
                 , centerY
                 ]
               <|
-                viewReminder shared model 1 FeatherIcons.volume2
+                viewReminder shared model 2 FeatherIcons.volume2
             , el [ centerX, centerY, width <| px bubbleSize, height <| px bubbleSize ] <|
                 if model.fadeInFinished then
                     Bubble.new
@@ -219,7 +212,7 @@ view shared model =
                 , centerY
                 ]
               <|
-                viewReminder shared model 2 FeatherIcons.bellOff
+                viewReminder shared model 3 FeatherIcons.bellOff
             , el
                 [ width fill
                 , height fill

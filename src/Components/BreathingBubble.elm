@@ -81,6 +81,12 @@ type BubbleType
     | Counting Int
 
 
+type BreathingState
+    = FirstExhale
+    | Inhale
+    | Exhale
+
+
 type Model msg
     = Model
         { currentBreath : Int
@@ -88,6 +94,7 @@ type Model msg
         , bubbleType : BubbleType
         , onFinished : Maybe msg
         , startWithInhale : Bool
+        , breathingState : BreathingState
         }
 
 
@@ -105,15 +112,19 @@ init props =
         , bubbleType = props.bubbleType
         , onFinished = props.onFinished
         , startWithInhale = props.startWithInhale
+        , breathingState =
+            if props.startWithInhale then
+                Inhale
+
+            else
+                FirstExhale
         }
 
 
 tickSpeed : Model msg -> Float
 tickSpeed (Model model) =
     model.breathingSpeed
-        |> Millis.toInt
-        |> (*) 2
-        |> toFloat
+        |> Millis.toFloat
 
 
 withSpeed : Milliseconds -> Model msg -> Model msg
@@ -155,31 +166,43 @@ update props =
     toParentModel <|
         case props.msg of
             Tick ->
-                let
-                    ( nextBreath, breathingFinished ) =
-                        case model.bubbleType of
-                            Static ->
-                                ( model.currentBreath, False )
+                case model.bubbleType of
+                    Static ->
+                        ( Model model, Effect.none )
 
-                            Counting maxBreaths ->
+                    Counting maxBreaths ->
+                        case model.breathingState of
+                            FirstExhale ->
+                                ( Model { model | breathingState = Inhale }, Effect.none )
+
+                            Inhale ->
+                                ( Model { model | breathingState = Exhale }, Effect.none )
+
+                            Exhale ->
+                                let
+                                    newModel =
+                                        { model | breathingState = Inhale }
+                                in
                                 if model.currentBreath == maxBreaths then
-                                    ( 1, True )
+                                    ( Model
+                                        { newModel
+                                            | currentBreath = 1
+                                        }
+                                    , case model.onFinished of
+                                        Nothing ->
+                                            Effect.none
+
+                                        Just msg ->
+                                            Effect.sendMsg msg
+                                    )
 
                                 else
-                                    ( model.currentBreath + 1, False )
-                in
-                ( Model { model | currentBreath = nextBreath }
-                , if breathingFinished then
-                    case model.onFinished of
-                        Nothing ->
-                            Effect.none
-
-                        Just msg ->
-                            Effect.sendMsg msg
-
-                  else
-                    Effect.none
-                )
+                                    ( Model
+                                        { newModel
+                                            | currentBreath = model.currentBreath + 1
+                                        }
+                                    , Effect.none
+                                    )
 
             Reset ->
                 ( Model { model | currentBreath = 1 }
@@ -251,7 +274,12 @@ view (Settings settings) =
                 text <|
                     case settings.label of
                         Nothing ->
-                            model.currentBreath |> String.fromInt
+                            case model.breathingState of
+                                FirstExhale ->
+                                    ""
+
+                                _ ->
+                                    model.currentBreath |> String.fromInt
 
                         Just label ->
                             label

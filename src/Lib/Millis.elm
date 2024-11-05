@@ -1,4 +1,4 @@
-module Lib.Millis exposing (Milliseconds, fromInt, fromSeconds, max, multiplyBy, sum, toInt, toMinutes, toSeconds, toString)
+module Lib.Millis exposing (Milliseconds, fromInt, fromSeconds, max, multiplyBy, sum, toFloat, toInt, toMinutes, toSeconds, toString)
 
 
 type Milliseconds
@@ -15,6 +15,11 @@ toInt (Amount millis) =
     millis
 
 
+toFloat : Milliseconds -> Float
+toFloat (Amount millis) =
+    millis |> Basics.toFloat
+
+
 fromSeconds : Int -> Milliseconds
 fromSeconds secs =
     Amount (secs * 1000)
@@ -27,12 +32,12 @@ multiplyBy factor (Amount millis) =
 
 toSeconds : Milliseconds -> Int
 toSeconds (Amount millis) =
-    round ((millis |> toFloat) / 1000)
+    round ((millis |> Basics.toFloat) / 1000)
 
 
 toMinutes : Milliseconds -> Int
 toMinutes (Amount millis) =
-    round ((millis |> toFloat) / 1000 / 60)
+    round ((millis |> Basics.toFloat) / 1000 / 60)
 
 
 max : Milliseconds -> Milliseconds -> Milliseconds
