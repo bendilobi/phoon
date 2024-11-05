@@ -475,7 +475,8 @@ view shared model =
             , Font.size 15
             ]
             [ viewRetentionTrend shared <| pagePadding * 2
-            , viewUpdate shared model
+
+            -- , viewUpdate shared model
             , viewSettings shared model
             ]
     }
@@ -1033,6 +1034,7 @@ viewAppInfo shared model =
                             |> String.Format.value Shared.appVersion
                         )
                 ]
+            , viewUpdate shared model
             , column [ spacing 10 ] <| Texts.authorAndContact shared.appLanguage
             , row [ spacing 20, centerX ]
                 [ link
