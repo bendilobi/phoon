@@ -1033,40 +1033,37 @@ viewAppInfo shared model =
                             |> String.Format.value Shared.appVersion
                         )
                 ]
-            , column [ spacing 10 ]
-                (Texts.authorAndContact shared.appLanguage
-                    ++ [ row [ spacing 20, centerX ]
-                            [ link
-                                [ paddingXY 20 0
-                                ]
-                                { url =
-                                    "mailto:phoon-feedback@bendilobi.de"
-                                , label =
-                                    el
-                                        [ Font.color <| CS.interactActiveLighterColor shared.colorScheme
-                                        ]
-                                    <|
-                                        (FeatherIcons.mail
-                                            |> FeatherIcons.toHtml []
-                                            |> html
-                                        )
-                                }
-                            , newTabLink [ paddingXY 20 0 ]
-                                { url =
-                                    "https://github.com/bendilobi/phoon"
-                                , label =
-                                    el
-                                        [ Font.color <| CS.interactActiveLighterColor shared.colorScheme
-                                        ]
-                                    <|
-                                        (FeatherIcons.github
-                                            |> FeatherIcons.toHtml []
-                                            |> html
-                                        )
-                                }
+            , column [ spacing 10 ] <| Texts.authorAndContact shared.appLanguage
+            , row [ spacing 20, centerX ]
+                [ link
+                    [ paddingXY 20 0
+                    ]
+                    { url =
+                        "mailto:phoon-feedback@bendilobi.de"
+                    , label =
+                        el
+                            [ Font.color <| CS.interactActiveLighterColor shared.colorScheme
                             ]
-                       ]
-                )
+                        <|
+                            (FeatherIcons.mail
+                                |> FeatherIcons.toHtml []
+                                |> html
+                            )
+                    }
+                , newTabLink [ paddingXY 20 0 ]
+                    { url =
+                        "https://github.com/bendilobi/phoon"
+                    , label =
+                        el
+                            [ Font.color <| CS.interactActiveLighterColor shared.colorScheme
+                            ]
+                        <|
+                            (FeatherIcons.github
+                                |> FeatherIcons.toHtml []
+                                |> html
+                            )
+                    }
+                ]
             , column [ spacing 10 ]
                 [ Texts.bmacIntro shared.appLanguage
                 , newTabLink [ centerX ]
@@ -1075,10 +1072,9 @@ viewAppInfo shared model =
                         el
                             [ paddingXY 25 10
                             , Border.rounded 15
-                            , BG.color <| rgb255 245 238 230 --207 194 173
+                            , BG.color <| rgb255 245 238 230
                             ]
                         <|
-                            --TODO: i18n
                             image []
                                 { src =
                                     case shared.appLanguage of

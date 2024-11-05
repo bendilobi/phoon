@@ -1202,13 +1202,13 @@ authorAndContact : AppLanguage -> List (Element msg)
 authorAndContact lang =
     case lang of
         De ->
-            [ para """Diese App wurde mit Hingebung für Dich programmiert von Benno Dielmann."""
+            [ para """Diese App wurde mit Hingabe für Dich programmiert von Benno Dielmann."""
             , para """Hast Du Fragen, Verbesserungsvorschläge, Ideen, Kritik? Schreibe mir eine E-Mail
             oder erstelle ein Issue auf GitHub:"""
             ]
 
         _ ->
-            [ para """This app was programmed with dedication for you by Benno Dielmann."""
+            [ para """This app was programmed for you with dedication by Benno Dielmann."""
             , para """Do you have any questions, suggestions for improvement, ideas or 
             criticism? Write me an e-mail or open an issue on GitHub:"""
             ]

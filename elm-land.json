@@ -22,8 +22,7 @@
       ],
       "link": [
         {"rel": "manifest", "href": "/manifest.json"},
-        {"rel": "stylesheet", "href": "/scroll.css"},
-        {"rel": "apple-touch-startup-image", "href": "/img/splashscreenXR.png", "media": "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)"}
+        {"rel": "stylesheet", "href": "/scroll.css"}
       ],
       "script": [{"src": "/registerServiceWorker.js"}, {"src": "/howler.core.min.js"}]
     },
