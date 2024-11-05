@@ -41,7 +41,7 @@ import Time
 appVersion =
     --TODO: Update-Mechanismus dokumentieren
     -- Make version string in version.json identical!!!
-    "0.7.232"
+    "0.7.238"
 
 
 subPageClosingTime =
@@ -476,7 +476,10 @@ update route msg model =
             , case model.updateState of
                 Updating _ ->
                     if versionString == appVersion then
-                        Effect.setUpdateState JustUpdated
+                        Effect.batch
+                            [ Effect.setUpdateState JustUpdated
+                            , Effect.toggleSubPage
+                            ]
 
                     else
                         Effect.updateApp model.updateState

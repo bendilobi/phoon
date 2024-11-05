@@ -1,7 +1,5 @@
 module Pages.Optimize exposing (Model, Msg, page)
 
-import Api
-import Browser.Events
 import Components.AnimatedButton as Button
 import Components.BreathingBubble as Bubble exposing (BreathingBubble)
 import Components.Dialog as Dialog
@@ -118,11 +116,7 @@ init shared () =
       , replaceMotDataButton = Button.init
       , fadeOut = NoFade
       }
-    , if shared.versionOnServer /= Api.Loading && shared.updateState /= JustUpdated then
-        Effect.checkVersion ReceivedNewestVersionString
-
-      else
-        Effect.none
+    , Effect.none
     )
 
 
@@ -143,7 +137,7 @@ type Msg
     = Tick Time.Posix
     | OnReloadButton
     | OnUpdateButton Button.Model
-    | VisibilityChanged Browser.Events.Visibility
+      -- | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int IntCrementer.Model
     | DefaultRelaxRetDurationChanged Int IntCrementer.Model
     | PracticeFreqTargetChanged Int IntCrementer.Model
@@ -172,17 +166,6 @@ update shared msg model =
                 , model = model.bubble
                 , toModel = \bubble -> { model | bubble = bubble }
                 }
-
-        VisibilityChanged visibility ->
-            ( model
-            , case visibility of
-                Browser.Events.Hidden ->
-                    Effect.none
-
-                Browser.Events.Visible ->
-                    --TODO: Wie oft will ich die Version abfragen? bringt das Probleme, wenn die Nutzerzahlen steigen?
-                    Effect.checkVersion ReceivedNewestVersionString
-            )
 
         ReceivedNewestVersionString response ->
             ( model, Effect.receivedVersionOnServer response )
@@ -432,9 +415,15 @@ update shared msg model =
             )
 
         OnToggleAppInfo ->
-            --TODO: Wenn shared.subpageShown == False, Version abfragen. Oben dann nicht mehr (init und Visibility)
             ( model
-            , Effect.toggleSubPage
+            , Effect.batch
+                [ Effect.toggleSubPage
+                , if not shared.subPageShown && shared.updateState /= JustUpdated then
+                    Effect.checkVersion ReceivedNewestVersionString
+
+                  else
+                    Effect.none
+                ]
             )
 
 
@@ -445,8 +434,7 @@ update shared msg model =
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
     Sub.batch
-        [ Browser.Events.onVisibilityChange VisibilityChanged
-        , Effect.clipboardReceiver ReceivedClipboard
+        [ Effect.clipboardReceiver ReceivedClipboard
         , if model.settingsItemShown == BreathingSpeed then
             Time.every (Bubble.tickSpeed model.bubble) Tick
 
