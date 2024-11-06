@@ -2,7 +2,7 @@ module Lib.Swipe exposing
     ( onMove, onEnd, onStart, onEndWithOptions
     , Gesture, Event, blanco, record
     , Position, locate, deltaX, deltaY, isTap, isUpSwipe, isDownSwipe, isLeftSwipe, isRightSwipe
-    , maxFingers
+    , maxFingers, onCancel
     )
 
 {-| Early stages of gesture recognition for touch-events.
@@ -288,6 +288,17 @@ onMove tagger =
     decodeTouchListLength "changedTouches"
         |> Json.andThen (\length -> decodeTouch "changedTouches" (Touch Move length >> tagger))
         |> on "touchmove"
+
+
+
+--TODO: do we need an onCancelWithOptions?
+
+
+onCancel : (Event -> msg) -> Html.Attribute msg
+onCancel tagger =
+    decodeTouchListLength "changedTouches"
+        |> Json.andThen (\length -> decodeTouch "changedTouches" (Touch Move length >> tagger))
+        |> on "touchcancel"
 
 
 {-| Record the end of a touch gesture.

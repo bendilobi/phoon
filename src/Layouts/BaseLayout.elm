@@ -1,6 +1,5 @@
 module Layouts.BaseLayout exposing (Model, Msg, Overlay(..), Props, layout, map)
 
-import Browser.Events
 import Effect exposing (Effect)
 import Element as E exposing (..)
 import Element.Background as BG
@@ -11,7 +10,6 @@ import Element.Input as Input
 import FeatherIcons
 import Html.Attributes
 import Html.Events.Extra.Pointer as Pointer
-import Json.Decode
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS
 import Lib.SafeArea as SafeArea
@@ -97,9 +95,8 @@ type Msg
     | SwipeStart Swipe.Event
     | Swipe Swipe.Event
     | SwipeEnd Swipe.Event
-    | CancelSwipe
+    | SwipeCancel Swipe.Event
     | PointerDetected Bool
-    | IgnoreSwipe Swipe.Event
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -193,10 +190,7 @@ update shared msg model =
                 Effect.none
             )
 
-        IgnoreSwipe _ ->
-            ( model, Effect.none )
-
-        CancelSwipe ->
+        SwipeCancel _ ->
             ( { model
                 | swipeGesture = Swipe.blanco
                 , swipeInitialY = Nothing
@@ -213,27 +207,7 @@ update shared msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    {- Oh the joys of Apples PWA support... So there are these OS-wide swipe gestures in
-       iOS: swipe up from the bottom to close an app window or show it in the opened apps list;
-       swipe down at the bottom of the screen to move the whole content to half the screen (to
-       make it easier to reach things at the top).
-       Unfortunately, when the user does these with our app open, the app receives some touch
-       events: SwipeStart, sometimes Swipe - but no SwipeEnd. If the InfoWindow is shown, this
-       translates accordingly to positional changes as well as deactivating the transition
-       animations. Result: the app seems broken because the InfoWindow stays in an "unnatural"
-       position and is not animated any more...
-       The current workaround (cannot call it a solution) is to
-           1) Have the touch-sensitive area of the InfoWindow not reaching all the way to the
-              bottom. This seems to prevent even very fast "swipe-up"s to not reach our swipe
-              area.
-           2) Have this general onClick handler for the whole screen. In our update function,
-              CancelSwipe resets any swipe information. This cannot prevent the InfoWindow
-              looking weird in case of the "swipe down and up again" iOS gesture, but resolves
-              the issue as soon as the user taps anywhere on the screen.
-        Of course it would be best if iOS didn't send any touch events to a (PWA) app if their
-        swipe actions are triggered...
-    -}
-    Browser.Events.onClick <| Json.Decode.succeed CancelSwipe
+    Sub.none
 
 
 
@@ -413,31 +387,6 @@ viewInfoWindow props shared model toContentMsg =
                 _ ->
                     Html.Attributes.hidden False
         , inFront <|
-            {- Blocker for swipe gestures outside of the safe area at the bottom. -}
-            let
-                touchAreaHeight =
-                    {- This is needed because of the "swipe from the bottom" - gesture in iOS:
-                       If the touch area covers everything including the safeAreaInset.bottom, touch events
-                       are triggered when the user does this gesture, but a swipeEnd event isn't happening
-                       so the gesture model isn't reset and the InfoWindow stays in the swiped-up position...
-                    -}
-                    case shared.infoWindowState of
-                        Shared.Model.Max ->
-                            maxHeight - safeAreaBottom
-
-                        _ ->
-                            halfHeight - safeAreaBottom
-            in
-            el
-                [ width fill
-                , height <| px <| round safeAreaBottom
-                , moveDown touchAreaHeight
-                , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| IgnoreSwipe e
-                , htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| IgnoreSwipe e
-                , htmlAttribute <| Swipe.onEnd <| \e -> toContentMsg <| IgnoreSwipe e
-                ]
-                none
-        , inFront <|
             el
                 [ width fill
                 ]
@@ -493,11 +442,11 @@ viewInfoWindow props shared model toContentMsg =
             , height fill
             , Font.color <| CS.primaryColors.primary
             , Font.size 14
-
-            -- , paddingEach { top = 0, left = 23, right = 23, bottom = 0 }
+            , paddingEach { top = 0, left = 23, right = 23, bottom = safeAreaBottom |> round }
             , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| SwipeStart e
             , htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| Swipe e
             , htmlAttribute <| Swipe.onEnd <| \e -> toContentMsg <| SwipeEnd e
+            , htmlAttribute <| Swipe.onCancel <| \e -> toContentMsg <| SwipeCancel e
             ]
             [ el
                 {- Header -}
@@ -517,48 +466,22 @@ viewInfoWindow props shared model toContentMsg =
             , {- Information content -}
               case props.overlay of
                 InfoWindow { info } ->
-                    -- case shared.infoWindowState of
-                    --     Shared.Model.Max ->
-                    --         el
-                    --             [ width fill
-                    --             , height fill
-                    --             , scrollbarY
-                    --             , htmlAttribute <| Html.Attributes.style "min-height" "auto"
-                    --             ]
-                    --         <|
-                    --             info
-                    --     _ ->
-                    --         info
-                    el
-                        ([ width fill
-                         , height fill
-                         , paddingXY 23 0
-                         ]
-                            ++ (case shared.infoWindowState of
-                                    Shared.Model.Max ->
-                                        [ scrollbarY
-                                        , htmlAttribute <| Html.Attributes.style "min-height" "auto"
-                                        ]
+                    case shared.infoWindowState of
+                        Shared.Model.Max ->
+                            el
+                                [ width fill
+                                , height fill
+                                , scrollbarY
+                                , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                                ]
+                            <|
+                                info
 
-                                    _ ->
-                                        []
-                               )
-                        )
-                    <|
-                        info
+                        _ ->
+                            info
 
                 _ ->
                     none
-            , el
-                {- We have an overlay that prevents swipe if the user swipes up at the bottom
-                   (trigering OS-specific stuff). See above. This element prevents the overlay from
-                   covering content, so that it doesn't disable links if there happens one to be
-                   below it...
-                -}
-                [ width fill
-                , height <| px <| round safeAreaBottom
-                ]
-                none
 
             -- , let
             --     { top, bottom, left, right } =
