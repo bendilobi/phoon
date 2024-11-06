@@ -1,5 +1,6 @@
 module Layouts.BaseLayout exposing (Model, Msg, Overlay(..), Props, layout, map)
 
+import Browser.Dom
 import Effect exposing (Effect)
 import Element as E exposing (..)
 import Element.Background as BG
@@ -9,7 +10,9 @@ import Element.Font as Font
 import Element.Input as Input
 import FeatherIcons
 import Html.Attributes
+import Html.Events
 import Html.Events.Extra.Pointer as Pointer
+import Json.Decode
 import Layout exposing (Layout)
 import Lib.ColorScheme as CS
 import Lib.SafeArea as SafeArea
@@ -19,6 +22,7 @@ import Route exposing (Route)
 import Shared
 import Shared.Model
 import Simple.Transition as Transition
+import Task
 import View exposing (View)
 
 
@@ -73,6 +77,8 @@ type alias Model =
     { swipeGesture : Swipe.Gesture
     , swipeInitialY : Maybe Float
     , swipeLocationY : Maybe Float
+    , infoContentViewportAtTop : Bool
+    , swiping : Bool
     }
 
 
@@ -81,9 +87,15 @@ init _ =
     ( { swipeGesture = Swipe.blanco
       , swipeInitialY = Nothing
       , swipeLocationY = Nothing
+      , infoContentViewportAtTop = True
+      , swiping = False
       }
     , Effect.none
     )
+
+
+infoContentID =
+    "infocontent"
 
 
 
@@ -97,6 +109,8 @@ type Msg
     | SwipeEnd Swipe.Event
     | SwipeCancel Swipe.Event
     | PointerDetected Bool
+    | OnScrollEnd
+    | ReceivedInfoContentViewport (Result Browser.Dom.Error Browser.Dom.Viewport)
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -116,10 +130,21 @@ update shared msg model =
             )
 
         SwipeStart event ->
-            ( { model
-                | swipeGesture = Swipe.record event model.swipeGesture
-                , swipeInitialY = Just <| .y <| Swipe.locate event
-              }
+            ( if model.infoContentViewportAtTop then
+                { model
+                    | swipeGesture = Swipe.record event model.swipeGesture
+                    , swipeInitialY = Just <| .y <| Swipe.locate event
+                    , swiping = True
+                }
+
+              else
+                {- Only register swiping when the info content is scrolled to the top.
+                   This is needed because iOS doesn't yet support the "scrollend" event - we
+                   use "scroll" instead. But since this fires continuously, swiping would be
+                   triggered as soon as the content viewport is at the top, during scrolling.
+                   We only want to react to swiping if the content was at the top at the beginning.
+                -}
+                { model | swiping = False }
             , Effect.none
             )
 
@@ -143,10 +168,10 @@ update shared msg model =
                     shared.deviceInfo.window.height - swipeThreshold
 
                 switchDown =
-                    Swipe.isDownSwipe swipeThreshold gesture
+                    model.infoContentViewportAtTop && Swipe.isDownSwipe swipeThreshold gesture
 
                 switchCompletelyDown =
-                    Swipe.isDownSwipe bigSwipeThreshold gesture
+                    model.infoContentViewportAtTop && Swipe.isDownSwipe bigSwipeThreshold gesture
 
                 switchUp =
                     Swipe.isUpSwipe swipeThreshold gesture
@@ -155,6 +180,7 @@ update shared msg model =
                 | swipeGesture = Swipe.blanco
                 , swipeInitialY = Nothing
                 , swipeLocationY = Nothing
+                , swiping = False
               }
             , if switchCompletelyDown then
                 case shared.infoWindowState of
@@ -195,6 +221,7 @@ update shared msg model =
                 | swipeGesture = Swipe.blanco
                 , swipeInitialY = Nothing
                 , swipeLocationY = Nothing
+                , swiping = False
               }
             , Effect.none
             )
@@ -203,6 +230,17 @@ update shared msg model =
             ( model
             , Effect.pointerDetected isMouse
             )
+
+        OnScrollEnd ->
+            ( model
+            , Effect.sendCmd <| Task.attempt ReceivedInfoContentViewport <| Browser.Dom.getViewportOf infoContentID
+            )
+
+        ReceivedInfoContentViewport (Ok { viewport }) ->
+            ( { model | infoContentViewportAtTop = viewport.y <= 0 }, Effect.none )
+
+        ReceivedInfoContentViewport (Err _) ->
+            ( model, Effect.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -351,7 +389,11 @@ viewInfoWindow props shared model toContentMsg =
                     in
                     (case shared.infoWindowState of
                         Shared.Model.Max ->
-                            maxHeight - dragDistance
+                            if model.infoContentViewportAtTop then
+                                maxHeight - dragDistance
+
+                            else
+                                maxHeight
 
                         Shared.Model.Half ->
                             halfHeight - dragDistance
@@ -438,16 +480,23 @@ viewInfoWindow props shared model toContentMsg =
         ]
     <|
         column
-            [ width fill
-            , height fill
-            , Font.color <| CS.primaryColors.primary
-            , Font.size 14
-            , paddingEach { top = 0, left = 23, right = 23, bottom = safeAreaBottom |> round }
-            , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| SwipeStart e
-            , htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| Swipe e
-            , htmlAttribute <| Swipe.onEnd <| \e -> toContentMsg <| SwipeEnd e
-            , htmlAttribute <| Swipe.onCancel <| \e -> toContentMsg <| SwipeCancel e
-            ]
+            ([ width fill
+             , height fill
+             , Font.color <| CS.primaryColors.primary
+             , Font.size 14
+             , paddingEach { top = 0, left = 23, right = 23, bottom = safeAreaBottom |> round }
+             , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| SwipeStart e
+             ]
+                ++ (if model.swiping then
+                        [ htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| Swipe e
+                        , htmlAttribute <| Swipe.onEndWithOptions { stopPropagation = False, preventDefault = False } <| \e -> toContentMsg <| SwipeEnd e
+                        , htmlAttribute <| Swipe.onCancel <| \e -> toContentMsg <| SwipeCancel e
+                        ]
+
+                    else
+                        []
+                   )
+            )
             [ el
                 {- Header -}
                 [ width fill
@@ -473,6 +522,14 @@ viewInfoWindow props shared model toContentMsg =
                                 , height fill
                                 , scrollbarY
                                 , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                                , htmlAttribute <| Html.Attributes.id infoContentID
+                                , htmlAttribute <|
+                                    if shared.iOSVersion == Nothing then
+                                        {- Doesn't work on Safari, see https://bugs.webkit.org/show_bug.cgi?id=201556 -}
+                                        Html.Events.on "scrollend" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
+
+                                    else
+                                        Html.Events.on "scroll" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
                                 ]
                             <|
                                 info
