@@ -239,30 +239,41 @@ view shared model =
                                     none
 
                                 Just motData ->
-                                    el [ centerX, Font.size 15 ] <|
-                                        (RetentionChart.new
-                                            { width = (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2) - 40
-                                            , height = 200
-                                            , meanRetentionTimes = MotivationData.meanRetentionTimes motData |> List.reverse |> List.map Millis.toSeconds
-                                            , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
-                                            , meanRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
-                                            , maxRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
-                                            , copyColor = CS.phaseRelaxRetentionColor shared.colorScheme
-                                            }
-                                            |> RetentionChart.view
-                                        )
-                            , paragraph
-                                [ Font.center
-                                , paddingXY 30 0
-                                , Font.size 15
-                                ]
-                                [ text <| Texts.retTrentCaption shared.appLanguage ]
+                                    if List.length (MotivationData.meanRetentionTimes motData) < 2 then
+                                        none
+
+                                    else
+                                        viewRetentionChart shared motData
                             ]
 
                         ( _, _ ) ->
                             []
                    )
     }
+
+
+viewRetentionChart : Shared.Model -> MotivationData.MotivationData -> Element msg
+viewRetentionChart shared motData =
+    column [ spacing 20 ]
+        [ el [ centerX, Font.size 15 ] <|
+            (RetentionChart.new
+                { width = (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2) - 40
+                , height = 200
+                , meanRetentionTimes = MotivationData.meanRetentionTimes motData |> List.reverse |> List.map Millis.toSeconds
+                , maxRetention = MotivationData.maxRetention motData |> Millis.toSeconds
+                , meanRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                , maxRetentionColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                , copyColor = CS.phaseRelaxRetentionColor shared.colorScheme
+                }
+                |> RetentionChart.view
+            )
+        , paragraph
+            [ Font.center
+            , paddingXY 30 0
+            , Font.size 15
+            ]
+            [ text <| Texts.retTrentCaption shared.appLanguage ]
+        ]
 
 
 viewRetentionTimes : Shared.Model -> List Int -> Int -> Element msg
