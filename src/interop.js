@@ -4,6 +4,7 @@ const SESSION_SETTINGS_KEY = 'sessionSettings'
 const UPDATING_KEY = 'updating'
 const SHOWWAKELOCKHINT_KEY = 'showWakelockHint'
 let checkVersion = () => /(iPhone|iPad) OS ([1-9]*)/g.exec(window.navigator.userAgent)?.[2] || 0
+let wakeLock = null;
 
 export const flags = ({ env }) => {
     const motivationStored = localStorage.getItem(MOTIVATION_DATA_KEY)
@@ -96,22 +97,31 @@ export const onReady = ({app, env}) => {
                 case 'SET_WAKE_LOCK':
                     console.log('WakeLock request received from Elm')
 
-                    let wakeLock = null;
 
                     const requestWakeLock = async () => {
-                    try {
-                        wakeLock = await navigator.wakeLock.request('screen');
+                        try {
+                            wakeLock = await navigator.wakeLock.request('screen');
 
-                        wakeLock.addEventListener('release', () => {
-                            console.log('Wake Lock was released');
-                        });
-                        console.log('Wake Lock is active');
-                    }
-                    catch(err) {
-                        console.error(`${err.name}, ${err.message}`);
-                    }
+                            wakeLock.addEventListener('release', () => {
+                                console.log('Wake Lock was released');
+                            });
+                            console.log('Wake Lock is active');
+                        }
+                        catch(err) {
+                            console.error(`${err.name}, ${err.message}`);
+                        }
                     };
                     requestWakeLock()
+                    return
+                
+
+                case 'RELEASE_WAKE_LOCK':
+                    console.log('Wakelock release requested by Elm')
+                    if (wakeLock !== null) {
+                        wakeLock.release().then(() => {
+                            wakeLock = null;
+                        })
+                    }
                     return
 
 

@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, pointerDetected, receivedVersionOnServer, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveShowWakelockHint, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, toggleSubPage, toggleWakelockHint, updateApp, updateSessionSettings, writeToClipboard
+    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, pointerDetected, receivedVersionOnServer, releaseWakeLock, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveShowWakelockHint, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, toggleSubPage, toggleWakelockHint, updateApp, updateSessionSettings, writeToClipboard
     )
 
 {-|
@@ -208,6 +208,14 @@ setWakeLock =
     --TODO: Mit Bool Wakelock auch wieder entfernen können -> Am Ende der Session
     SendMessageToJavaScript
         { tag = "SET_WAKE_LOCK"
+        , data = Json.Encode.string ""
+        }
+
+
+releaseWakeLock : Effect msg
+releaseWakeLock =
+    SendMessageToJavaScript
+        { tag = "RELEASE_WAKE_LOCK"
         , data = Json.Encode.string ""
         }
 
