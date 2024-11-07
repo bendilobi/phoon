@@ -7,13 +7,17 @@
     "env": [],
     "html": {
       "attributes": {
-        "html": { "lang": "de" },
+        "html": { "lang": "en" },
         "head": {}
       },
-      "title": "Phoon",
+      "title": "Phoon - Wim Hof style breathwork with a flavor of Zen",
       "meta": [
         { "charset": "UTF-8" },
         { "http-equiv": "X-UA-Compatible", "content": "IE=edge" },
+        { "name": "description", "lang": "en", "content": "A smartphone app (PWA) supporting your Wim Hof style breathwork"},
+        { "name": "description", "lang": "de", "content": "Eine Web-App für Smartphones, die Dich bei deiner Wim Hof Atemübung unterstützt"},
+        { "name": "keywords", "lang": "en", "content": "breathwork, Wim Hof Method, web app, pwa, elm, breathing, health, exercise, immune system"},
+        { "name": "keywords", "lang": "de", "content": "Atemübung, Wim Hof Methode, web app, pwa, elm, Atmung, Gesundheit, Training, Immunsystem"},
         { "name": "viewport", "content": "viewport-fit=cover, width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, height=device-height" },
         { "name": "theme-color", "content": "#040e1e"},
         { "name": "mobile-web-app-capable", "content": "yes" },
