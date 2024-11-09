@@ -2,7 +2,7 @@ module Lib.Swipe exposing
     ( onMove, onEnd, onStart, onEndWithOptions
     , Gesture, Event, blanco, record
     , Position, locate, deltaX, deltaY, isTap, isUpSwipe, isDownSwipe, isLeftSwipe, isRightSwipe
-    , maxFingers, onCancel
+    , isDownFlick, isLeftFlick, isRightFlick, isUpFlick, maxFingers, onCancel
     )
 
 {-| Early stages of gesture recognition for touch-events.
@@ -70,6 +70,8 @@ In your update:
 import Html
 import Html.Events exposing (custom, on)
 import Json.Decode as Json exposing (Decoder)
+import List.Extra
+import Time
 
 
 {-| Checks if a given gesture is actually a (single) tap
@@ -147,6 +149,68 @@ isSwipeType delta predicate =
     delta >> Maybe.map predicate >> Maybe.withDefault False
 
 
+isRightFlick : Gesture -> Bool
+isRightFlick =
+    isFlickType isRightSwipe
+
+
+isLeftFlick : Gesture -> Bool
+isLeftFlick =
+    isFlickType isLeftSwipe
+
+
+isDownFlick : Gesture -> Bool
+isDownFlick =
+    isFlickType isDownSwipe
+
+
+isUpFlick : Gesture -> Bool
+isUpFlick =
+    isFlickType isUpSwipe
+
+
+isFlickType : (Float -> Gesture -> Bool) -> Gesture -> Bool
+isFlickType predicate =
+    flickGesture >> Maybe.map (predicate 20) >> Maybe.withDefault False
+
+
+
+--TODO: Funktionsweise der Flick-Implementierung dokumentieren
+--TODO: Flick-Implementierung vervollständigen: Andere Richtungen
+
+
+flickGesture : Gesture -> Maybe Gesture
+flickGesture gesture =
+    case gesture of
+        EndGesture fingers trail ->
+            let
+                newThrough =
+                    trail.to.time
+                        |> Maybe.map Time.posixToMillis
+                        |> Maybe.map (\t -> t - 50)
+                        |> Maybe.map
+                            (\t ->
+                                List.Extra.takeWhile
+                                    (\x ->
+                                        x.time
+                                            |> Maybe.map Time.posixToMillis
+                                            |> Maybe.map (\st -> st > t)
+                                            --TODO: Passt das wenn keine Zeit vorhanden?
+                                            |> Maybe.withDefault False
+                                    )
+                                    trail.through
+                            )
+            in
+            newThrough
+                |> Maybe.andThen List.Extra.last
+                --TODO: through should not be an empty list, but it isn't used at the moment, so
+                --      let's implement that later...
+                |> Maybe.map (\p -> EndGesture fingers { from = p, through = [], to = trail.to })
+
+        _ ->
+            Nothing
+
+
 maxFingers : Gesture -> Int
 maxFingers gesture =
     case gesture of
@@ -169,7 +233,7 @@ maxFingers gesture =
 {-| A position, similar to the one in the `elm-lang/mouse` package.
 -}
 type alias Position =
-    { x : Float, y : Float }
+    { x : Float, y : Float, time : Maybe Time.Posix }
 
 
 type alias Trail =
@@ -223,8 +287,12 @@ addToTrail coordinate { from, to, through } =
 
 {-| Our cute little `update`-like function!
 -}
-record : Event -> Gesture -> Gesture
-record (Touch eventType fingers coordinate) gesture =
+record : Event -> Maybe Time.Posix -> Gesture -> Gesture
+record (Touch eventType fingers position) time gesture =
+    let
+        coordinate =
+            { position | time = time }
+    in
     case ( eventType, gesture ) of
         ( Start, _ ) ->
             Started fingers coordinate
@@ -250,18 +318,20 @@ record (Touch eventType fingers coordinate) gesture =
 
 decodeTouch : String -> (Position -> msg) -> Decoder msg
 decodeTouch fieldName tagger =
-    Json.map2 Position
+    Json.map3 Position
         (Json.field "clientX" Json.float)
         (Json.field "clientY" Json.float)
+        (Json.succeed Nothing)
         |> Json.at [ fieldName, "0" ]
         |> Json.map tagger
 
 
 decodeTouchWithOptions : String -> { stopPropagation : Bool, preventDefault : Bool } -> (Position -> msg) -> Decoder { message : msg, preventDefault : Bool, stopPropagation : Bool }
 decodeTouchWithOptions fieldName options tagger =
-    Json.map2 (\x y -> Position x y)
+    Json.map3 (\x y -> Position x y)
         (Json.field "clientX" Json.float)
         (Json.field "clientY" Json.float)
+        (Json.succeed Nothing)
         |> Json.at [ fieldName, "0" ]
         |> Json.map (\p -> { message = tagger p, preventDefault = options.preventDefault, stopPropagation = options.stopPropagation })
 

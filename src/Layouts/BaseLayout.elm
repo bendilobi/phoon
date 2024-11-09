@@ -132,7 +132,7 @@ update shared msg model =
         SwipeStart event ->
             ( if model.infoContentViewportAtTop then
                 { model
-                    | swipeGesture = Swipe.record event model.swipeGesture
+                    | swipeGesture = Swipe.record event Nothing model.swipeGesture
                     , swipeInitialY = Just <| .y <| Swipe.locate event
                     , swiping = True
                 }
@@ -150,7 +150,7 @@ update shared msg model =
 
         Swipe event ->
             ( { model
-                | swipeGesture = Swipe.record event model.swipeGesture
+                | swipeGesture = Swipe.record event Nothing model.swipeGesture
                 , swipeLocationY = Swipe.locate event |> .y |> Just
               }
             , Effect.none
@@ -159,7 +159,7 @@ update shared msg model =
         SwipeEnd event ->
             let
                 gesture =
-                    Swipe.record event model.swipeGesture
+                    Swipe.record event Nothing model.swipeGesture
 
                 swipeThreshold =
                     shared.deviceInfo.window.height / 5

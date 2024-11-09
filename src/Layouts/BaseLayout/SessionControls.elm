@@ -152,7 +152,7 @@ update props shared route msg model =
     case msg of
         SwipeStart event ->
             ( { model
-                | gesture = Swipe.record event model.gesture
+                | gesture = Swipe.record event Nothing model.gesture
                 , swipeInitialPosition = Just <| Swipe.locate event
               }
             , Effect.none
@@ -161,7 +161,7 @@ update props shared route msg model =
         Swipe event ->
             let
                 gesture =
-                    Swipe.record event model.gesture
+                    Swipe.record event Nothing model.gesture
 
                 isSingleFinger =
                     Swipe.maxFingers gesture == 1
@@ -206,7 +206,7 @@ update props shared route msg model =
         SwipeEnd event ->
             let
                 gesture =
-                    Swipe.record event model.gesture
+                    Swipe.record event Nothing model.gesture
 
                 swipeSize =
                     shared.deviceInfo.window.width * 0.9

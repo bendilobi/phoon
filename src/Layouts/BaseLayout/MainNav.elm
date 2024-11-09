@@ -138,8 +138,11 @@ type Msg
     | UpdateFinished
     | ToggleFadeIn Fading.Trigger
     | SwipeStart Swipe.Event
-    | Swipe Swipe.Event
+    | TimedSwipeStart Swipe.Event Time.Posix
+    | SwipeMove Swipe.Event
+    | TimedSwipeMove Swipe.Event Time.Posix
     | SwipeEnd Swipe.Event
+    | TimedSwipeEnd Swipe.Event Time.Posix
     | OnSubPageBack
 
 
@@ -216,31 +219,46 @@ update shared msg model =
             )
 
         SwipeStart event ->
+            ( model
+            , Effect.sendCmd <| Task.perform (TimedSwipeStart event) Time.now
+            )
+
+        TimedSwipeStart event time ->
             ( { model
-                | swipeGesture = Swipe.record event model.swipeGesture
+                | swipeGesture = Swipe.record event (Just time) model.swipeGesture
                 , swipeInitialX = Just <| .x <| Swipe.locate event
               }
             , Effect.none
             )
 
-        Swipe event ->
+        SwipeMove event ->
+            ( model
+            , Effect.sendCmd <| Task.perform (TimedSwipeMove event) Time.now
+            )
+
+        TimedSwipeMove event time ->
             ( { model
-                | swipeGesture = Swipe.record event model.swipeGesture
+                | swipeGesture = Swipe.record event (Just time) model.swipeGesture
                 , swipeLocationX = Swipe.locate event |> .x |> Just
               }
             , Effect.none
             )
 
         SwipeEnd event ->
+            ( model
+            , Effect.sendCmd <| Task.perform (TimedSwipeEnd event) Time.now
+            )
+
+        TimedSwipeEnd event time ->
             let
                 gesture =
-                    Swipe.record event model.swipeGesture
+                    Swipe.record event (Just time) model.swipeGesture
 
                 swipeThreshold =
                     shared.deviceInfo.window.width - (shared.deviceInfo.window.width / 4)
 
                 closeSubPage =
-                    Swipe.isRightSwipe swipeThreshold gesture
+                    Swipe.isRightSwipe swipeThreshold gesture || Swipe.isRightFlick gesture
             in
             ( { model
                 | swipeGesture = Swipe.blanco
@@ -588,7 +606,7 @@ viewSubpage props shared model subPage toContentMsg =
                     [ height fill
                     , width <| px 30
                     , htmlAttribute <| Swipe.onStart SwipeStart
-                    , htmlAttribute <| Swipe.onMove Swipe
+                    , htmlAttribute <| Swipe.onMove SwipeMove
                     , htmlAttribute <| Swipe.onEnd SwipeEnd
                     ]
                     none
