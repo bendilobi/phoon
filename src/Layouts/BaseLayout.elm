@@ -23,6 +23,7 @@ import Shared
 import Shared.Model
 import Simple.Transition as Transition
 import Task
+import Time
 import View exposing (View)
 
 
@@ -105,8 +106,11 @@ infoContentID =
 type Msg
     = OnInfoWindowResize
     | SwipeStart Swipe.Event
-    | Swipe Swipe.Event
+    | TimedSwipeStart Swipe.Event Time.Posix
+    | SwipeMove Swipe.Event
+    | TimedSwipeMove Swipe.Event Time.Posix
     | SwipeEnd Swipe.Event
+    | TimedSwipeEnd Swipe.Event Time.Posix
     | SwipeCancel Swipe.Event
     | PointerDetected Bool
     | OnScrollEnd
@@ -130,9 +134,14 @@ update shared msg model =
             )
 
         SwipeStart event ->
+            ( model
+            , Effect.sendCmd <| Task.perform (TimedSwipeStart event) Time.now
+            )
+
+        TimedSwipeStart event time ->
             ( if model.infoContentViewportAtTop then
                 { model
-                    | swipeGesture = Swipe.record event Nothing model.swipeGesture
+                    | swipeGesture = Swipe.record event (Just time) model.swipeGesture
                     , swipeInitialY = Just <| .y <| Swipe.locate event
                     , swiping = True
                 }
@@ -148,18 +157,28 @@ update shared msg model =
             , Effect.none
             )
 
-        Swipe event ->
+        SwipeMove event ->
+            ( model
+            , Effect.sendCmd <| Task.perform (TimedSwipeMove event) Time.now
+            )
+
+        TimedSwipeMove event time ->
             ( { model
-                | swipeGesture = Swipe.record event Nothing model.swipeGesture
+                | swipeGesture = Swipe.record event (Just time) model.swipeGesture
                 , swipeLocationY = Swipe.locate event |> .y |> Just
               }
             , Effect.none
             )
 
         SwipeEnd event ->
+            ( model
+            , Effect.sendCmd <| Task.perform (TimedSwipeEnd event) Time.now
+            )
+
+        TimedSwipeEnd event time ->
             let
                 gesture =
-                    Swipe.record event Nothing model.swipeGesture
+                    Swipe.record event (Just time) model.swipeGesture
 
                 swipeThreshold =
                     shared.deviceInfo.window.height / 5
@@ -168,13 +187,16 @@ update shared msg model =
                     shared.deviceInfo.window.height - swipeThreshold
 
                 switchDown =
-                    model.infoContentViewportAtTop && Swipe.isDownSwipe swipeThreshold gesture
+                    model.infoContentViewportAtTop
+                        && (Swipe.isDownSwipe swipeThreshold gesture
+                                || Swipe.isDownFlick gesture
+                           )
 
                 switchCompletelyDown =
                     model.infoContentViewportAtTop && Swipe.isDownSwipe bigSwipeThreshold gesture
 
                 switchUp =
-                    Swipe.isUpSwipe swipeThreshold gesture
+                    Swipe.isUpSwipe swipeThreshold gesture || Swipe.isUpFlick gesture
             in
             ( { model
                 | swipeGesture = Swipe.blanco
@@ -488,7 +510,7 @@ viewInfoWindow props shared model toContentMsg =
              , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| SwipeStart e
              ]
                 ++ (if model.swiping then
-                        [ htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| Swipe e
+                        [ htmlAttribute <| Swipe.onMove <| \e -> toContentMsg <| SwipeMove e
                         , htmlAttribute <| Swipe.onEndWithOptions { stopPropagation = False, preventDefault = False } <| \e -> toContentMsg <| SwipeEnd e
                         , htmlAttribute <| Swipe.onCancel <| \e -> toContentMsg <| SwipeCancel e
                         ]
