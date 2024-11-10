@@ -2,7 +2,7 @@ module Lib.Swipe exposing
     ( onMove, onEnd, onStart, onEndWithOptions
     , Gesture, Event, blanco, record
     , Position, locate, deltaX, deltaY, isTap, isUpSwipe, isDownSwipe, isLeftSwipe, isRightSwipe
-    , isDownFlick, isLeftFlick, isRightFlick, isUpFlick, maxFingers, onCancel
+    , isDownFlick, isLeftFlick, isRightFlick, isUpFlick, maxFingers, onCancel, recordWithTime
     )
 
 {-| Early stages of gesture recognition for touch-events.
@@ -169,25 +169,26 @@ isUpFlick =
     isFlickType isUpSwipe
 
 
+{-| A flick is a gesture that ends with a speedy movement. This function takes only
+the end of the gestures movement trail (last 50 milliseconds) and determines if
+a certain distance has been swiped within that time (20 pixels).
+-}
 isFlickType : (Float -> Gesture -> Bool) -> Gesture -> Bool
 isFlickType predicate =
-    flickGesture >> Maybe.map (predicate 20) >> Maybe.withDefault False
+    flickGesture 50 >> Maybe.map (predicate 20) >> Maybe.withDefault False
 
 
-
---TODO: Funktionsweise der Flick-Implementierung dokumentieren
---TODO: Flick-Implementierung vervollständigen: Andere Richtungen
-
-
-flickGesture : Gesture -> Maybe Gesture
-flickGesture gesture =
+{-| Reduces the gesture to contain only the last flickDuration milliseconds
+-}
+flickGesture : Int -> Gesture -> Maybe Gesture
+flickGesture flickDuration gesture =
     case gesture of
         EndGesture fingers trail ->
             let
                 newThrough =
                     trail.to.time
                         |> Maybe.map Time.posixToMillis
-                        |> Maybe.map (\t -> t - 50)
+                        |> Maybe.map (\t -> t - flickDuration)
                         |> Maybe.map
                             (\t ->
                                 List.Extra.takeWhile
@@ -195,7 +196,6 @@ flickGesture gesture =
                                         x.time
                                             |> Maybe.map Time.posixToMillis
                                             |> Maybe.map (\st -> st > t)
-                                            --TODO: Passt das wenn keine Zeit vorhanden?
                                             |> Maybe.withDefault False
                                     )
                                     trail.through
@@ -230,7 +230,8 @@ maxFingers gesture =
             fingers
 
 
-{-| A position, similar to the one in the `elm-lang/mouse` package.
+{-| A position, similar to the one in the `elm-lang/mouse` package, as well as
+optionally the point in time at which the position was recorded.
 -}
 type alias Position =
     { x : Float, y : Float, time : Maybe Time.Posix }
@@ -287,8 +288,20 @@ addToTrail coordinate { from, to, through } =
 
 {-| Our cute little `update`-like function!
 -}
-record : Event -> Maybe Time.Posix -> Gesture -> Gesture
-record (Touch eventType fingers position) time gesture =
+record : Event -> Gesture -> Gesture
+record event gesture =
+    recordInternal event Nothing gesture
+
+
+{-| record a gesture change with a time stamp
+-}
+recordWithTime : Event -> Time.Posix -> Gesture -> Gesture
+recordWithTime event time gesture =
+    recordInternal event (Just time) gesture
+
+
+recordInternal : Event -> Maybe Time.Posix -> Gesture -> Gesture
+recordInternal (Touch eventType fingers position) time gesture =
     let
         coordinate =
             { position | time = time }
@@ -364,6 +377,8 @@ onMove tagger =
 --TODO: do we need an onCancelWithOptions?
 
 
+{-| Record the cancellation of an ongoing touch gesture
+-}
 onCancel : (Event -> msg) -> Html.Attribute msg
 onCancel tagger =
     decodeTouchListLength "changedTouches"

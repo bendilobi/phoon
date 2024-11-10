@@ -225,7 +225,7 @@ update shared msg model =
 
         TimedSwipeStart event time ->
             ( { model
-                | swipeGesture = Swipe.record event (Just time) model.swipeGesture
+                | swipeGesture = Swipe.recordWithTime event time model.swipeGesture
                 , swipeInitialX = Just <| .x <| Swipe.locate event
               }
             , Effect.none
@@ -238,7 +238,7 @@ update shared msg model =
 
         TimedSwipeMove event time ->
             ( { model
-                | swipeGesture = Swipe.record event (Just time) model.swipeGesture
+                | swipeGesture = Swipe.recordWithTime event time model.swipeGesture
                 , swipeLocationX = Swipe.locate event |> .x |> Just
               }
             , Effect.none
@@ -252,7 +252,7 @@ update shared msg model =
         TimedSwipeEnd event time ->
             let
                 gesture =
-                    Swipe.record event (Just time) model.swipeGesture
+                    Swipe.recordWithTime event time model.swipeGesture
 
                 swipeThreshold =
                     shared.deviceInfo.window.width - (shared.deviceInfo.window.width / 4)

@@ -141,7 +141,7 @@ update shared msg model =
         TimedSwipeStart event time ->
             ( if model.infoContentViewportAtTop then
                 { model
-                    | swipeGesture = Swipe.record event (Just time) model.swipeGesture
+                    | swipeGesture = Swipe.recordWithTime event time model.swipeGesture
                     , swipeInitialY = Just <| .y <| Swipe.locate event
                     , swiping = True
                 }
@@ -164,7 +164,7 @@ update shared msg model =
 
         TimedSwipeMove event time ->
             ( { model
-                | swipeGesture = Swipe.record event (Just time) model.swipeGesture
+                | swipeGesture = Swipe.recordWithTime event time model.swipeGesture
                 , swipeLocationY = Swipe.locate event |> .y |> Just
               }
             , Effect.none
@@ -178,7 +178,7 @@ update shared msg model =
         TimedSwipeEnd event time ->
             let
                 gesture =
-                    Swipe.record event (Just time) model.swipeGesture
+                    Swipe.recordWithTime event time model.swipeGesture
 
                 swipeThreshold =
                     shared.deviceInfo.window.height / 5
