@@ -1097,6 +1097,21 @@ importData lang =
             "Import data?"
 
 
+importWarning : AppLanguage -> List (Element msg)
+importWarning lang =
+    boldify [] <|
+        case lang of
+            De ->
+                """
+        *Bitte beachte*: Beim Importieren werden die aktuell vorhandenen Retentionsdaten überschrieben!
+        """
+
+            _ ->
+                """
+        *Please note*: When you import the data, your current retention data will be replaced!
+        """
+
+
 imp : AppLanguage -> String
 imp lang =
     case lang of

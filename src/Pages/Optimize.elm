@@ -356,11 +356,11 @@ update shared msg model =
             ( { model
                 | copyButton = newState
                 , dialogShown =
-                    if newState == Button.Triggered then
+                    if model.dialogShown == NoDialog && newState == Button.Triggered then
                         DataCopyConfirmation
 
                     else
-                        NoDialog
+                        model.dialogShown
               }
             , if newState == Button.Triggered then
                 --TODO: Include the app settings into the copied and pasted stuff
@@ -882,6 +882,7 @@ viewDialog shared model =
                     column
                         [ width fill
                         , padding 20
+                        , spacing 30
                         ]
                         [ let
                             meanTimes =
@@ -915,6 +916,7 @@ viewDialog shared model =
                                         )
                                     ]
                                 ]
+                        , paragraph [] <| Texts.importWarning shared.appLanguage
                         ]
                 , choices =
                     [ Dialog.choice
