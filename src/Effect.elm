@@ -19,7 +19,6 @@ port module Effect exposing
 -}
 
 import Browser.Navigation
-import Date
 import Dict exposing (Dict)
 import Http
 import Json.Decode
@@ -205,7 +204,6 @@ soundEncoder sound =
 
 setWakeLock : Effect msg
 setWakeLock =
-    --TODO: Mit Bool Wakelock auch wieder entfernen können -> Am Ende der Session
     SendMessageToJavaScript
         { tag = "SET_WAKE_LOCK"
         , data = Json.Encode.string ""
@@ -220,11 +218,17 @@ releaseWakeLock =
         }
 
 
-saveMotivationData : MotivationData -> Effect msg
+saveMotivationData : Maybe MotivationData -> Effect msg
 saveMotivationData motData =
     SendMessageToJavaScript
         { tag = "STORE_MOTIVATION_DATA"
-        , data = MotivationData.encoder motData
+        , data =
+            case motData of
+                Nothing ->
+                    Json.Encode.null
+
+                Just data ->
+                    MotivationData.encoder data
         }
 
 

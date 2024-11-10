@@ -449,12 +449,7 @@ update route msg model =
                 | motivationData = motData
                 , previousMotivationData = model.motivationData
               }
-            , case motData of
-                Nothing ->
-                    Effect.none
-
-                Just data ->
-                    Effect.saveMotivationData data
+            , Effect.saveMotivationData motData
             )
 
         Shared.Msg.SessionSettingsUpdated newSettings ->
