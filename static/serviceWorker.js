@@ -1,7 +1,7 @@
 // Increment version when you update any of the local resources, which will
 // in turn trigger the install event again.
 // ... but not on iOS Safari, it seems...
-const PRECACHE = "precache-v0.8";
+const PRECACHE = "precache-v0.8.1";
 
 // A list of local resources we always want to be cached.
 const PRECACHE_URLS = [ 

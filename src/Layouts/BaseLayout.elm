@@ -506,7 +506,8 @@ viewInfoWindow props shared model toContentMsg =
              , height fill
              , Font.color <| CS.primaryColors.primary
              , Font.size 14
-             , paddingEach { top = 0, left = 23, right = 23, bottom = safeAreaBottom |> round }
+
+             --  , paddingEach { top = 0, left = 0, right = 0, bottom = 20 } --safeAreaBottom |> round }
              , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| SwipeStart e
              ]
                 ++ (if model.swiping then
@@ -525,7 +526,9 @@ viewInfoWindow props shared model toContentMsg =
                 , Font.bold
                 , Font.center
                 , Font.size 18
-                , paddingEach { left = 30, top = 22, right = 30, bottom = 20 }
+
+                -- , paddingEach { left = 30, top = 22, right = 30, bottom = 20 }
+                , paddingEach { left = 53, top = 22, right = 53, bottom = 20 }
                 ]
               <|
                 case props.overlay of
@@ -537,27 +540,51 @@ viewInfoWindow props shared model toContentMsg =
             , {- Information content -}
               case props.overlay of
                 InfoWindow { info } ->
-                    case shared.infoWindowState of
-                        Shared.Model.Max ->
-                            el
-                                [ width fill
-                                , height fill
-                                , scrollbarY
-                                , htmlAttribute <| Html.Attributes.style "min-height" "auto"
-                                , htmlAttribute <| Html.Attributes.id infoContentID
-                                , htmlAttribute <|
-                                    if shared.iOSVersion == Nothing then
-                                        {- Doesn't work on Safari, see https://bugs.webkit.org/show_bug.cgi?id=201556 -}
-                                        Html.Events.on "scrollend" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
+                    el
+                        ([ width fill
+                         , height fill
 
-                                    else
-                                        Html.Events.on "scroll" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
-                                ]
-                            <|
-                                info
+                         --  , paddingXY 23 0
+                         , paddingEach { top = 0, left = 23, right = 23, bottom = 23 }
+                         ]
+                            ++ (case shared.infoWindowState of
+                                    Shared.Model.Max ->
+                                        [ scrollbarY
+                                        , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                                        , htmlAttribute <| Html.Attributes.id infoContentID
+                                        , htmlAttribute <|
+                                            if shared.iOSVersion == Nothing then
+                                                {- Doesn't work on Safari, see https://bugs.webkit.org/show_bug.cgi?id=201556 -}
+                                                Html.Events.on "scrollend" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
 
-                        _ ->
-                            info
+                                            else
+                                                Html.Events.on "scroll" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
+                                        ]
+
+                                    _ ->
+                                        []
+                               )
+                        )
+                    <|
+                        -- case shared.infoWindowState of
+                        -- Shared.Model.Max ->
+                        --     el
+                        --         [ width fill
+                        --         , height fill
+                        --         , scrollbarY
+                        --         , htmlAttribute <| Html.Attributes.style "min-height" "auto"
+                        --         , htmlAttribute <| Html.Attributes.id infoContentID
+                        --         , htmlAttribute <|
+                        --             if shared.iOSVersion == Nothing then
+                        --                 {- Doesn't work on Safari, see https://bugs.webkit.org/show_bug.cgi?id=201556 -}
+                        --                 Html.Events.on "scrollend" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
+                        --             else
+                        --                 Html.Events.on "scroll" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
+                        --         ]
+                        --     <|
+                        --         info
+                        -- _ ->
+                        info
 
                 _ ->
                     none
