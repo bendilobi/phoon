@@ -22,7 +22,10 @@
         { "name": "theme-color", "content": "#040e1e"},
         { "name": "mobile-web-app-capable", "content": "yes" },
         { "name": "apple-touch-fullscreen", "content": "yes" },
-        { "name": "apple-mobile-web-app-capable", "content": "yes" }
+        { "name": "apple-mobile-web-app-capable", "content": "yes" },
+        { "http-equiv": "Cache-Control", "content": "no-cache, no-store, must-revalidate"},
+        { "http-equiv": "Pragma", "content": "no-cache"},
+        { "http-equiv": "Expires", "content": "0"}
       ],
       "link": [
         {"rel": "manifest", "href": "/manifest.json"},

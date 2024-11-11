@@ -1,13 +1,11 @@
 // Increment version when you update any of the local resources, which will
 // in turn trigger the install event again.
-// ... but not on iOS Safari, it seems...
-const PRECACHE = "precache-v0.8.1";
+const PRECACHE = "precache-v0.8.9";
 
 // A list of local resources we always want to be cached.
 const PRECACHE_URLS = [ 
-    "/",
+    // "/",
     "/registerServiceWorker.js",
-    "/index.html",
     "/howler.core.min.js",
     "/scroll.css",
     "/audio/ding.mp3",
@@ -59,46 +57,55 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   console.log(`URL requested: ${event.request.url}`);
 
-  // TODO: Requests nach /assets hier in den cache aufnehmen?
-  //       Scheint zu funktionieren. Aber macht es auch Sinn?
-  //       Durch den obigen Listener für "activate" wird 
-  //       der Cache bei der Aktivierung gelöscht...
-  // if (event.request.url.includes("assets")) {
-  //   event.waitUntil(caches
-  //     .open("elm-cache")
-  //     .then((cache) => cache.add(event.request.url))
-  //   );
-  // }
-
-  // Skip cross-origin requests, like those for Google Analytics.
   if (event.request.url.startsWith(self.location.origin) 
-      && !event.request.url.includes("serviceWorker.js") 
-      && !event.request.url.includes("version.json")) {
+    && !event.request.url.includes("serviceWorker.js") 
+    && !event.request.url.includes("version.json")) {
 
-      event.respondWith(
-        caches.match(event.request).then(cachedResponse => {
-            const networkFetch = fetch(event.request).then(response => {
-              // update the cache with a clone of the network response
-              const responseClone = response.clone()
-              caches.open(PRECACHE).then(cache => {
-                cache.put(event.request, responseClone)
-              })
-              return response
-            }).catch(function (reason) {
-              console.error('ServiceWorker fetch failed: ', reason)
-            })
-            // prioritize cached response over network
-            return cachedResponse || networkFetch
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse !== undefined) {
+
+          // Make sure that newer versions of index.html are cached and
+          // therefore used if they are fetched next time
+          if (event.request.url.includes("/#/")) {
+            fetch(event.request).then((response) => {
+              const responseClone = response.clone();
+              caches.open(PRECACHE).then((cache) => {
+                cache.put(event.request, responseClone);
+              });
+            });
           }
-        )
-      )
 
+          return cachedResponse;
 
+        } else {
+          // We only fetch stuff from the server if it isn't already
+          // in our PRECACHE (except the index.html, see above)
+          return fetch(event.request).then((response) => {
+            const responseClone = response.clone();
 
-    // event.respondWith(
-    //   fetch(event.request).catch(function () {
-    //     return caches.match(event.request);
-    //   })
-    // );
+            // "assets" contains our compiled elm code whose name
+            // contains a hash and thus changes for each new version.
+            // To avoid filling the cache with old versions, we have 
+            // a dedicated cache for the compiled elm which we empty
+            // whenever a new version is fetched
+            if (event.request.url.includes("assets")) {
+              caches.delete("compiledElm").then(() => {
+                caches.open("compiledElm").then((cache) => {
+                  cache.put(event.request, responseClone);
+                });
+              });
+
+            // All other requests are added to the precache 
+            } else {
+              caches.open(PRECACHE).then((cache) => {
+                cache.put(event.request, responseClone);
+              });
+            }
+            return response;
+          });
+        }
+      })
+    )
   }
 });

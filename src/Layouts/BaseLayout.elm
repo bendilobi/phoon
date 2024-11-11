@@ -506,8 +506,6 @@ viewInfoWindow props shared model toContentMsg =
              , height fill
              , Font.color <| CS.primaryColors.primary
              , Font.size 14
-
-             --  , paddingEach { top = 0, left = 0, right = 0, bottom = 20 } --safeAreaBottom |> round }
              , htmlAttribute <| Swipe.onStart <| \e -> toContentMsg <| SwipeStart e
              ]
                 ++ (if model.swiping then
@@ -526,8 +524,6 @@ viewInfoWindow props shared model toContentMsg =
                 , Font.bold
                 , Font.center
                 , Font.size 18
-
-                -- , paddingEach { left = 30, top = 22, right = 30, bottom = 20 }
                 , paddingEach { left = 53, top = 22, right = 53, bottom = 20 }
                 ]
               <|
@@ -543,8 +539,6 @@ viewInfoWindow props shared model toContentMsg =
                     el
                         ([ width fill
                          , height fill
-
-                         --  , paddingXY 23 0
                          , paddingEach { top = 0, left = 23, right = 23, bottom = 23 }
                          ]
                             ++ (case shared.infoWindowState of
