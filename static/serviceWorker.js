@@ -1,6 +1,6 @@
 // Increment version when you update any of the local resources, which will
 // in turn trigger the install event again.
-const PRECACHE = "precache-v0.8.13";
+const PRECACHE = "precache-v0.8.14";
 
 // A list of local resources we always want to be cached.
 const PRECACHE_URLS = [ 

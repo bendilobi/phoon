@@ -26,6 +26,7 @@ own file, so they can be imported by `Effect.elm`
 type Msg
     = ReceivedViewport Browser.Dom.Viewport
     | Resized Int Int
+    | RequestSafeArea
     | ReceivedSafeArea Json.Decode.Value
     | VisibilityChanged Browser.Events.Visibility
     | AdjustTimeZone Time.Zone

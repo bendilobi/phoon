@@ -19,12 +19,6 @@ export const flags = ({ env }) => {
     const showWakelockHintStored = localStorage.getItem(SHOWWAKELOCKNOTE_KEY)
     const showWakelockHintJson = showWakelockHintStored ? JSON.parse(showWakelockHintStored) : null
 
-    const sa = {
-        sat: getComputedStyle(document.documentElement).getPropertyValue("--sat")
-        , sab: getComputedStyle(document.documentElement).getPropertyValue("--sab")
-        , sal: getComputedStyle(document.documentElement).getPropertyValue("--sal")
-        , sar: getComputedStyle(document.documentElement).getPropertyValue("--sar")
-      }
 
     const width = window.innerWidth
     const height = window.innerHeight
@@ -44,7 +38,6 @@ export const flags = ({ env }) => {
       storedSessionSettings: sessionSettingsJson,
       storedUpdatingState : updatingStateJson,
       storedShowWakelockHint : showWakelockHintJson,
-      safeAreaInsets : sa,
       width : width,
       height : height,
       browserLang : lang, 

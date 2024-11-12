@@ -1,4 +1,4 @@
-module Lib.SafeArea exposing (SafeArea, decode, maxX, new, paddingEach, paddingX)
+module Lib.SafeArea exposing (SafeArea, blanco, decode, maxX, new, paddingEach, paddingX)
 
 import Json.Decode
 
@@ -14,6 +14,11 @@ type SafeArea
 new : Edges -> SafeArea
 new edges =
     Settings edges
+
+
+blanco : SafeArea
+blanco =
+    Settings { top = 0, bottom = 0, left = 0, right = 0 }
 
 
 

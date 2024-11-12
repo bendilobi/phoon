@@ -46,7 +46,7 @@ strings match.
 -}
 appVersion =
     --- Version string in version.json MUST BE IDENTICAL before deploying the app!!! ---
-    "0.9.0"
+    "0.9.3"
 
 
 subPageClosingTime =
@@ -67,7 +67,6 @@ type alias Flags =
     , storedSessionSettings : Json.Decode.Value
     , storedUpdatingState : Json.Decode.Value
     , storedShowWakelockHint : Json.Decode.Value
-    , safeAreaInsets : Json.Decode.Value
     , width : Json.Decode.Value
     , height : Json.Decode.Value
     , browserLang : Json.Decode.Value
@@ -76,13 +75,22 @@ type alias Flags =
     }
 
 
-makeFlags : Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Json.Decode.Value -> Flags
-makeFlags mot set upd wlh saf wid hei bro stan ios =
+makeFlags :
+    Json.Decode.Value
+    -> Json.Decode.Value
+    -> Json.Decode.Value
+    -> Json.Decode.Value
+    -> Json.Decode.Value
+    -> Json.Decode.Value
+    -> Json.Decode.Value
+    -> Json.Decode.Value
+    -> Json.Decode.Value
+    -> Flags
+makeFlags mot set upd wlh wid hei bro stan ios =
     { storedMotivationData = mot
     , storedSessionSettings = set
     , storedUpdatingState = upd
     , storedShowWakelockHint = wlh
-    , safeAreaInsets = saf
     , width = wid
     , height = hei
     , browserLang = bro
@@ -98,7 +106,6 @@ decoder =
         |> required "storedSessionSettings" Json.Decode.value
         |> required "storedUpdatingState" Json.Decode.value
         |> required "storedShowWakelockHint" Json.Decode.value
-        |> required "safeAreaInsets" Json.Decode.value
         |> required "width" Json.Decode.value
         |> required "height" Json.Decode.value
         |> required "browserLang" Json.Decode.value
@@ -124,7 +131,6 @@ init flagsResult route =
                     , sessionSettings = Session.defaultSettings
                     , updateState = NotUpdating
                     , showWakelockHint = True
-                    , safeAreaInsets = SafeArea.new { top = 0, bottom = 0, left = 0, right = 0 }
                     , width = 0
                     , height = 0
                     , browserLang = Texts.En
@@ -145,9 +151,6 @@ init flagsResult route =
 
                         showWakelockHintDecoded =
                             Json.Decode.decodeValue Json.Decode.bool data.storedShowWakelockHint
-
-                        safeAreasDecoded =
-                            SafeArea.decode data.safeAreaInsets
 
                         widthDecoded =
                             Json.Decode.decodeValue Json.Decode.float data.width
@@ -207,7 +210,6 @@ init flagsResult route =
 
                             Ok hint ->
                                 hint
-                    , safeAreaInsets = safeAreasDecoded
                     , width =
                         case widthDecoded of
                             Err e ->
@@ -260,7 +262,7 @@ init flagsResult route =
       , colorScheme = CS.newSunrise
       , sessionSettings = decodedFlags.sessionSettings
       , baseApiUrl = "/version/"
-      , safeAreaInset = decodedFlags.safeAreaInsets
+      , safeAreaInset = SafeArea.blanco
       , fadeIn = NoFade
       , infoWindowState = Shared.Model.Closed
       , sessionHintsHeight = Nothing
@@ -274,9 +276,11 @@ init flagsResult route =
         , Effect.checkVersion Shared.Msg.ReceivedVersionOnServer
 
         {- Getting the safe area insets via flag at startup doesn't seem to work (they are always 0),
-           so we to this here:
+           so we do this here:
+           (maybe safe areas are availably only after some time:
+           https://stackoverflow.com/questions/64891541/get-safe-area-inset-bottom-on-page-load)
         -}
-        , Effect.getSafeArea
+        , Effect.sendCmd <| Delay.after 1000 <| Shared.Msg.RequestSafeArea
         ]
     )
 
@@ -306,6 +310,11 @@ update route msg model =
                 [ Effect.getSafeArea
                 , Effect.sendCmd <| Task.perform Shared.Msg.ReceivedViewport Browser.Dom.getViewport
                 ]
+            )
+
+        Shared.Msg.RequestSafeArea ->
+            ( model
+            , Effect.getSafeArea
             )
 
         Shared.Msg.ReceivedSafeArea value ->
