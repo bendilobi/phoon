@@ -393,7 +393,7 @@ view props shared route { toContentMsg, model, content } =
                                         rad =
                                             case shared.infoWindowState of
                                                 Shared.Model.Max ->
-                                                    13
+                                                    15
 
                                                 _ ->
                                                     0

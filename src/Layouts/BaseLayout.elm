@@ -379,6 +379,13 @@ viewInfoWindow props shared model toContentMsg =
         halfHeight =
             shared.deviceInfo.window.height / 2 + 52
 
+        safeAreaBottom =
+            --TODO: Offenbar ist der Wert hin und wieder fälschlicherweise 0...
+            --      => in diesem Fall einen Default setzen?
+            SafeArea.paddingEach shared.safeAreaInset
+                |> .bottom
+
+        -- |> toFloat
         dragDistance =
             case ( model.swipeInitialY, model.swipeLocationY ) of
                 ( Just initialY, Just currentY ) ->
@@ -531,7 +538,7 @@ viewInfoWindow props shared model toContentMsg =
                     el
                         ([ width fill
                          , height fill
-                         , paddingEach { top = 0, left = 23, right = 23, bottom = 23 }
+                         , paddingEach { top = 0, left = 23, right = 23, bottom = 20 + safeAreaBottom }
                          ]
                             ++ (case shared.infoWindowState of
                                     Shared.Model.Max ->
