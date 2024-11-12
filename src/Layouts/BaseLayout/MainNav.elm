@@ -178,16 +178,7 @@ update shared msg model =
             in
             ( model
             , if Time.posixToMillis time - lastHide > 900000 then
-                Effect.batch
-                    [ Effect.navigate NoFade Route.Path.Home_
-
-                    --TODO: Sometimes, reload ends with the app being "bricked", i.e. a white screen
-                    --      with no possibility of interaction. This remedies itself whenever iOS
-                    --      decides to reload the app which seems to happen every few weeks...
-                    --      On the other hand, sometimes iOS forgets how to play sounds which can
-                    --      be resolved by reloading the app...
-                    -- , Effect.reload
-                    ]
+                Effect.navigate NoFade Route.Path.Home_
 
               else
                 Effect.none
@@ -414,9 +405,6 @@ view props shared route { toContentMsg, model, content } =
                                             --- This leads to broken appearance of the new page
                                             --- if it is scrollable. So we enable scrollbars only
                                             --- on pages that need them.
-                                            --TODO: Das funktioniert in Chromium nicht mehr. Ist das ein Bug dort?
-                                            --      Selbst wenn ich height festsetze und clip dazu, ist der content-
-                                            --      Bereicht so groß wie der Inhalt und die gesamte App scrollt...
                                             [ scrollbarY
 
                                             {- This fixes a problem with recent versions of Chromium/Chrome

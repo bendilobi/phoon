@@ -94,12 +94,7 @@ view colorScheme currentInt (Settings settings) =
             , centerX
             ]
             [ CrementButton.new
-                { onPress =
-                    settings.onCrement
-
-                --TODO: Sicherstellen, dass der Wert das Min und Max nie überschreitet
-                --      Der Crementer sollte nie etwas zurückgeben, das außerhalb der
-                --      definierten Grenzen liegt
+                { onPress = settings.onCrement
                 , number = currentInt
                 , stepSize = settings.stepSize
                 , crement = CrementButton.De
@@ -110,8 +105,7 @@ view colorScheme currentInt (Settings settings) =
                 |> CrementButton.view colorScheme
             , el [ width fill, Font.center ] <| settings.label currentInt
             , CrementButton.new
-                { onPress =
-                    settings.onCrement
+                { onPress = settings.onCrement
                 , number = currentInt
                 , stepSize = settings.stepSize
                 , crement = CrementButton.In

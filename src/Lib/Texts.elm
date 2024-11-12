@@ -3,6 +3,7 @@ module Lib.Texts exposing (..)
 import Element exposing (..)
 import Element.Font as Font
 import FeatherIcons
+import Json.Decode
 import Lib.Millis as Millis exposing (Milliseconds)
 import Lib.Session as Session exposing (BreathingSpeed(..))
 import Lib.Utils exposing (MainTask(..), mainTaskIcon)
@@ -17,6 +18,30 @@ import Time exposing (Weekday(..))
 type AppLanguage
     = En
     | De
+
+
+browserLanguageDecoder : String -> Json.Decode.Decoder AppLanguage
+browserLanguageDecoder string =
+    let
+        tag =
+            string
+                |> String.split "-"
+                |> List.head
+    in
+    case tag of
+        Nothing ->
+            Json.Decode.fail "Browser language decoding failed."
+
+        Just t ->
+            case t of
+                "en" ->
+                    Json.Decode.succeed En
+
+                "de" ->
+                    Json.Decode.succeed De
+
+                _ ->
+                    Json.Decode.succeed En
 
 
 boldify : List (Attribute msg) -> String -> List (Element msg)
@@ -295,26 +320,25 @@ installInstructionAndroid lang =
         De ->
             [ para """
             Zur Installation der App nutze den Chrome-Browser auf Deinem Smartphone und aktiviere den Button rechts neben
-            der Adressleiste.
+            der Adressleiste, bzw. den entsprechenden Menüeintrag.
             """
             ]
 
         _ ->
             [ para """
             To install the app, use the Chrome browser on your smartphone and tap the button next to the right of the
-            address bar.
+            address bar, or the corresponding menu entry.
             """
             ]
 
 
 disclaimer : AppLanguage -> List (Element msg)
 disclaimer lang =
-    --TODO: Datenschutzhinweis hierhin? Oder in AppInfo?
     case lang of
         De ->
             [ para
                 ("""
-                {{ }} bietet nur grundlegende Hinweise zur Durchführung der Wim-Hof-Atemtechnik. Wenn Du Dich damit noch nicht
+                *Bitte beachte*: {{ }} bietet nur grundlegende Hinweise zur Durchführung der Wim-Hof-Atemtechnik. Wenn Du Dich damit noch nicht
                 auskennst, schaue Dir am Besten eines der unzähligen Erklärvideos auf YouTube an. Eine Erklärung vom Meister selbst
                 ist besser als tausend Worte geschriebene Anleitung!
             """
@@ -325,7 +349,7 @@ disclaimer lang =
         _ ->
             [ para
                 ("""
-            {{ }} provides only basic instructions on how to do Wim Hof style breathwork. If you're new to his breathwork, we recommend you
+            *Please note*: {{ }} provides only basic instructions on how to do Wim Hof style breathwork. If you're new to his breathwork, we recommend you
             head over to YouTube and find one of the numerous videos on the topic. Being shown by the man himself is surely better than
             a thousand words of explanation!
             """ |> String.Format.value appName)
@@ -819,6 +843,26 @@ updateAvailable lang =
 
         _ ->
             "An update is available from version {{ currentVersion }} to {{ newestVersion }}"
+
+
+updateFailedNOfTries : AppLanguage -> String
+updateFailedNOfTries lang =
+    case lang of
+        De ->
+            "Update auch nach mehrmaligen Versuchen nicht hinbekommen..."
+
+        _ ->
+            "Tried updating several times but failed..."
+
+
+updateFailedServer : AppLanguage -> String
+updateFailedServer lang =
+    case lang of
+        De ->
+            "Kann den Server nicht erreichen..."
+
+        _ ->
+            "Not able to communicate with the server..."
 
 
 updateNow : AppLanguage -> String

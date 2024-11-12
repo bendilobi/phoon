@@ -148,9 +148,11 @@ update shared msg model =
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
     if model.fadeInFinished then
+        {- We use the Ticks to synchronize the appareance of icons to the Bubble.
+           The bubble itself animates without external input...
+        -}
         --- Reducing the tickSpeed by 1 millisecond is a fix for a bug in Elm:
         --- https://github.com/elm/time/issues/25
-        --TODO: Stattdessen Delay verwenden?
         Time.every (Bubble.tickSpeed model.bubble - 1) Tick
 
     else

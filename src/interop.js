@@ -2,7 +2,7 @@
 const MOTIVATION_DATA_KEY = 'motivationData'
 const SESSION_SETTINGS_KEY = 'sessionSettings'
 const UPDATING_KEY = 'updating'
-const SHOWWAKELOCKHINT_KEY = 'showWakelockHint'
+const SHOWWAKELOCKNOTE_KEY = 'showWakelockNote'
 let checkVersion = () => /(iPhone|iPad) OS ([1-9]*)/g.exec(window.navigator.userAgent)?.[2] || 0
 let wakeLock = null;
 
@@ -16,7 +16,7 @@ export const flags = ({ env }) => {
     const updatingStateStored = localStorage.getItem(UPDATING_KEY)
     const updatingStateJson = updatingStateStored ? JSON.parse(updatingStateStored) : null 
 
-    const showWakelockHintStored = localStorage.getItem(SHOWWAKELOCKHINT_KEY)
+    const showWakelockHintStored = localStorage.getItem(SHOWWAKELOCKNOTE_KEY)
     const showWakelockHintJson = showWakelockHintStored ? JSON.parse(showWakelockHintStored) : null
 
     const sa = {
@@ -71,8 +71,8 @@ export const onReady = ({app, env}) => {
                     localStorage.setItem(UPDATING_KEY, JSON.stringify(data))
                     return
 
-                case 'STORE_SHOW_WAKELOCK_HINT':
-                    localStorage.setItem(SHOWWAKELOCKHINT_KEY, JSON.stringify(data))
+                case 'STORE_SHOW_WAKELOCK_NOTE':
+                    localStorage.setItem(SHOWWAKELOCKNOTE_KEY, JSON.stringify(data))
                     return
 
                 case 'GET_SAFE_AREA':

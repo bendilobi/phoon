@@ -38,10 +38,15 @@ import Task
 import Time
 
 
+{-| The app version is the basis for our updating mechanism. There is a file /version/version.json
+that MUST contain the same string as defined here. The app checks whether the strings are
+different by fetching the version.json. If they are different, an update button is shown which
+triggers the update process. During that, a page reload is triggered repeatedly until the version
+strings match.
+-}
 appVersion =
-    --TODO: Update-Mechanismus dokumentieren
-    -- Make version string in version.json identical!!!
-    "0.7.329"
+    --- Version string in version.json MUST BE IDENTICAL before deploying the app!!! ---
+    "0.9.0"
 
 
 subPageClosingTime =
@@ -150,32 +155,16 @@ init flagsResult route =
                         heightDecoded =
                             Json.Decode.decodeValue Json.Decode.float data.height
 
-                        --TODO: Language-Sachen in ein eigenes Modul...
-                        decodeBrowserLanguage : String -> Json.Decode.Decoder Texts.AppLanguage
-                        decodeBrowserLanguage string =
-                            let
-                                tag =
-                                    string
-                                        |> String.split "-"
-                                        |> List.head
-                            in
-                            case tag of
-                                Nothing ->
-                                    Json.Decode.fail "Browser language decoding failed."
-
-                                Just t ->
-                                    case t of
-                                        "en" ->
-                                            Json.Decode.succeed Texts.En
-
-                                        "de" ->
-                                            Json.Decode.succeed Texts.De
-
-                                        _ ->
-                                            Json.Decode.succeed Texts.En
-
                         browserLangDecoded =
-                            Json.Decode.decodeValue (Json.Decode.string |> Json.Decode.andThen decodeBrowserLanguage) data.browserLang
+                            Json.Decode.decodeValue (Json.Decode.string |> Json.Decode.andThen Texts.browserLanguageDecoder) data.browserLang
+
+                        browserLang =
+                            case browserLangDecoded of
+                                Err _ ->
+                                    Texts.En
+
+                                Ok lang ->
+                                    lang
 
                         standaloneDecoded =
                             Json.Decode.decodeValue Json.Decode.bool data.standalone
@@ -207,8 +196,7 @@ init flagsResult route =
                                     NotUpdating
 
                                 else if nOfTries == 10 then
-                                    --TODO: Fehlermeldung besser formulieren...
-                                    UpdateFailed "Kann Update nicht laden..."
+                                    UpdateFailed <| Texts.updateFailedNOfTries browserLang
 
                                 else
                                     Updating <| nOfTries + 1
@@ -234,13 +222,7 @@ init flagsResult route =
 
                             Ok px ->
                                 px
-                    , browserLang =
-                        case browserLangDecoded of
-                            Err _ ->
-                                Texts.En
-
-                            Ok lang ->
-                                lang
+                    , browserLang = browserLang
                     , standalone =
                         case standaloneDecoded of
                             {- Supposedly, this value (navigator.standalone) is a Bool in iOS and "undefined" in other OSes
@@ -267,7 +249,7 @@ init flagsResult route =
       , mouseDetected = Nothing
       , appVisible = True
       , updateState = decodedFlags.updateState
-      , showWakelockHint = decodedFlags.showWakelockHint
+      , showWakelockNote = decodedFlags.showWakelockHint
       , versionOnServer = Api.Loading
       , deviceInfo = Utils.classifyDevice { width = decodedFlags.width, height = decodedFlags.height }
       , session = Session.new decodedFlags.sessionSettings
@@ -364,8 +346,6 @@ update route msg model =
             , Effect.none
             )
 
-        --TODO: Wie kann ich das ohne diese Extra-Nachricht tun? Also kann man Tasks innerhalb eines
-        --      Effekts ausführen lassen?
         Shared.Msg.GetToday ->
             ( model, Effect.sendCmd <| Task.perform Shared.Msg.AdjustToday Date.today )
 
@@ -392,8 +372,6 @@ update route msg model =
             )
 
         Shared.Msg.PointerDevice isMouse ->
-            --TODO: mouseDetected als Maybe Bool; initialisiert mit Nothing, wenn touch detected False, wenn
-            --      Mausbewegung ohne Button True
             ( { model | mouseDetected = Just <| isMouse }, Effect.none )
 
         Shared.Msg.SessionUpdated session ->
@@ -498,10 +476,8 @@ update route msg model =
             , case model.updateState of
                 Updating _ ->
                     Effect.setUpdateState <|
-                        --TODO: Fehlermeldung optimieren -> ist das hier qualitativ
-                        --      anders als wenn die Number of Tries überschritten wird?
-                        --      httpError mit ausgeben?
-                        UpdateFailed "Kann Update nicht vom Server laden"
+                        UpdateFailed <|
+                            Texts.updateFailedServer model.appLanguage
 
                 _ ->
                     Effect.none
@@ -556,10 +532,10 @@ update route msg model =
         Shared.Msg.OnToggleShowWakelockHint ->
             let
                 hintShown =
-                    not model.showWakelockHint
+                    not model.showWakelockNote
             in
-            ( { model | showWakelockHint = hintShown }
-            , Effect.saveShowWakelockHint hintShown
+            ( { model | showWakelockNote = hintShown }
+            , Effect.saveShowWakelockNote hintShown
             )
 
 

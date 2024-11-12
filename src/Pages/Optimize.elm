@@ -363,7 +363,6 @@ update shared msg model =
                         model.dialogShown
               }
             , if newState == Button.Triggered then
-                --TODO: Include the app settings into the copied and pasted stuff
                 case shared.motivationData of
                     Nothing ->
                         Effect.none
@@ -522,9 +521,7 @@ viewUpdate shared model =
                 [ width fill
                 , spacing 10
                 , Border.rounded 10
-
-                --TODO: Ins colorScheme aufnehmen?
-                , BG.color <| rgb255 239 233 243 --243 233 236
+                , BG.color <| CS.interactBackgroundColor shared.colorScheme
                 , padding 20
                 ]
                 [ paragraph [ width fill, Font.center ]
@@ -586,6 +583,13 @@ viewSettings shared model =
                 |> Button.withInline
                 |> Button.withLightColor
                 |> Button.view shared.colorScheme
+
+        itemGroupDescription =
+            paragraph
+                [ Font.size 13
+                , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
+                , Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
+                ]
     in
     column [ width fill, spacing 10 ]
         [ row [ width fill, alignBottom ]
@@ -702,12 +706,7 @@ viewSettings shared model =
                 Session.speedToMillis shared.sessionSettings.breathingSpeed
                     |> Millis.multiplyBy (2 * Session.breathCountInt shared.sessionSettings.breathCount)
           in
-          paragraph
-            [ Font.size 13
-            , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
-            , Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
-            ]
-          <|
+          itemGroupDescription <|
             Texts.breathingDuration shared.appLanguage millis [ Font.color <| CS.guideColor shared.colorScheme ]
         , column settingsAttrs
             [ if model.settingsItemShown == RelaxRetDuration then
@@ -804,14 +803,7 @@ viewSettings shared model =
                     }
                     shared.colorScheme
             ]
-        , paragraph
-            --TODO: Styling mit dem obigen zusammenführen ("Dauer der Atemphase"...)
-            [ Font.size 13
-            , paddingEach { bottom = 15, top = 0, left = hPad, right = 0 }
-            , Font.color <| CS.interactInactiveDarkerColor shared.colorScheme
-            ]
-            [ text <| Texts.practiceGoalCaption shared.appLanguage
-            ]
+        , itemGroupDescription [ text <| Texts.practiceGoalCaption shared.appLanguage ]
         ]
 
 

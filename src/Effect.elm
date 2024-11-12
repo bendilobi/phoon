@@ -4,7 +4,7 @@ port module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , map, toCmd
-    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, pointerDetected, receivedVersionOnServer, releaseWakeLock, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveShowWakelockHint, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, toggleSubPage, toggleWakelockHint, updateApp, updateSessionSettings, writeToClipboard
+    , adjustToday, cancelSession, checkVersion, clipboardReceiver, getSafeArea, getSessionHintsHeight, navigate, navigateNext, playSound, pointerDetected, receivedVersionOnServer, releaseWakeLock, reload, requestClipboardContent, resultsUpdated, safeAreaReceiver, saveMotivationData, saveSessionSettings, saveShowWakelockNote, saveUpdatingState, sessionEnded, sessionUpdated, setInfoWindowState, setMotivationData, setUpdateState, setWakeLock, soundEncoder, toggleSubPage, toggleWakelockHint, updateApp, updateSessionSettings, writeToClipboard
     )
 
 {-|
@@ -142,10 +142,6 @@ reload =
 port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
 
 
-
---- TODO: In der elm land Doku wird ein "incoming"-port empfohlen... Aber wie?
-
-
 port safeAreaReceiver : (Json.Decode.Value -> msg) -> Sub msg
 
 
@@ -255,10 +251,10 @@ saveUpdatingState updateState =
         }
 
 
-saveShowWakelockHint : Bool -> Effect msg
-saveShowWakelockHint hint =
+saveShowWakelockNote : Bool -> Effect msg
+saveShowWakelockNote hint =
     SendMessageToJavaScript
-        { tag = "STORE_SHOW_WAKELOCK_HINT"
+        { tag = "STORE_SHOW_WAKELOCK_NOTE"
         , data = Json.Encode.bool hint
         }
 
@@ -280,23 +276,9 @@ setUpdateState updateState =
     SendSharedMsg <| Shared.Msg.SetUpdateState updateState
 
 
-
--- adjustToday : Date.Date -> Effect msg
--- adjustToday today =
---     SendSharedMsg <| Shared.Msg.AdjustToday today
-
-
 adjustToday : Effect msg
 adjustToday =
     SendSharedMsg <| Shared.Msg.GetToday
-
-
-
---TODO: Doch nochmal explorieren, ob ich das irgendwie in einen
---      Schritt bekomme:
--- adjustToday : Effect Shared.Msg.Msg
--- adjustToday =
---     SendCmd <| Task.perform Shared.Msg.AdjustToday Date.today
 
 
 sessionUpdated : Session -> Effect msg

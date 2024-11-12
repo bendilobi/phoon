@@ -39,7 +39,7 @@ type alias Model =
     , iOSVersion : Maybe Int
     , appVisible : Bool
     , updateState : UpdateState
-    , showWakelockHint : Bool
+    , showWakelockNote : Bool
     , versionOnServer : Api.Data String
     , deviceInfo : Utils.Device
     , session : Session
@@ -52,10 +52,6 @@ type alias Model =
     , baseApiUrl : String
     , safeAreaInset : SafeArea
     , fadeIn : Fading.Trigger
-
-    --TODO: Das ist hier in Shared, damit die Seiten es auf False setzten können
-    --      und es damit nicht maximiert ist, wenn das Infofenster neu gezeigt wird.
-    --      => Kann ich das besser lösen?
     , infoWindowState : InfoWindowState
     , sessionHintsHeight : Maybe Float
     , subPageShown : Bool

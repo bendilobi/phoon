@@ -143,10 +143,6 @@ type Session
         }
 
 
-
---TODO: Settings in ein eigenes Modul auslagern?
-
-
 type alias Settings =
     { cycles : Int
     , relaxRetDuration : Milliseconds

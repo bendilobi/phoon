@@ -247,7 +247,7 @@ view shared model =
                                             , Font.size 12
                                             , centerX
                                             , Font.alignLeft
-                                            , transparent <| not shared.showWakelockHint
+                                            , transparent <| not shared.showWakelockNote
                                             ]
                                         <|
                                             Texts.wakeLockNote shared.appLanguage

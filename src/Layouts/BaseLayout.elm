@@ -380,12 +380,9 @@ viewInfoWindow props shared model toContentMsg =
             shared.deviceInfo.window.height / 2 + 52
 
         safeAreaBottom =
-            --TODO: Offenbar ist der Wert hin und wieder fälschlicherweise 0...
-            --      => in diesem Fall einen Default setzen?
             SafeArea.paddingEach shared.safeAreaInset
                 |> .bottom
 
-        -- |> toFloat
         dragDistance =
             case ( model.swipeInitialY, model.swipeLocationY ) of
                 ( Just initialY, Just currentY ) ->

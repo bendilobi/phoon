@@ -14,8 +14,6 @@ import Time exposing (Weekday(..))
 type alias Device =
     { class : DeviceClass
     , orientation : Orientation
-
-    --TODO: Int statt Float? Es sind schließlich Pixel...
     , window : { height : Float, width : Float }
     }
 

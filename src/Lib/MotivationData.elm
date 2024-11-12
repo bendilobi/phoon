@@ -169,13 +169,9 @@ update results today practiceFrequencyTarget motivationData =
 
                                     else
                                         Just motData.streak
-
-                                --TODO: Faktor je nach tatsächlicher Atemzeit skalieren:
-                                --      (Atemzeit * (Zuteilungsfaktor / konfigurierte Dauer einer Atemphase))
                                 , streakFreezes =
                                     if remainingStreakFreeze >= (maxStreakFreezes + 1 |> toFloat) - freezeIncrement practiceFrequencyTarget then
                                         -- allow no more than maxStreakFreezes
-                                        -- 8.99
                                         (maxStreakFreezes |> toFloat) + 0.99
 
                                     else

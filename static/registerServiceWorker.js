@@ -1,4 +1,3 @@
-// TODO: Kann ich das in interop.js integrieren?
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker
       .register("/serviceWorker.js")

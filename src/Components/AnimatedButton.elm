@@ -128,11 +128,9 @@ view colorScheme (Settings settings) =
             [ pointer
             , htmlAttribute <| HEvents.on "pointerdown" <| Decode.succeed <| settings.onPress <| Pressed True
 
-            --TODO: Mit pointerup funktionieren die Copy und Paste Buttons nicht richtig. Wenn man sie kurz drückt,
-            --      funktionierts, wenn man sie lang drückt, wird nicht kopiert/gepastet. Der Code innerhalb von Elm
-            --      macht alles. Womöglich stellt sich Safari quer, weil copy/paste vom Nutzer getriggert werden muss
-            --      Bei Verwendung von onClick gibt's kein Problem...
-            --      => Aber welche Wechselwirkungen?
+            --TODO: For some reason, when we use "pointerup" here, the buttons do not work if the user presses them
+            --      longer than about a second. Maybe there is some "longpress" behavior? Using "onclick" fixes this
+            --      on iOS, but on Android, the issure remains...
             -- , htmlAttribute <| HEvents.on "pointerup" <| Decode.succeed <| settings.onPress Triggered
             , Events.onClick <| settings.onPress Triggered
 
@@ -174,9 +172,9 @@ view colorScheme (Settings settings) =
             -}
             , htmlAttribute <| HEvents.on "pointercancel" <| Decode.succeed <| settings.onPress Cancelled
 
-            --TODO: Pointercapture verhindern, sodass der Button bei Swipe aus ihm heraus nicht ausgelöst wird;
-            --      geht nur über Ports...
-            --      siehe https://developer.mozilla.org/en-US/docs/Web/API/Element/pointerdown_event)
+            --TODO: Prevent buttons being triggered when the user swipes out of the button's boundaries.
+            --      Seems we need to do this via javascript, thus using ports:
+            --      https://developer.mozilla.org/en-US/docs/Web/API/Element/pointerdown_event)
             ]
     in
     if settings.isInline then
@@ -203,8 +201,6 @@ view colorScheme (Settings settings) =
                             ++ ((BG.color <|
                                     case settings.model of
                                         Pressed _ ->
-                                            --TODO: Ins Farbschema aufnehmen?
-                                            --      Und mit transparentem Modus sync
                                             rgba255 189 201 226 1.0
 
                                         _ ->
@@ -230,10 +226,9 @@ view colorScheme (Settings settings) =
             settings.label
 
     else
-        --TODO: Anscheinend kann das Problem mit den falsch getriggerten Animationen
-        --      gelöst werden, wenn der Button in zwei (!) els eingepackt wird...
-        --      Wirklich? Warum? Im Elm-ui Slack zur Sprache bringen?
-        --      => testen, ob das immer noch so ist
+        {- For some reason, animations are triggered wrongly unless the button is wrapped in
+           two "el"... Why???
+        -}
         el [ width fill ] <|
             el [ width fill ] <|
                 el

@@ -10,12 +10,14 @@ import Lib.ColorScheme as CS exposing (ColorScheme)
 
 
 
---TODO: abchecken, ob ich lieber das von elm-ui verwenden sollte:
---https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element-Input#radio
+--TODO: After implementing this, I discovered that there is a radio group exisiting
+--      in elm-ui... Check how it compares and if we should switch to using it:
+--      https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element-Input#radio
 
 
 type Layout
     = Horizontal
+      --TODO: Actually implement vertical arrangement (when needed...)
     | Vertical
 
 
@@ -34,13 +36,10 @@ new :
     { choices : List choicesType
     , toString : choicesType -> String
     , onSelect : choicesType -> msg
-
-    -- , selected : choicesType
     }
     -> RadioGroup choicesType msg
 new { choices, toString, onSelect } =
     Settings
-        --TODO: layout = Vertical implementieren? Oder weg?
         { layout = Horizontal
         , choices = choices
         , toString = toString
@@ -75,7 +74,6 @@ view colorScheme (Settings settings) =
 
         viewItem item =
             if Just item == settings.selected then
-                -- el [ Font.color <| CS.interactInactiveDarkerColor colorScheme ] <|
                 el
                     [ Font.color <| CS.guideColor colorScheme ]
                 <|

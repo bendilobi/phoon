@@ -278,7 +278,6 @@ viewRetentionChart shared motData =
 
 viewRetentionTimes : Shared.Model -> List Int -> Int -> Element msg
 viewRetentionTimes shared times meanTime =
-    --TODO: Layout überarbeiten: Paragraph verwenden?
     column
         [ spacing 10
         , centerX

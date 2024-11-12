@@ -90,8 +90,6 @@ view colorScheme (Settings settings) =
         ]
         [ column
             [ width fill
-
-            -- , paddingEach { top = 20, bottom = 30, left = 20, right = 20 }
             , spacing 10
             , paddingXY 20 25
             ]
@@ -132,8 +130,9 @@ viewChoice (ChoiceParams settings) =
                 , Font.size 17
                 , BG.color <| rgb 1 1 1
 
-                --TODO: Irgendwie funktioniert das nur beim ersten Button und nur manchmal...
-                --      Bug isolieren und in einem elm-ui forum fragen?
+                --TODO: For some strange reason, this doesn't consistently work
+                --      on iOS (Android not tested). Sometimes the color changes,
+                --      sometimes it doesn't. Sometimes only on long press...
                 , mouseOver [ BG.color <| rgb 0.8 0.8 0.8 ]
                 , paddingXY 5 15
                 ]

@@ -1,38 +1,4 @@
-module Lib.ColorScheme exposing
-    ( ColorScheme
-    , actionNeededColor
-    , greyOverTransparencyColor
-    , guideColor
-    , interactActive
-    , interactActiveColor
-    , interactActiveLighter
-    , interactActiveLighterColor
-    , interactInactive
-    , interactInactiveDarkerColor
-    , navbar
-    , newDaylight
-    , newSunrise
-    , phaseBreathing
-    , phaseBreathingColor
-    , phaseRelaxRetention
-    , phaseRelaxRetentionColor
-    , phaseRetention
-    , phaseSessionEnd
-    , phaseSessionStart
-    , phaseSessionStartColor
-    , phaseSessionStartCopyColor
-    , primary
-    , primaryColors
-    , primaryInformation
-    , primaryMotivation
-    , primaryMotivationCopyColor
-    , primaryPrepareSession
-    , seriesBadColor
-    , seriesGoodColor
-    , settingsColor
-    , settingsDarkerColor
-    , successColor
-    )
+module Lib.ColorScheme exposing (..)
 
 import Element exposing (..)
 import Element.Background as BG
@@ -53,6 +19,7 @@ type ColorScheme
         , interactInactive : Color
         , interactInactiveDarker : Color
         , interactInactiveCopy : Color
+        , interactBackground : Color
         , guide : Color
         , actionNeeded : Color
         , actionNeededCopy : Color
@@ -82,16 +49,17 @@ newSunrise : ColorScheme
 newSunrise =
     ColorScheme
         { primaryMotivation = rgb255 4 14 30
-        , primaryPrepareSession = rgb255 21 35 65 --57 68 101
-        , primaryInformation = rgb255 246 249 255 --229 238 255 --242 249 255 --241 241 230
+        , primaryPrepareSession = rgb255 21 35 65
+        , primaryInformation = rgb255 246 249 255
         , primaryMotivationCopy = rgb255 241 241 230
-        , interactActive = rgb255 132 110 141 --147 110 158 --255 180 93
+        , interactActive = rgb255 132 110 141
         , interactActiveLighter = rgb255 243 91 136
-        , interactActiveDarker = rgb255 85 77 104 --98 80 124 --237 120 105
+        , interactActiveDarker = rgb255 85 77 104
         , interactActiveCopy = rgb255 241 241 230
         , interactInactive = rgb255 167 170 189
         , interactInactiveDarker = rgb255 115 118 135
         , interactInactiveCopy = rgb255 245 248 255
+        , interactBackground = rgb255 239 233 243
         , guide = rgb255 187 136 0
         , actionNeeded = rgb255 184 37 17
         , actionNeededCopy = rgb255 0 0 0
@@ -100,18 +68,18 @@ newSunrise =
         , seriesBad = rgb255 184 37 17
         , phaseSessionStart = rgb255 105 56 112
         , phaseSessionStartCopy = rgb255 200 196 183
-        , phaseBreathing = rgb255 181 78 117 --50 49 46
+        , phaseBreathing = rgb255 181 78 117
         , phaseBreathingCopy = rgb255 200 196 183
-        , phaseRetention = rgb255 255 180 93 --38 86 86
-        , phaseRetentionCopy = rgb255 12 38 84 --255 255 255
-        , phaseRelaxRetention = rgb255 249 248 113 --46 69 131
-        , phaseRelaxRetentionCopy = rgb255 0 148 255 --255 255 255
-        , phaseSessionEnd = rgb255 0 148 255 --50 49 46
-        , phaseSessionEndCopy = rgb255 255 247 214 --255 255 255
+        , phaseRetention = rgb255 255 180 93
+        , phaseRetentionCopy = rgb255 12 38 84
+        , phaseRelaxRetention = rgb255 249 248 113
+        , phaseRelaxRetentionCopy = rgb255 0 148 255
+        , phaseSessionEnd = rgb255 0 148 255
+        , phaseSessionEndCopy = rgb255 255 247 214
         , navbar = rgb255 0 15 8
-        , navbarBorder = rgb255 24 37 68 --52 63 97
+        , navbarBorder = rgb255 24 37 68
         , navbarCopy = rgb255 91 101 96
-        , settings = rgb 1 1 1 --rgb 0.9 0.9 0.9
+        , settings = rgb 1 1 1
         , settingsDarker = rgb 0.7 0.7 0.7
         , greyOverTransparency = rgb 0.35 0.35 0.35
         }
@@ -121,17 +89,18 @@ newDaylight : ColorScheme
 newDaylight =
     ColorScheme
         { primaryMotivation = rgb255 0 148 255
-        , primaryPrepareSession = rgb255 100 129 232 --123 145 188
-        , primaryInformation = rgb255 243 249 255 --229 238 255 --242 249 255 --241 241 230
+        , primaryPrepareSession = rgb255 100 129 232
+        , primaryInformation = rgb255 243 249 255
         , primaryMotivationCopy = rgb255 245 249 255
-        , interactActive = rgb255 155 74 146 --243 91 136
+        , interactActive = rgb255 155 74 146
         , interactActiveLighter = rgb255 243 91 136
-        , interactActiveDarker = rgb255 154 59 116 --182 26 87
+        , interactActiveDarker = rgb255 154 59 116
         , interactActiveCopy = rgb255 245 249 255
         , interactInactive = rgb255 167 170 189
         , interactInactiveDarker = rgb255 115 118 135
         , interactInactiveCopy = rgb255 245 248 255
-        , guide = rgb255 197 167 117 --238 232 169
+        , interactBackground = rgb255 239 233 243
+        , guide = rgb255 197 167 117
         , actionNeeded = rgb255 184 37 17
         , actionNeededCopy = rgb255 0 0 0
         , success = rgb255 0 125 84
@@ -139,18 +108,18 @@ newDaylight =
         , seriesBad = rgb255 184 37 17
         , phaseSessionStart = rgb255 105 56 112
         , phaseSessionStartCopy = rgb255 200 196 183
-        , phaseBreathing = rgb255 181 78 117 --50 49 46
+        , phaseBreathing = rgb255 181 78 117
         , phaseBreathingCopy = rgb255 200 196 183
-        , phaseRetention = rgb255 255 180 93 --38 86 86
-        , phaseRetentionCopy = rgb255 12 38 84 --255 255 255
-        , phaseRelaxRetention = rgb255 249 248 113 --46 69 131
-        , phaseRelaxRetentionCopy = rgb255 0 148 255 --255 255 255
-        , phaseSessionEnd = rgb255 0 148 255 --50 49 46
-        , phaseSessionEndCopy = rgb255 255 247 214 --255 255 255
+        , phaseRetention = rgb255 255 180 93
+        , phaseRetentionCopy = rgb255 12 38 84
+        , phaseRelaxRetention = rgb255 249 248 113
+        , phaseRelaxRetentionCopy = rgb255 0 148 255
+        , phaseSessionEnd = rgb255 0 148 255
+        , phaseSessionEndCopy = rgb255 255 247 214
         , navbar = rgb255 0 83 78
-        , navbarBorder = rgb255 0 121 113 --8 32 30
-        , navbarCopy = rgb255 120 139 138 --120 126 139 --101 106 117 --123 145 188 --141 149 168 --164 171 189
-        , settings = rgb 1 1 1 --rgb 0.9 0.9 0.9
+        , navbarBorder = rgb255 0 121 113
+        , navbarCopy = rgb255 120 139 138
+        , settings = rgb 1 1 1
         , settingsDarker = rgb 0.7 0.7 0.7
         , greyOverTransparency = rgb 0.55 0.55 0.55
         }
@@ -253,6 +222,11 @@ interactInactive (ColorScheme colors) =
     , Font.color colors.interactInactiveCopy
     , Border.color colors.interactInactiveDarker
     ]
+
+
+interactBackgroundColor : ColorScheme -> Color
+interactBackgroundColor (ColorScheme colors) =
+    colors.interactBackground
 
 
 primaryMotivationCopyColor : ColorScheme -> Color

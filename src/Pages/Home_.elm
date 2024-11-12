@@ -310,7 +310,6 @@ viewWelcomeInfo shared =
                                 case shared.motivationData of
                                     Nothing ->
                                         paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
-                                            --TODO: Don't show this if the app is installed on Android...
                                             Texts.installInstructionAndroid shared.appLanguage
 
                                     _ ->
