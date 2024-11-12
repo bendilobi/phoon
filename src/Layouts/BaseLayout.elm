@@ -379,12 +379,13 @@ viewInfoWindow props shared model toContentMsg =
         halfHeight =
             shared.deviceInfo.window.height / 2 + 52
 
-        safeAreaBottom =
-            --TODO: Offenbar ist der Wert hin und wieder fälschlicherweise 0...
-            --      => in diesem Fall einen Default setzen?
-            SafeArea.paddingEach shared.safeAreaInset
-                |> .bottom
-                |> toFloat
+        dragDistance =
+            case ( model.swipeInitialY, model.swipeLocationY ) of
+                ( Just initialY, Just currentY ) ->
+                    currentY - initialY
+
+                ( _, _ ) ->
+                    0
     in
     el
         [ width <| px <| (shared.deviceInfo.window.width |> round) - (SafeArea.maxX shared.safeAreaInset * 2)
@@ -400,15 +401,6 @@ viewInfoWindow props shared model toContentMsg =
         , moveUp <|
             case props.overlay of
                 InfoWindow _ ->
-                    let
-                        dragDistance =
-                            case ( model.swipeInitialY, model.swipeLocationY ) of
-                                ( Just initialY, Just currentY ) ->
-                                    currentY - initialY
-
-                                ( _, _ ) ->
-                                    0
-                    in
                     (case shared.infoWindowState of
                         Shared.Model.Max ->
                             if model.infoContentViewportAtTop then
@@ -554,61 +546,21 @@ viewInfoWindow props shared model toContentMsg =
                                             else
                                                 Html.Events.on "scroll" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
                                         ]
+                                            ++ (if dragDistance > 0 then
+                                                    {- The user is moving the info window down, so we don't want to scroll: -}
+                                                    [ htmlAttribute <| Html.Attributes.style "overscroll-behavior" "none" ]
+
+                                                else
+                                                    [ htmlAttribute <| Html.Attributes.style "overscroll-behavior" "auto" ]
+                                               )
 
                                     _ ->
                                         []
                                )
                         )
                     <|
-                        -- case shared.infoWindowState of
-                        -- Shared.Model.Max ->
-                        --     el
-                        --         [ width fill
-                        --         , height fill
-                        --         , scrollbarY
-                        --         , htmlAttribute <| Html.Attributes.style "min-height" "auto"
-                        --         , htmlAttribute <| Html.Attributes.id infoContentID
-                        --         , htmlAttribute <|
-                        --             if shared.iOSVersion == Nothing then
-                        --                 {- Doesn't work on Safari, see https://bugs.webkit.org/show_bug.cgi?id=201556 -}
-                        --                 Html.Events.on "scrollend" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
-                        --             else
-                        --                 Html.Events.on "scroll" <| Json.Decode.succeed <| toContentMsg OnScrollEnd
-                        --         ]
-                        --     <|
-                        --         info
-                        -- _ ->
                         info
 
                 _ ->
                     none
-
-            -- , let
-            --     { top, bottom, left, right } =
-            --         SafeArea.paddingEach shared.safeAreaInset
-            --   in
-            --   --   paragraph [ paddingXY 0 20, Font.size 15 ]
-            --   --     [ el [ Font.bold ] <| text "Safe Area: "
-            --   --     , text "top: "
-            --   --     , text <| String.fromInt top
-            --   --     , text ", bottom : "
-            --   --     , text <| String.fromInt bottom
-            --   --     , text ", left: "
-            --   --     , text <| String.fromInt left
-            --   --     , text ", right: "
-            --   --     , text <| String.fromInt right
-            --   --     ]
-            --   el [ width fill, paddingXY 0 30 ] <| el [ alignRight ] <| text <| String.fromInt bottom
-            -- , let
-            --     { bottom } =
-            --         SafeArea.paddingEach shared.safeAreaInset
-            --   in
-            --   paragraph [ Font.size 11, paddingXY 20 30 ]
-            --     [ text "SwipeInitialY: "
-            --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeInitialY
-            --     , text ", CurrentY: "
-            --     , text <| String.fromFloat <| Maybe.withDefault 0 <| model.swipeLocationY
-            --     , text ", sab: "
-            --     , text <| String.fromInt bottom
-            --     ]
             ]
