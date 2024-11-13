@@ -129,12 +129,33 @@ tickSpeed (Model model) =
 
 withSpeed : Milliseconds -> Model msg -> Model msg
 withSpeed millis (Model model) =
-    Model { model | breathingSpeed = millis }
+    Model
+        { model
+            | breathingSpeed = millis
+            , breathingState =
+                {- Changing the speed causes the animation to reset, so we have
+                   to make sure the state follows along:
+                -}
+                if model.startWithInhale then
+                    Inhale
+
+                else
+                    FirstExhale
+        }
 
 
 withBreathCount : Int -> Model msg -> Model msg
 withBreathCount breaths (Model model) =
-    Model { model | bubbleType = Counting breaths }
+    Model
+        { model
+            | bubbleType = Counting breaths
+            , breathingState =
+                if model.startWithInhale then
+                    Inhale
+
+                else
+                    FirstExhale
+        }
 
 
 
@@ -239,6 +260,8 @@ view (Settings settings) =
         ]
     <|
         Utils.animatedEl
+            --TODO: animate dependent on model.breathingState to not have to
+            --      synchronize the two states
             (Animation.steps
                 { startAt = [ P.scale startScale ]
                 , options =

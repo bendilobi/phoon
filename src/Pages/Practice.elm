@@ -96,7 +96,7 @@ type Msg
     | CycleCountChanged Int IntCrementer.Model
     | ReadyToStartSession
     | OnToggleWarnings
-    | OnToggleWakelockHint
+    | OnToggleWakelockNote
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -160,9 +160,9 @@ update shared msg model =
                     Effect.setInfoWindowState Shared.Model.Closed
             )
 
-        OnToggleWakelockHint ->
+        OnToggleWakelockNote ->
             ( model
-            , Effect.toggleWakelockHint
+            , Effect.toggleWakelockNote
             )
 
 
@@ -239,7 +239,7 @@ view shared model =
                         _ ->
                             el [ moveDown 80 ] <|
                                 Input.button []
-                                    { onPress = Just OnToggleWakelockHint
+                                    { onPress = Just OnToggleWakelockNote
                                     , label =
                                         column
                                             [ spacing 10

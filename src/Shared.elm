@@ -46,7 +46,7 @@ strings match.
 -}
 appVersion =
     --- Version string in version.json MUST BE IDENTICAL before deploying the app!!! ---
-    "0.9.3"
+    "0.9.4"
 
 
 subPageClosingTime =
@@ -66,7 +66,7 @@ type alias Flags =
     { storedMotivationData : Json.Decode.Value
     , storedSessionSettings : Json.Decode.Value
     , storedUpdatingState : Json.Decode.Value
-    , storedShowWakelockHint : Json.Decode.Value
+    , storedShowWakelockNote : Json.Decode.Value
     , width : Json.Decode.Value
     , height : Json.Decode.Value
     , browserLang : Json.Decode.Value
@@ -90,7 +90,7 @@ makeFlags mot set upd wlh wid hei bro stan ios =
     { storedMotivationData = mot
     , storedSessionSettings = set
     , storedUpdatingState = upd
-    , storedShowWakelockHint = wlh
+    , storedShowWakelockNote = wlh
     , width = wid
     , height = hei
     , browserLang = bro
@@ -105,7 +105,7 @@ decoder =
         |> required "storedMotivationData" Json.Decode.value
         |> required "storedSessionSettings" Json.Decode.value
         |> required "storedUpdatingState" Json.Decode.value
-        |> required "storedShowWakelockHint" Json.Decode.value
+        |> required "storedShowWakelockNote" Json.Decode.value
         |> required "width" Json.Decode.value
         |> required "height" Json.Decode.value
         |> required "browserLang" Json.Decode.value
@@ -130,7 +130,7 @@ init flagsResult route =
                     { motData = Nothing
                     , sessionSettings = Session.defaultSettings
                     , updateState = NotUpdating
-                    , showWakelockHint = True
+                    , showWakelockNote = True
                     , width = 0
                     , height = 0
                     , browserLang = Texts.En
@@ -149,8 +149,8 @@ init flagsResult route =
                         updateStateDecoded =
                             Json.Decode.decodeValue Json.Decode.int data.storedUpdatingState
 
-                        showWakelockHintDecoded =
-                            Json.Decode.decodeValue Json.Decode.bool data.storedShowWakelockHint
+                        showWakelockNoteDecoded =
+                            Json.Decode.decodeValue Json.Decode.bool data.storedShowWakelockNote
 
                         widthDecoded =
                             Json.Decode.decodeValue Json.Decode.float data.width
@@ -203,8 +203,8 @@ init flagsResult route =
 
                                 else
                                     Updating <| nOfTries + 1
-                    , showWakelockHint =
-                        case showWakelockHintDecoded of
+                    , showWakelockNote =
+                        case showWakelockNoteDecoded of
                             Err e ->
                                 True
 
@@ -251,7 +251,7 @@ init flagsResult route =
       , mouseDetected = Nothing
       , appVisible = True
       , updateState = decodedFlags.updateState
-      , showWakelockNote = decodedFlags.showWakelockHint
+      , showWakelockNote = decodedFlags.showWakelockNote
       , versionOnServer = Api.Loading
       , deviceInfo = Utils.classifyDevice { width = decodedFlags.width, height = decodedFlags.height }
       , session = Session.new decodedFlags.sessionSettings
@@ -538,7 +538,7 @@ update route msg model =
             , Effect.none
             )
 
-        Shared.Msg.OnToggleShowWakelockHint ->
+        Shared.Msg.OnToggleShowWakelockNote ->
             let
                 hintShown =
                     not model.showWakelockNote

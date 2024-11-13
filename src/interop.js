@@ -16,8 +16,8 @@ export const flags = ({ env }) => {
     const updatingStateStored = localStorage.getItem(UPDATING_KEY)
     const updatingStateJson = updatingStateStored ? JSON.parse(updatingStateStored) : null 
 
-    const showWakelockHintStored = localStorage.getItem(SHOWWAKELOCKNOTE_KEY)
-    const showWakelockHintJson = showWakelockHintStored ? JSON.parse(showWakelockHintStored) : null
+    const showWakelockNoteStored = localStorage.getItem(SHOWWAKELOCKNOTE_KEY)
+    const showWakelockNoteJson = showWakelockNoteStored ? JSON.parse(showWakelockNoteStored) : null
 
 
     const width = window.innerWidth
@@ -37,7 +37,7 @@ export const flags = ({ env }) => {
       storedMotivationData: motivationJson,
       storedSessionSettings: sessionSettingsJson,
       storedUpdatingState : updatingStateJson,
-      storedShowWakelockHint : showWakelockHintJson,
+      storedShowWakelockNote : showWakelockNoteJson,
       width : width,
       height : height,
       browserLang : lang, 
