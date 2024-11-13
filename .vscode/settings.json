@@ -1,4 +1,6 @@
 {
     "explorer.excludeGitIgnore": true,
-    "todo-tree.tree.scanMode": "workspace only"
+    "todo-tree.tree.scanMode": "workspace only",
+    "nixEnvSelector.suggestion": false,
+    "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix"
 }
