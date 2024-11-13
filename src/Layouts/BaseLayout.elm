@@ -37,7 +37,6 @@ type Overlay contentMsg
     | InfoWindow
         { header : String
         , info : Element contentMsg
-        , onClose : contentMsg
         }
 
 
@@ -61,11 +60,10 @@ map fn props =
             ModalDialog lmnt ->
                 ModalDialog <| E.map fn lmnt
 
-            InfoWindow { header, info, onClose } ->
+            InfoWindow { header, info } ->
                 InfoWindow
                     { header = header
                     , info = E.map fn info
-                    , onClose = fn onClose
                     }
     }
 
@@ -105,6 +103,7 @@ infoContentID =
 
 type Msg
     = OnInfoWindowResize
+    | OnInfoWindowClose
     | SwipeStart Swipe.Event
     | TimedSwipeStart Swipe.Event Time.Posix
     | SwipeMove Swipe.Event
@@ -131,6 +130,11 @@ update shared msg model =
 
                 Shared.Model.Closed ->
                     Effect.none
+            )
+
+        OnInfoWindowClose ->
+            ( { model | infoContentViewportAtTop = True }
+            , Effect.setInfoWindowState Shared.Model.Closed
             )
 
         SwipeStart event ->
@@ -353,8 +357,8 @@ view props shared { toContentMsg, model, content } =
                              , htmlAttribute <| Transition.properties [ Transition.opacity 200 [ Transition.easeOut ] ]
                              ]
                                 ++ (case props.overlay of
-                                        InfoWindow { onClose } ->
-                                            [ Events.onClick onClose ]
+                                        InfoWindow _ ->
+                                            [ Events.onClick <| toContentMsg OnInfoWindowClose ]
 
                                         _ ->
                                             []
@@ -479,8 +483,8 @@ viewInfoWindow props shared model toContentMsg =
                     ]
                     { onPress =
                         case props.overlay of
-                            InfoWindow { onClose } ->
-                                Just onClose
+                            InfoWindow _ ->
+                                Just <| toContentMsg OnInfoWindowClose
 
                             _ ->
                                 Nothing

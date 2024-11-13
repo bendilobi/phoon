@@ -68,11 +68,10 @@ map fn props =
             Layouts.BaseLayout.ModalDialog lmnt ->
                 Layouts.BaseLayout.ModalDialog <| E.map fn lmnt
 
-            Layouts.BaseLayout.InfoWindow { header, info, onClose } ->
+            Layouts.BaseLayout.InfoWindow { header, info } ->
                 Layouts.BaseLayout.InfoWindow
                     { header = header
                     , info = E.map fn info
-                    , onClose = fn onClose
                     }
     , goNextEffects = props.goNextEffects
     , pageActionEffects = props.pageActionEffects

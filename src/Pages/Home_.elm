@@ -331,7 +331,6 @@ viewWelcomeInfo shared =
                             }
                        ]
                 )
-        , onClose = InfoWindowToggled Welcome
         }
 
 
@@ -462,7 +461,6 @@ viewMotivationInfo shared motData =
                   else
                     none
                 ]
-        , onClose = InfoWindowToggled StreakInfo
         }
 
 

@@ -268,6 +268,5 @@ viewWarnings : Shared.Model -> Layouts.BaseLayout.Overlay Msg
 viewWarnings shared =
     Layouts.BaseLayout.InfoWindow
         { header = Texts.warnings shared.appLanguage
-        , onClose = OnToggleWarnings
         , info = column [ spacing 15 ] <| Texts.practiceWarnings shared.appLanguage
         }
