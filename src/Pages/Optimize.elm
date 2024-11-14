@@ -1101,7 +1101,7 @@ viewAppInfo shared model =
                 ]
             , Input.button [ Font.size 12 ]
                 { onPress = Just OnReloadButton
-                , label = text "© 2024 Benno Dielmann"
+                , label = text "AGPLv3, © 2024 Benno Dielmann"
                 }
             ]
     }

@@ -364,19 +364,26 @@ estimatedDurationMillis times (Session session) =
             session.state
 
         meanRetTimes =
-            {- We use only the newest 10 results, so if there is a trend in the data,
+            {- We use only the newest 7 results, so if there is a trend in the data,
                the estimate becomes more accurate:
             -}
-            List.take 10 times
+            List.take 7 times
 
         retentionEstimate =
             if List.length meanRetTimes == 0 then
                 Nothing
 
             else
-                ((Millis.sum meanRetTimes |> Millis.toInt) // List.length meanRetTimes)
-                    |> Millis.fromInt
-                    |> Just
+                -- ((Millis.sum meanRetTimes |> Millis.toInt) // List.length meanRetTimes)
+                -- |> Millis.fromInt
+                -- |> Just
+                {- Calculate median (mean would be too susceptible to outliers): -}
+                meanRetTimes
+                    |> List.map Millis.toInt
+                    |> List.sort
+                    |> List.drop 3
+                    |> List.head
+                    |> Maybe.map Millis.fromInt
     in
     (curPhase :: remainingPhases)
         |> List.map (phaseDuration (Session session) retentionEstimate)
