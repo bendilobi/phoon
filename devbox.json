@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.13.6-3df27b9/.schema/devbox.schema.json",
+  "packages": [
+    "nodejs@latest",
+    "elmPackages.elm@latest",
+    "elmPackages.elm-format@latest",
+    "elmPackages.elm-optimize-level-2@latest",
+    "elmPackages.elm-json@latest",
+    "elmPackages.elm-review@latest",
+    "elmPackages.elm-land@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}
