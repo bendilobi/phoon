@@ -240,7 +240,12 @@ update shared msg model =
                         Effect.none
 
                     Shared.Model.Half ->
-                        Effect.setInfoWindowState Shared.Model.Max
+                        Effect.batch
+                            [ Effect.setInfoWindowState Shared.Model.Max
+
+                            {- In case it was scrolled up before. Seems to be remembered by the browser... -}
+                            , Effect.sendCmd <| Task.attempt (\_ -> NoOp) <| Browser.Dom.setViewportOf infoContentID 0 0
+                            ]
 
                     Shared.Model.Closed ->
                         Effect.none
