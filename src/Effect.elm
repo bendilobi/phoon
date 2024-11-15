@@ -174,28 +174,33 @@ playSound sound =
 
 soundEncoder : Session.SessionSound -> Json.Encode.Value
 soundEncoder sound =
-    let
-        audioPath =
-            "/audio/"
-    in
-    case sound of
-        Session.StartSound ->
-            Json.Encode.string <| audioPath ++ "ding.mp3"
+    Json.Encode.string <|
+        "/audio/"
+            ++ (case sound of
+                    Session.StartSound ->
+                        "ding.mp3"
 
-        Session.BreathingSound ->
-            Json.Encode.string <| audioPath ++ "breathing.mp3"
+                    Session.BreathingSound ->
+                        "breathing.mp3"
 
-        Session.BreathingEndSound ->
-            Json.Encode.string <| audioPath ++ "breathingEnd.mp3"
+                    Session.InhaleSound ->
+                        "inhale.mp3"
 
-        Session.RetentionSound ->
-            Json.Encode.string <| audioPath ++ "retention.mp3"
+                    Session.ExhaleSound ->
+                        "exhale.mp3"
 
-        Session.RelaxRetentionSound ->
-            Json.Encode.string <| audioPath ++ "relaxRetention.mp3"
+                    Session.BreathingEndSound ->
+                        "breathingEnd.mp3"
 
-        Session.EndSound ->
-            Json.Encode.string <| audioPath ++ "sessionEnd.mp3"
+                    Session.RetentionSound ->
+                        "retention.mp3"
+
+                    Session.RelaxRetentionSound ->
+                        "relaxRetention.mp3"
+
+                    Session.EndSound ->
+                        "sessionEnd.mp3"
+               )
 
 
 setWakeLock : Effect msg

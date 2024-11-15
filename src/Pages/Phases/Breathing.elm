@@ -118,7 +118,11 @@ update shared msg model =
 
 subscriptions : Shared.Model -> Model -> Sub Msg
 subscriptions shared model =
-    Time.every (Bubble.tickSpeed model.bubble) Tick
+    if model.breathingFinished then
+        Sub.none
+
+    else
+        Time.every (Bubble.tickSpeed model.bubble) Tick
 
 
 

@@ -20,6 +20,7 @@ import Element.Background as BG
 import Element.Border as Border
 import Element.Font as Font
 import Lib.Millis as Millis exposing (Milliseconds)
+import Lib.Session as Session
 import Lib.Utils as Utils
 import Simple.Animation as Animation exposing (Animation)
 import Simple.Animation.Property as P
@@ -194,10 +195,10 @@ update props =
                     Counting maxBreaths ->
                         case model.breathingState of
                             FirstExhale ->
-                                ( Model { model | breathingState = Inhale }, Effect.none )
+                                ( Model { model | breathingState = Inhale }, Effect.playSound Session.ExhaleSound )
 
                             Inhale ->
-                                ( Model { model | breathingState = Exhale }, Effect.none )
+                                ( Model { model | breathingState = Exhale }, Effect.playSound Session.InhaleSound )
 
                             Exhale ->
                                 let
@@ -222,7 +223,7 @@ update props =
                                         { newModel
                                             | currentBreath = model.currentBreath + 1
                                         }
-                                    , Effect.none
+                                    , Effect.playSound Session.ExhaleSound
                                     )
 
             Reset ->

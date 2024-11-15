@@ -13,6 +13,8 @@ const PRECACHE_URLS = [
     "/audio/retention.mp3",
     "/audio/relaxRetention.mp3",
     "/audio/breathing.mp3",
+    "/audio/inhale.mp3",
+    "/audio/exhale.mp3",
     "/audio/breathingEnd.mp3",
     "/img/logo/favicon.png",
     "/img/logo/favicon-192x192.png",
