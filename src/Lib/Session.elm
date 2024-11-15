@@ -18,6 +18,7 @@ module Lib.Session exposing
     , jumpToEnd
     , new
     , phasePath
+    , playBreathingSounds
     , relaxRetDuration
     , remainingCycles
     , settingsDecoder
@@ -142,6 +143,7 @@ type Session
         , breathCount : BreathCount
         , breathingSpeed : BreathingSpeed
         , relaxRetentionDuration : Milliseconds
+        , playBreathingSounds : Bool
         }
 
 
@@ -151,6 +153,7 @@ type alias Settings =
     , breathingSpeed : BreathingSpeed
     , breathCount : BreathCount
     , practiceFrequencyTarget : Int
+    , playBreathingSounds : Bool
     }
 
 
@@ -163,16 +166,18 @@ new props =
         , breathCount = props.breathCount
         , breathingSpeed = props.breathingSpeed
         , relaxRetentionDuration = props.relaxRetDuration
+        , playBreathingSounds = props.playBreathingSounds
         }
 
 
-createSettings : Int -> Milliseconds -> BreathingSpeed -> BreathCount -> Int -> Settings
-createSettings cycles relaxRetDur breathingSpeed breathCnt practiceFreqTarget =
+createSettings : Int -> Milliseconds -> BreathingSpeed -> BreathCount -> Int -> Bool -> Settings
+createSettings cycles relaxRetDur breathingSpeed breathCnt practiceFreqTarget playBSounds =
     { cycles = cycles
     , relaxRetDuration = relaxRetDur
     , breathingSpeed = breathingSpeed
     , breathCount = breathCnt
     , practiceFrequencyTarget = practiceFreqTarget
+    , playBreathingSounds = playBSounds
     }
 
 
@@ -183,6 +188,7 @@ defaultSettings =
     , breathingSpeed = Medium
     , breathCount = Thirty
     , practiceFrequencyTarget = 4
+    , playBreathingSounds = True
     }
 
 
@@ -313,6 +319,11 @@ relaxRetDuration (Session session) =
     session.relaxRetentionDuration
 
 
+playBreathingSounds : Session -> Bool
+playBreathingSounds (Session session) =
+    session.playBreathingSounds
+
+
 currentPath : Session -> Route.Path.Path
 currentPath session =
     phasePath <| currentPhase session
@@ -402,6 +413,7 @@ fieldnames :
     , breathingSpeed : String
     , breathCount : String
     , practiceFrequencyTarget : String
+    , playBreathingSounds : String
     }
 fieldnames =
     { cycles = "cycles"
@@ -409,6 +421,7 @@ fieldnames =
     , breathingSpeed = "breathSpeed"
     , breathCount = "breathCount"
     , practiceFrequencyTarget = "practiceFreqTarget"
+    , playBreathingSounds = "playBreathingSounds"
     }
 
 
@@ -427,6 +440,7 @@ settingsEncoder settings =
         , ( fieldnames.breathingSpeed, Json.Encode.string <| breathingSpeedToString settings.breathingSpeed )
         , ( fieldnames.breathCount, Json.Encode.int <| breathCountInt settings.breathCount )
         , ( fieldnames.practiceFrequencyTarget, Json.Encode.int settings.practiceFrequencyTarget )
+        , ( fieldnames.playBreathingSounds, Json.Encode.bool settings.playBreathingSounds )
         ]
 
 
@@ -523,3 +537,4 @@ settingsDecoder =
         |> optional fieldnames.breathingSpeed breathingSpeedDecoder defaults.breathingSpeed
         |> optional fieldnames.breathCount breathCountDecoder defaults.breathCount
         |> optional fieldnames.practiceFrequencyTarget Json.Decode.int defaults.practiceFrequencyTarget
+        |> optional fieldnames.playBreathingSounds Json.Decode.bool defaults.playBreathingSounds

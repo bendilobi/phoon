@@ -1584,6 +1584,26 @@ cancelSession lang =
             "Cancel session"
 
 
+playBreathingSounds : AppLanguage -> String
+playBreathingSounds lang =
+    case lang of
+        De ->
+            "Atemklänge einschalten"
+
+        _ ->
+            "Play breathing sounds"
+
+
+muteBreathingSounds : AppLanguage -> String
+muteBreathingSounds lang =
+    case lang of
+        De ->
+            "Atemklänge ausschalten"
+
+        _ ->
+            "Mute breathing sounds"
+
+
 retention : AppLanguage -> String
 retention lang =
     case lang of

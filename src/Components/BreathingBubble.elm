@@ -9,6 +9,7 @@ module Components.BreathingBubble exposing
     , update
     , view
     , withBreathCount
+    , withBreathingSounds
     , withFontSize
     , withLabel
     , withSpeed
@@ -96,6 +97,7 @@ type Model msg
         , onFinished : Maybe msg
         , startWithInhale : Bool
         , breathingState : BreathingState
+        , playBreathingSounds : Bool
         }
 
 
@@ -119,6 +121,7 @@ init props =
 
             else
                 FirstExhale
+        , playBreathingSounds = True
         }
 
 
@@ -159,6 +162,11 @@ withBreathCount breaths (Model model) =
         }
 
 
+withBreathingSounds : Bool -> Model msg -> Model msg
+withBreathingSounds withSounds (Model model) =
+    Model { model | playBreathingSounds = withSounds }
+
+
 
 --- Update ---
 
@@ -195,10 +203,22 @@ update props =
                     Counting maxBreaths ->
                         case model.breathingState of
                             FirstExhale ->
-                                ( Model { model | breathingState = Inhale }, Effect.playSound Session.ExhaleSound )
+                                ( Model { model | breathingState = Inhale }
+                                , if model.playBreathingSounds then
+                                    Effect.playSound Session.ExhaleSound
+
+                                  else
+                                    Effect.none
+                                )
 
                             Inhale ->
-                                ( Model { model | breathingState = Exhale }, Effect.playSound Session.InhaleSound )
+                                ( Model { model | breathingState = Exhale }
+                                , if model.playBreathingSounds then
+                                    Effect.playSound Session.InhaleSound
+
+                                  else
+                                    Effect.none
+                                )
 
                             Exhale ->
                                 let
@@ -223,7 +243,11 @@ update props =
                                         { newModel
                                             | currentBreath = model.currentBreath + 1
                                         }
-                                    , Effect.playSound Session.ExhaleSound
+                                    , if model.playBreathingSounds then
+                                        Effect.playSound Session.ExhaleSound
+
+                                      else
+                                        Effect.none
                                     )
 
             Reset ->

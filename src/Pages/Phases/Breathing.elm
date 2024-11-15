@@ -37,7 +37,7 @@ toLayout : Shared.Model -> Model -> Layouts.Layout Msg
 toLayout shared model =
     Layouts.BaseLayout_SessionControls
         { currentCycle = SessionResults.finishedCycles shared.results + 1
-        , controlsTop = []
+        , controlsTop = [ viewPlayBreathingSoundsButton shared model ]
         , controlsBottom = [ viewCancelButton shared model ]
         , fadeOut = NoFade
         , overlay = Layouts.BaseLayout.NoOverlay
@@ -52,6 +52,7 @@ type alias Model =
     { bubble : Bubble.Model Msg
     , breathingFinished : Bool
     , cancelButton : Button.Model
+    , breathingSoundsToggleButton : Button.Model
     }
 
 
@@ -63,9 +64,13 @@ init shared () =
                 , onFinished = Just BubbleFinished
                 , breathingSpeed = Session.speedMillis shared.session
                 , startWithInhale = SessionResults.finishedCycles shared.results == 0
+
+                -- , playBreathingSounds = Session.playBreathingSounds shared.session
                 }
+                |> Bubble.withBreathingSounds (Session.playBreathingSounds shared.session)
       , breathingFinished = False
       , cancelButton = Button.init
+      , breathingSoundsToggleButton = Button.init
       }
     , Effect.batch
         [ Effect.playSound Session.BreathingSound
@@ -82,6 +87,7 @@ type Msg
     = Tick Time.Posix
     | BubbleFinished
     | OnCancelButton Button.Model
+    | OnToggleBreathingSoundsButton Button.Model
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
@@ -106,6 +112,30 @@ update shared msg model =
             ( { model | cancelButton = newState }
             , if newState == Button.Triggered then
                 Effect.cancelSession shared.session
+
+              else
+                Effect.none
+            )
+
+        OnToggleBreathingSoundsButton newState ->
+            let
+                settings =
+                    shared.sessionSettings
+
+                soundsEnabled =
+                    not settings.playBreathingSounds
+            in
+            ( { model
+                | breathingSoundsToggleButton = newState
+                , bubble =
+                    if newState == Button.Triggered then
+                        model.bubble |> Bubble.withBreathingSounds soundsEnabled
+
+                    else
+                        model.bubble
+              }
+            , if newState == Button.Triggered then
+                Effect.updateSessionSettings { settings | playBreathingSounds = soundsEnabled }
 
               else
                 Effect.none
@@ -174,6 +204,22 @@ viewCancelButton shared model =
         { model = model.cancelButton
         , label = text <| Texts.cancelSession shared.appLanguage
         , onPress = OnCancelButton
+        }
+        |> Button.view shared.colorScheme
+
+
+viewPlayBreathingSoundsButton : Shared.Model -> Model -> Element Msg
+viewPlayBreathingSoundsButton shared model =
+    Button.new
+        { model = model.breathingSoundsToggleButton
+        , label =
+            text <|
+                if Session.playBreathingSounds shared.session then
+                    Texts.muteBreathingSounds shared.appLanguage
+
+                else
+                    Texts.playBreathingSounds shared.appLanguage
+        , onPress = OnToggleBreathingSoundsButton
         }
         |> Button.view shared.colorScheme
 
