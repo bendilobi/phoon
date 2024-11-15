@@ -102,7 +102,8 @@ infoContentID =
 
 
 type Msg
-    = OnInfoWindowResize
+    = NoOp
+    | OnInfoWindowResize
     | OnInfoWindowClose
     | SwipeStart Swipe.Event
     | TimedSwipeStart Swipe.Event Time.Posix
@@ -119,11 +120,17 @@ type Msg
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
+        NoOp ->
+            ( model, Effect.none )
+
         OnInfoWindowResize ->
-            ( model
+            ( { model | infoContentViewportAtTop = True }
             , case shared.infoWindowState of
                 Shared.Model.Half ->
-                    Effect.setInfoWindowState Shared.Model.Max
+                    Effect.batch
+                        [ Effect.sendCmd <| Task.attempt (\_ -> NoOp) <| Browser.Dom.setViewportOf infoContentID 0 0
+                        , Effect.setInfoWindowState Shared.Model.Max
+                        ]
 
                 Shared.Model.Max ->
                     Effect.setInfoWindowState Shared.Model.Half
