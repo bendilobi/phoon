@@ -1053,12 +1053,12 @@ viewAppInfo shared model =
                     { url = "https://www.buymeacoffee.com/bendilobi"
                     , label =
                         el
-                            [ paddingXY 25 10
+                            [ paddingXY 13 3
                             , Border.rounded 15
                             , BG.color <| rgb255 245 238 230
                             ]
                         <|
-                            image []
+                            image [ scale 0.8 ]
                                 { src =
                                     case shared.appLanguage of
                                         Texts.De ->

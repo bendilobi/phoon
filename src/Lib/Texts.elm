@@ -759,7 +759,7 @@ practiceWarnings lang =
             oder im Liegen auf einer weichen Unterlage*.
             """
             , bullet "Übe *niemals im oder am Wasser* (auch nicht im flachen Wasser)!"
-            , bullet "Übe *nie, während Du Auto fährst*"
+            , bullet "Übe *nie, während Du Auto fährst*!"
             , bullet "Übe nicht, wenn Du nicht körperlich fit bist."
             , bullet """Im Falle von Herzproblemen, Bluthochdruck oder anderen Herz-Kreislauf-Problemen, Schwangerschaft, Epilepsie,
             oder ähnlichen Gesundheitseinschränkungen, *konsultiere auf jeden Fall Deinen Arzt*, bevor Du die Atemübung ausprobierst!
@@ -781,7 +781,7 @@ practiceWarnings lang =
             or lying down on a soft surface*.
             """
             , bullet """*Never* practice *in or near water* (not even in shallow water)!"""
-            , bullet """*Never* practice *while driving*"""
+            , bullet """*Never* practice *while driving*!"""
             , bullet """Do not practice if you are not physically fit."""
             , bullet """In case of heart conditions, high blood pressure or other cardiovascular issues, pregnancy, 
             epilepsy, or similar conditions, always *consult your healthcare professional* before trying the breathing exercise!
