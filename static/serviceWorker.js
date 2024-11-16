@@ -72,10 +72,14 @@ self.addEventListener("fetch", (event) => {
           // therefore used if they are fetched next time
           if (event.request.url.includes("/#/optimize")) {
             fetch(event.request).then((response) => {
-              const responseClone = response.clone();
-              caches.open(PRECACHE).then((cache) => {
-                cache.put(event.request, responseClone);
-              });
+              if (response.ok) {
+                // Only put valid stuff in caches
+  
+                const responseClone = response.clone();
+                caches.open(PRECACHE).then((cache) => {
+                  cache.put(event.request, responseClone);
+                });
+              }
             });
           }
 
@@ -85,25 +89,29 @@ self.addEventListener("fetch", (event) => {
           // We only fetch stuff from the server if it isn't already
           // in our PRECACHE (except the index.html, see above)
           return fetch(event.request).then((response) => {
-            const responseClone = response.clone();
+            if (response.ok) {
+              // Only put valid stuff in caches
 
-            // "assets" contains our compiled elm code whose name
-            // contains a hash and thus changes for each new version.
-            // To avoid filling the cache with old versions, we have 
-            // a dedicated cache for the compiled elm which we empty
-            // whenever a new version is fetched
-            if (event.request.url.includes("assets")) {
-              caches.delete(ELMCACHE).then(() => {
-                caches.open(ELMCACHE).then((cache) => {
+              const responseClone = response.clone();
+
+              // "assets" contains our compiled elm code whose name
+              // contains a hash and thus changes for each new version.
+              // To avoid filling the cache with old versions, we have 
+              // a dedicated cache for the compiled elm which we empty
+              // whenever a new version is fetched
+              if (event.request.url.includes("assets")) {
+                caches.delete(ELMCACHE).then(() => {
+                  caches.open(ELMCACHE).then((cache) => {
+                    cache.put(event.request, responseClone);
+                  });
+                });
+
+              // All other requests are added to the precache 
+              } else {
+                caches.open(PRECACHE).then((cache) => {
                   cache.put(event.request, responseClone);
                 });
-              });
-
-            // All other requests are added to the precache 
-            } else {
-              caches.open(PRECACHE).then((cache) => {
-                cache.put(event.request, responseClone);
-              });
+              }
             }
             return response;
           });
