@@ -1,6 +1,7 @@
 // Increment version when you update any of the local resources, which will
 // in turn trigger the install event again.
-const PRECACHE = "precache-v0.8.14";
+const PRECACHE = "precache-v0.8.16";
+const ELMCACHE = "compiledElm";
 
 // A list of local resources we always want to be cached.
 const PRECACHE_URLS = [ 
@@ -36,7 +37,7 @@ self.addEventListener("install", (event) => {
 
 // The activate handler takes care of cleaning up old caches.
 self.addEventListener("activate", (event) => {
-  const currentCaches = [PRECACHE];
+  const currentCaches = [PRECACHE, ELMCACHE];
   event.waitUntil(
     caches
       .keys()
@@ -92,8 +93,8 @@ self.addEventListener("fetch", (event) => {
             // a dedicated cache for the compiled elm which we empty
             // whenever a new version is fetched
             if (event.request.url.includes("assets")) {
-              caches.delete("compiledElm").then(() => {
-                caches.open("compiledElm").then((cache) => {
+              caches.delete(ELMCACHE).then(() => {
+                caches.open(ELMCACHE).then((cache) => {
                   cache.put(event.request, responseClone);
                 });
               });
