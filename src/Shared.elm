@@ -46,7 +46,7 @@ strings match.
 -}
 appVersion =
     --- Version string in version.json MUST BE IDENTICAL before deploying the app!!! ---
-    "0.9.26"
+    "0.9.28"
 
 
 subPageClosingTime =
@@ -440,10 +440,7 @@ update route msg model =
             )
 
         Shared.Msg.SessionSettingsUpdated newSettings ->
-            ( { model
-                | sessionSettings = newSettings
-                , session = Session.new newSettings
-              }
+            ( { model | sessionSettings = newSettings }
             , Effect.saveSessionSettings newSettings
             )
 

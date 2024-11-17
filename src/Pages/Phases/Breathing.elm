@@ -135,7 +135,10 @@ update shared msg model =
                         model.bubble
               }
             , if newState == Button.Triggered then
-                Effect.updateSessionSettings { settings | playBreathingSounds = soundsEnabled }
+                Effect.batch
+                    [ Effect.updateSessionSettings { settings | playBreathingSounds = soundsEnabled }
+                    , Effect.sessionUpdated <| Session.withPlayBreathingSounds soundsEnabled shared.session
+                    ]
 
               else
                 Effect.none

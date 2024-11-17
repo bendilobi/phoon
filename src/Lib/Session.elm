@@ -27,6 +27,7 @@ module Lib.Session exposing
     , speedToMillis
     , withCycles
     , withFiftyBreaths
+    , withPlayBreathingSounds
     , withRelaxRetDuration
     , withSpeedQuick
     , withSpeedSlow
@@ -250,6 +251,11 @@ withSpeedSlow (Session session) =
 withSpeedQuick : Session -> Session
 withSpeedQuick (Session session) =
     Session { session | breathingSpeed = Fast }
+
+
+withPlayBreathingSounds : Bool -> Session -> Session
+withPlayBreathingSounds doPlay (Session session) =
+    Session { session | playBreathingSounds = doPlay }
 
 
 withRelaxRetDuration : Milliseconds -> Session -> Session
