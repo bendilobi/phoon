@@ -27,8 +27,6 @@ import Shared.Model exposing (UpdateState(..))
 import Simple.Transition as Transition
 import String exposing (right)
 import String.Format
-import Svg
-import Svg.Attributes
 import Task
 import Time
 import View exposing (View)

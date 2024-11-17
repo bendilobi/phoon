@@ -46,7 +46,7 @@ strings match.
 -}
 appVersion =
     --- Version string in version.json MUST BE IDENTICAL before deploying the app!!! ---
-    "0.9.22"
+    "0.9.26"
 
 
 subPageClosingTime =

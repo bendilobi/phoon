@@ -131,13 +131,13 @@ type SettingsItem
     | BreathCount
     | RelaxRetDuration
     | PracticeFrequencyTarget
+    | DataManagement
 
 
 type Msg
     = Tick Time.Posix
     | OnReloadButton
     | OnUpdateButton Button.Model
-      -- | VisibilityChanged Browser.Events.Visibility
     | DefaultCyclesChanged Int IntCrementer.Model
     | DefaultRelaxRetDurationChanged Int IntCrementer.Model
     | PracticeFreqTargetChanged Int IntCrementer.Model
@@ -640,7 +640,7 @@ viewSettings shared model =
                 viewSettingsItem
                     { attributes = lastItemAttrs
                     , label = Texts.overallSequence shared.appLanguage
-                    , value = Texts.cycles2 shared.appLanguage shared.sessionSettings.cycles
+                    , value = text <| Texts.cycles2 shared.appLanguage shared.sessionSettings.cycles
                     , item = Cycles
                     }
                     shared.colorScheme
@@ -673,7 +673,7 @@ viewSettings shared model =
               else
                 viewSettingsItem
                     { label = Texts.breathingSpeed shared.appLanguage
-                    , value = Texts.breathingSpeeds shared.appLanguage shared.sessionSettings.breathingSpeed
+                    , value = text <| Texts.breathingSpeeds shared.appLanguage shared.sessionSettings.breathingSpeed
                     , attributes = itemAttrs
                     , item = BreathingSpeed
                     }
@@ -695,7 +695,7 @@ viewSettings shared model =
               else
                 viewSettingsItem
                     { label = Texts.breaths shared.appLanguage
-                    , value = shared.sessionSettings.breathCount |> Session.breathCountInt |> String.fromInt
+                    , value = shared.sessionSettings.breathCount |> Session.breathCountInt |> String.fromInt |> text
                     , attributes = lastItemAttrs
                     , item = BreathCount
                     }
@@ -748,12 +748,13 @@ viewSettings shared model =
                 viewSettingsItem
                     { label = Texts.relaxRetention shared.appLanguage
                     , value =
-                        (shared.sessionSettings.relaxRetDuration
-                            |> Millis.toSeconds
-                            |> String.fromInt
-                        )
-                            ++ " "
-                            ++ Texts.seconds shared.appLanguage
+                        text <|
+                            (shared.sessionSettings.relaxRetDuration
+                                |> Millis.toSeconds
+                                |> String.fromInt
+                            )
+                                ++ " "
+                                ++ Texts.seconds shared.appLanguage
                     , attributes = lastItemAttrs
                     , item = RelaxRetDuration
                     }
@@ -797,7 +798,7 @@ viewSettings shared model =
               else
                 viewSettingsItem
                     { label = Texts.practiceGoal shared.appLanguage
-                    , value = Texts.timesPerWeek2 shared.appLanguage shared.sessionSettings.practiceFrequencyTarget
+                    , value = text <| Texts.timesPerWeek2 shared.appLanguage shared.sessionSettings.practiceFrequencyTarget
                     , attributes = lastItemAttrs
                     , item = PracticeFrequencyTarget
                     }
@@ -810,7 +811,7 @@ viewSettings shared model =
 viewSettingsItem :
     { item : SettingsItem
     , label : String
-    , value : String
+    , value : Element Msg
     , attributes : List (Attribute Msg)
     }
     -> ColorScheme
@@ -823,7 +824,7 @@ viewSettingsItem { item, label, value, attributes } colorScheme =
             ++ attributes
         )
         [ text label
-        , el [ alignRight, Font.color <| CS.interactInactiveDarkerColor colorScheme ] <| text value
+        , el [ alignRight, Font.color <| CS.interactInactiveDarkerColor colorScheme ] <| value
         ]
 
 
@@ -967,7 +968,7 @@ viewAppInfo shared model =
              , height fill
              , Font.size 15
              , spacing 40
-             , padding 30
+             , padding 20
              ]
                 ++ CS.primaryInformation shared.colorScheme
             )
@@ -1071,33 +1072,77 @@ viewAppInfo shared model =
                     }
                 , Texts.bmacOutro shared.appLanguage
                 ]
-            , column
-                [ width fill
-                , spacing 20
-                , padding 15
-                , Border.rounded 10
-                , BG.color <| rgb 1 1 1
-                ]
-                [ text <| Texts.dataManagement shared.appLanguage
-                , case shared.motivationData of
-                    Nothing ->
-                        none
+            , let
+                --TODO: Create a Component for settings items and remove all duplication of style code...
+                hPad =
+                    20
 
-                    _ ->
-                        Button.new
-                            { onPress = OnCopyButton
-                            , label = text <| Texts.copyResults shared.appLanguage
-                            , model = model.copyButton
-                            }
-                            |> Button.withLightColor
-                            |> Button.view shared.colorScheme
-                , Button.new
-                    { model = model.pasteButton
-                    , label = text <| Texts.importResults shared.appLanguage
-                    , onPress = OnPasteButton
-                    }
-                    |> Button.withLightColor
-                    |> Button.view shared.colorScheme
+                lastItemAttrs =
+                    let
+                        vPad =
+                            15
+                    in
+                    [ width fill
+                    , paddingEach { top = vPad, bottom = vPad, right = hPad, left = 0 }
+                    , alignBottom
+                    ]
+
+                settingsAttrs =
+                    [ width fill
+                    , Border.rounded 10
+                    , BG.color <| CS.settingsColor shared.colorScheme
+                    , paddingEach { left = hPad, right = 0, top = 0, bottom = 0 }
+                    ]
+
+                activeItemLabel : String -> Element Msg
+                activeItemLabel label =
+                    Button.new
+                        { onPress = OnResetItemStatusButton
+                        , label = text label
+                        , model = model.resetItemStatusButton
+                        }
+                        |> Button.withInline
+                        |> Button.withLightColor
+                        |> Button.view shared.colorScheme
+              in
+              column settingsAttrs
+                [ if model.settingsItemShown == DataManagement then
+                    el lastItemAttrs <|
+                        column [ width fill, spacing 20 ]
+                            [ activeItemLabel <| Texts.dataManagement shared.appLanguage
+                            , case shared.motivationData of
+                                Nothing ->
+                                    none
+
+                                _ ->
+                                    Button.new
+                                        { onPress = OnCopyButton
+                                        , label = text <| Texts.copyResults shared.appLanguage
+                                        , model = model.copyButton
+                                        }
+                                        |> Button.withLightColor
+                                        |> Button.view shared.colorScheme
+                            , Button.new
+                                { model = model.pasteButton
+                                , label = text <| Texts.importResults shared.appLanguage
+                                , onPress = OnPasteButton
+                                }
+                                |> Button.withLightColor
+                                |> Button.view shared.colorScheme
+                            ]
+
+                  else
+                    viewSettingsItem
+                        { attributes = lastItemAttrs
+                        , label = Texts.dataManagement shared.appLanguage
+                        , value =
+                            FeatherIcons.chevronRight
+                                |> FeatherIcons.withSize 15
+                                |> FeatherIcons.toHtml []
+                                |> html
+                        , item = DataManagement
+                        }
+                        shared.colorScheme
                 ]
             , Input.button [ Font.size 12 ]
                 { onPress = Just OnReloadButton
