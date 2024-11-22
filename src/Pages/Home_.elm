@@ -456,7 +456,7 @@ viewMotivationInfo shared motData =
                             bullet <| Texts.nextRingAfter shared.appLanguage sessions
                 , if streakValid && daysSinceLastSession > 1 then
                     bullet
-                        (Texts.lastPracticeWas shared.appLanguage daysSinceLastSession)
+                        (Texts.lastPracticeWas shared.appLanguage <| daysSinceLastSession - 1)
 
                   else
                     none

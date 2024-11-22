@@ -563,10 +563,10 @@ nextRingAfter lang sessions =
         case lang of
             De ->
                 if sessions == 1 then
-                    "Der nächste Ring kommt nach der nächsten Übung"
+                    "Der nächste Ring kommt nach der nächsten Übung."
 
                 else
-                    "Der nächste Ring kommt nach {{ }} Übungen"
+                    "Der nächste Ring kommt nach {{ }} Übungen."
 
             _ ->
                 if sessions == 1 then
@@ -581,18 +581,24 @@ lastPracticeWas lang n =
     String.Format.value (String.fromInt n) <|
         case lang of
             De ->
-                if n == 1 then
+                if n == 0 then
                     "Deine letzte Übung war gestern."
 
+                else if n == 1 then
+                    "Deine letzte Übung war vorgestern."
+
                 else
-                    "Deine letzte Übung war vor {{ }} Tagen."
+                    "Du hast {{ }} Tage ausgelassen seit der letzen Übung."
 
             _ ->
-                if n == 1 then
+                if n == 0 then
                     "Your last practice session was yesterday."
 
+                else if n == 1 then
+                    "Your last practice session was the day before yesterday."
+
                 else
-                    "Your last practice session was {{ }} days ago."
+                    "You skipped {{ }} days of practice since your last session."
 
 
 updating : AppLanguage -> String
