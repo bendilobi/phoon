@@ -150,5 +150,5 @@ viewSessionHints shared =
             ]
         <|
             Texts.retentionHints shared.appLanguage <|
-                Texts.keyWrapper shared.mouseDetected
+                Texts.keyWrapper shared.pointerIsMouse
     }

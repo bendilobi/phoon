@@ -314,11 +314,11 @@ viewSessionHints shared =
             [ spacing 20 ]
         <|
             Texts.sessionStartHintsIntro shared.appLanguage
-                ++ (if shared.mouseDetected == Just True then
+                ++ (if shared.pointerIsMouse == Just True then
                         Texts.sessionStartHintsKey shared.appLanguage
 
                     else
                         []
                    )
-                ++ (Texts.sessionStartHintsBullets shared.appLanguage <| Texts.keyWrapper shared.mouseDetected)
+                ++ (Texts.sessionStartHintsBullets shared.appLanguage <| Texts.keyWrapper shared.pointerIsMouse)
     }

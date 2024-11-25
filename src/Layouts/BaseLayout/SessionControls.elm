@@ -113,7 +113,7 @@ init props shared _ =
       , swipeDirectionY = Nothing
       , sessionHintsNudge = 0
       , sessionHintsNudgeToggle = False
-      , hintsShownByKeyPress = shared.mouseDetected == Just True
+      , hintsShownByKeyPress = shared.pointerIsMouse == Just True
       }
     , Effect.batch
         [ Effect.setWakeLock

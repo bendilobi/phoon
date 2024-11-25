@@ -35,7 +35,7 @@ type alias Model =
     {- We go under the assumption that if a mouse is used, the app is run in a desktop environment with keyboard.
        So we use this field for desktop-specific stuff:
     -}
-    , mouseDetected : Maybe Bool
+    , pointerIsMouse : Maybe Bool
     , iOSVersion : Maybe Int
     , appVisible : Bool
     , updateState : UpdateState

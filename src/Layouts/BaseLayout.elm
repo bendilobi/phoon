@@ -302,7 +302,7 @@ view props shared { toContentMsg, model, content } =
                    , clip
                    , below <| viewInfoWindow props shared model toContentMsg
                    ]
-                ++ (case shared.mouseDetected of
+                ++ (case shared.pointerIsMouse of
                         Nothing ->
                             let
                                 mouseDetector =

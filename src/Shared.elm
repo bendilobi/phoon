@@ -46,7 +46,7 @@ strings match.
 -}
 appVersion =
     --- Version string in version.json MUST BE IDENTICAL before deploying the app!!! ---
-    "0.9.30"
+    "0.9.33"
 
 
 subPageClosingTime =
@@ -248,7 +248,7 @@ init flagsResult route =
       , today = Date.fromRataDie 0
       , appLanguage = decodedFlags.browserLang
       , iOSVersion = decodedFlags.iOSVersion
-      , mouseDetected = Nothing
+      , pointerIsMouse = Nothing
       , appVisible = True
       , updateState = decodedFlags.updateState
       , showWakelockNote = decodedFlags.showWakelockNote
@@ -381,7 +381,7 @@ update route msg model =
             )
 
         Shared.Msg.PointerDevice isMouse ->
-            ( { model | mouseDetected = Just <| isMouse }, Effect.none )
+            ( { model | pointerIsMouse = Just <| isMouse }, Effect.none )
 
         Shared.Msg.SessionUpdated session ->
             ( { model | session = session }

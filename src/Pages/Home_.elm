@@ -293,30 +293,36 @@ viewWelcomeInfo shared =
         { header = Texts.welcome shared.appLanguage
         , info =
             column [ spacing 15 ]
-                ((Texts.introduction shared.appLanguage
-                    ++ (case shared.standalone of
-                            Just False ->
-                                paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
-                                    Texts.installInstructionIOS shared.appLanguage <|
-                                        (FeatherIcons.share
-                                            |> FeatherIcons.toHtml []
-                                            |> html
-                                        )
+                (Texts.introduction shared.appLanguage
+                    ++ ((if shared.motivationData == Nothing || shared.pointerIsMouse /= Just False then
+                            Texts.desktopNote shared.appLanguage
 
-                            Just True ->
-                                none
-
-                            Nothing ->
-                                case shared.motivationData of
-                                    Nothing ->
+                         else
+                            none
+                        )
+                            :: (case shared.standalone of
+                                    Just False ->
                                         paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
-                                            Texts.installInstructionAndroid shared.appLanguage
+                                            Texts.installInstructionIOS shared.appLanguage <|
+                                                (FeatherIcons.share
+                                                    |> FeatherIcons.toHtml []
+                                                    |> html
+                                                )
 
-                                    _ ->
+                                    Just True ->
                                         none
+
+                                    Nothing ->
+                                        case shared.motivationData of
+                                            Nothing ->
+                                                paragraph [ Border.rounded 20, Border.width 1, padding 10 ] <|
+                                                    Texts.installInstructionAndroid shared.appLanguage
+
+                                            _ ->
+                                                none
+                               )
+                            :: Texts.disclaimer shared.appLanguage
                        )
-                    :: Texts.disclaimer shared.appLanguage
-                 )
                     ++ [ newTabLink []
                             { url = "https://www.youtube.com/watch?v=MgKdHG6MQ0g&list=PL2WKxL9enbZQ2XpjhGXG-rDG0_lUp4OcX"
                             , label =

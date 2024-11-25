@@ -417,7 +417,7 @@ view props shared route { toContentMsg, model, content } =
                                 )
                                 content.element
                             ]
-                    , if shared.deviceInfo.orientation == Landscape && shared.mouseDetected == Just False then
+                    , if shared.deviceInfo.orientation == Landscape && shared.pointerIsMouse == Just False then
                         --TODO: Maybe it would be better to determine whether to show the navbar based on screen
                         --      size...
                         none

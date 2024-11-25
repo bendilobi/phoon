@@ -239,7 +239,7 @@ viewSessionHints shared model =
                 ]
             <|
                 Texts.breathingEndHints shared.appLanguage <|
-                    Texts.keyWrapper shared.mouseDetected
+                    Texts.keyWrapper shared.pointerIsMouse
         }
 
     else

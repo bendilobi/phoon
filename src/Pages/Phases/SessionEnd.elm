@@ -363,5 +363,5 @@ viewSessionHints shared =
             ]
         <|
             Texts.sessionEndHints shared.appLanguage <|
-                Texts.keyWrapper shared.mouseDetected
+                Texts.keyWrapper shared.pointerIsMouse
     }

@@ -251,13 +251,6 @@ introduction lang =
                 """
                 *Optimiere Deinen Übungserfolg*: Verfolge die Entwicklung Deiner Retentionszeiten und passe die Übungsparameter entsprechend an.
                 """
-            , para
-                ("""
-            {{ }} kann mit Tastaturkürzeln bedient werden, ist aber für die Benutzung auf Smartphones optimiert - es ist eine Webseite, die sich wie 
-            eine native App anfühlt, insbesondere wenn sie auf den Home-Screen des Geräts installiert wurde. 
-            """
-                    |> String.Format.value appName
-                )
             ]
 
         _ ->
@@ -285,14 +278,25 @@ introduction lang =
                 """
             *Optimize your breathwork success*: fine-tune your exercise parameters and keep track of your retention time progress.
             """
-            , para
-                ("""
-            {{ }} can be controlled with keyboard shortcuts, but is optimized for usage on smartphones - it is a website made to look and feel
-            like a native app when installed to the device's home screen.
-            """
-                    |> String.Format.value appName
-                )
             ]
+
+
+desktopNote : AppLanguage -> Element msg
+desktopNote lang =
+    para <|
+        String.Format.value appName <|
+            case lang of
+                De ->
+                    """
+    {{ }} kann mit *Tastaturkürzeln* bedient werden, ist aber für die Benutzung auf *Smartphones optimiert* - es ist eine Webseite, die sich wie 
+    eine native App anfühlt, insbesondere wenn sie auf den Home-Screen des Geräts installiert wurde. 
+                        """
+
+                _ ->
+                    """
+    {{ }} can be controlled with *keyboard shortcuts*, but is optimized for *usage on smartphones* - it is a website made to look and feel
+    like a native app when installed to the device's home screen.
+                        """
 
 
 installInstructionIOS : AppLanguage -> Element msg -> List (Element msg)
@@ -339,7 +343,7 @@ disclaimer lang =
             [ para
                 ("""
                 *Bitte beachte*: {{ }} bietet nur grundlegende Hinweise zur Durchführung der Wim-Hof-Atemtechnik. Wenn Du Dich damit noch nicht
-                auskennst, schaue Dir am Besten eines der unzähligen Erklärvideos auf YouTube an. Eine Erklärung vom Meister selbst
+                auskennst, schaue Dir am Besten eines der unzähligen *Erklärvideos auf YouTube* an. Eine Erklärung vom Meister selbst
                 ist besser als tausend Worte geschriebene Anleitung!
             """
                     |> String.Format.value appName
@@ -350,7 +354,7 @@ disclaimer lang =
             [ para
                 ("""
             *Please note*: {{ }} provides only basic instructions on how to do Wim Hof style breathwork. If you're new to his breathwork, we recommend you
-            head over to YouTube and find one of the numerous videos on the topic. Being shown by the man himself is surely better than
+            head over to *YouTube* and find one of the *numerous videos* on the topic. Being shown by the man himself is surely better than
             a thousand words of explanation!
             """ |> String.Format.value appName)
             ]
@@ -588,7 +592,7 @@ lastPracticeWas lang n =
                     "Deine letzte Übung war vorgestern."
 
                 else
-                    "Du hast {{ }} Tage ausgelassen seit der letzen Übung."
+                    "Du hast {{ }} Tage ausgelassen seit der letzten Übung."
 
             _ ->
                 if n == 0 then
