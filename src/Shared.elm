@@ -2,7 +2,7 @@ module Shared exposing
     ( Flags, decoder
     , Model, Msg
     , init, update, subscriptions
-    , appVersion, sessionHintsID, subPageClosingTime
+    , sessionHintsID, subPageClosingTime
     )
 
 {-|
@@ -36,17 +36,7 @@ import Shared.Model exposing (UpdateState(..))
 import Shared.Msg
 import Task
 import Time
-
-
-{-| The app version is the basis for our updating mechanism. There is a file /version/version.json
-that MUST contain the same string as defined here. The app checks whether the strings are
-different by fetching the version.json. If they are different, an update button is shown which
-triggers the update process. During that, a page reload is triggered repeatedly until the version
-strings match.
--}
-appVersion =
-    --- Version string in version.json MUST BE IDENTICAL before deploying the app!!! ---
-    "0.9.38"
+import Version
 
 
 subPageClosingTime =
@@ -455,7 +445,7 @@ update route msg model =
               }
             , case model.updateState of
                 Updating _ ->
-                    if versionString == appVersion then
+                    if versionString == Version.appVersion then
                         Effect.batch
                             [ Effect.setUpdateState JustUpdated
                             , Effect.toggleSubPage
@@ -470,7 +460,7 @@ update route msg model =
                     Effect.none
 
                 _ ->
-                    if versionString /= appVersion then
+                    if versionString /= Version.appVersion then
                         Effect.setUpdateState <| UpdateAvailable versionString
 
                     else

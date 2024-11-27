@@ -34,6 +34,7 @@ import Shared
 import Shared.Model exposing (UpdateState(..))
 import String.Format
 import Time
+import Version
 import View exposing (View)
 
 
@@ -528,7 +529,7 @@ viewUpdate shared model =
                 [ paragraph [ width fill, Font.center ]
                     [ text <|
                         (Texts.updateAvailable shared.appLanguage
-                            |> String.Format.namedValue "currentVersion" Shared.appVersion
+                            |> String.Format.namedValue "currentVersion" Version.appVersion
                             |> String.Format.namedValue "newestVersion" versionOnServer
                         )
                     ]
@@ -1014,7 +1015,7 @@ viewAppInfo shared model =
                 , el [ centerX, Font.size 14 ] <|
                     text <|
                         (Texts.version shared.appLanguage
-                            |> String.Format.value Shared.appVersion
+                            |> String.Format.value Version.appVersion
                         )
                 ]
             , viewUpdate shared model

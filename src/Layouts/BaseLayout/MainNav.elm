@@ -29,6 +29,7 @@ import String exposing (right)
 import String.Format
 import Task
 import Time
+import Version
 import View exposing (View)
 
 
@@ -305,7 +306,7 @@ view props shared route { toContentMsg, model, content } =
                                     { color = CS.successColor shared.colorScheme
                                     , message =
                                         Texts.updateSuccessfull shared.appLanguage
-                                            |> String.Format.value Shared.appVersion
+                                            |> String.Format.value Version.appVersion
                                     , label = Texts.done shared.appLanguage
                                     }
                                     |> E.map toContentMsg
