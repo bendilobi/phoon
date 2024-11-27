@@ -481,9 +481,15 @@ viewUpdateResult shared model { color, message, label } =
         -- , htmlAttribute <| HEvents.on "transitionend" <| Decode.succeed UpdateFinished
         ]
     <|
-        column [ centerX, centerY, spacing 20 ]
-            [ el [ Font.color color, Font.bold ] <|
-                text message
+        column
+            [ centerX
+            , centerY
+            , spacing 20
+            , paddingXY 30 0
+            ]
+            [ paragraph [ Font.color color, Font.center, Font.bold ]
+                [ text message
+                ]
             , Button.new
                 { model = model.updateButton
                 , label = text label
