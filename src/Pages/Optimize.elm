@@ -104,6 +104,7 @@ init shared () =
                 , breathingSpeed = Session.speedToMillis shared.sessionSettings.breathingSpeed
                 , startWithInhale = True
                 }
+                |> Bubble.withBreathingSounds False
       , resetSettingsButton = Button.init
       , resetItemStatusButton = Button.init
       , cycleCrementer = IntCrementer.init
