@@ -78,12 +78,13 @@ boldify attrs txt =
 type BulletType
     = Bullet
     | Icon FeatherIcons.Icon
+    | NoBullet
 
 
 bulletParagraph : BulletType -> List (Element msg) -> Element msg
 bulletParagraph fIcon content =
     row [ spacing 8, paddingXY 20 0 ]
-        [ el [ alignTop, Font.bold ]
+        [ el [ alignTop, Font.bold, Font.alignRight, width <| px 13 ]
             (case fIcon of
                 Bullet ->
                     text "•"
@@ -93,6 +94,9 @@ bulletParagraph fIcon content =
                         |> FeatherIcons.withSize 13
                         |> FeatherIcons.toHtml []
                         |> html
+
+                NoBullet ->
+                    none
             )
         , paragraph
             [ Font.alignLeft
@@ -113,6 +117,13 @@ iconBullet task content =
     content
         |> boldify []
         |> bulletParagraph (Icon <| mainTaskIcon True task)
+
+
+nobullet : String -> Element msg
+nobullet content =
+    content
+        |> boldify []
+        |> bulletParagraph NoBullet
 
 
 para : String -> Element msg
@@ -235,15 +246,25 @@ introduction lang =
             , iconBullet Motivate
                 ("""
                 *Finde Motivation* für eine regelmäßige Übungspraxis: Bestimme, wie häufig Du üben willst - {{ }} erfasst, wie lange Du Deine
-                Serie durchhältst. Wenn Du übst, bekommst Du *Ringe*, die Deine Serie schützen: Pro Ring kannst Du einen Tag pausieren, ohne dass
-                die Serie abbricht. Wie häufig Du Ringe bekommst, hängt von Deinem gewählten Übungsziel ab (z.B. "4 mal pro Woche").
+                Serie durchhältst. 
                 """
                     |> String.Format.value appName
                 )
+            , nobullet """
+                Wenn Du übst, bekommst Du *Ringe*, die Deine Serie schützen: Pro Ring kannst Du einen Tag pausieren, ohne dass
+                    die Serie abbricht. Wie häufig Du Ringe bekommst, hängt von Deinem gewählten Übungsziel ab (z.B. "4 mal pro Woche").
+                """
             , iconBullet Practice
                 ("""
                 *Praktiziere, wie es für Dich am bequemsten ist* - im Sitzen oder im Liegen: {{ }} führt Dich mit Klängen und Animationen und lässt sich 
                 während der Übung komplett mit Berührungsgesten steuern.
+                """
+                    |> String.Format.value appName
+                )
+            , nobullet
+                ("""
+                Vor dem Start Deiner Übung kannst Du ihre Dauer kurzfristig anpassen - {{ }} schätzt für Dich, um welche Uhrzeit Du fertig bist. 
+                Wenn die Zeit nicht reicht, verkürze die Übung einfach!
                 """
                     |> String.Format.value appName
                 )
@@ -262,15 +283,25 @@ introduction lang =
             , iconBullet Motivate
                 ("""
             *Find and maintain motivation* for regular practice: Set a goal of how often you intend to practice - {{ }} keeps track of your streak
-            and makes sure you don't miss a beat. By exercising you earn *rings* protecting your streak: for each ring you have, you can take a day 
-            off whenever you like. How often you get new rings depends on your chosen practice goal (e.g. "4 times a week").
+            and makes sure you don't miss a beat. 
                 """
                     |> String.Format.value appName
                 )
+            , nobullet """
+                By exercising you earn *rings* protecting your streak: for each ring you have, you can take a day 
+                off whenever you like. How often you get new rings depends on your chosen practice goal (e.g. "4 times a week").
+                """
             , iconBullet Practice
                 ("""
             *Conveniently practice however you like* - even lying down with closed eyes: {{ }} guides you with sounds and animations and can be  
             operated during the practice session entirely by touch gestures.
+                """
+                    |> String.Format.value appName
+                )
+            , nobullet
+                ("""
+                Before starting your practice session, you can adjust its duration - {{ }} estimates for you the end time. If 
+                that would be too late, just shorten the session!
                 """
                     |> String.Format.value appName
                 )
@@ -771,7 +802,8 @@ practiceWarnings lang =
             , bullet "Übe *niemals im oder am Wasser* (auch nicht im flachen Wasser)!"
             , bullet "Übe *nie, während Du Auto fährst*!"
             , bullet "Übe nicht, wenn Du nicht körperlich fit bist."
-            , bullet """Im Falle von Herzproblemen, Bluthochdruck oder anderen Herz-Kreislauf-Problemen, Schwangerschaft, Epilepsie,
+            , bullet """Übe nicht, während Du schwanger bist."""
+            , bullet """Im Falle von Herzproblemen, Bluthochdruck oder anderen Herz-Kreislauf-Problemen, Epilepsie,
             oder ähnlichen Gesundheitseinschränkungen, *konsultiere auf jeden Fall Deinen Arzt*, bevor Du die Atemübung ausprobierst!
             """
             , para """
@@ -793,7 +825,8 @@ practiceWarnings lang =
             , bullet """*Never* practice *in or near water* (not even in shallow water)!"""
             , bullet """*Never* practice *while driving*!"""
             , bullet """Do not practice if you are not physically fit."""
-            , bullet """In case of heart conditions, high blood pressure or other cardiovascular issues, pregnancy, 
+            , bullet """Do not practice if you are pregnant."""
+            , bullet """In case of heart conditions, high blood pressure or other cardiovascular issues,
             epilepsy, or similar conditions, always *consult your healthcare professional* before trying the breathing exercise!
             """
             , para """
