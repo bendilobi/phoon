@@ -347,9 +347,7 @@ decoder : Json.Decode.Decoder MotivationData
 decoder =
     Json.Decode.succeed create
         |> optional fieldnames.series Json.Decode.int 0
-        |> optional fieldnames.previousStreak
-            (Json.Decode.Extra.optionalNullableField fieldnames.previousStreak Json.Decode.int)
-            Nothing
+        |> optional fieldnames.previousStreak (Json.Decode.int |> Json.Decode.map Just) Nothing
         |> optional fieldnames.streakFreezeDays Json.Decode.float 0
         |> optional fieldnames.streakInitialTarget Json.Decode.int 4
         |> required fieldnames.lastSessionDate (Json.Decode.map Date.fromRataDie Json.Decode.int)
