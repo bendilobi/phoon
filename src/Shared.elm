@@ -417,6 +417,7 @@ update route msg model =
                     Session.Finished ->
                         Effect.none
                 , Effect.navigate (FadeWith Fading.sessionFadingColor) Route.Path.Home_
+                , Effect.sendMsg <| Shared.Msg.SetInfoWindowState Shared.Model.Half
                 , Effect.releaseWakeLock
                 ]
             )
