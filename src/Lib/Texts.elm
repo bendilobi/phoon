@@ -1689,7 +1689,7 @@ wakeLockNote lang =
             Öffne die Einstellungen-App, gehe zu "Anzeige & Helligkeit" und wähle unter "Automatische Sperre" 4 Minuten oder mehr.
             """
             , para """
-            Dieser Schritt ist leider nötig, weil die App das wegen eines Fehlers in iOS noch nicht für Dich machen kann..."
+            Dieser Schritt ist leider nötig, weil die App das wegen eines Fehlers in iOS noch nicht für Dich machen kann...
             """
             ]
 
