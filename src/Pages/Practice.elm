@@ -210,12 +210,17 @@ view shared model =
             [ width fill
             , padding 20
             , Font.center
-            , spacing 70
+            , spacing 60
             , centerY
+            , moveUp <|
+                if shared.deviceInfo.orientation == Portrait then
+                    80
+
+                else
+                    0
             ]
-            [ column [ centerX, spacing 30 ]
-                [ --   viewEstimate shared estimate
-                  EstimateClock.new
+            [ column [ centerX, spacing 20 ]
+                [ EstimateClock.new
                     { size = 200
                     , zone = shared.zone
                     , now = model.time
@@ -233,7 +238,8 @@ view shared model =
                     |> IntCrementer.withMin 1
                     |> IntCrementer.withMax 9
                     |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
-                , viewEstimate shared estimate
+
+                -- , viewEstimate shared estimate
                 ]
             , el
                 [ width fill
