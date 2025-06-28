@@ -1,6 +1,7 @@
 module Pages.Practice exposing (Model, Msg, page)
 
 import Components.AnimatedButton as Button
+import Components.EstimateClock as EstimateClock
 import Components.IntCrementer as IntCrementer
 import Delay
 import Effect exposing (Effect)
@@ -24,6 +25,8 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Shared.Model
+import Svg
+import Svg.Attributes as SvgAtt
 import Task
 import Time
 import View exposing (View)
@@ -196,17 +199,7 @@ view shared model =
             , centerY
             ]
             [ column [ centerX, spacing 30 ]
-                [ IntCrementer.new
-                    { label =
-                        \n ->
-                            row [] <| Texts.cycles shared.appLanguage n [ Font.bold ]
-                    , onCrement = CycleCountChanged
-                    , model = model.cycleCrementer
-                    }
-                    |> IntCrementer.withMin 1
-                    |> IntCrementer.withMax 9
-                    |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
-                , let
+                [ let
                     estimate =
                         model.time
                             |> Time.posixToMillis
@@ -221,10 +214,25 @@ view shared model =
                                 )
                             |> Time.millisToPosix
                   in
-                  paragraph [] <|
-                    Texts.estimatedEnd shared.appLanguage <|
-                        el [ Font.bold ] <|
-                            Texts.viewTime shared.appLanguage [ Font.size 30 ] shared.zone estimate
+                  --   viewEstimate shared estimate
+                  EstimateClock.new
+                    { size = 200
+                    , zone = shared.zone
+                    , now = model.time
+                    , estimate = estimate
+                    }
+                    |> EstimateClock.view shared.colorScheme
+                    |> el [ centerX ]
+                , IntCrementer.new
+                    { label =
+                        \n ->
+                            row [] <| Texts.cycles shared.appLanguage n [ Font.bold ]
+                    , onCrement = CycleCountChanged
+                    , model = model.cycleCrementer
+                    }
+                    |> IntCrementer.withMin 1
+                    |> IntCrementer.withMax 9
+                    |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
                 ]
             , el
                 [ width fill
@@ -262,6 +270,14 @@ view shared model =
                 )
             ]
     }
+
+
+viewEstimate : Shared.Model -> Time.Posix -> Element msg
+viewEstimate shared estimate =
+    paragraph [] <|
+        Texts.estimatedEnd shared.appLanguage <|
+            el [ Font.bold ] <|
+                Texts.viewTime shared.appLanguage [ Font.size 30 ] shared.zone estimate
 
 
 viewWarnings : Shared.Model -> Layouts.BaseLayout.Overlay Msg

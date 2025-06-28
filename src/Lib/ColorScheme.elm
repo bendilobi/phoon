@@ -234,6 +234,11 @@ primaryMotivationCopyColor (ColorScheme colors) =
     colors.primaryMotivationCopy
 
 
+primaryPrepareSessionColor : ColorScheme -> Color
+primaryPrepareSessionColor (ColorScheme colors) =
+    colors.primaryPrepareSession
+
+
 phaseSessionStart : ColorScheme -> List (Attribute msg)
 phaseSessionStart (ColorScheme colors) =
     [ BG.color colors.phaseSessionStart
