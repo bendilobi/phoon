@@ -3,6 +3,7 @@ module Components.EstimateClock exposing (new, view)
 import Element exposing (Color, Element, html)
 import Lib.ColorScheme as CS exposing (ColorScheme)
 import Lib.Utils
+import String.Format
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Time
@@ -75,7 +76,18 @@ view colorScheme (Settings settings) =
             , fill <| Lib.Utils.colorToHex <| CS.primaryMotivationCopyColor colorScheme
             ]
             []
-        , viewHand (CS.guideColor colorScheme) 3 (radius / 100 * 77) radius radiusStr ((estimate + (estimateSeconds / 60)) / 60)
+        , viewEstimate
+            (CS.guideColor colorScheme)
+            (radius / 100 * 77)
+            radius
+            radiusStr
+            ((minute + (second / 60)) / 60)
+            ((estimate + (estimateSeconds / 60)) / 60)
+            {- True if the session takes longer than 30 minutes. Needed because the pie segment has to
+               be drawn differently if it is larger than 180 degrees.
+            -}
+            (Time.posixToMillis settings.estimate - Time.posixToMillis settings.now > 1800000)
+        , viewHand (CS.guideColor colorScheme) 6 (radius / 100 * 77) radius radiusStr ((estimate + (estimateSeconds / 60)) / 60)
         , viewHand handColor 6 (radius / 100 * 52) radius radiusStr ((hour + (minute / 60)) / 12)
         , viewHand handColor 6 (radius / 100 * 77) radius radiusStr ((minute + (second / 60)) / 60)
         ]
@@ -102,5 +114,42 @@ viewHand color width length radius radiusStr turns =
         , stroke <| Lib.Utils.colorToHex color
         , strokeWidth (String.fromInt width)
         , strokeLinecap "round"
+        ]
+        []
+
+
+viewEstimate : Color -> Float -> Float -> String -> Float -> Float -> Bool -> Svg.Svg msg
+viewEstimate color length radius radiusStr thetaStart thetaEnd largeArc =
+    let
+        tStart =
+            2 * pi * (thetaStart - 0.25)
+
+        tEnd =
+            2 * pi * (thetaEnd - 0.25)
+    in
+    Svg.path
+        [ d
+            ("M {{x1}} {{y1}} L {{x2}} {{y2}} A {{radius}} {{radius}} 0 {{largeArc}} 1 {{x3}} {{y3}} Z"
+                |> String.Format.namedValue "x1" radiusStr
+                |> String.Format.namedValue "y1" radiusStr
+                |> String.Format.namedValue "x2" (radius + length * cos tStart |> String.fromFloat)
+                |> String.Format.namedValue "y2" (radius + length * sin tStart |> String.fromFloat)
+                |> String.Format.namedValue "radius" (String.fromFloat length)
+                |> String.Format.namedValue "largeArc"
+                    (if largeArc then
+                        "1"
+
+                     else
+                        "0"
+                    )
+                |> String.Format.namedValue "x3" (radius + length * cos tEnd |> String.fromFloat)
+                |> String.Format.namedValue "y3" (radius + length * sin tEnd |> String.fromFloat)
+            )
+        , stroke <| Lib.Utils.colorToHex color
+        , strokeWidth "0" --<| String.fromFloat length
+        , fill <| Lib.Utils.colorToHex color
+        , fillOpacity "0.6"
+
+        -- , strokeLinecap "round"
         ]
         []
