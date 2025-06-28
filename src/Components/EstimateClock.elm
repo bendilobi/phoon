@@ -39,9 +39,11 @@ view colorScheme (Settings settings) =
         hour =
             toFloat (Time.toHour settings.zone settings.now)
 
-        --TODO: Make the hands move continuously (vs. jumping every minute/hour)
         minute =
             toFloat (Time.toMinute settings.zone settings.now)
+
+        second =
+            toFloat (Time.toSecond settings.zone settings.now)
 
         sizeStr =
             String.fromInt settings.size
@@ -51,14 +53,9 @@ view colorScheme (Settings settings) =
 
         radiusStr =
             settings.size // 2 |> String.fromInt
-
-        -- second =
-        --     toFloat (Time.toSecond settings.zone settings.now)
     in
     svg
-        [ --TODO: Derive all size related stuff from settings.width and settings.height
-          --   viewBox "0 0 200 200"
-          viewBox <| "0 0 " ++ sizeStr ++ " " ++ sizeStr
+        [ viewBox <| "0 0 " ++ sizeStr ++ " " ++ sizeStr
         , width sizeStr
         , height sizeStr
         ]
@@ -69,10 +66,8 @@ view colorScheme (Settings settings) =
             , fill <| Lib.Utils.colorToHex <| CS.primaryMotivationCopyColor colorScheme
             ]
             []
-        , viewHand colorScheme 6 (radius / 100 * 60) radius radiusStr (hour / 12)
-        , viewHand colorScheme 6 (radius / 100 * 90) radius radiusStr (minute / 60)
-
-        -- , viewHand 3 90 (second / 60)
+        , viewHand colorScheme 6 (radius / 100 * 60) radius radiusStr ((hour + (minute / 60)) / 12)
+        , viewHand colorScheme 6 (radius / 100 * 90) radius radiusStr ((minute + (second / 60)) / 60)
         ]
         |> html
 
