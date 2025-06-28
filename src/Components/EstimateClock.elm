@@ -45,6 +45,9 @@ view colorScheme (Settings settings) =
         estimate =
             toFloat (Time.toMinute settings.zone settings.estimate)
 
+        estimateSeconds =
+            toFloat (Time.toSecond settings.zone settings.estimate)
+
         second =
             toFloat (Time.toSecond settings.zone settings.now)
 
@@ -72,7 +75,7 @@ view colorScheme (Settings settings) =
             , fill <| Lib.Utils.colorToHex <| CS.primaryMotivationCopyColor colorScheme
             ]
             []
-        , viewHand (CS.guideColor colorScheme) 3 (radius / 100 * 95) radius radiusStr ((estimate + (second / 60)) / 60)
+        , viewHand (CS.guideColor colorScheme) 3 (radius / 100 * 95) radius radiusStr ((estimate + (estimateSeconds / 60)) / 60)
         , viewHand handColor 6 (radius / 100 * 60) radius radiusStr ((hour + (minute / 60)) / 12)
         , viewHand handColor 6 (radius / 100 * 90) radius radiusStr ((minute + (second / 60)) / 60)
         ]
