@@ -42,6 +42,9 @@ view colorScheme (Settings settings) =
         minute =
             toFloat (Time.toMinute settings.zone settings.now)
 
+        estimate =
+            toFloat (Time.toMinute settings.zone settings.estimate)
+
         second =
             toFloat (Time.toSecond settings.zone settings.now)
 
@@ -53,6 +56,9 @@ view colorScheme (Settings settings) =
 
         radiusStr =
             settings.size // 2 |> String.fromInt
+
+        handColor =
+            CS.primaryPrepareSessionColor colorScheme
     in
     svg
         [ viewBox <| "0 0 " ++ sizeStr ++ " " ++ sizeStr
@@ -66,14 +72,15 @@ view colorScheme (Settings settings) =
             , fill <| Lib.Utils.colorToHex <| CS.primaryMotivationCopyColor colorScheme
             ]
             []
-        , viewHand colorScheme 6 (radius / 100 * 60) radius radiusStr ((hour + (minute / 60)) / 12)
-        , viewHand colorScheme 6 (radius / 100 * 90) radius radiusStr ((minute + (second / 60)) / 60)
+        , viewHand (CS.guideColor colorScheme) 3 (radius / 100 * 95) radius radiusStr ((estimate + (second / 60)) / 60)
+        , viewHand handColor 6 (radius / 100 * 60) radius radiusStr ((hour + (minute / 60)) / 12)
+        , viewHand handColor 6 (radius / 100 * 90) radius radiusStr ((minute + (second / 60)) / 60)
         ]
         |> html
 
 
-viewHand : ColorScheme -> Int -> Float -> Float -> String -> Float -> Svg.Svg msg
-viewHand colorScheme width length radius radiusStr turns =
+viewHand : Color -> Int -> Float -> Float -> String -> Float -> Svg.Svg msg
+viewHand color width length radius radiusStr turns =
     let
         t =
             2 * pi * (turns - 0.25)
@@ -89,7 +96,7 @@ viewHand colorScheme width length radius radiusStr turns =
         , y1 radiusStr
         , x2 (String.fromFloat x)
         , y2 (String.fromFloat y)
-        , stroke <| Lib.Utils.colorToHex <| CS.primaryPrepareSessionColor colorScheme
+        , stroke <| Lib.Utils.colorToHex color
         , strokeWidth (String.fromInt width)
         , strokeLinecap "round"
         ]

@@ -191,6 +191,21 @@ view shared model =
     { title = Texts.prepareSession shared.appLanguage
     , attributes = CS.primaryPrepareSession shared.colorScheme
     , element =
+        let
+            estimate =
+                model.time
+                    |> Time.posixToMillis
+                    |> (+)
+                        (Session.estimatedDurationMillis
+                            (shared.motivationData
+                                |> Maybe.map MotivationData.meanRetentionTimes
+                                |> Maybe.withDefault []
+                            )
+                            shared.session
+                            |> Millis.toInt
+                        )
+                    |> Time.millisToPosix
+        in
         column
             [ width fill
             , padding 20
@@ -199,22 +214,7 @@ view shared model =
             , centerY
             ]
             [ column [ centerX, spacing 30 ]
-                [ let
-                    estimate =
-                        model.time
-                            |> Time.posixToMillis
-                            |> (+)
-                                (Session.estimatedDurationMillis
-                                    (shared.motivationData
-                                        |> Maybe.map MotivationData.meanRetentionTimes
-                                        |> Maybe.withDefault []
-                                    )
-                                    shared.session
-                                    |> Millis.toInt
-                                )
-                            |> Time.millisToPosix
-                  in
-                  --   viewEstimate shared estimate
+                [ --   viewEstimate shared estimate
                   EstimateClock.new
                     { size = 200
                     , zone = shared.zone
@@ -233,6 +233,7 @@ view shared model =
                     |> IntCrementer.withMin 1
                     |> IntCrementer.withMax 9
                     |> IntCrementer.view shared.colorScheme (Session.remainingCycles shared.session)
+                , viewEstimate shared estimate
                 ]
             , el
                 [ width fill
