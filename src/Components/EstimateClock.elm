@@ -15,6 +15,7 @@ type EstimateClock
         , zone : Time.Zone
         , now : Time.Posix
         , estimate : Time.Posix
+        , cycleEstimates : List Time.Posix
         }
 
 
@@ -23,6 +24,7 @@ new :
     , zone : Time.Zone
     , now : Time.Posix
     , estimate : Time.Posix
+    , cycleEstimates : List Time.Posix
     }
     -> EstimateClock
 new props =
@@ -31,6 +33,7 @@ new props =
         , zone = props.zone
         , now = props.now
         , estimate = props.estimate
+        , cycleEstimates = props.cycleEstimates
         }
 
 
@@ -48,6 +51,16 @@ view colorScheme (Settings settings) =
 
         estimateSeconds =
             toFloat (Time.toSecond settings.zone settings.estimate)
+
+        cycleEstimates =
+            settings.cycleEstimates
+                |> List.map (Time.toMinute settings.zone)
+                |> List.map toFloat
+
+        cycleEstimatesSeconds =
+            settings.cycleEstimates
+                |> List.map (Time.toSecond settings.zone)
+                |> List.map toFloat
 
         second =
             toFloat (Time.toSecond settings.zone settings.now)
@@ -69,18 +82,18 @@ view colorScheme (Settings settings) =
         , width sizeStr
         , height sizeStr
         ]
-        [ circle
+        ([ circle
             [ cx radiusStr
             , cy radiusStr
             , r radiusStr
             , fill <| Lib.Utils.colorToHex <| CS.primaryMotivationCopyColor colorScheme
             ]
             []
-        , viewQuarterLine handColor radius 0.25
-        , viewQuarterLine handColor radius 0.5
-        , viewQuarterLine handColor radius 0.75
-        , viewQuarterLine handColor radius 1
-        , viewEstimate
+         , viewQuarterLine handColor radius 0.25
+         , viewQuarterLine handColor radius 0.5
+         , viewQuarterLine handColor radius 0.75
+         , viewQuarterLine handColor radius 1
+         , viewEstimate
             (CS.guideColor colorScheme)
             (radius / 100 * 77)
             radius
@@ -91,10 +104,28 @@ view colorScheme (Settings settings) =
                be drawn differently if it is larger than 180 degrees.
             -}
             (Time.posixToMillis settings.estimate - Time.posixToMillis settings.now > 1800000)
-        , viewHand (CS.guideColor colorScheme) 6 (radius / 100 * 77) radius radiusStr ((estimate + (estimateSeconds / 60)) / 60)
-        , viewHand handColor 6 (radius / 100 * 52) radius radiusStr ((hour + (minute / 60)) / 12)
-        , viewHand handColor 6 (radius / 100 * 77) radius radiusStr ((minute + (second / 60)) / 60)
-        ]
+         ]
+            ++ List.map2
+                (\e es ->
+                    viewHand (CS.primaryMotivationCopyColor colorScheme)
+                        1
+                        (radius / 100 * 80)
+                        radius
+                        radiusStr
+                        ((e + (es / 60)) / 60)
+                )
+                cycleEstimates
+                cycleEstimatesSeconds
+            ++ [ viewHand (CS.guideColor colorScheme)
+                    6
+                    (radius / 100 * 77)
+                    radius
+                    radiusStr
+                    ((estimate + (estimateSeconds / 60)) / 60)
+               , viewHand handColor 6 (radius / 100 * 52) radius radiusStr ((hour + (minute / 60)) / 12)
+               , viewHand handColor 6 (radius / 100 * 77) radius radiusStr ((minute + (second / 60)) / 60)
+               ]
+        )
         |> html
 
 

@@ -21,6 +21,7 @@ import Lib.PageFading as Fading exposing (Trigger(..))
 import Lib.Session as Session exposing (Session)
 import Lib.SessionResults as SessionResults
 import Lib.Texts as Texts
+import List.Extra
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -192,19 +193,51 @@ view shared model =
     , attributes = CS.primaryPrepareSession shared.colorScheme
     , element =
         let
+            durations =
+                Session.estimatedDurationMillis
+                    (shared.motivationData
+                        |> Maybe.map MotivationData.meanRetentionTimes
+                        |> Maybe.withDefault []
+                    )
+                    shared.session
+
             estimate =
                 model.time
                     |> Time.posixToMillis
                     |> (+)
-                        (Session.estimatedDurationMillis
-                            (shared.motivationData
-                                |> Maybe.map MotivationData.meanRetentionTimes
-                                |> Maybe.withDefault []
-                            )
-                            shared.session
+                        (durations
+                            |> Millis.sum
                             |> Millis.toInt
                         )
                     |> Time.millisToPosix
+
+            cycleEstimates =
+                let
+                    cycles =
+                        Session.remainingCycles shared.session
+
+                    durationsInt =
+                        List.map Millis.toInt durations
+                in
+                if cycles == 1 then
+                    []
+
+                else
+                    List.range 1 (cycles - 1)
+                        |> List.Extra.mapAccuml
+                            (\( cum, durs ) cycle ->
+                                let
+                                    ( newCum, newDurs ) =
+                                        if cycle == 1 then
+                                            ( cum + (List.take 4 durs |> List.sum), List.drop 4 durs )
+
+                                        else
+                                            ( cum + (List.take 3 durs |> List.sum), List.drop 3 durs )
+                                in
+                                ( ( newCum, newDurs ), Time.posixToMillis model.time + newCum |> Time.millisToPosix )
+                            )
+                            ( 0, durationsInt )
+                        |> Tuple.second
         in
         column
             [ width fill
@@ -225,6 +258,7 @@ view shared model =
                     , zone = shared.zone
                     , now = model.time
                     , estimate = estimate
+                    , cycleEstimates = cycleEstimates
                     }
                     |> EstimateClock.view shared.colorScheme
                     |> el [ centerX ]

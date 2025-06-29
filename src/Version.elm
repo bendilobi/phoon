@@ -10,4 +10,4 @@ strings match.
 
 appVersion =
     --- Version string in version.json MUST BE IDENTICAL before deploying the app!!! ---
-    "0.9.51"
+    "0.9.52"

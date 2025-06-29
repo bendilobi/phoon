@@ -770,6 +770,7 @@ viewSettings shared model =
                             |> Maybe.map MotivationData.meanRetentionTimes
                             |> Maybe.withDefault []
                         )
+                    |> Millis.sum
           in
           paragraph [ paddingEach { top = 15, bottom = 0, left = 0, right = 0 } ] <|
             Texts.estimatedDuration shared.appLanguage duration [ Font.color <| CS.guideColor shared.colorScheme ]

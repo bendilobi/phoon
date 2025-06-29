@@ -376,7 +376,7 @@ phaseDuration session retentionEstimate phase =
             Millis.fromSeconds <| 3 * 60
 
 
-estimatedDurationMillis : List Milliseconds -> Session -> Milliseconds
+estimatedDurationMillis : List Milliseconds -> Session -> List Milliseconds
 estimatedDurationMillis times (Session session) =
     let
         (State curPhase remainingPhases) =
@@ -406,10 +406,10 @@ estimatedDurationMillis times (Session session) =
     in
     (curPhase :: remainingPhases)
         |> List.map (phaseDuration (Session session) retentionEstimate)
-        |> Millis.sum
 
 
 
+-- |> Millis.sum
 -- CONVERSION
 
 
