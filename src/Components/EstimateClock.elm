@@ -76,6 +76,10 @@ view colorScheme (Settings settings) =
             , fill <| Lib.Utils.colorToHex <| CS.primaryMotivationCopyColor colorScheme
             ]
             []
+        , viewQuarterLine handColor radius 0.25
+        , viewQuarterLine handColor radius 0.5
+        , viewQuarterLine handColor radius 0.75
+        , viewQuarterLine handColor radius 1
         , viewEstimate
             (CS.guideColor colorScheme)
             (radius / 100 * 77)
@@ -92,6 +96,36 @@ view colorScheme (Settings settings) =
         , viewHand handColor 6 (radius / 100 * 77) radius radiusStr ((minute + (second / 60)) / 60)
         ]
         |> html
+
+
+viewQuarterLine : Color -> Float -> Float -> Svg.Svg msg
+viewQuarterLine color radius turns =
+    let
+        t =
+            2 * pi * turns
+
+        x_1 =
+            radius + (radius / 100 * 85) * cos t |> String.fromFloat
+
+        y_1 =
+            radius + (radius / 100 * 85) * sin t |> String.fromFloat
+
+        x_2 =
+            radius + (radius / 100 * 95) * cos t |> String.fromFloat
+
+        y_2 =
+            radius + (radius / 100 * 95) * sin t |> String.fromFloat
+    in
+    line
+        [ x1 x_1
+        , y1 y_1
+        , x2 x_2
+        , y2 y_2
+        , stroke <| Lib.Utils.colorToHex color
+        , strokeWidth "2"
+        , strokeLinecap "round"
+        ]
+        []
 
 
 viewHand : Color -> Int -> Float -> Float -> String -> Float -> Svg.Svg msg
