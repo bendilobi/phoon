@@ -211,6 +211,7 @@ view shared model =
                         )
                     |> Time.millisToPosix
 
+            --TODO: Document what this does...
             cycleEstimates =
                 let
                     cycles =
@@ -229,7 +230,7 @@ view shared model =
                                 let
                                     ( newCum, newDurs ) =
                                         if cycle == 1 then
-                                            ( cum + (List.take 4 durs |> List.sum), List.drop 4 durs )
+                                            ( cum + ((List.take 4 durs ++ List.drop (List.length durs - 1) durs) |> List.sum), List.drop 4 durs )
 
                                         else
                                             ( cum + (List.take 3 durs |> List.sum), List.drop 3 durs )

@@ -116,7 +116,7 @@ view colorScheme (Settings settings) =
                 )
                 cycleEstimates
                 cycleEstimatesSeconds
-            ++ [ viewHand (CS.guideColor colorScheme)
+            ++ [ viewHand (CS.guideLightColor colorScheme)
                     6
                     (radius / 100 * 77)
                     radius
@@ -213,7 +213,7 @@ viewEstimate color length radius radiusStr thetaStart thetaEnd largeArc =
         , stroke <| Lib.Utils.colorToHex color
         , strokeWidth "0" --<| String.fromFloat length
         , fill <| Lib.Utils.colorToHex color
-        , fillOpacity "0.6"
+        , fillOpacity "0.35"
 
         -- , strokeLinecap "round"
         ]

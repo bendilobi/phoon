@@ -21,6 +21,7 @@ type ColorScheme
         , interactInactiveCopy : Color
         , interactBackground : Color
         , guide : Color
+        , guideLight : Color
         , actionNeeded : Color
         , actionNeededCopy : Color
         , success : Color
@@ -61,6 +62,7 @@ newSunrise =
         , interactInactiveCopy = rgb255 245 248 255
         , interactBackground = rgb255 239 233 243
         , guide = rgb255 187 136 0
+        , guideLight = rgb255 198 157 46 --192 147 23
         , actionNeeded = rgb255 184 37 17
         , actionNeededCopy = rgb255 0 0 0
         , success = rgb255 0 125 84
@@ -101,6 +103,7 @@ newDaylight =
         , interactInactiveCopy = rgb255 245 248 255
         , interactBackground = rgb255 239 233 243
         , guide = rgb255 197 167 117
+        , guideLight = rgb255 202 175 131
         , actionNeeded = rgb255 184 37 17
         , actionNeededCopy = rgb255 0 0 0
         , success = rgb255 0 125 84
@@ -173,6 +176,11 @@ navbar (ColorScheme colors) =
 guideColor : ColorScheme -> Color
 guideColor (ColorScheme colors) =
     colors.guide
+
+
+guideLightColor : ColorScheme -> Color
+guideLightColor (ColorScheme colors) =
+    colors.guideLight
 
 
 seriesGoodColor : ColorScheme -> Color
