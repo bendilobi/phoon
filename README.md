@@ -2,6 +2,7 @@
 
 Breathwork app inspired by the [Wim Hof Method](https://www.wimhofmethod.com/). Optimized for being used "blindly": do your breathwork completely relaxed lying down with eyes closed - `Phoon` guides you with sounds and is operated with simple touch gestures. Focus on your breathing only!
 
+Try it here: [phoon.bendilobi.de](https://phoon.bendilobi.de)
 
 ## Overview
 
