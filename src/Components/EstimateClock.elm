@@ -211,10 +211,8 @@ viewEstimate color length radius radiusStr thetaStart thetaEnd largeArc =
                 |> String.Format.namedValue "y3" (radius + length * sin tEnd |> String.fromFloat)
             )
         , stroke <| Lib.Utils.colorToHex color
-        , strokeWidth "0" --<| String.fromFloat length
+        , strokeWidth "0"
         , fill <| Lib.Utils.colorToHex color
         , fillOpacity "0.35"
-
-        -- , strokeLinecap "round"
         ]
         []
